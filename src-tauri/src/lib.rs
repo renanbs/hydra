@@ -215,6 +215,43 @@ async fn path_exists(path: String) -> bool {
         .await
         .unwrap_or(false)
 }
+/// Why a dedicated status: the FolderX badge must not fire for an unreadable path.
+/// Orca distinguishes "missing" / "not-directory" (confirmed stale) from transient
+/// probe failures, which stay silent.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FolderPathStatus {
+    path: String,
+    exists: bool,
+    reason: Option<String>,
+}
+#[tauri::command]
+async fn folder_path_status(path: String) -> Result<FolderPathStatus, String> {
+    tokio::task::spawn_blocking(move || match std::fs::metadata(&path) {
+        Ok(metadata) if metadata.is_dir() => FolderPathStatus {
+            path: path.clone(),
+            exists: true,
+            reason: None,
+        },
+        Ok(_) => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("not-directory".to_string()),
+        },
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("missing".to_string()),
+        },
+        Err(_) => FolderPathStatus {
+            path: path.clone(),
+            exists: false,
+            reason: Some("unavailable".to_string()),
+        },
+    })
+    .await
+    .map_err(|e| e.to_string())
+}
 #[tauri::command]
 async fn get_branch_commits_cmd(repoPath: String, baseRef: String, limit: usize) -> Result<Vec<GitCommitEntry>, String> {
     tokio::task::spawn_blocking(move || get_branch_commits(&repoPath, &baseRef, limit)).await.map_err(|e| e.to_string())?
@@ -1719,6 +1756,7 @@ pub fn run() {
             rename_path_cmd,
             delete_path_cmd,
             path_exists,
+            folder_path_status,
             get_branch_commits_cmd,
             git_push_cmd,
             git_pull_cmd,

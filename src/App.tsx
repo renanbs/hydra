@@ -27,6 +27,10 @@ import {
 } from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import {
+  isConfirmedStaleFolderPathStatus,
+  type FolderWorkspacePathStatus,
+} from "./shared/folder-workspace-path-status";
+import {
   createWorktreeFlagApplier,
   reconcileProjectFlagSet,
   reconcileWorktreeFlagSet,
@@ -214,14 +218,15 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
-  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder } = src;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder, hideWorkspacesFromOtherDevices } = src;
   if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
   if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
     typeof hideDetachedHead !== "boolean" ||
-    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean")
+    (alwaysShowDefaultBranch !== undefined && typeof alwaysShowDefaultBranch !== "boolean") ||
+    (hideWorkspacesFromOtherDevices !== undefined && typeof hideWorkspacesFromOtherDevices !== "boolean")
   ) {
     return undefined;
   }
@@ -239,6 +244,7 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
     hideCliCreated,
     hideDetachedHead,
     alwaysShowDefaultBranch: alwaysShowDefaultBranch === true,
+    hideWorkspacesFromOtherDevices: hideWorkspacesFromOtherDevices === true,
     filterProjectIds: asStringArrayPref(src.filterProjectIds) ?? [],
   };
 }
@@ -2526,14 +2532,22 @@ export default function App() {
     let cancelled = false;
     Promise.all(
       folderWorkspaces.map((w) =>
-        invoke<boolean>("path_exists", { path: w.folderPath })
-          .then((exists) => ({ path: w.folderPath, exists }))
-          .catch(() => ({ path: w.folderPath, exists: true }))
+        invoke<FolderWorkspacePathStatus>("folder_path_status", {
+          path: w.folderPath,
+        })
+          .then((status) => ({ path: w.folderPath, status }))
+          .catch(() => ({ path: w.folderPath, status: null }))
       )
     ).then((results) => {
       if (cancelled) return;
+      // Only confirmed-stale paths get the FolderX badge; a transient probe failure
+      // (`unavailable`) must not claim the folder is gone.
       setMissingFolderPaths(
-        new Set(results.filter((r) => !r.exists).map((r) => r.path))
+        new Set(
+          results
+            .filter((result) => isConfirmedStaleFolderPathStatus(result.status))
+            .map((result) => result.path)
+        )
       );
     });
     return () => {

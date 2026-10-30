@@ -74,6 +74,10 @@ import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
 import { getRepoExecutionHostId, getWorktreeExecutionHostId } from "../../shared/execution-host";
 import { getVisibleSidebarHostIdSet } from "./worktree-list/listing/host-filtering";
+import {
+  getPairedDeviceIdsByEnvironment,
+  isWorkspaceFromOtherDevice,
+} from "./workspace-creator-visibility";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -142,6 +146,9 @@ export function pipelineCollapsedKeys(
 }
 
 /** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
+/** No paired devices: the other-device sweep is off. */
+const EMPTY_OTHER_DEVICE_IDS: ReadonlyMap<string, string> = new Map();
+
 const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
 
 export type WorkspaceSidebarShortcutAction = "workspace.rename" | "workspace.delete";
@@ -735,6 +742,8 @@ export function WorktreeList({
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
+  const pendingRevealSidebarRow = useAppStore((s) => s.pendingRevealSidebarRow);
+  const clearPendingRevealSidebarRow = useAppStore((s) => s.clearPendingRevealSidebarRow);
   const storeKeybindings = useAppStore((s) => s.keybindings);
 
   // Host labels for the mixed-host card chip: SSH target names + persisted
@@ -766,6 +775,22 @@ export function WorktreeList({
   const visibleHostIdSet = useMemo(
     () => getVisibleSidebarHostIdSet(pipelineVisibleHostIds, pipelineHostScope),
     [pipelineHostScope, pipelineVisibleHostIds]
+  );
+  // Orca `useSidebarHostVisibleScope`: the other-device sweep needs the device ids
+  // paired to each runtime environment.
+  const pairedDeviceIdsByEnvironment = useMemo(
+    () =>
+      displayOptions.hideWorkspacesFromOtherDevices
+        ? getPairedDeviceIdsByEnvironment(
+            storeRuntimeEnvironments,
+            storeRuntimeStatusByEnvironmentId
+          )
+        : EMPTY_OTHER_DEVICE_IDS,
+    [
+      displayOptions.hideWorkspacesFromOtherDevices,
+      storeRuntimeEnvironments,
+      storeRuntimeStatusByEnvironmentId,
+    ]
   );
 
   // Filter projects by search query (project identity or a matching workspace).
@@ -874,6 +899,12 @@ export function WorktreeList({
               : null;
           })(),
         });
+        if (
+          pairedDeviceIdsByEnvironment.size > 0 &&
+          isWorkspaceFromOtherDevice(projected, pairedDeviceIdsByEnvironment)
+        ) {
+          continue;
+        }
         if (
           visibleHostIdSet &&
           !visibleHostIdSet.has(
@@ -995,6 +1026,7 @@ export function WorktreeList({
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
     displayOptions.hideSleeping,
+    pairedDeviceIdsByEnvironment,
     getFilteredAndSortedWorktrees,
     prByPath,
     collapsedProjects,
@@ -2005,6 +2037,8 @@ export function WorktreeList({
         groupBy={displayOptions.groupBy}
         pinnedDisplayPolicy={pinnedDisplayPolicy}
         revealPath={highlightedRevealPath ?? null}
+        revealRowKey={pendingRevealSidebarRow?.rowKey ?? null}
+        onRevealRowIssued={clearPendingRevealSidebarRow}
         renderRow={renderRow}
         onActivateRow={activateRow}
         onToggleRowCollapse={toggleRowCollapse}

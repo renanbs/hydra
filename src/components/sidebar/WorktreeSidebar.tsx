@@ -29,7 +29,12 @@ import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
+import { toast } from "sonner";
 import { planSidebarClearFilters } from "./sidebar-filter-actions";
+import {
+  getFolderWorkspaceRevealGroupKeys,
+  getPinnedWorktreeRevealCollapsedGroupKeys,
+} from "./sidebar-reveal-lookups";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
@@ -73,6 +78,7 @@ const defaultDisplayOptions: WorkspaceDisplayOptions = {
   hideDetachedHead: false,
   alwaysShowDefaultBranch: false,
   projectsOrder: "manual",
+  hideWorkspacesFromOtherDevices: false,
 };
 
 export function WorktreeSidebar({
@@ -288,6 +294,10 @@ export function WorktreeSidebar({
     window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
   }, []);
   const pendingRevealWorktree = useAppStore((state) => state.pendingRevealWorktree);
+  const pendingRevealSidebarRow = useAppStore((state) => state.pendingRevealSidebarRow);
+  const clearPendingRevealSidebarRow = useAppStore(
+    (state) => state.clearPendingRevealSidebarRow
+  );
   const clearPendingRevealWorktreeId = useAppStore((state) => state.clearPendingRevealWorktreeId);
   const { isProjectDropActive } = useSidebarProjectDrop({
     enabled: true,
@@ -627,6 +637,27 @@ export function WorktreeSidebar({
             return next;
           });
         }
+        // Orca `getPinnedWorktreeRevealCollapsedGroupKeys` / folder ancestry: a
+        // collapsed Pinned section or a parent project group would keep the row
+        // unmounted forever.
+        const folderWorkspace = folderWorkspaces.find(
+          (workspace) => workspace.folderPath === target
+        );
+        const revealKeys = [
+          ...(pinnedWorktrees?.has(target)
+            ? getPinnedWorktreeRevealCollapsedGroupKeys()
+            : []),
+          ...(folderWorkspace
+            ? getFolderWorkspaceRevealGroupKeys(folderWorkspace, projectGroups)
+            : []),
+        ].filter((key) => collapsedGroups.has(key));
+        if (revealKeys.length > 0) {
+          setCollapsedGroups((prev) => {
+            const next = new Set(prev);
+            for (const key of revealKeys) next.delete(key);
+            return next;
+          });
+        }
         break;
       }
     }
@@ -694,6 +725,69 @@ export function WorktreeSidebar({
     projects,
     getWorktreesForProject,
     handleRevealCurrent,
+  ]);
+
+  // Orca `useSidebarRevealRequests` (row-key leg): a reveal of a section header must
+  // switch to repo grouping and expand the sections that hide it before the viewport
+  // can scroll to the key. The viewport clears the request once it scrolls.
+  useEffect(() => {
+    if (!pendingRevealSidebarRow) return;
+    const key = pendingRevealSidebarRow.rowKey;
+    const isHeaderKey =
+      key.startsWith("repo:") ||
+      key.startsWith("project-group:") ||
+      key.startsWith("project:");
+    if (isHeaderKey && displayOptions.groupBy !== "repo") {
+      const next = { ...displayOptions, groupBy: "repo" as const };
+      setDisplayOptions(next);
+      notifyPrefs({ displayOptions: next });
+      return;
+    }
+    const rowExists =
+      key.startsWith("repo:") || key.startsWith("project:")
+        ? projects.some(
+            (project) =>
+              project.id === key.slice(key.indexOf(":") + 1) ||
+              project.path === key.slice(key.indexOf(":") + 1)
+          )
+        : key.startsWith("project-group:")
+          ? projectGroups.some((group) => group.id === key.slice("project-group:".length))
+          : true;
+    if (!rowExists) {
+      // Orca toasts rather than leaving a reveal queued forever when the target
+      // disappeared between the request and the paint.
+      toast.error("Target no longer exists");
+      clearPendingRevealSidebarRow();
+      return;
+    }
+    if (key.startsWith("repo:")) {
+      const repoId = key.slice("repo:".length);
+      if (collapsedProjects.has(repoId)) {
+        setCollapsedProjects((prev) => {
+          const next = new Set(prev);
+          next.delete(repoId);
+          return next;
+        });
+      }
+    } else if (key.startsWith("project-group:")) {
+      const groupId = key.slice("project-group:".length);
+      if (collapsedGroups.has(groupId)) {
+        setCollapsedGroups((prev) => {
+          const next = new Set(prev);
+          next.delete(groupId);
+          return next;
+        });
+      }
+    }
+  }, [
+    pendingRevealSidebarRow,
+    clearPendingRevealSidebarRow,
+    projects,
+    projectGroups,
+    displayOptions,
+    notifyPrefs,
+    collapsedProjects,
+    collapsedGroups,
   ]);
 
   // Orca `useWorkspaceRevealBodyRedirect`: a reveal request that arrives while the

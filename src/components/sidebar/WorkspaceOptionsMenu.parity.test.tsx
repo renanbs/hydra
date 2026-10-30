@@ -195,6 +195,7 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
       hideCliCreated: false,
       hideDetachedHead: false,
       alwaysShowDefaultBranch: false,
+      hideWorkspacesFromOtherDevices: false,
       filterProjectIds: [],
     });
 

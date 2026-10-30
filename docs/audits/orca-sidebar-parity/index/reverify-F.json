@@ -115,17 +115,15 @@
   },
   {
    "id": "D03a-063",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:31-50",
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-110",
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-60",
+    "src/components/sidebar/WorktreeSidebar.tsx:700-760"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "reveal de headers (project-group:/project:/repo:)",
-    "toast 'Target no longer exists' e retry quando a row não existe"
-   ],
-   "note": "Reveal de item/folder agora passa pelo virtualizer e expande projeto/grupo; headers, toast de alvo ausente e retry não existem."
+   "missing_behaviors": [],
+   "note": "A queued row reveal now matches painted headers by key, switches to repo grouping, expands the section, retries for up to 8 frames and toasts when the target no longer exists."
   },
   {
    "id": "D03a-066",
@@ -157,15 +155,14 @@
   },
   {
    "id": "D03a-071",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/sidebar-reveal-lookups.ts:70-95",
+    "src/components/sidebar/WorktreeSidebar.tsx:620-660"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada)"
-   ],
-   "note": "O reveal expande projeto e project-group inline; a seção Pinned colapsada não é reaberta para o alvo."
+   "missing_behaviors": [],
+   "note": "Reveal expands the Pinned section and every project-group ancestor of a folder workspace before scrolling."
   },
   {
    "id": "D03a-074",

@@ -348,6 +348,14 @@ export interface AppState extends SshSlice {
     beginRename?: boolean
   } | null
   clearPendingRevealWorktreeId: () => void
+  /** Queued reveal of an arbitrary sidebar row (headers included). */
+  revealSidebarRow: (rowKey: string, options?: { behavior?: ScrollBehavior; highlight?: boolean }) => void
+  pendingRevealSidebarRow: {
+    rowKey: string
+    behavior?: ScrollBehavior
+    highlight?: boolean
+  } | null
+  clearPendingRevealSidebarRow: () => void
   scheduleAgentStatusFreshness: (...args: any[]) => any
   unacknowledgeAgents: (...args: any[]) => any
   updateBrowserPageState: (...args: any[]) => any

@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 267 capabilities
+## PARTIAL — 265 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -274,7 +274,7 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (41)
+### D03a-worktree-list-module (39)
 
 - **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
 - **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
@@ -293,11 +293,9 @@
 - **D03a-058** — Atalhos de teclado da lista: focar, navegar para cima/baixo, entrar no terminal | falta: 'sidebar.focusWorktreeList' focar o container de scroll; 'worktree.navigateUp'/'worktree.navigateDown' keybindings; ignorar campos editáveis exceto .xterm-helper-textarea; no container: ArrowUp/Down/Enter/PageUp/Down/Home/End/espaço | components/sidebar/worktree-list/navigation/use-keyboard.ts:20-168
 - **D03a-060** — Seleção múltipla de worktrees (clique, Cmd/Ctrl, Shift, prune e limpeza) | falta: limpar a seleção por clique fora do container da lista; selectForContextMenu preservando a seleção | components/sidebar/worktree-list/navigation/use-selection.ts:17-156
 - **D03a-062** — Reveal de worktree: expandir ancestrais, rolar, destacar e iniciar rename | falta: MAX_REVEAL_RETRIES=8 com scrollToIndex virtual; iniciar rename (setRenamingWorktreeId); resolver outcome keep-pending quando o alvo some; expandir grupos de linhagem ancestrais | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:22-188
-- **D03a-063** — Reveal de uma row arbitrária do sidebar (inclusive headers) | falta: reveal de headers (project-group:/project:/repo:); toast 'Target no longer exists' e retry quando a row não existe | components/sidebar/worktree-list/navigation/use-pending-reveal.ts:190-304
 - **D03a-065** — Pedido de "revelar workspace atual" e diálogo de confirmação de filtros | falta: diálogo de confirmação 'Reveal hidden workspace?' quando filtros escondem o alvo; alternar groupBy para 'repo' quando a row é header; getKnownSidebarWorktreeById / reveal checks por identidade host-qualified; revalidação do alvo após await | components/sidebar/worktree-list/navigation/use-reveal-requests.ts:30-218
 - **D03a-067** — Lookups de render rows (key, contenção, índice preferido) | falta: rowKeyMatchesRenderRow; renderRowContainsWorktree; findPreferredRenderRowIndexForWorktree | components/sidebar/worktree-list/navigation/render-row-lookup.ts:10-135
 - **D03a-068** — Rolar um elemento já montado até a área visível do container | falta: reveal por optionId do row montado (Hydra usa data-worktree-path); consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado) | components/sidebar/worktree-list/navigation/mounted-row-reveal.ts:4-35
-- **D03a-071** — Keys de ancestrais que escondem uma row (project groups, repos, pinned) | falta: getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada) | components/sidebar/worktree-list/navigation/reveal-ancestors.ts:7-111
 - **D03a-072** — Linhas de aviso: criação em andamento, worktrees importadas escondidas, inbox de worktrees externas | falta: PendingWorktreeRow(creationId); canKeepImportedWorktreesHidden (placement repo-group e sem forceVisible); frame virtual absoluto data-worktree-virtual-row* | components/sidebar/worktree-list/rows/notice-rows.tsx:11-126
 - **D03a-073** — Indicador de path inexistente de folder workspace/project group | falta: isConfirmedStaleFolderPathStatus (cor destructive); tooltip com título + descrição detalhada; rota por host/SSH/runtime do status | backend: invoke('path_exists') -> src-tauri/src | components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx:14-47
 - **D03a-076** — Header de seção (repo, project group, status, Pinned) com colapso, drag e ações | falta: sticky (z-20/z-30) nos headers; variantes status/Pinned; data-workspace-status-drop-target / data-workspace-pin-drop-target; RepoIconGlyph com cor do projeto / RepoForkIndicator | components/sidebar/worktree-list/rows/SectionHeader.tsx:46-403

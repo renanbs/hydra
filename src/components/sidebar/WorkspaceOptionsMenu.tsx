@@ -7,6 +7,7 @@ import {
   SquareTerminal, 
   GitCommitHorizontal,
   Search,
+  Server,
   X
 } from "lucide-react";
 import { useAppStore } from "@/store";
@@ -40,6 +41,7 @@ export function countActiveWorkspaceFilters(options: WorkspaceDisplayOptions): n
   if (options.hideAutomationCreated) count += 1;
   if (options.hideCliCreated) count += 1;
   if (options.hideDetachedHead) count += 1;
+  if (options.hideWorkspacesFromOtherDevices) count += 1;
   count += options.filterProjectIds?.length ?? 0;
   return count;
 }
@@ -101,6 +103,8 @@ export interface WorkspaceDisplayOptions {
   hideDetachedHead: boolean;
   /** Orca `alwaysShowDefaultBranchWorkspace`: keep the default branch while hiding sleeping. */
   alwaysShowDefaultBranch: boolean;
+  /** Orca `hideWorkspacesFromOtherDevices`: sweep workspaces created on other devices. */
+  hideWorkspacesFromOtherDevices?: boolean;
   /** Orca `projectOrderBy`: how project headers are ordered in `repo` grouping. */
   projectsOrder?: "manual" | "recent";
   filterProjectIds?: string[];
@@ -748,6 +752,15 @@ export function WorkspaceOptionsMenu({
           checked={options.hideDetachedHead}
           onChange={(hideDetachedHead) => onOptionsChange({ ...options, hideDetachedHead })}
         />
+        <FilterToggleRow
+          icon={<Server className="w-3.5 h-3.5" />}
+          label="Hide other devices"
+          ariaLabel="Hide workspaces created on other devices"
+          checked={options.hideWorkspacesFromOtherDevices ?? false}
+          onChange={(hideWorkspacesFromOtherDevices) =>
+            onOptionsChange({ ...options, hideWorkspacesFromOtherDevices })
+          }
+        />
 
         <div className="flex items-center justify-between gap-2 px-2 pt-1">
           {countActiveWorkspaceFilters(options) > 0 ? (
@@ -762,6 +775,7 @@ export function WorkspaceOptionsMenu({
                 hideCliCreated: false,
                 hideDetachedHead: false,
                 alwaysShowDefaultBranch: false,
+                hideWorkspacesFromOtherDevices: false,
                 filterProjectIds: [],
               })
             }

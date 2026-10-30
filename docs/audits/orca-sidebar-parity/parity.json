@@ -5102,18 +5102,16 @@
    "components/sidebar/worktree-list/navigation/use-pending-reveal.ts:190-304"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:31-50",
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-110",
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-60",
+    "src/components/sidebar/WorktreeSidebar.tsx:700-760"
    ],
-   "missing_behaviors": [
-    "reveal de headers (project-group:/project:/repo:)",
-    "toast 'Target no longer exists' e retry quando a row não existe"
-   ],
-   "notes": "Reveal de item/folder agora passa pelo virtualizer e expande projeto/grupo; headers, toast de alvo ausente e retry não existem.",
+   "missing_behaviors": [],
+   "notes": "A queued row reveal now matches painted headers by key, switches to repo grouping, expands the section, retries for up to 8 frames and toasts when the target no longer exists.",
    "backend": [],
-   "note": "Reveal de item/folder agora passa pelo virtualizer e expande projeto/grupo; headers, toast de alvo ausente e retry não existem."
+   "note": "A queued row reveal now matches painted headers by key, switches to repo grouping, expands the section, retries for up to 8 frames and toasts when the target no longer exists."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5274,16 +5272,15 @@
    "components/sidebar/worktree-list/navigation/reveal-ancestors.ts:7-111"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:458-491"
+    "src/components/sidebar/sidebar-reveal-lookups.ts:70-95",
+    "src/components/sidebar/WorktreeSidebar.tsx:620-660"
    ],
-   "missing_behaviors": [
-    "getPinnedWorktreeRevealCollapsedGroupKeys (expandir a seção Pinned colapsada)"
-   ],
-   "notes": "O reveal expande projeto e project-group inline; a seção Pinned colapsada não é reaberta para o alvo.",
+   "missing_behaviors": [],
+   "notes": "Reveal expands the Pinned section and every project-group ancestor of a folder workspace before scrolling.",
    "backend": [],
-   "note": "O reveal expande projeto e project-group inline; a seção Pinned colapsada não é reaberta para o alvo."
+   "note": "Reveal expands the Pinned section and every project-group ancestor of a folder workspace before scrolling."
   },
   "domain": "D03a-worktree-list-module"
  },
