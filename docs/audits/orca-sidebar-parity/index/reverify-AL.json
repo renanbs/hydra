@@ -2,9 +2,51 @@
  "group": "AL",
  "generatedFrom": "2026-10-21 reveal/collapse increment: sticky-header reveal inset wired into the sidebar reveal, and All/Pinned collapse keys pass through to the row pipeline",
  "rows": [
-  {"id":"D15b-014","status":"parity","evidence":["src/components/sidebar/worktree-sidebar-reveal.ts:13-88","src/components/sidebar/WorktreeSidebar.tsx:552-563","src/components/sidebar/worktree-sidebar-reveal.parity.test.ts:60-105"],"missing_behaviors":[],"note":"Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible."},
-  {"id":"D03a-025","status":"parity","evidence":["src/components/sidebar/WorktreeList.tsx:110-131","src/components/sidebar/worktree-list/grouping/build-rows.ts:170-200","src/components/sidebar/WorktreeList.parity.test.tsx:122-167"],"missing_behaviors":[],"note":"Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests."},
-  {"id":"D03a-026","status":"partial","evidence":["src/components/sidebar/WorktreeList.tsx:137-150","src/components/sidebar/WorktreeList.parity.test.tsx:137-150"],"missing_behaviors":["ordem manual/sortOrder das folder rows (adapter zera sortOrder e descarta manualOrder)"],"note":"The All lane, its count, and its collapse are live; folder rows still order by name only."},
-  {"id":"D03a-068","status":"partial","evidence":["src/components/sidebar/worktree-sidebar-reveal.ts:64-88","src/components/sidebar/WorktreeSidebar.tsx:552-563"],"missing_behaviors":["reveal por optionId do row montado (Hydra usa data-worktree-path)","consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"],"note":"Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."}
+  {
+   "id": "D15b-014",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-reveal.ts:13-88",
+    "src/components/sidebar/WorktreeSidebar.tsx:552-563",
+    "src/components/sidebar/worktree-sidebar-reveal.parity.test.ts:60-105"
+   ],
+   "missing_behaviors": [],
+   "note": "Reveal math reserves the sticky header inset (28+6), aligns an above-viewport card to the top and a below-viewport card to the bottom, and returns null when fully visible."
+  },
+  {
+   "id": "D03a-025",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:110-131",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:170-200",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:122-167"
+   ],
+   "missing_behaviors": [],
+   "note": "Group-by modes paint their lanes and collapse keys reach the pipeline (All/Pinned pass through unprefixed); covered by parity tests."
+  },
+  {
+   "id": "D03a-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:79-90",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:189",
+    "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:70-77"
+   ],
+   "missing_behaviors": [],
+   "note": "Folder rows sort by manualOrder ?? sortOrder through the shared comparator; the persisted-order overlay restores worktree sortOrder/manualOrder before grouping."
+  },
+  {
+   "id": "D03a-068",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-sidebar-reveal.ts:64-88",
+    "src/components/sidebar/WorktreeSidebar.tsx:552-563"
+   ],
+   "missing_behaviors": [
+    "reveal por optionId do row montado (Hydra usa data-worktree-path)",
+    "consumo do scroll emitido pelo scroll-anchor (onScrollIssued não é passado)"
+   ],
+   "note": "Mounted-element reveal exists and reports the target through onScrollIssued; no caller consumes it yet."
+  }
  ]
 }

@@ -214,7 +214,7 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // resultado é um objeto fresco (nunca o blob mutado). filterProjectIds preenche
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
-  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch } = src;
+  const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder } = src;
   if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
   if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
   if (
@@ -225,9 +225,14 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   ) {
     return undefined;
   }
+  // Malformed/absent project order degrades to Manual, the persisted default.
+  if (projectsOrder !== undefined && projectsOrder !== "manual" && projectsOrder !== "recent") {
+    return undefined;
+  }
   return {
     groupBy,
     sortBy,
+    projectsOrder: projectsOrder === "recent" ? "recent" : "manual",
     hideSleeping,
     hideDefaultBranch,
     hideAutomationCreated,

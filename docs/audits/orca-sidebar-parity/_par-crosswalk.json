@@ -408,7 +408,7 @@
  "PAR-35": [
   {
    "id": "D03a-030",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D11-003",
@@ -418,7 +418,7 @@
  "PAR-82": [
   {
    "id": "D03a-032",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D03a-093",

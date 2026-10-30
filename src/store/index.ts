@@ -247,6 +247,9 @@ export interface AppState extends SshSlice {
   // from that blob.
   setWorkspaceHostScope: (scope: WorkspaceHostScope) => void
   setVisibleWorkspaceHostIds: (ids: readonly ExecutionHostId[] | null) => void
+  /** Persisted host-section tier order (Orca `workspaceHostOrder`). */
+  workspaceHostOrder: readonly ExecutionHostId[]
+  setWorkspaceHostOrder: (ids: readonly ExecutionHostId[]) => void
   // ─── Orca Compat: Actions ───
   setActiveBrowserPage: (...args: any[]) => any
   setActiveBrowserTab: (...args: any[]) => any

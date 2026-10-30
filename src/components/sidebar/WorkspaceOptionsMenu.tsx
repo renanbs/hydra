@@ -101,6 +101,8 @@ export interface WorkspaceDisplayOptions {
   hideDetachedHead: boolean;
   /** Orca `alwaysShowDefaultBranchWorkspace`: keep the default branch while hiding sleeping. */
   alwaysShowDefaultBranch: boolean;
+  /** Orca `projectOrderBy`: how project headers are ordered in `repo` grouping. */
+  projectsOrder?: "manual" | "recent";
   filterProjectIds?: string[];
 }
 
@@ -624,20 +626,41 @@ export function WorkspaceOptionsMenu({
             >
               <span>Project order</span>
               <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-                <span>Manual</span>
+                <span>{options.projectsOrder === "recent" ? "Recent" : "Manual"}</span>
                 <ChevronRight className="w-3 h-3 text-muted-foreground" />
               </span>
             </div>
             {openSubmenu === "projectOrder" && (
               <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
-                <button
-                  onClick={() => setOpenSubmenu(null)}
-                  className="w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] bg-accent text-foreground font-medium cursor-pointer"
-                >
-                  <span>Manual</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                </button>
-                <div className="px-2 py-1 text-[10px] text-muted-foreground">Drag to reorder projects</div>
+                {([
+                  { id: "manual", label: "Manual", hint: "Drag to reorder projects" },
+                  { id: "recent", label: "Recent", hint: "Most recent workspace activity" },
+                ] as const).map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      // Project order is its own choice, decoupled from workspace
+                      // sortBy (Orca `projectOrderBy`).
+                      onOptionsChange({ ...options, projectsOrder: option.id });
+                      setOpenSubmenu(null);
+                    }}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${
+                      (options.projectsOrder ?? "manual") === option.id
+                        ? "bg-accent text-foreground font-medium"
+                        : "text-popover-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <span>{option.label}</span>
+                    {(options.projectsOrder ?? "manual") === option.id ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    ) : null}
+                  </button>
+                ))}
+                <div className="px-2 py-1 text-[10px] text-muted-foreground">
+                  {(options.projectsOrder ?? "manual") === "recent"
+                    ? "Most recent workspace activity"
+                    : "Drag to reorder projects"}
+                </div>
               </div>
             )}
           </div>

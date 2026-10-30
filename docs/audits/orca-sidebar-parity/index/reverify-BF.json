@@ -1,0 +1,108 @@
+{
+ "group": "BF",
+ "generatedFrom": "2026-10-27 D03a grouping re-verification against the live tree, plus project-order wiring and host-section drag reorder",
+ "rows": [
+  {
+   "id": "D03a-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/group-sections.ts:193",
+    "src/components/sidebar/worktree-list/grouping/section-order.ts:91-108"
+   ],
+   "missing_behaviors": [],
+   "note": "Repo sections hoist the main worktree and disambiguate identical labels by path."
+  },
+  {
+   "id": "D03a-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/group-keys.ts:23-65",
+    "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:206-216"
+   ],
+   "missing_behaviors": [],
+   "note": "PR lanes render in Done/In review/In progress/Closed order with per-lane icon, tone and label."
+  },
+  {
+   "id": "D03a-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/row-types.ts:19-25",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:105-110"
+   ],
+   "missing_behaviors": [],
+   "note": "Pinned section honors the single-location/duplicate-in-groups policy from settings."
+  },
+  {
+   "id": "D03a-031",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:26-66",
+    "src/components/sidebar/worktree-list/grouping/build-rows.ts:189"
+   ],
+   "missing_behaviors": [],
+   "note": "One membership list feeds every Group by mode; each mode picks its lane without subtracting rows."
+  },
+  {
+   "id": "D03a-032",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/row-builders.ts:146",
+    "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-180"
+   ],
+   "missing_behaviors": [],
+   "note": "Lineage nesting, trail/last-child flags, collapse keys and cycle guards are all exercised by the parity test."
+  },
+  {
+   "id": "D03a-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/host-labels.ts:44-120",
+    "src/components/sidebar/SectionHeader.tsx:330-341"
+   ],
+   "missing_behaviors": [],
+   "note": "Host-qualified counts and mixed-checkout labels reach both section headers and notice rows."
+  },
+  {
+   "id": "D03a-038",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:33-140",
+    "src/components/sidebar/worktree-list/grouping/project-grouping.ts:1-120"
+   ],
+   "missing_behaviors": [],
+   "note": "Nested project groups, subtree counts and orphan fallback are covered."
+  },
+  {
+   "id": "D03a-039",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/project-grouping.ts:25-60"
+   ],
+   "missing_behaviors": [],
+   "note": "Grouping index keys by project/host/setup/path and caches per model in a WeakMap."
+  },
+  {
+   "id": "D03a-041",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/row-types.ts:1-130",
+    "src/components/sidebar/worktree-list/grouping/group-keys.ts:1-120"
+   ],
+   "missing_behaviors": [],
+   "note": "The row union and group-key helpers are consumed by the row builders and the painted render."
+  },
+  {
+   "id": "D03a-052",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/rendered-sidebar-worktree-order.ts:245-295",
+    "src/components/sidebar/host-section-order.ts:40-60",
+    "src/components/sidebar/WorktreeList.tsx:1696-1760"
+   ],
+   "missing_behaviors": [
+    "renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato"
+   ],
+   "note": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent."
+  }
+ ]
+}

@@ -2,16 +2,130 @@
  "group": "AN",
  "generatedFrom": "2026-10-27 sidebar sort/status increment: painted list delegates to the Orca comparator (smart/name/recent/project/manual), reads persisted manual order and activity, and routes lanes by persisted workspace status with the store's definitions",
  "rows": [
-  {"id":"D09-022","status":"parity","evidence":["src/components/sidebar/sidebar-session-attention.ts:53-105","src/components/sidebar/sidebar-worktree-sort.parity.test.ts:20-80","src/components/sidebar/WorktreeSidebar.tsx:779-810"],"missing_behaviors":[],"note":"Painted Agent Activity order uses Orca's classes (1 blocked/waiting, 2 fresh done, 3 working, 4 live-idle, 5 idle) and the freshest-event tie-break."},
-  {"id":"D09-023","status":"partial","evidence":["src/components/sidebar/sidebar-session-attention.ts:53-105"],"missing_behaviors":["fallback por heurística de título (permission -> classe 1, working -> classe 3) quando não há entrada de hook","propagação de `cause` da heurística de título"],"note":"Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path."},
-  {"id":"D09-028","status":"parity","evidence":["src/components/sidebar/sidebar-worktree-sort.ts:96-113","src/components/sidebar/sidebar-worktree-sort.parity.test.ts:150-170"],"missing_behaviors":[],"note":"Recent mode uses effectiveRecentActivity (createdAt + 5min create-grace floor bounded by now) through the shared comparator."},
-  {"id":"D09-029","status":"parity","evidence":["src/components/sidebar/sidebar-worktree-sort.ts:96-113","src/components/sidebar/sidebar-worktree-sort.parity.test.ts:172-190"],"missing_behaviors":[],"note":"Name mode uses getWorktreeSortLabel (trimmed displayName, else path basename, else id) keyed per row object."},
-  {"id":"D09-030","status":"parity","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96","src/components/sidebar/sidebar-worktree-sort.ts:28-46","src/components/sidebar/sidebar-worktree-sort.parity.test.ts:105-150"],"missing_behaviors":[],"note":"Menu offers Agent Activity/Name/Recent/Project/Manual and each maps onto the shared comparator; manual uses manualOrder with sortOrder fallback."},
-  {"id":"D09-031","status":"partial","evidence":["src/components/sidebar/sidebar-worktree-sort.ts:28-46","src/components/sidebar/smart-sort.ts:178-205"],"missing_behaviors":["cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status"],"note":"The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback."},
-  {"id":"D09-027","status":"partial","evidence":["src/components/sidebar/sidebar-worktree-sort.ts:96-113"],"missing_behaviors":["cold start do caminho pintado a partir do sortOrder persistido"],"note":"hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch."},
-  {"id":"D03a-028","status":"parity","evidence":["src/components/sidebar/WorktreeList.tsx:688-716","src/components/sidebar/WorktreeList.tsx:780-790","src/components/sidebar/WorktreeList.parity.test.tsx:169-215"],"missing_behaviors":[],"note":"Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count."},
-  {"id":"D03a-050","status":"partial","evidence":["src/components/sidebar/WorktreeSidebar.tsx:777-812","src/components/sidebar/sidebar-session-attention.ts:84-105"],"missing_behaviors":["SORT_SETTLE_MS=3000 de debounce","persistência da ordem Smart por host","telemetria smart_sort_*"],"note":"Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."},
-  {"id":"D03b-011","status":"partial","evidence":["src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96","src/components/sidebar/sidebar-worktree-sort.ts:28-46"],"missing_behaviors":["catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo"],"note":"Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent."},
-  {"id":"D03a-037","status":"partial","evidence":["src/components/sidebar/sidebar-worktree-sort.ts:28-46","src/components/sidebar/sidebar-worktree-sort.parity.test.ts:116-150"],"missing_behaviors":["getManualOrderAnchorRepo e ordenação de projetos por Project/Manual"],"note":"Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains."}
+  {
+   "id": "D09-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-session-attention.ts:53-105",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:20-80",
+    "src/components/sidebar/WorktreeSidebar.tsx:779-810"
+   ],
+   "missing_behaviors": [],
+   "note": "Painted Agent Activity order uses Orca's classes (1 blocked/waiting, 2 fresh done, 3 working, 4 live-idle, 5 idle) and the freshest-event tie-break."
+  },
+  {
+   "id": "D09-023",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-session-attention.ts:53-105"
+   ],
+   "missing_behaviors": [
+    "fallback por heurística de título (permission -> classe 1, working -> classe 3) quando não há entrada de hook",
+    "propagação de `cause` da heurística de título"
+   ],
+   "note": "Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path."
+  },
+  {
+   "id": "D09-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:150-170"
+   ],
+   "missing_behaviors": [],
+   "note": "Recent mode uses effectiveRecentActivity (createdAt + 5min create-grace floor bounded by now) through the shared comparator."
+  },
+  {
+   "id": "D09-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:172-190"
+   ],
+   "missing_behaviors": [],
+   "note": "Name mode uses getWorktreeSortLabel (trimmed displayName, else path basename, else id) keyed per row object."
+  },
+  {
+   "id": "D09-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+    "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:105-150"
+   ],
+   "missing_behaviors": [],
+   "note": "Menu offers Agent Activity/Name/Recent/Project/Manual and each maps onto the shared comparator; manual uses manualOrder with sortOrder fallback."
+  },
+  {
+   "id": "D09-031",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
+    "src/components/sidebar/smart-sort.ts:178-205"
+   ],
+   "missing_behaviors": [
+    "cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status"
+   ],
+   "note": "The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback."
+  },
+  {
+   "id": "D09-027",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/sidebar-worktree-sort.ts:96-113"
+   ],
+   "missing_behaviors": [
+    "cold start do caminho pintado a partir do sortOrder persistido"
+   ],
+   "note": "hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch."
+  },
+  {
+   "id": "D03a-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx:688-716",
+    "src/components/sidebar/WorktreeList.tsx:780-790",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:169-215"
+   ],
+   "missing_behaviors": [],
+   "note": "Lanes read the persisted workspaceStatus and the store's definitions; agent activity no longer overwrites the lane, and the lane header keeps label/tone/icon/count."
+  },
+  {
+   "id": "D03a-050",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:777-812",
+    "src/components/sidebar/sidebar-session-attention.ts:84-105"
+   ],
+   "missing_behaviors": [
+    "SORT_SETTLE_MS=3000 de debounce",
+    "persistência da ordem Smart por host",
+    "telemetria smart_sort_*"
+   ],
+   "note": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."
+  },
+  {
+   "id": "D03b-011",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
+    "src/components/sidebar/sidebar-worktree-sort.ts:28-46"
+   ],
+   "missing_behaviors": [
+    "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo"
+   ],
+   "note": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent."
+  },
+  {
+   "id": "D03a-037",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-670",
+    "src/components/sidebar/WorktreeList.tsx:833",
+    "src/components/sidebar/worktree-list/grouping/section-order.ts:152-200"
+   ],
+   "missing_behaviors": [],
+   "note": "Project order is now a real Manual/Recent choice; repoOrder comes from the visible repo order and the anchor picks the lowest-ranked repo in a multi-host group."
+  }
  ]
 }

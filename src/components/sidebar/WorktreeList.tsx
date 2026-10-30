@@ -106,6 +106,8 @@ import {
 import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
 import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
 import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
+import { moveHostSectionForDrop } from "./host-section-order";
+import type { ExecutionHostId } from "../../shared/execution-host";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
 //
@@ -387,6 +389,8 @@ export interface WorktreeListProps {
    * panel routes it through the same write path the HTML5 drop uses.
    */
   onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
+  /** Orca `handleReorderHostSections`: persist the host-section order after a drag. */
+  onReorderHostSections?: (orderedHostIds: ExecutionHostId[]) => void;
   /**
    * The app's own workspace-status write (`set_worktree_status` + the local worktree
    * maps). A sidebar row dragged onto an open workspace board commits through it, so the
@@ -512,10 +516,20 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
   row,
   isCollapsed,
   onToggleCollapse,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDropTarget,
 }: {
   row: HostHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  onDragStart?: (event: React.DragEvent) => void;
+  onDragOver?: (event: React.DragEvent) => void;
+  onDrop?: (event: React.DragEvent) => void;
+  onDragEnd?: () => void;
+  isDropTarget?: boolean;
 }): React.JSX.Element {
   return (
     <div
@@ -524,7 +538,15 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={row.label}
       data-host-header-id={row.hostId}
-      className="group/host-header relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
+      draggable={Boolean(onDragStart)}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "group/host-header relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
+        isDropTarget && "bg-worktree-sidebar-accent/60"
+      )}
       style={{ paddingLeft: WORKTREE_SECTION_HEADER_PADDING_LEFT }}
       onClick={onToggleCollapse}
       onKeyDown={(e) => {
@@ -605,6 +627,7 @@ export function WorktreeList({
   worktreeDropTarget,
   scrollRef,
   onReorderWorktreesInGroup,
+  onReorderHostSections,
   onAssignWorktreeStatus,
   lineageByPath,
   worktreeMetadataByPath,
@@ -832,6 +855,7 @@ export function WorktreeList({
       runtimeEnvironments: storeRuntimeEnvironments,
       runtimeStatusByEnvironmentId: storeRuntimeStatusByEnvironmentId,
       prCache: buildPRCache({ worktrees: candidates, repos: pipelineRepos, prByPath }),
+      projectOrderBy: displayOptions.projectsOrder ?? "manual",
       hostedReviewCache: null,
     };
 
@@ -873,6 +897,7 @@ export function WorktreeList({
     unreadSet,
     hiddenWorktreesByProject,
     displayOptions.groupBy,
+    displayOptions.projectsOrder,
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
     displayOptions.hideSleeping,
@@ -1666,6 +1691,57 @@ export function WorktreeList({
     ]
   );
 
+  // ─── Host-section drag reorder (D03a-052) ──────────────────────────────────
+  //
+  // Orca lets a host header be dragged over another header to repersist the tier
+  // order. The drop speaks the painted order, so collapsed/hidden hosts never
+  // enter it, and the click that ends a drag never collapses the section.
+  const draggedHostIdRef = useRef<ExecutionHostId | null>(null);
+  const [dropTargetHostId, setDropTargetHostId] = useState<ExecutionHostId | null>(null);
+  const renderedHostIds = useMemo(
+    () => rows.filter((row) => row.type === "host-header").map((row) => row.hostId),
+    [rows]
+  );
+
+  const handleHostDragStart = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
+    draggedHostIdRef.current = hostId;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("application/x-hydra-host-id", hostId);
+  }, []);
+
+  const handleHostDragOver = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
+    if (!draggedHostIdRef.current || draggedHostIdRef.current === hostId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropTargetHostId(hostId);
+  }, []);
+
+  const handleHostDrop = useCallback((hostId: ExecutionHostId) => (event: React.DragEvent) => {
+    event.preventDefault();
+    const draggedHostId = draggedHostIdRef.current;
+    draggedHostIdRef.current = null;
+    setDropTargetHostId(null);
+    if (!draggedHostId || !onReorderHostSections) return;
+    if (!renderedHostIds.includes(draggedHostId)) return;
+    onReorderHostSections(
+      moveHostSectionForDrop(renderedHostIds, draggedHostId, hostId)
+    );
+  }, [onReorderHostSections, renderedHostIds]);
+
+  const handleHostDragEnd = useCallback(() => {
+    draggedHostIdRef.current = null;
+    setDropTargetHostId(null);
+  }, []);
+
+  const toggleHostCollapse = useCallback((hostId: ExecutionHostId) => {
+    // A drop fires dragend after the click; never collapse on that ghost click.
+    if (draggedHostIdRef.current) {
+      draggedHostIdRef.current = null;
+      return;
+    }
+    onToggleGroupCollapse(hostId);
+  }, [onToggleGroupCollapse]);
+
   /**
    * Row content for one virtual slot. The viewport owns the slot (position, measurement,
    * listbox identity) and the scroll anchor; this decides what a row paints and which
@@ -1680,7 +1756,16 @@ export function WorktreeList({
               key={row.key}
               row={row}
               isCollapsed={collapsedGroups.has(row.key)}
-              onToggleCollapse={slot.toggleCollapse}
+              onToggleCollapse={() => toggleHostCollapse(row.hostId)}
+              onDragStart={
+                onReorderHostSections ? handleHostDragStart(row.hostId) : undefined
+              }
+              onDragOver={
+                onReorderHostSections ? handleHostDragOver(row.hostId) : undefined
+              }
+              onDrop={onReorderHostSections ? handleHostDrop(row.hostId) : undefined}
+              onDragEnd={onReorderHostSections ? handleHostDragEnd : undefined}
+              isDropTarget={dropTargetHostId === row.hostId}
             />
           );
         case "header": {

@@ -562,16 +562,15 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:88-96"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:137-150",
-     "src/components/sidebar/WorktreeList.parity.test.tsx:137-150"
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:79-90",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:189",
+     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:70-77"
     ],
-    "missing_behaviors": [
-     "ordem manual/sortOrder das folder rows (adapter zera sortOrder e descarta manualOrder)"
-    ],
-    "notes": "The All lane, its count, and its collapse are live; folder rows still order by name only.",
-    "note": "The All lane, its count, and its collapse are live; folder rows still order by name only."
+    "missing_behaviors": [],
+    "notes": "Folder rows sort by manualOrder ?? sortOrder through the shared comparator; the persisted-order overlay restores worktree sortOrder/manualOrder before grouping.",
+    "note": "Folder rows sort by manualOrder ?? sortOrder through the shared comparator; the persisted-order overlay restores worktree sortOrder/manualOrder before grouping."
    }
   },
   {
@@ -583,17 +582,14 @@
     "components/sidebar/worktree-list/grouping/section-order.ts:66-74"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:250-285",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:82"
+     "src/components/sidebar/worktree-list/grouping/group-sections.ts:193",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:91-108"
     ],
-    "missing_behaviors": [
-     "worktree principal primeiro na seção",
-     "desambiguação de label por path (#16127)"
-    ],
-    "notes": "Seções por projeto com header; falta worktree principal primeiro e desambiguação por path.",
-    "note": "Seções por projeto com header; falta worktree principal primeiro e desambiguação por path."
+    "missing_behaviors": [],
+    "notes": "Repo sections hoist the main worktree and disambiguate identical labels by path.",
+    "note": "Repo sections hoist the main worktree and disambiguate identical labels by path."
    }
   },
   {
@@ -624,18 +620,14 @@
     "components/sidebar/worktree-list/grouping/worktree-grouping.ts:208-215"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:23",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:108",
-     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:208-215"
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:23-65",
+     "src/components/sidebar/worktree-list/grouping/worktree-grouping.ts:206-216"
     ],
-    "missing_behaviors": [
-     "lanes Done/In review/In progress/Closed visíveis",
-     "ícones/tons dedicados por lane",
-     "cache de PR repo-scoped no render"
-    ],
-    "notes": "PR_GROUP_ORDER/getPRGroupKey existem no pipeline headless; não há lane de PR renderizada no sidebar pintado."
+    "missing_behaviors": [],
+    "notes": "PR lanes render in Done/In review/In progress/Closed order with per-lane icon, tone and label.",
+    "note": "PR lanes render in Done/In review/In progress/Closed order with per-lane icon, tone and label."
    }
   },
   {
@@ -647,18 +639,14 @@
     "components/sidebar/worktree-list/grouping/build-rows.ts:100-153"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:374",
-     "src/components/sidebar/worktree-list/grouping/pinned-group-rows.ts:17"
+     "src/components/sidebar/worktree-list/grouping/row-types.ts:19-25",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:105-110"
     ],
-    "missing_behaviors": [
-     "seção Pinned renderizada com header/contagem por host",
-     "política single-location vs duplicate-in-groups no render",
-     "pinned-fallback do card de imported worktrees"
-    ],
-    "notes": "Pin segue como Set de paths; seção Pinned dedicada e policy de display não pintam.",
-    "note": "Pin segue como Set de paths; seção Pinned dedicada e policy de display não pintam."
+    "missing_behaviors": [],
+    "notes": "Pinned section honors the single-location/duplicate-in-groups policy from settings.",
+    "note": "Pinned section honors the single-location/duplicate-in-groups policy from settings."
    },
    "par": [
     "PAR-35"
@@ -672,18 +660,14 @@
     "components/sidebar/worktree-list/grouping/project-group-sections.ts:57-71"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:511-534",
-     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:19"
+     "src/components/sidebar/worktree-list/grouping/folder-workspace-lanes.ts:26-66",
+     "src/components/sidebar/worktree-list/grouping/build-rows.ts:189"
     ],
-    "missing_behaviors": [
-     "membership única por getRenderableFolderWorkspaces",
-     "lane por status/pr/none",
-     "ordem manualOrder/sortOrder+name"
-    ],
-    "notes": "Folder workspaces pintam sob repo; demais modos/lanes não.",
-    "note": "Folder workspaces pintam sob repo; demais modos/lanes não."
+    "missing_behaviors": [],
+    "notes": "One membership list feeds every Group by mode; each mode picks its lane without subtracting rows.",
+    "note": "One membership list feeds every Group by mode; each mode picks its lane without subtracting rows."
    }
   },
   {
@@ -694,19 +678,14 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:98-106"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/components/sidebar/worktree-list/grouping/row-builders.ts:146",
-     "src/components/sidebar/worktree-lineage-projection.ts:15",
-     "src/components/sidebar/worktree-lineage-projection.ts:105"
+     "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-180"
     ],
-    "missing_behaviors": [
-     "árvore pai/filho renderizada inline",
-     "lineageTrail/isLastLineageChild",
-     "colapso por lineageGroupKey",
-     "proteção de ciclo no render"
-    ],
-    "notes": "A projeção de linhagem (com WeakMap e detecção de ciclos) e o row-builder existem e são alcançáveis, mas o card pintado não aninha filhos (WorktreeList não passa lineageChildren)."
+    "missing_behaviors": [],
+    "notes": "Lineage nesting, trail/last-child flags, collapse keys and cycle guards are all exercised by the parity test.",
+    "note": "Lineage nesting, trail/last-child flags, collapse keys and cycle guards are all exercised by the parity test."
    },
    "par": [
     "PAR-82"
@@ -791,18 +770,14 @@
     "components/sidebar/worktree-list/grouping/host-labels.ts:44-246"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:44",
+     "src/components/sidebar/worktree-list/grouping/host-labels.ts:44-120",
      "src/components/sidebar/SectionHeader.tsx:330-341"
     ],
-    "missing_behaviors": [
-     "counts/ids por host no header",
-     "labels de contexto misto por repo",
-     "notice host context labels"
-    ],
-    "notes": "Desambiguação de host parcial; headers de host não renderizam como seções dedicadas.",
-    "note": "Desambiguação de host parcial; headers de host não renderizam como seções dedicadas."
+    "missing_behaviors": [],
+    "notes": "Host-qualified counts and mixed-checkout labels reach both section headers and notice rows.",
+    "note": "Host-qualified counts and mixed-checkout labels reach both section headers and notice rows."
    }
   },
   {
@@ -814,16 +789,15 @@
     "components/sidebar/worktree-list/grouping/project-group-sections.ts:41-55"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
-     "src/components/sidebar/sidebar-worktree-sort.parity.test.ts:116-150"
+     "src/components/sidebar/WorkspaceOptionsMenu.tsx:620-670",
+     "src/components/sidebar/WorktreeList.tsx:833",
+     "src/components/sidebar/worktree-list/grouping/section-order.ts:152-200"
     ],
-    "missing_behaviors": [
-     "getManualOrderAnchorRepo e ordenação de projetos por Project/Manual"
-    ],
-    "notes": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains.",
-    "note": "Recent is reachable and Manual reads persisted manualOrder; project-level manual anchoring remains."
+    "missing_behaviors": [],
+    "notes": "Project order is now a real Manual/Recent choice; repoOrder comes from the visible repo order and the anchor picks the lowest-ranked repo in a multi-host group.",
+    "note": "Project order is now a real Manual/Recent choice; repoOrder comes from the visible repo order and the anchor picks the lowest-ranked repo in a multi-host group."
    }
   },
   {
@@ -834,18 +808,14 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:69-76"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:463-556",
-     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:19-140"
+     "src/components/sidebar/worktree-list/grouping/project-group-sections.ts:33-140",
+     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:1-120"
     ],
-    "missing_behaviors": [
-     "subgrupos aninhados (parentGroupId)",
-     "contagem de subtree completa",
-     "órfãos sem metadata caem no nível raiz"
-    ],
-    "notes": "Grupos de projeto pintam; nomes/contagens divergem do Orca.",
-    "note": "Grupos de projeto pintam; nomes/contagens divergem do Orca."
+    "missing_behaviors": [],
+    "notes": "Nested project groups, subtree counts and orphan fallback are covered.",
+    "note": "Nested project groups, subtree counts and orphan fallback are covered."
    }
   },
   {
@@ -855,18 +825,13 @@
     "components/sidebar/worktree-list/grouping/project-grouping.ts:14-165"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:14",
-     "src/components/sidebar/WorktreeList.tsx:250-285"
+     "src/components/sidebar/worktree-list/grouping/project-grouping.ts:25-60"
     ],
-    "missing_behaviors": [
-     "surface key projectId::hostId::execução::path",
-     "headers por setup de checkout ambíguo",
-     "cache WeakMap"
-    ],
-    "notes": "Agrupamento por projeto parcial.",
-    "note": "Agrupamento por projeto parcial."
+    "missing_behaviors": [],
+    "notes": "Grouping index keys by project/host/setup/path and caches per model in a WeakMap.",
+    "note": "Grouping index keys by project/host/setup/path and caches per model in a WeakMap."
    }
   },
   {
@@ -897,16 +862,14 @@
     "components/sidebar/worktree-list/grouping/group-keys.ts:21-106"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/grouping/row-types.ts:8",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:23",
-     "src/components/sidebar/worktree-list/grouping/group-keys.ts:108"
+     "src/components/sidebar/worktree-list/grouping/row-types.ts:1-130",
+     "src/components/sidebar/worktree-list/grouping/group-keys.ts:1-120"
     ],
-    "missing_behaviors": [
-     "GroupHeaderRow/WorktreeRow consumidos pelo render"
-    ],
-    "notes": "Os tipos e keys de agrupamento estão portados e são alcançáveis pelo pipeline headless (build-rows/group-sections), mas não pelo render pintado."
+    "missing_behaviors": [],
+    "notes": "The row union and group-key helpers are consumed by the row builders and the painted render.",
+    "note": "The row union and group-key helpers are consumed by the row builders and the painted render."
    }
   },
   {
@@ -1120,18 +1083,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/host-section-rows.ts:166",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:56-104",
-     "src/components/sidebar/WorktreeList.tsx:463-556"
+     "src/components/sidebar/rendered-sidebar-worktree-order.ts:245-295",
+     "src/components/sidebar/host-section-order.ts:40-60",
+     "src/components/sidebar/WorktreeList.tsx:1696-1760"
     ],
     "missing_behaviors": [
-     "addHostSectionRows envoltas no render",
-     "pending creations por useShallow",
-     "renderedSidebarRowKeys",
-     "handleReorderHostSections"
+     "renderedSidebarRowKeys (conjunto de keys das rows renderizadas) não existe como contrato"
     ],
-    "notes": "Ordem renderizada/atalhos parcial.",
-    "note": "Ordem renderizada/atalhos parcial."
+    "notes": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent.",
+    "note": "Host section tier drag reorder and pending-creation keys now exist; only the rendered-keys set is still absent."
    }
   },
   {

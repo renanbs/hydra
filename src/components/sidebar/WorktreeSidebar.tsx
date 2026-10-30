@@ -71,6 +71,7 @@ const defaultDisplayOptions: WorkspaceDisplayOptions = {
   hideCliCreated: false,
   hideDetachedHead: false,
   alwaysShowDefaultBranch: false,
+  projectsOrder: "manual",
 };
 
 export function WorktreeSidebar({
@@ -493,6 +494,7 @@ export function WorktreeSidebar({
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
+  const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder);
   const handleClearSidebarFilters = useCallback(() => {
     const next: WorkspaceDisplayOptions = {
       ...displayOptions,
@@ -1244,6 +1246,7 @@ export function WorktreeSidebar({
               worktreeDropTarget={worktreeDropTarget}
               scrollRef={worktreeScrollRef}
               onReorderWorktreesInGroup={commitReorderedWorktrees}
+              onReorderHostSections={setWorkspaceHostOrder}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
               pendingWorktreeCreations={pendingWorktreeCreations}
