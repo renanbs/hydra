@@ -508,6 +508,85 @@ async fn create_worktree(
     .map_err(|e| e.to_string())?
 }
 
+/// One target of a batch removal. Paths are absolute; `force` is per target because
+/// the dialog resolves dirty-change counts separately.
+#[derive(serde::Deserialize)]
+pub struct BatchDeleteTarget {
+    pub repo_path: String,
+    pub worktree_path: String,
+    #[serde(default)]
+    pub force: bool,
+}
+
+#[derive(serde::Serialize)]
+pub struct BatchDeleteFailure {
+    pub worktree_path: String,
+    pub error: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct BatchDeleteResult {
+    pub deleted: Vec<String>,
+    pub failures: Vec<BatchDeleteFailure>,
+}
+
+/// True when `path` lives inside `ancestor` (or is it). Used to stop a parent removal
+/// after a child failed: Git would delete the failed child as untracked content.
+fn path_is_inside_or_equal(ancestor: &str, path: &str) -> bool {
+    let a = ancestor.trim_end_matches(['/', '\\']);
+    let p = path.trim_end_matches(['/', '\\']);
+    p == a || p.starts_with(&format!("{a}/")) || p.starts_with(&format!("{a}\\"))
+}
+
+#[tauri::command]
+async fn delete_worktrees_batch(
+    state: State<'_, AppState>,
+    targets: Vec<BatchDeleteTarget>,
+) -> Result<BatchDeleteResult, String> {
+    let terminal = state.terminal.clone();
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut deleted = Vec::new();
+        let mut failures: Vec<BatchDeleteFailure> = Vec::new();
+        // Why sequential: the payload is post-order per repo (child before parent) and
+        // git worktree removal shares repo locks. Independent repos may arrive
+        // interleaved; order within the list is still child-first.
+        for target in targets {
+            if failures
+                .iter()
+                .any(|failure| path_is_inside_or_equal(&failure.worktree_path, &target.worktree_path))
+            {
+                failures.push(BatchDeleteFailure {
+                    worktree_path: target.worktree_path.clone(),
+                    error: "blocked: a descendant failed to delete".to_string(),
+                });
+                continue;
+            }
+            let doomed: Vec<String> = db
+                .list_sessions(Some(&target.worktree_path))
+                .unwrap_or_default()
+                .into_iter()
+                .filter(|session| !session.project_path.is_empty())
+                .map(|session| session.id)
+                .collect();
+            for id in &doomed {
+                let _ = terminal.close_session(id);
+                let _ = db.delete_session(id);
+            }
+            match remove_git_worktree(&target.repo_path, &target.worktree_path, target.force) {
+                Ok(()) => deleted.push(target.worktree_path),
+                Err(error) => failures.push(BatchDeleteFailure {
+                    worktree_path: target.worktree_path,
+                    error,
+                }),
+            }
+        }
+        BatchDeleteResult { deleted, failures }
+    })
+    .await
+    .map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 async fn delete_worktree(
     state: State<'_, AppState>,
@@ -1620,6 +1699,7 @@ pub fn run() {
             clone_project,
             create_worktree,
             delete_worktree,
+            delete_worktrees_batch,
             set_worktree_display_name,
             get_worktree_metadata,
             list_worktree_metadata,
@@ -1691,4 +1771,23 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");
+}
+
+#[cfg(test)]
+mod batch_delete_tests {
+    use super::path_is_inside_or_equal;
+
+    #[test]
+    fn containment_blocks_parent_after_failed_child() {
+        assert!(path_is_inside_or_equal("/repo/wt", "/repo/wt"));
+        assert!(path_is_inside_or_equal("/repo/wt", "/repo/wt/child"));
+        assert!(!path_is_inside_or_equal("/repo/wt", "/repo/wt-sibling"));
+        assert!(!path_is_inside_or_equal("/repo/wt", "/repo/other"));
+    }
+
+    #[test]
+    fn containment_handles_trailing_separators() {
+        assert!(path_is_inside_or_equal("/repo/wt/", "/repo/wt/child/"));
+        assert!(path_is_inside_or_equal("/repo/wt/", "/repo/wt"));
+    }
 }
