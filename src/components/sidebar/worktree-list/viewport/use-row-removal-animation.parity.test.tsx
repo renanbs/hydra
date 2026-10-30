@@ -11,6 +11,7 @@ import type { HostSectionRow } from "../../host-section-rows";
 import {
   WORKTREE_ROW_REMOVAL_ANIMATION_MS,
   buildVirtualRowRemovalMotions,
+  getSidebarRowIdentityKeys,
   useVirtualRowRemovalAnimation,
   type VirtualRowLayoutSnapshot,
 } from "./use-row-removal-animation";
@@ -52,6 +53,7 @@ function item(index: number, start: number, key: string): VirtualItem {
 describe("buildVirtualRowRemovalMotions", () => {
   it("moves surviving rows from their pre-delete viewport positions", () => {
     const motions = buildVirtualRowRemovalMotions({
+      rekeyedRowKeys: new Map(),
       previous: snapshot({
         identities: ["wt:a", "wt:b", "wt:c"],
         scrollTop: 100,
@@ -76,6 +78,7 @@ describe("buildVirtualRowRemovalMotions", () => {
 
   it("does not double-move rows when anchor restoration offsets a deletion above the viewport", () => {
     const motions = buildVirtualRowRemovalMotions({
+      rekeyedRowKeys: new Map(),
       previous: snapshot({
         identities: ["wt:deleted", "wt:a"],
         scrollTop: 240,
@@ -100,6 +103,7 @@ describe("buildVirtualRowRemovalMotions", () => {
 
     expect(
       buildVirtualRowRemovalMotions({
+      rekeyedRowKeys: new Map(),
         previous,
         current: snapshot({
           identities: ["wt:a", "wt:b"],
@@ -113,6 +117,7 @@ describe("buildVirtualRowRemovalMotions", () => {
   it("ignores a window that only remeasured, and a deletion below the window", () => {
     expect(
       buildVirtualRowRemovalMotions({
+      rekeyedRowKeys: new Map(),
         previous: snapshot({
           identities: ["wt:a", "wt:b"],
           scrollTop: 0,
@@ -135,6 +140,7 @@ describe("buildVirtualRowRemovalMotions", () => {
     // "wt:deleted" sat below the window, so nothing the user can see moved.
     expect(
       buildVirtualRowRemovalMotions({
+      rekeyedRowKeys: new Map(),
         previous: snapshot({
           identities: ["wt:a", "wt:b", "wt:deleted"],
           scrollTop: 0,
@@ -155,6 +161,46 @@ describe("buildVirtualRowRemovalMotions", () => {
       })
     ).toEqual([]);
   });
+
+  it("tracks folded lineage members so deleting an inline child is seen as a removal", () => {
+    const rows = [
+      {
+        type: "lineage-group",
+        key: "all:lineage:parent",
+        rows: [itemRow("parent"), itemRow("child")],
+      },
+      itemRow("next"),
+    ] as never;
+
+    expect(getSidebarRowIdentityKeys(rows)).toEqual(
+      new Set(["wt:parent", "wt:child", "wt:next"])
+    );
+  });
+
+  it("follows a parent that re-keyed into a lineage group without treating it as a delete", () => {
+    const motions = buildVirtualRowRemovalMotions({
+      previous: snapshot({
+        identities: ["wt:parent", "wt:next"],
+        scrollTop: 0,
+        starts: [
+          ["wt:parent", 0],
+          ["wt:next", 116],
+        ],
+      }),
+      current: snapshot({
+        identities: ["lineage-group:all:lineage:parent", "wt:next"],
+        scrollTop: 0,
+        starts: [
+          ["lineage-group:all:lineage:parent", 0],
+          ["wt:next", 240],
+        ],
+      }),
+      rekeyedRowKeys: new Map([["wt:parent", "lineage-group:all:lineage:parent"]]),
+    });
+
+    // The parent kept its slot; only the row the expanded group pushed down moves.
+    expect(motions).toEqual([{ key: "wt:next", deltaY: -124 }]);
+  });
 });
 
 function RemovalHarness({
@@ -166,7 +212,12 @@ function RemovalHarness({
 }): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rows = items.map((entry) => itemRow(String(entry.key).replace(/^wt:/, "")));
-  useVirtualRowRemovalAnimation({ rows, scrollRef, virtualItems: items });
+  useVirtualRowRemovalAnimation({
+    rows,
+    rekeyedRowKeys: new Map(),
+    scrollRef,
+    virtualItems: items,
+  });
   return (
     <div data-worktree-sidebar ref={scrollRef}>
       {items.map((entry) => (

@@ -5,10 +5,10 @@
 // anchor pinned to a row identity across row churn, publishes the sticky-header slots the
 // render pass reads out of refs, and animates the rows a removal pushed up.
 //
-// Adapted to Hydra: Orca also re-measures on its PR / issue cache growth from here, and its
-// rekey map follows `lineage-group` rows; Hydra's viewport has no equivalent cache
-// subscription and paints no lineage folds, so the port keeps pruning, re-measurement, the
-// anchor, the sticky slots and the removal animation.
+// Adapted to Hydra: Orca also re-measures on its PR / issue cache growth from here; Hydra's
+// viewport has no equivalent cache subscription, so the port keeps pruning, re-measurement,
+// the anchor, the sticky slots and the removal animation. The lineage rekey map (D03a-080)
+// is shared with the anchor and the removal animation.
 import { useCallback, useLayoutEffect, useMemo } from 'react'
 import type React from 'react'
 import {
@@ -16,12 +16,13 @@ import {
   type VirtualizedScrollAnchor
 } from '@/hooks/useVirtualizedScrollAnchor'
 import {
+  buildLineageRowRekeyMap,
   getActiveStickyIndexesForScroll,
   getVirtualRowKey,
   pruneStaleVirtualRowElementCache
 } from './virtual-rows'
 import { getRenderRowKey } from '../listing/render-row'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
 import type { WorktreeListVirtualizer } from './use-virtualizer'
 import { useVirtualRowRemovalAnimation } from './use-row-removal-animation'
 
@@ -31,7 +32,7 @@ export type VirtualRowMeasurementSync = {
 }
 
 export type VirtualRowMeasurementSyncArgs = {
-  rows: HostSectionRow[]
+  rows: RenderRow[]
   virtualization: WorktreeListVirtualizer
   scrollRef: React.RefObject<HTMLDivElement | null>
   scrollOffsetRef: React.MutableRefObject<number>
@@ -54,6 +55,9 @@ export function useVirtualRowMeasurementSync(
   } = args
   const { virtualizer, isCurrentVirtualRowElement } = virtualization
   const activeRenderRowKeys = useMemo(() => new Set(rows.map(getRenderRowKey)), [rows])
+  // Why: a parent's key flips between `wt:` and `lineage-group:` when its first child
+  // appears, without moving; the anchor and the removal animation follow the rekey.
+  const lineageRowRekeys = useMemo(() => buildLineageRowRekeyMap(rows), [rows])
   const totalSize = virtualizer.getTotalSize()
   const virtualItems = virtualizer.getVirtualItems()
   // Why: the pinned slots are resolved during render (not in an effect) so the row wrappers
@@ -105,6 +109,7 @@ export function useVirtualRowMeasurementSync(
     getItemElementKey: getVirtualRowKey,
     getRowKey: getRenderRowKey,
     itemElementSelector: '[data-worktree-virtual-row]',
+    rekeyedRowKeys: lineageRowRekeys,
     rows,
     scrollElementRef: scrollRef,
     scrollOffsetRef,
@@ -114,7 +119,7 @@ export function useVirtualRowMeasurementSync(
     virtualizer
   })
 
-  useVirtualRowRemovalAnimation({ rows, scrollRef, virtualItems })
+  useVirtualRowRemovalAnimation({ rows, rekeyedRowKeys: lineageRowRekeys, scrollRef, virtualItems })
 
   return { virtualItems, measureVirtualRowElement }
 }

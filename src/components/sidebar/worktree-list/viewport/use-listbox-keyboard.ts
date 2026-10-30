@@ -6,8 +6,8 @@
 //
 // Adapted to Hydra:
 //  - the cycle itself reuses the repo's own row-cycling module (`worktree-list/keyboard-cycle`),
-//    which is vocabulary-agnostic; the painted rows are `HostSectionRow`s, so the focus keys are
-//    built from item rows here instead of from the legacy `SidebarRow` projection;
+//    which is vocabulary-agnostic; the painted rows are `RenderRow`s, so the focus keys are
+//    built from the item rows they expose (a lineage group exposes its whole subtree);
 //  - activating a row routes through Hydra's `onSelectGitWorktree` (the panel records history);
 //  - Enter on the container enters the terminal, exactly as Orca's `use-keyboard.ts` does: the
 //    listbox keeps focus (roving via `aria-activedescendant`), so the hidden xterm textarea is
@@ -19,8 +19,9 @@ import type { Virtualizer } from '@tanstack/react-virtual'
 import { useAppStore } from '@/store'
 import { keybindingMatchesAction } from '@/shared/keybindings'
 import { getShortcutPlatform } from '@/lib/shortcut-platform'
-import type { HostSectionRow } from '../../host-section-rows'
 import type { PinnedWorktreeDisplayPolicy, WorktreeRow } from '../grouping/row-types'
+import type { RenderRow } from '../listing/render-row'
+import { getRenderRowItemRows } from '../listing/render-row'
 import { getPreferredWorktreeRows } from '../../worktree-sidebar-row-preference'
 import { resolveCycledFocusKey, type FocusableRowKey } from '../keyboard-cycle'
 
@@ -50,7 +51,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 export function useWorktreeListKeyboardNavigation(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   activeRowKey: string | null
   pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy
   onActivateRow: (row: WorktreeRow) => void
@@ -72,12 +73,13 @@ export function useWorktreeListKeyboardNavigation(args: {
   const navigableRows = useMemo(() => {
     const indexByRowKey = new Map<string, number>()
     const itemRows: WorktreeRow[] = []
+    // Why: a folded lineage group owns one virtual slot, so every child it paints maps to
+    // that same slot index; arrows still visit each child as its own focus stop.
     rows.forEach((row, index) => {
-      if (row.type !== 'item') {
-        return
+      for (const item of getRenderRowItemRows(row)) {
+        indexByRowKey.set(item.rowKey, index)
+        itemRows.push(item)
       }
-      indexByRowKey.set(row.rowKey, index)
-      itemRows.push(row)
     })
     // Why: with pinned rows duplicated into groups, one workspace owes the cycle one stop.
     return getPreferredWorktreeRows(itemRows, pinnedDisplayPolicy).map((row) => ({

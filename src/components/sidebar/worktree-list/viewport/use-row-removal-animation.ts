@@ -5,15 +5,15 @@
 // row's height. This snapshots the previous window and plays the survivors back from where they
 // were, so the list reads as "the row left" instead of "the list teleported".
 //
-// Adapted to Hydra: Orca follows a `lineage-group` row through its rekey map (a parent key flips
-// between `wt:` and `lineage-group:` when it gains its first child). Hydra paints no lineage
-// folds, so the identity keys are just the row keys and no rekey map is consulted.
+// D03a-080: a parent's identity key flips between `wt:` and `lineage-group:` when it gains
+// its first child without moving, so both the removal diff and the motion lookup follow the
+// rekey map instead of treating that flip as a removed + inserted row.
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import type React from 'react'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { getRenderRowKey } from '../listing/render-row'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
 
 export const WORKTREE_ROW_REMOVAL_ANIMATION_MS = 180
 
@@ -28,9 +28,15 @@ export type VirtualRowRemovalMotion = {
   key: string
 }
 
-export function getSidebarRowIdentityKeys(rows: readonly HostSectionRow[]): ReadonlySet<string> {
+export function getSidebarRowIdentityKeys(rows: readonly RenderRow[]): ReadonlySet<string> {
   const keys = new Set<string>()
   for (const row of rows) {
+    if (row.type === 'lineage-group') {
+      // Why member keys: deleting one inline child leaves the group's own key unchanged,
+      // so only the member identity lets the diff see that a row left the flow.
+      row.rows.forEach((member) => keys.add(`wt:${member.rowKey}`))
+      continue
+    }
     keys.add(getRenderRowKey(row))
   }
   return keys
@@ -39,8 +45,9 @@ export function getSidebarRowIdentityKeys(rows: readonly HostSectionRow[]): Read
 export function buildVirtualRowRemovalMotions(args: {
   previous: VirtualRowLayoutSnapshot | null
   current: VirtualRowLayoutSnapshot
+  rekeyedRowKeys: ReadonlyMap<string, string>
 }): VirtualRowRemovalMotion[] {
-  const { previous, current } = args
+  const { previous, current, rekeyedRowKeys } = args
   if (previous === null || previous.rowIdentityKeys === current.rowIdentityKeys) {
     return []
   }
@@ -55,9 +62,14 @@ export function buildVirtualRowRemovalMotions(args: {
     return []
   }
 
+  const previousKeyByCurrentKey = new Map<string, string>()
+  rekeyedRowKeys.forEach((currentKey, previousKey) => {
+    previousKeyByCurrentKey.set(currentKey, previousKey)
+  })
   const motions: VirtualRowRemovalMotion[] = []
   current.startsByKey.forEach((currentStart, key) => {
-    const previousStart = previous.startsByKey.get(key)
+    const previousKey = previous.startsByKey.has(key) ? key : previousKeyByCurrentKey.get(key)
+    const previousStart = previousKey ? previous.startsByKey.get(previousKey) : undefined
     if (previousStart === undefined) {
       return
     }
@@ -70,11 +82,12 @@ export function buildVirtualRowRemovalMotions(args: {
 }
 
 export function useVirtualRowRemovalAnimation(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
+  rekeyedRowKeys: ReadonlyMap<string, string>
   scrollRef: React.RefObject<HTMLDivElement | null>
   virtualItems: readonly VirtualItem[]
 }): void {
-  const { rows, scrollRef, virtualItems } = args
+  const { rows, rekeyedRowKeys, scrollRef, virtualItems } = args
   const previousSnapshotRef = useRef<VirtualRowLayoutSnapshot | null>(null)
   const rowIdentityKeys = useMemo(() => getSidebarRowIdentityKeys(rows), [rows])
   // Why the hook instead of reading `window.matchMedia` here: it degrades to "no preference"
@@ -93,7 +106,8 @@ export function useVirtualRowRemovalAnimation(args: {
     }
     const motions = buildVirtualRowRemovalMotions({
       previous: previousSnapshotRef.current,
-      current
+      current,
+      rekeyedRowKeys
     })
     previousSnapshotRef.current = current
     if (motions.length === 0 || prefersReducedMotion) {
@@ -121,5 +135,5 @@ export function useVirtualRowRemovalAnimation(args: {
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)'
       })
     }
-  }, [prefersReducedMotion, rowIdentityKeys, scrollRef, virtualItems])
+  }, [prefersReducedMotion, rekeyedRowKeys, rowIdentityKeys, scrollRef, virtualItems])
 }

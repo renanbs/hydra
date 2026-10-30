@@ -6,7 +6,7 @@
 // virtualizer to its index mounts the row first, and the panel's own scroll then settles it.
 import { useEffect, useRef } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
 import { findRevealRowIndex, rowKeyMatchesRenderRow } from '../listing/reveal-row-lookup'
 
 /** Orca `MAX_REVEAL_RETRIES`: a reveal may race the commit that expands a
@@ -41,7 +41,7 @@ function scrollToIndexSoon(
 }
 
 export function useWorktreeListRevealScroll(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   revealPath: string | null
   revealRowKey?: string | null
   virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>

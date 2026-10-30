@@ -4,8 +4,8 @@
 // Collapsing a section changes the list's total height, so the anchor is snapshotted first —
 // otherwise the row under the pointer jumps out from under the click that collapsed another.
 //
-// Adapted to Hydra: Orca also mints a per-lineage-group toggle handler cache here; Hydra paints
-// no lineage folds, so the port keeps the anchored toggle.
+// D03a-080: the lineage fold's collapse chevron is minted by the list from the same bounded
+// cache (`createLineageToggleHandlerCache`) so its handler identity stays stable per group.
 import { useCallback } from 'react'
 import type React from 'react'
 import { VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT } from '@/hooks/useVirtualizedScrollAnchor'

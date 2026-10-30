@@ -73,6 +73,14 @@ import {
 import { getFolderWorkspaceCardPrDisplay } from "./worktree-list/rows/folder-workspace-card-pr-display";
 import { getWorktreeItemRowGeometry } from "./worktree-list/rows/item-row-geometry";
 import {
+  createLineageToggleHandlerCache,
+  renderWorktreeLineageDescendants,
+} from "./worktree-list/rows/item-row";
+import { getLineageChildrenInlineStyle } from "./worktree-list/rows/indentation";
+import type { LineageGroupRow, RenderRow } from "./worktree-list/listing/render-row";
+import { buildRenderableRows } from "./worktree-list/listing/renderable-rows";
+import { getWorktreeOptionId } from "./worktree-list/viewport/option-id";
+import {
   collectRenderedSidebarRowKeys,
   shouldRelaxFiltersForRevealRow,
 } from "./worktree-list/grouping/rendered-row-keys";
@@ -138,6 +146,7 @@ import { WorktreeSidebarDropIndicator } from "./WorktreeSidebarDropIndicator";
 import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
 import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
 import type { ExecutionHostId } from "../../shared/execution-host";
+import { VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT } from "../../hooks/useVirtualizedScrollAnchor";
 
 // ─── Hydra props → Orca row-pipeline projection ──────────────────────────────
 //
@@ -1162,6 +1171,10 @@ export function WorktreeList({
   ]);
 
   const { rows, hostContextLabelByIdentity } = rowModel;
+  // Why: the painted model folds each visible lineage subtree into one virtual slot
+  // (D03a-080); every other consumer (drag groups, reveal keys, selection) keeps the
+  // flat row model it always used.
+  const renderRows = useMemo(() => buildRenderableRows(rows), [rows]);
   // The menu filters (display options + host scope) reduce the row model before it is
   // painted, so both the reveal path (D03a-052) and the empty-state gate (#15362) read
   // the same "are filters active" answer.
@@ -1310,6 +1323,22 @@ export function WorktreeList({
   const viewportScrollRef = scrollRef ?? internalScrollRef;
   const pinnedDisplayPolicy = rowModel.pinnedDisplayPolicy;
 
+  /**
+   * One stable handler per lineage group. Collapsing an inline subtree changes the group's
+   * own height, so the viewport's scroll anchor is recorded first (Orca's
+   * `createLineageToggleHandlerCache`), exactly like a section header toggle.
+   */
+  const getLineageToggleHandler = useMemo(
+    () =>
+      createLineageToggleHandlerCache((groupKey) => {
+        viewportScrollRef.current?.dispatchEvent(
+          new Event(VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT)
+        );
+        onToggleGroupCollapse(groupKey);
+      }),
+    [onToggleGroupCollapse, viewportScrollRef]
+  );
+
   /** Row key of the active workspace: the row `aria-activedescendant` points at. */
   const primaryActiveRowKey = useMemo(
     () => resolvePrimaryActiveRowKey(rows, activeWorktreePath, PINNED_GROUP_KEY),
@@ -1336,7 +1365,8 @@ export function WorktreeList({
    * mapping lives here, next to the callbacks that own it.
    */
   const toggleRowCollapse = useCallback(
-    (row: HostSectionRow) => {
+    (row: RenderRow) => {
+      if (row.type === "lineage-group") return;
       if (row.type === "host-header") {
         onToggleGroupCollapse(row.key);
         return;
@@ -1684,7 +1714,16 @@ export function WorktreeList({
   );
 
   const renderWorktreeRow = useCallback(
-    (row: WorktreeRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
+    (
+      row: WorktreeRow,
+      slot: WorktreeVirtualRowSlot,
+      options?: {
+        /** The descendants the card hosts inside its own body (D03a-080). */
+        lineageChildren?: React.ReactNode;
+        /** A parent whose subtree holds the active workspace still reads as active. */
+        forceActiveSurface?: boolean;
+      }
+    ): React.JSX.Element | null => {
       const wt = rowModel.propWorktreeByPath.get(row.worktree.path);
       const proj = rowModel.propProjectById.get(row.worktree.repoId);
       if (!wt || !proj) return null;
@@ -1709,14 +1748,18 @@ export function WorktreeList({
         displayOptions.groupBy === "repo" &&
         projectGroupId !== null &&
         folderBackedProjectGroupIds.has(projectGroupId);
-      const { surfaceInset, cardContentIndent } = getWorktreeItemRowGeometry({
-        row,
-        groupBy: displayOptions.groupBy,
-        experimentalNewWorktreeCardStyle:
-          storeSettings?.experimentalNewWorktreeCardStyle === true,
-        isFolderBackedRepoChild,
-      });
+      const { surfaceInset, cardContentIndent, lineageChildrenInlineOffset } =
+        getWorktreeItemRowGeometry({
+          row,
+          groupBy: displayOptions.groupBy,
+          experimentalNewWorktreeCardStyle:
+            storeSettings?.experimentalNewWorktreeCardStyle === true,
+          isFolderBackedRepoChild,
+        });
       const identity = getWorktreeHostIdentity(row.worktree);
+      const lineageChildrenStyle = options?.lineageChildren
+        ? getLineageChildrenInlineStyle(lineageChildrenInlineOffset)
+        : undefined;
       const isMultiSelected = selectedWorktreeIdentities.has(identity);
       const lineageGroupKey = row.lineageGroupKey;
 
@@ -1760,21 +1803,27 @@ export function WorktreeList({
             lineageChildCount={row.lineageChildCount}
             lineageCollapsed={row.lineageCollapsed}
             onLineageToggle={
-              lineageGroupKey
-                ? (event) => {
-                    event.stopPropagation();
-                    onToggleGroupCollapse(lineageGroupKey);
-                  }
-                : undefined
+              lineageGroupKey ? getLineageToggleHandler(lineageGroupKey) : undefined
             }
             contentIndent={cardContentIndent}
             flushSurface
             isActive={activeWorktreePath === wt.path}
-            isActiveSurface={activeWorktreePath === wt.path}
-            activeSurfaceVariant={resolveActiveSurfaceVariant(row.rowKey, primaryActiveRowKey)}
+            // Why: a nested child keeps the group card looking active (Orca's
+            // `forceActiveSurface`) without claiming the current-workspace chrome.
+            isActiveSurface={options?.forceActiveSurface === true || activeWorktreePath === wt.path}
+            activeSurfaceVariant={
+              options?.forceActiveSurface === true
+                ? "primary"
+                : resolveActiveSurfaceVariant(row.rowKey, primaryActiveRowKey)
+            }
             isCurrentWorktree={activeWorktreePath === wt.path}
             isFocused={isFocused}
             revealHighlight={isRevealed}
+            revealHighlightTone={
+              agentSendTargetWorktreeId === row.worktree.id ? "ai" : "default"
+            }
+            lineageChildren={options?.lineageChildren}
+            lineageChildrenStyle={lineageChildrenStyle}
             isPinned={pinnedSet.has(wt.path)}
             isUnread={unreadSet.has(wt.path)}
             isMultiSelected={isMultiSelected}
@@ -1881,8 +1930,43 @@ export function WorktreeList({
       resolveDraggedWorktreeIds,
       projectGroups,
       storeSettings,
-      onToggleGroupCollapse,
+      agentSendTargetWorktreeId,
+      getLineageToggleHandler,
     ]
+  );
+
+  /**
+   * One folded lineage subtree: the parent card paints its descendants inline, all inside
+   * the single virtual slot the group owns. The recursion builds grandchildren under their
+   * own parent card, so `depth` never double-counts against the inline offset.
+   */
+  const renderLineageGroup = useCallback(
+    (group: LineageGroupRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
+      const [parent, ...descendants] = group.rows;
+      if (!parent) return null;
+      const childIsActive = group.rows.some(
+        (row) => row.worktree.path === activeWorktreePath
+      );
+      const lineageChildren = renderWorktreeLineageDescendants(
+        descendants,
+        parent.depth,
+        (child, childLineageChildren) =>
+          renderWorktreeRow(
+            child,
+            {
+              toggleCollapse: slot.toggleCollapse,
+              optionId: getWorktreeOptionId(child.rowKey),
+              isActive: child.rowKey === activeRowKey,
+            },
+            { lineageChildren: childLineageChildren }
+          )
+      );
+      return renderWorktreeRow(parent, slot, {
+        lineageChildren: lineageChildren ?? undefined,
+        forceActiveSurface: childIsActive,
+      });
+    },
+    [activeRowKey, activeWorktreePath, renderWorktreeRow]
   );
 
   // ─── Header-tier drag reorder (D03a-020 / D03a-092) ───────────────────────
@@ -2294,7 +2378,7 @@ export function WorktreeList({
    * existing row components get it.
    */
   const renderRow = useCallback(
-    (row: HostSectionRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
+    (row: RenderRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
       switch (row.type) {
         case "host-header": {
           const dragHandlers = headerHandlersFor("host", row.hostId);
@@ -2332,6 +2416,8 @@ export function WorktreeList({
         }
         case "item":
           return renderWorktreeRow(row, slot);
+        case "lineage-group":
+          return renderLineageGroup(row, slot);
         case "folder-workspace":
           return renderFolderRow(row, slot);
         case "imported-worktrees-card":
@@ -2357,6 +2443,7 @@ export function WorktreeList({
       renderRepoHeader,
       renderGroupHeader,
       renderWorktreeRow,
+      renderLineageGroup,
       renderFolderRow,
       renderNoticeRow,
       toggleHostCollapse,
@@ -2450,7 +2537,7 @@ export function WorktreeList({
         onRetry={() => window.dispatchEvent(new CustomEvent("hydra:refresh-projects"))}
       />
       <VirtualizedWorktreeViewport
-        rows={rows}
+        rows={renderRows}
         activeRowKey={activeRowKey}
         groupBy={displayOptions.groupBy}
         pinnedDisplayPolicy={pinnedDisplayPolicy}
