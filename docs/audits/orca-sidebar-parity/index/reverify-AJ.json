@@ -28,15 +28,13 @@
   },
   {
    "id": "D03a-086",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
-    "src/components/sidebar/WorktreeSidebar.tsx:170"
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:1-140",
+    "src/components/sidebar/ProjectGroupDeleteDialog.parity.test.tsx:1-160"
    ],
-   "missing_behaviors": [
-    "toggle removeContainedProjects com contagem/nomes"
-   ],
-   "note": "The delete dialog shows count and names but has no remove-contained-projects choice."
+   "missing_behaviors": [],
+   "note": "Delete dialog exposes a controlled Remove-contained-projects toggle with count/names and the on-disk-folder note."
   }
  ]
 }

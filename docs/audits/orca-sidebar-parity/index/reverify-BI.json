@@ -1,0 +1,86 @@
+{
+ "group": "BI",
+ "generatedFrom": "2026-10-27 parallel slice: group menus/dialogs + module gaps; host/device and create-state integration",
+ "rows": [
+  {
+   "id": "D03a-085",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SectionHeader.tsx:repo createState span/disabled button",
+    "src/components/sidebar/SectionHeader.parity.test.tsx:create-state cases"
+   ],
+   "missing_behaviors": [],
+   "note": "The repo create button paints the disabled shape (focusable span wrapping a disabled button) with the createState tooltip/aria label."
+  },
+  {
+   "id": "D03a-082",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/ProjectHeaderActions.tsx:event guards",
+    "src/components/sidebar/WorktreeSidebar.tsx:group menu"
+   ],
+   "missing_behaviors": [
+    "App.tsx group handlers still ignore the forwarded hostId (sidebar-prefs pipeline has no per-host group mutation)"
+   ],
+   "note": "Menu portal events no longer bubble into the header, and rename/delete carry the group owner hostId."
+  },
+  {
+   "id": "D03a-084",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:project menu"
+   ],
+   "missing_behaviors": [
+    "Change Project Icon opens Settings but Hydra has no repository-icon write path"
+   ],
+   "note": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist."
+  },
+  {
+   "id": "D03a-087",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/WorktreeSidebar.tsx:group mutations"
+   ],
+   "missing_behaviors": [
+    "group mutations remain App-local sidebar_prefs state; hostId is ignored and contained-project removal failures cannot be reported individually"
+   ],
+   "note": "Create/rename/delete toast on unacknowledged mutations, delete supports removeContainedProjects, and the owner host is resolved and forwarded."
+  },
+  {
+   "id": "D03a-040",
+   "status": "partial",
+   "evidence": [
+    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:40-160",
+    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.parity.test.ts"
+   ],
+   "missing_behaviors": [
+    "WorktreeSidebar reveal does not yet call getRevealGroupKeysToExpand"
+   ],
+   "note": "Pinned key, project-group ancestry and the collapsed-key filter are implemented and tested."
+  },
+  {
+   "id": "D03a-073",
+   "status": "parity",
+   "evidence": [
+    "src/hooks/use-folder-workspace-path-statuses.ts:1-80",
+    "src/components/sidebar/WorktreeList.tsx:folder row",
+    "src/components/sidebar/FolderWorkspaceRow.tsx:28-80"
+   ],
+   "missing_behaviors": [],
+   "note": "Confirmed-stale and ambiguous-connection statuses reach the row, both block activation, and the tooltip carries title+description; host routing stays local because the probe command has no remote variant."
+  },
+  {
+   "id": "D03a-057",
+   "status": "partial",
+   "evidence": [
+    "src/hooks/use-folder-workspace-path-statuses.ts:1-90",
+    "src/lib/folder-path-status-cache.ts:1-60"
+   ],
+   "missing_behaviors": [
+    "cache key ignores the runtime/SSH environment (probe is local-only)",
+    "getFreshFolderWorkspacePathStatus selector not exposed"
+   ],
+   "note": "Always-mounted probe with TTL cache, confirmed-only negatives, and revalidation on repo/ssh/runtime epoch changes."
+  }
+ ]
+}

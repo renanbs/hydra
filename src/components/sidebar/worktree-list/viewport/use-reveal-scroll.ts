@@ -7,22 +7,11 @@
 import { useEffect, useRef } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
 import type { HostSectionRow } from '../../host-section-rows'
-import { rowKeyMatchesRenderRow } from '../listing/reveal-row-lookup'
+import { findRevealRowIndex, rowKeyMatchesRenderRow } from '../listing/reveal-row-lookup'
 
 /** Orca `MAX_REVEAL_RETRIES`: a reveal may race the commit that expands a
  *  collapsed section, so the row only exists a frame or two later. */
 const MAX_REVEAL_RETRIES = 8
-
-/** Path a reveal names — a workspace path or a folder workspace path. */
-function rowMatchesRevealPath(row: HostSectionRow, revealPath: string): boolean {
-  if (row.type === 'item') {
-    return row.worktree.path === revealPath
-  }
-  if (row.type === 'folder-workspace') {
-    return row.folderWorkspace.folderPath === revealPath
-  }
-  return false
-}
 
 function scrollToIndexSoon(
   resolveIndex: () => number,
@@ -74,7 +63,7 @@ export function useWorktreeListRevealScroll(args: {
       return
     }
     const cancel = scrollToIndexSoon(
-      () => rows.findIndex((row) => rowMatchesRevealPath(row, revealPath)),
+      () => findRevealRowIndex(rows, revealPath),
       virtualizer,
       markDirectScrollInput,
       () => {

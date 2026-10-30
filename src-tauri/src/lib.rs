@@ -495,13 +495,53 @@ async fn set_project_worktree_base(path: String, base_path: Option<String>) -> R
 async fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
 }
+/// Structured failure payload for `scan_worktrees`.
+///
+/// The command's error channel is a `String` (the renderer stores it verbatim in
+/// `scanFailuresByProject`), so the failure is serialized as JSON in that string:
+/// the renderer can classify older raw messages and still read the structured
+/// `failureKind` / `fixCommand` from newer hosts. Mirrors
+/// `src/shared/worktree-scan-failure.ts`.
+fn worktree_scan_failure_payload(message: String) -> String {
+    let failure_kind = classify_worktree_scan_failure(&message);
+    serde_json::json!({
+        "failureKind": failure_kind,
+        "message": message,
+        "fixCommand": worktree_scan_fix_command(failure_kind),
+    })
+    .to_string()
+}
+
+fn classify_worktree_scan_failure(message: &str) -> &'static str {
+    let lower = message.to_ascii_lowercase();
+    if lower.contains("agreeing to the xcode/ios license requires admin privileges") {
+        "xcode-license"
+    } else if lower.contains("no developer tools were found") {
+        "developer-tools"
+    } else if lower.contains("unknown system error -86")
+        || lower.contains("ebadarch")
+        || lower.contains("bad cpu type in executable")
+    {
+        "architecture-mismatch"
+    } else {
+        "unknown"
+    }
+}
+
+fn worktree_scan_fix_command(failure_kind: &str) -> Option<&'static str> {
+    match failure_kind {
+        "xcode-license" => Some("sudo xcodebuild -license"),
+        "developer-tools" => Some("xcode-select --install"),
+        _ => None,
+    }
+}
+
 #[tauri::command]
 async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, String> {
-    tokio::task::spawn_blocking(move || {
-        scan_project_worktrees(&repo_path)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    tokio::task::spawn_blocking(move || scan_project_worktrees(&repo_path))
+        .await
+        .map_err(|e| worktree_scan_failure_payload(e.to_string()))?
+        .map_err(worktree_scan_failure_payload)
 }
 
 /// PR status for `branch` in `repo_path`, via the optional `gh` CLI.

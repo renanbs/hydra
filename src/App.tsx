@@ -26,10 +26,7 @@ import {
   LEFT_SIDEBAR_MIN_WIDTH,
 } from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
-import {
-  isConfirmedStaleFolderPathStatus,
-  type FolderWorkspacePathStatus,
-} from "./shared/folder-workspace-path-status";
+import { useFolderWorkspacePathStatuses } from "./hooks/use-folder-workspace-path-statuses";
 import {
   createWorktreeFlagApplier,
   reconcileProjectFlagSet,
@@ -2597,35 +2594,20 @@ export default function App() {
   );
 
   /** Folder workspaces whose directory is gone: Orca badges those with FolderX
-   * (`FolderPathStatusIndicator`); the host probe is `path_exists`. */
-  const [missingFolderPaths, setMissingFolderPaths] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    if (folderWorkspaces.length === 0) return;
-    let cancelled = false;
-    Promise.all(
-      folderWorkspaces.map((w) =>
-        invoke<FolderWorkspacePathStatus>("folder_path_status", {
-          path: w.folderPath,
-        })
-          .then((status) => ({ path: w.folderPath, status }))
-          .catch(() => ({ path: w.folderPath, status: null }))
-      )
-    ).then((results) => {
-      if (cancelled) return;
-      // Only confirmed-stale paths get the FolderX badge; a transient probe failure
-      // (`unavailable`) must not claim the folder is gone.
-      setMissingFolderPaths(
-        new Set(
-          results
-            .filter((result) => isConfirmedStaleFolderPathStatus(result.status))
-            .map((result) => result.path)
-        )
-      );
+   * (`FolderPathStatusIndicator`). The probe is cached and revalidated on
+   * repo/ssh/runtime changes (D03a-057). */
+  const folderPathStatusEpoch = useAppStore((state) => {
+    const environments = state.runtimeEnvironments;
+    const environmentCount = Array.isArray(environments)
+      ? environments.length
+      : Object.keys(environments ?? {}).length;
+    return `${state.repos?.length ?? 0}:${environmentCount}:${state.sshConnectedGeneration ?? 0}`;
+  });
+  const { missingFolderPaths, statusByPath: folderPathStatusByPath } =
+    useFolderWorkspacePathStatuses({
+      folderWorkspaces,
+      epoch: folderPathStatusEpoch,
     });
-    return () => {
-      cancelled = true;
-    };
-  }, [folderWorkspaces]);
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
@@ -4319,6 +4301,7 @@ export default function App() {
                 folderWorkspaces={folderWorkspaces}
                 liveWorkspacePaths={liveWorkspacePaths}
                 missingFolderPaths={missingFolderPaths}
+                folderPathStatusByPath={folderPathStatusByPath}
                 scanFailuresByProject={scanFailuresByProject}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 prByPath={prByPath}

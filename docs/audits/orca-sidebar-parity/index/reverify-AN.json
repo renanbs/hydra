@@ -94,15 +94,13 @@
    "id": "D03a-050",
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:777-812",
-    "src/components/sidebar/sidebar-session-attention.ts:84-105"
+    "src/components/sidebar/smart-sort.ts:41-140",
+    "src/components/sidebar/smart-sort.parity.test.ts"
    ],
    "missing_behaviors": [
-    "SORT_SETTLE_MS=3000 de debounce",
-    "persistência da ordem Smart por host",
-    "telemetria smart_sort_*"
+    "no sortEpoch pipeline in the sidebar to route through the settle gate"
    ],
-   "note": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."
+   "note": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet."
   },
   {
    "id": "D03b-011",

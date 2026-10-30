@@ -137,18 +137,14 @@
   },
   {
    "id": "D03a-067",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/listing/render-row.ts:12-31",
-    "src/components/sidebar/worktree-sidebar-row-preference.ts:9-41"
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-110",
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-120"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "rowKeyMatchesRenderRow",
-    "renderRowContainsWorktree",
-    "findPreferredRenderRowIndexForWorktree"
-   ],
-   "note": "A lookup de key foi portada (getRenderRowKey) e a preferência de row existe para navegação, mas contenção e índice preferido por worktree não têm módulo equivalente."
+   "missing_behaviors": [],
+   "note": "Key/containment/preferred-index lookups are consumed by the reveal path: a natural item beats a Pinned duplicate or a containing header, and folder-path reveals stay exact."
   },
   {
    "id": "D03a-071",

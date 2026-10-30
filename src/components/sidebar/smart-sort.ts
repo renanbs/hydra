@@ -28,6 +28,136 @@ export type SortBy = 'name' | 'smart' | 'recent' | 'repo' | 'manual'
 export const CREATE_GRACE_MS = 5 * 60 * 1000
 
 /**
+ * Settle window for background re-sorts.
+ *
+ * Attention scores decay with time, so recomputing the list on every `sortEpoch`
+ * bump makes rows jump under the pointer while the user is reading them. Smart and
+ * Recent ordering therefore wait this long after the latest bump before applying it.
+ * Structural changes (worktree added/removed) and Manual drag/drop bypass the wait:
+ * those are direct manipulation and must land immediately.
+ *
+ * Ported from Orca `worktree-list/listing/use-sort-order.ts`.
+ */
+export const SORT_SETTLE_MS = 3_000
+
+export type SortSettleRequest = {
+  sortBy: SortBy
+  sortEpoch: number
+  worktreeCount: number
+}
+
+export type SortSettleDecision = 'apply-now' | 'settle' | 'unchanged'
+
+/**
+ * Decide how a new `sortEpoch` should reach the painted order.
+ *
+ * `appliedWorktreeCount` is part of the contract: an add/remove changes the row
+ * count, and no debounce may hide a row that the user just created or deleted.
+ */
+export function resolveSortSettleDecision(args: {
+  sortBy: SortBy
+  sortEpoch: number
+  appliedSortEpoch: number
+  worktreeCount: number
+  appliedWorktreeCount: number
+}): SortSettleDecision {
+  if (args.sortEpoch === args.appliedSortEpoch) {
+    return 'unchanged'
+  }
+  if (args.worktreeCount !== args.appliedWorktreeCount || args.sortBy === 'manual') {
+    return 'apply-now'
+  }
+  return args.sortBy === 'smart' || args.sortBy === 'recent' ? 'settle' : 'apply-now'
+}
+
+/** Host timer handle for the settle window (Node typings are the project's `types`). */
+type SortSettleTimer = NodeJS.Timeout
+
+export type SortSettleGate = {
+  /** Feed the current epoch; the gate calls `onApply` now or after the settle window. */
+  request: (request: SortSettleRequest) => void
+  /** Apply the pending epoch immediately (e.g. before the sidebar unmounts). */
+  flush: () => void
+  dispose: () => void
+  appliedSortEpoch: () => number
+}
+
+/**
+ * Timer-backed gate for {@link resolveSortSettleDecision}. Kept outside React so
+ * the debounce itself is unit-testable without mounting the sidebar.
+ */
+export function createSortSettleGate(onApply: (sortEpoch: number) => void): SortSettleGate {
+  let appliedSortEpoch = -1
+  let appliedWorktreeCount = -1
+  let pendingRequest: SortSettleRequest | null = null
+  let pendingTimer: SortSettleTimer | null = null
+
+  const cancelPending = (): void => {
+    if (pendingTimer !== null) {
+      clearTimeout(pendingTimer)
+      pendingTimer = null
+    }
+    pendingRequest = null
+  }
+
+  const apply = (request: SortSettleRequest): void => {
+    cancelPending()
+    appliedSortEpoch = request.sortEpoch
+    appliedWorktreeCount = request.worktreeCount
+    onApply(request.sortEpoch)
+  }
+
+  const applyPending = (): void => {
+    const request = pendingRequest
+    if (!request) {
+      return
+    }
+    pendingTimer = null
+    pendingRequest = null
+    appliedSortEpoch = request.sortEpoch
+    appliedWorktreeCount = request.worktreeCount
+    onApply(request.sortEpoch)
+  }
+
+  return {
+    request(request) {
+      const decision = resolveSortSettleDecision({
+        sortBy: request.sortBy,
+        sortEpoch: request.sortEpoch,
+        appliedSortEpoch,
+        worktreeCount: request.worktreeCount,
+        appliedWorktreeCount
+      })
+      if (decision === 'unchanged') {
+        return
+      }
+      if (decision === 'apply-now') {
+        apply(request)
+        return
+      }
+      // Why: each bump restarts the window, so a burst of background activity
+      // settles into one reorder instead of a cascade of small ones.
+      cancelPending()
+      pendingRequest = request
+      pendingTimer = setTimeout(applyPending, SORT_SETTLE_MS)
+    },
+    flush() {
+      if (pendingTimer !== null) {
+        clearTimeout(pendingTimer)
+        pendingTimer = null
+      }
+      applyPending()
+    },
+    dispose() {
+      cancelPending()
+    },
+    appliedSortEpoch() {
+      return appliedSortEpoch
+    }
+  }
+}
+
+/**
  * Rank a worktree in Recent sort using `lastActivityAt`, but with a floor of
  * `createdAt + CREATE_GRACE_MS` *only during* the grace window (i.e. while
  * `now < createdAt + CREATE_GRACE_MS`). Once the window has elapsed, returns

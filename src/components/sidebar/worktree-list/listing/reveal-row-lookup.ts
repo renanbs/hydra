@@ -5,6 +5,7 @@ import type { FolderWorkspace } from "../../../../shared/folder-workspace-types"
 import { getWorktreeHostIdentity } from "../../../../shared/worktree/host-qualified-identity";
 import type { Worktree } from "../../../../shared/worktree/types";
 import type { HostSectionRow } from "../../host-section-rows";
+import { PINNED_GROUP_KEY } from "../grouping/group-keys";
 
 export function rowKeyMatchesRenderRow(row: HostSectionRow, key: string): boolean {
   if (row.type === "item") return row.rowKey === key;
@@ -46,14 +47,46 @@ export function findPreferredRenderRowIndexForWorktree(
   folderWorkspaces: readonly FolderWorkspace[] = []
 ): number {
   let fallback = -1;
+  let pinnedFallback = -1;
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
     if (row.type === "item" && renderRowContainsWorktree(row, worktree, folderWorkspaces)) {
-      return index;
+      // Why: under `duplicate-in-groups` the same workspace paints in Pinned and
+      // in its natural section; the natural copy is the canonical reveal target.
+      if (row.sectionKey !== PINNED_GROUP_KEY) {
+        return index;
+      }
+      if (pinnedFallback < 0) {
+        pinnedFallback = index;
+      }
+      continue;
     }
     if (fallback < 0 && renderRowContainsWorktree(row, worktree, folderWorkspaces)) {
       fallback = index;
     }
   }
-  return fallback;
+  return pinnedFallback >= 0 ? pinnedFallback : fallback;
+}
+
+/**
+ * Resolve the row a path reveal should scroll to.
+ *
+ * Folder-workspace reveals keep their exact row. Worktree reveals go through
+ * {@link findPreferredRenderRowIndexForWorktree} so a Pinned duplicate or a
+ * collapsed header never wins over the expanded natural row.
+ */
+export function findRevealRowIndex(
+  rows: readonly HostSectionRow[],
+  revealPath: string
+): number {
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+    if (row.type === "folder-workspace" && row.folderWorkspace.folderPath === revealPath) {
+      return index;
+    }
+    if (row.type === "item" && row.worktree.path === revealPath) {
+      return findPreferredRenderRowIndexForWorktree(rows, row.worktree);
+    }
+  }
+  return -1;
 }

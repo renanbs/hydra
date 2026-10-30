@@ -12,11 +12,18 @@ import {
   Plus,
   FolderTree,
   FolderPlus,
+  ChevronRight,
+  Shapes,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { WorktreeList } from "./WorktreeList";
+import type { RepoHeaderCreateState } from "./SectionHeader";
+import { stopRepoHeaderMenuEvent } from "./ProjectHeaderActions";
+import { translate } from "../../i18n/i18n";
+import { effectiveExternalWorktreeVisibility } from "../../lib/worktree-visibility-sources";
 import { lazyWithRetry } from "../../lib/lazy-with-retry";
 
 // Why lazy: the Agents list pulls the whole activity pipeline (virtualizer, markdown
@@ -29,7 +36,6 @@ import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
-import { toast } from "sonner";
 import { planSidebarClearFilters } from "./sidebar-filter-actions";
 import { isRevealTargetHiddenByFilters } from "./reveal-hidden-filters";
 import {
@@ -133,6 +139,7 @@ export function WorktreeSidebar({
   folderWorkspaces = [],
   liveWorkspacePaths,
   missingFolderPaths,
+  folderPathStatusByPath,
   scanFailuresByProject = {},
   prByPath,
   onActivateFolderWorkspace,
@@ -197,6 +204,9 @@ export function WorktreeSidebar({
   // Context Menu state
   const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);
   const [activeGroupMenu, setActiveGroupMenu] = useState<{ group: { id: string; name: string }; x: number; y: number } | null>(null);
+  // Orca `RepoHeaderProjectActionsMenu`: "Move to group" is a submenu, not a flat
+  // list of rows; the current group stays visible and disabled.
+  const [projectMenuSubmenu, setProjectMenuSubmenu] = useState<"move-to-group" | null>(null);
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
@@ -241,6 +251,8 @@ export function WorktreeSidebar({
     description: string;
     initialName?: string;
     confirmLabel?: string;
+    /** Owner host of the group row, so rename targets the host that holds it. */
+    hostId?: string;
     onSubmit: (name: string) => Promise<void> | void;
   }>({
     open: false,
@@ -253,9 +265,12 @@ export function WorktreeSidebar({
   const [groupDeleteDialog, setGroupDeleteDialog] = useState<{
     open: boolean;
     group: { id: string; name: string } | null;
+    hostId?: string;
+    removeContainedProjects: boolean;
   }>({
     open: false,
     group: null,
+    removeContainedProjects: false,
   });
 
   const [visibilityDialog, setVisibilityDialog] = useState<{
@@ -1082,10 +1097,123 @@ export function WorktreeSidebar({
 
   const groupDeleteMembers = useMemo(() => {
     if (!groupDeleteDialog.group) return [];
-    return displayProjects.filter(
+    // Why: deletion targets every member, not only the rows the Show filter paints.
+    return projects.filter(
       (p) => projectGroupMap?.[p.id] === groupDeleteDialog.group?.id
     );
-  }, [displayProjects, projectGroupMap, groupDeleteDialog.group]);
+  }, [projects, projectGroupMap, groupDeleteDialog.group]);
+
+  // ─── Repo header create state (Orca `getRepoHeaderCreateState`) ──────────
+  // The sidebar model carries no connection fields, so the host gate reads the
+  // store's repo rows by path; a project without a store row stays creatable.
+  const sshConnectionStates = useAppStore((state) => state.sshConnectionStates);
+  const repoByPath = useMemo(
+    () => new Map(storeRepos.map((repo) => [repo.path, repo])),
+    [storeRepos]
+  );
+
+  const createStateByProjectId = useMemo(() => {
+    const states = new Map<string, RepoHeaderCreateState>();
+    for (const project of projects) {
+      const label = project.displayName || project.name;
+      const connectionId = repoByPath.get(project.path)?.connectionId ?? null;
+      const gated =
+        project.is_git &&
+        Boolean(connectionId) &&
+        !isRuntimeOwnedSshTargetId(connectionId) &&
+        sshConnectionStates.get(connectionId as string)?.status !== "connected";
+      states.set(
+        project.id,
+        gated
+          ? {
+              disabled: true,
+              tooltip: "Reconnect SSH target before creating workspaces",
+              ariaLabel: `Reconnect SSH target before creating workspaces for ${label}`,
+            }
+          : {
+              disabled: false,
+              tooltip: `Create workspace for ${label}`,
+              ariaLabel: `Create workspace for ${label}`,
+            }
+      );
+    }
+    return states;
+  }, [projects, repoByPath, sshConnectionStates]);
+
+  // ─── Project group host routing (Orca owner-host routing) ────────────────
+  const resolveProjectHostId = useCallback(
+    (project: HydraProject): string | undefined => {
+      const repo = repoByPath.get(project.path);
+      return repo ? getRepoExecutionHostId(repo) : undefined;
+    },
+    [repoByPath]
+  );
+
+  const resolveGroupOwnerHostId = useCallback(
+    (groupId: string): string | undefined => {
+      const member = projects.find((project) => projectGroupMap?.[project.id] === groupId);
+      return member ? resolveProjectHostId(member) : undefined;
+    },
+    [projects, projectGroupMap, resolveProjectHostId]
+  );
+
+  /**
+   * Orca group mutations return a result the caller can toast on. Hydra's menu
+   * dispatches a window event and App acknowledges it synchronously with
+   * `hydra:refresh-projects`; a missing acknowledgement means nothing applied.
+   */
+  const dispatchProjectGroupChange = useCallback(
+    (eventName: string, detail: Record<string, unknown>): boolean => {
+      let acknowledged = false;
+      const acknowledge = () => {
+        acknowledged = true;
+      };
+      window.addEventListener("hydra:refresh-projects", acknowledge);
+      try {
+        window.dispatchEvent(new CustomEvent(eventName, { detail }));
+      } finally {
+        window.removeEventListener("hydra:refresh-projects", acknowledge);
+      }
+      return acknowledged;
+    },
+    []
+  );
+
+  const reportGroupCreateFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupCreateFailed", "Failed to create group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupCreateFailedDesc",
+          "Hydra could not create the group. Check the sidebar after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupRenameFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupRenameFailed", "Failed to rename group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupRenameFailedDesc",
+          "Hydra could not confirm the new name with the group's host. Recheck the group after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupDeleteFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupDeleteFailed", "Failed to delete group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupDeleteFailedDesc",
+          "Something went wrong while deleting the group. No projects were removed."
+        ),
+      }
+    );
+  }, []);
 
   const query = filter.trim().toLowerCase();
 
@@ -1296,6 +1424,7 @@ export function WorktreeSidebar({
               folderWorkspaces={folderWorkspaces}
               liveWorkspacePaths={liveWorkspacePaths}
               missingFolderPaths={missingFolderPaths}
+              folderPathStatusByPath={folderPathStatusByPath}
               scanFailuresByProject={scanFailuresByProject}
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
@@ -1315,6 +1444,7 @@ export function WorktreeSidebar({
               onRenameWorktreeTitle={onRenameWorktreeTitle}
               deleteStateByWorktreeId={deleteStateByWorktreeId}
               onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
+              createStateByProjectId={createStateByProjectId}
               onOpenAddRepoDialog={onOpenAddRepoDialog}
               onClearFilter={() => setFilter("")}
               onClearSidebarFilters={handleClearSidebarFilters}
@@ -1325,6 +1455,7 @@ export function WorktreeSidebar({
                   onProjectContextMenu(e, proj);
                 } else {
                   const rect = e.currentTarget.getBoundingClientRect();
+                  setProjectMenuSubmenu(null);
                   setActiveProjectMenu({ proj, x: rect.right, y: rect.bottom + 4 });
                 }
               }}
@@ -1575,23 +1706,33 @@ export function WorktreeSidebar({
         <>
           <div
             className="fixed inset-0 z-[99998]"
-            onClick={() => setActiveProjectMenu(null)}
+            onClick={() => {
+              setActiveProjectMenu(null);
+              setProjectMenuSubmenu(null);
+            }}
             onContextMenu={(e) => {
               e.preventDefault();
               setActiveProjectMenu(null);
+              setProjectMenuSubmenu(null);
             }}
           />
           <div
             style={{
               position: "fixed",
               top: Math.min(activeProjectMenu.y, window.innerHeight - 300),
-              left: Math.min(activeProjectMenu.x, window.innerWidth - 220),
+              left: Math.min(activeProjectMenu.x, window.innerWidth - 420),
               zIndex: 99999,
             }}
-            className="w-52 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
+            className="relative w-52 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={stopRepoHeaderMenuEvent}
+            onMouseDown={stopRepoHeaderMenuEvent}
+            onPointerUp={stopRepoHeaderMenuEvent}
+            onMouseUp={stopRepoHeaderMenuEvent}
+            onKeyDown={stopRepoHeaderMenuEvent}
           >
             <button
+              type="button"
               onClick={() => {
                 setActiveProjectMenu(null);
                 onOpenSettings();
@@ -1603,6 +1744,49 @@ export function WorktreeSidebar({
             </button>
 
             <button
+              type="button"
+              onClick={() => {
+                // Why: Hydra has no repository-icon settings pane yet; the entry
+                // still opens the settings surface instead of becoming a dead row.
+                setActiveProjectMenu(null);
+                onOpenSettings();
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+            >
+              <Shapes className="size-3.5 text-worktree-sidebar-foreground/60" />
+              Change Project Icon
+            </button>
+
+            {activeProjectMenu.proj.is_git && (
+              <button
+                type="button"
+                onClick={() => {
+                  const proj = activeProjectMenu.proj;
+                  setActiveProjectMenu(null);
+                  setProjectMenuSubmenu(null);
+                  setVisibilityDialog({
+                    open: true,
+                    project: proj,
+                    hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+                    hostId: resolveProjectHostId(proj) ?? null,
+                  });
+                }}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+              >
+                <Eye className="size-3.5 text-worktree-sidebar-foreground/60" />
+                {effectiveExternalWorktreeVisibility(
+                  activeProjectMenu.proj,
+                  settings?.worktree_visibility_defaults
+                ) === "show"
+                  ? "Hide non-Hydra worktrees"
+                  : "Show hidden worktrees"}
+              </button>
+            )}
+
+            <div className="h-px bg-worktree-sidebar-border my-1" />
+
+            <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
@@ -1648,23 +1832,7 @@ export function WorktreeSidebar({
             </button>
 
             <button
-              onClick={() => {
-                const proj = activeProjectMenu.proj;
-                setActiveProjectMenu(null);
-                const hidden = hiddenWorktreesByProject?.[proj.path] ?? [];
-                setVisibilityDialog({
-                  open: true,
-                  project: proj,
-                  hiddenWorktrees: hidden,
-                });
-              }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
-            >
-              <Eye className="size-3.5 text-worktree-sidebar-foreground/60" />
-              Manage Worktree Visibility...
-            </button>
-
-            <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
@@ -1678,75 +1846,119 @@ export function WorktreeSidebar({
 
             <div className="h-px bg-worktree-sidebar-border my-1" />
 
-            {/* Move to group options */}
             <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
+                const hostId = resolveProjectHostId(proj);
                 setActiveProjectMenu(null);
+                setProjectMenuSubmenu(null);
                 setGroupNameDialog({
                   open: true,
                   title: "New Project Group",
-                  description: "Create a group to organize projects in your sidebar.",
-                  confirmLabel: "Create & Move",
+                  description: "Create a group and move this project into it.",
+                  initialName: `${proj.displayName || proj.name} group`,
+                  confirmLabel: "Create",
+                  hostId,
                   onSubmit: (name) => {
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:create-project-group", {
-                        detail: { name, projectId: proj.id },
-                      })
+                    const created = dispatchProjectGroupChange(
+                      "hydra:create-project-group",
+                      { name, projectId: proj.id, hostId }
                     );
+                    if (!created) reportGroupCreateFailure();
                   },
                 });
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
             >
               <FolderTree className="size-3.5 text-indigo-400" />
-              Move to New Group...
+              New group from project
             </button>
 
-            {projectGroups.map((g) => {
-              if (projectGroupMap?.[activeProjectMenu.proj.id] === g.id) return null;
-              return (
+            {projectGroups.length > 0 && (
+              <div className="relative">
                 <button
-                  key={g.id}
-                  onClick={() => {
-                    const proj = activeProjectMenu.proj;
-                    setActiveProjectMenu(null);
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:move-project-to-group", {
-                        detail: { projectId: proj.id, groupId: g.id },
-                      })
-                    );
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/80 text-left transition cursor-pointer pl-6"
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={projectMenuSubmenu === "move-to-group"}
+                  onMouseEnter={() => setProjectMenuSubmenu("move-to-group")}
+                  onFocus={() => setProjectMenuSubmenu("move-to-group")}
+                  onClick={() =>
+                    setProjectMenuSubmenu((current) =>
+                      current === "move-to-group" ? null : "move-to-group"
+                    )
+                  }
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
                 >
-                  <span className="truncate">Move to {g.name}</span>
+                  <FolderInput className="size-3.5 text-worktree-sidebar-foreground/60" />
+                  Move to group
+                  <ChevronRight className="ml-auto size-3.5 text-worktree-sidebar-foreground/40" />
                 </button>
-              );
-            })}
+
+                {projectMenuSubmenu === "move-to-group" && (
+                  <div
+                    role="menu"
+                    aria-label="Move to group"
+                    className="absolute left-full top-0 ml-1 w-44 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl backdrop-blur-md"
+                  >
+                    {projectGroups.map((group) => {
+                      const current =
+                        projectGroupMap?.[activeProjectMenu.proj.id] === group.id;
+                      return (
+                        <button
+                          key={group.id}
+                          type="button"
+                          role="menuitem"
+                          disabled={current}
+                          aria-disabled={current}
+                          onClick={() => {
+                            if (current) return;
+                            const proj = activeProjectMenu.proj;
+                            setActiveProjectMenu(null);
+                            setProjectMenuSubmenu(null);
+                            dispatchProjectGroupChange("hydra:move-project-to-group", {
+                              projectId: proj.id,
+                              groupId: group.id,
+                              hostId: resolveProjectHostId(proj),
+                            });
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left transition cursor-pointer text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <span className="truncate">{group.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {projectGroupMap?.[activeProjectMenu.proj.id] && (
               <button
+                type="button"
                 onClick={() => {
                   const proj = activeProjectMenu.proj;
                   setActiveProjectMenu(null);
-                  window.dispatchEvent(
-                    new CustomEvent("hydra:remove-project-from-group", {
-                      detail: { projectId: proj.id },
-                    })
-                  );
+                  setProjectMenuSubmenu(null);
+                  dispatchProjectGroupChange("hydra:remove-project-from-group", {
+                    projectId: proj.id,
+                    hostId: resolveProjectHostId(proj),
+                  });
                 }}
                 className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/70 text-left transition cursor-pointer"
               >
-                Remove from Group
+                Remove from group
               </button>
             )}
 
-            <div className="h-px bg-worktree-sidebar-border my-1" />
+            <div role="separator" className="h-px bg-worktree-sidebar-border my-1" />
 
             <button
+              type="button"
               onClick={() => {
                 const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
+                setProjectMenuSubmenu(null);
                 setRemoveProjectTarget(proj);
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
@@ -1777,23 +1989,31 @@ export function WorktreeSidebar({
             }}
             className="w-48 rounded-xl border border-worktree-sidebar-border bg-worktree-sidebar p-1.5 shadow-2xl text-xs backdrop-blur-md"
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={stopRepoHeaderMenuEvent}
+            onMouseDown={stopRepoHeaderMenuEvent}
+            onPointerUp={stopRepoHeaderMenuEvent}
+            onMouseUp={stopRepoHeaderMenuEvent}
+            onKeyDown={stopRepoHeaderMenuEvent}
           >
             <button
+              type="button"
               onClick={() => {
                 const group = activeGroupMenu.group;
+                const hostId = resolveGroupOwnerHostId(group.id);
                 setActiveGroupMenu(null);
                 setGroupNameDialog({
                   open: true,
                   title: "Rename Project Group",
-                  description: "Enter a new name for this project group.",
+                  description: "Update the group name shown in the sidebar.",
                   initialName: group.name,
                   confirmLabel: "Rename",
+                  hostId,
                   onSubmit: (name) => {
-                    window.dispatchEvent(
-                      new CustomEvent("hydra:rename-project-group", {
-                        detail: { id: group.id, name },
-                      })
+                    const renamed = dispatchProjectGroupChange(
+                      "hydra:rename-project-group",
+                      { id: group.id, name, hostId }
                     );
+                    if (!renamed) reportGroupRenameFailure();
                   },
                 });
               }}
@@ -1803,12 +2023,15 @@ export function WorktreeSidebar({
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 const group = activeGroupMenu.group;
                 setActiveGroupMenu(null);
                 setGroupDeleteDialog({
                   open: true,
                   group,
+                  hostId: resolveGroupOwnerHostId(group.id),
+                  removeContainedProjects: false,
                 });
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-red-500/10 text-red-400 text-left transition cursor-pointer"
@@ -1835,21 +2058,29 @@ export function WorktreeSidebar({
         open={groupDeleteDialog.open}
         groupName={groupDeleteDialog.group?.name ?? ""}
         projectCount={groupDeleteMembers.length}
-        projectNames={groupDeleteMembers.map((p) => p.name)}
-        onOpenChange={(open) => setGroupDeleteDialog((prev) => ({ ...prev, open }))}
-        onConfirm={(removeContained) => {
-          if (groupDeleteDialog.group) {
-            window.dispatchEvent(
-              new CustomEvent("hydra:delete-project-group", {
-                detail: {
-                  id: groupDeleteDialog.group.id,
-                  removeProjectPaths: removeContained
-                    ? groupDeleteMembers.map((project) => project.path)
-                    : [],
-                },
-              })
-            );
-          }
+        projectNames={groupDeleteMembers.map((p) => p.displayName || p.name)}
+        removeContainedProjects={groupDeleteDialog.removeContainedProjects}
+        onRemoveContainedProjectsChange={(removeContainedProjects) =>
+          setGroupDeleteDialog((prev) => ({ ...prev, removeContainedProjects }))
+        }
+        onOpenChange={(open) =>
+          setGroupDeleteDialog((prev) => ({
+            ...prev,
+            open,
+            ...(open ? {} : { removeContainedProjects: false }),
+          }))
+        }
+        onConfirm={() => {
+          const group = groupDeleteDialog.group;
+          if (!group) return;
+          const deleted = dispatchProjectGroupChange("hydra:delete-project-group", {
+            id: group.id,
+            removeProjectPaths: groupDeleteDialog.removeContainedProjects
+              ? groupDeleteMembers.map((project) => project.path)
+              : [],
+            hostId: groupDeleteDialog.hostId,
+          });
+          if (!deleted) reportGroupDeleteFailure();
         }}
       />
 

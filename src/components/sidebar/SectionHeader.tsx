@@ -14,8 +14,14 @@ import { shouldIgnoreRepoHeaderToggle } from "./repo-header-event-guards";
 import { ACTIVE_SHELL_FACE } from "../../lib/shell-face";
 import { RepoIconGlyph } from "../repo/repo-icon";
 import type { HydraProject, ProjectGroup } from "./types";
-import { ProjectHeaderActions } from "./ProjectHeaderActions";
-import { REPO_HEADER_ACTION_BUTTON_CLASS } from "./repo-header-action-button-class";
+import {
+  ProjectHeaderActions,
+  stopRepoHeaderKeyboardToggle,
+} from "./ProjectHeaderActions";
+import {
+  REPO_HEADER_ACTION_BUTTON_CLASS,
+  REPO_HEADER_ACTION_REVEAL_CLASS,
+} from "./repo-header-action-button-class";
 import { resolveRepoHeaderColor } from "./project-header-color";
 import {
   getProjectGroupHeaderPaddingLeft,
@@ -48,9 +54,21 @@ export interface GroupSectionHeaderProps {
   className?: string;
 }
 
+/**
+ * Orca `getRepoHeaderCreateState`: the header `+` is disabled while the project's
+ * host cannot accept a workspace (SSH target not connected).
+ */
+export interface RepoHeaderCreateState {
+  disabled: boolean;
+  tooltip: string;
+  ariaLabel: string;
+}
+
 export interface RepoSectionHeaderProps {
   variant: "repo" | "project";
   project: HydraProject;
+  /** Omitted = the action is always enabled (Orca renders a plain `+`). */
+  createState?: RepoHeaderCreateState | null;
   isCollapsed: boolean;
   isActive?: boolean;
   count?: number;
@@ -195,6 +213,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
             title="Group options"
             aria-label="Group options"
             className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
+            onKeyDown={stopRepoHeaderKeyboardToggle}
             onClick={handleContext}
           >
             <MoreHorizontal className="size-3.5" />
@@ -212,6 +231,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
               REPO_HEADER_ACTION_BUTTON_CLASS,
               createWorkspaceDisabledReason ? "cursor-not-allowed opacity-40" : "cursor-pointer"
             )}
+            onKeyDown={stopRepoHeaderKeyboardToggle}
             onClick={(e) => {
               e.stopPropagation();
               if (createWorkspaceDisabledReason) return;
@@ -232,6 +252,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
  */
 export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   project,
+  createState,
   isCollapsed,
   isActive: _isActive = false,
   count,
@@ -386,23 +407,51 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
               title="Project options"
               aria-label="Project options"
               className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
+              onKeyDown={stopRepoHeaderKeyboardToggle}
               onClick={handleContext}
             >
               <MoreHorizontal className="size-3.5" />
             </button>
           )}
 
-          {onOpenNewWorkspace && (
-            <button
-              type="button"
-              title="New workspace in this project"
-              aria-label="New workspace in this project"
-              className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
-              onClick={handleNewWorkspace}
-            >
-              <Plus className="size-3.5" />
-            </button>
-          )}
+          {onOpenNewWorkspace &&
+            (createState?.disabled ? (
+              // Orca keeps a focusable span around a disabled button so the
+              // tooltip explaining WHY creation is unavailable stays reachable.
+              <span
+                className={cn(
+                  "inline-flex cursor-not-allowed transition-[margin,max-width,opacity]",
+                  REPO_HEADER_ACTION_REVEAL_CLASS
+                )}
+                data-repo-header-action=""
+                data-repo-header-create-disabled=""
+                tabIndex={0}
+                aria-label={createState.ariaLabel}
+                title={createState.tooltip}
+                onKeyDown={stopRepoHeaderKeyboardToggle}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  aria-label={createState.ariaLabel}
+                  className="pointer-events-none inline-flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-60"
+                  disabled
+                >
+                  <Plus className="size-3" />
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                title={createState?.tooltip ?? "New workspace in this project"}
+                aria-label={createState?.ariaLabel ?? "New workspace in this project"}
+                className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
+                onKeyDown={stopRepoHeaderKeyboardToggle}
+                onClick={handleNewWorkspace}
+              >
+                <Plus className="size-3.5" />
+              </button>
+            ))}
         </ProjectHeaderActions>
       </div>
     </div>

@@ -35,16 +35,14 @@
   },
   {
    "id": "D03a-075",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-70",
-    "src/App.tsx:1355-1420"
+    "src-tauri/src/lib.rs:scan_worktrees",
+    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-140",
+    "src/App.tsx:1355-1425"
    ],
-   "missing_behaviors": [
-    "tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch) — o backend devolve só a mensagem crua",
-    "Copy command (só Copy diagnostics existe)"
-   ],
-   "note": "Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard."
+   "missing_behaviors": [],
+   "note": "Failed scans reject with a JSON failureKind/message/fixCommand payload; the indicator classifies it, shows a per-kind tooltip, offers Copy command only when the payload carries one, plus retry and diagnostics."
   }
  ]
 }

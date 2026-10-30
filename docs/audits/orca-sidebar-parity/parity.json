@@ -4606,15 +4606,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:12",
-    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:37",
-    "src/components/sidebar/worktree-list/grouping/section-order.ts:50"
+    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.ts:40-160",
+    "src/components/sidebar/worktree-list/grouping/worktree-group-keys.parity.test.ts"
    ],
    "missing_behaviors": [
-    "getGroupKeysForWorktree usado por reveal/expand",
-    "keys de project groups ancestrais"
+    "WorktreeSidebar reveal does not yet call getRevealGroupKeysToExpand"
    ],
-   "notes": "getGroupKeyForWorktree é usado por section-order.ts para ordenação; getGroupKeysForWorktree existe mas não alimenta nenhum caminho de reveal no sidebar pintado."
+   "notes": "Pinned key, project-group ancestry and the collapsed-key filter are implemented and tested.",
+   "note": "Pinned key, project-group ancestry and the collapsed-key filter are implemented and tested."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4808,16 +4807,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:777-812",
-    "src/components/sidebar/sidebar-session-attention.ts:84-105"
+    "src/components/sidebar/smart-sort.ts:41-140",
+    "src/components/sidebar/smart-sort.parity.test.ts"
    ],
    "missing_behaviors": [
-    "SORT_SETTLE_MS=3000 de debounce",
-    "persistência da ordem Smart por host",
-    "telemetria smart_sort_*"
+    "no sortEpoch pipeline in the sidebar to route through the settle gate"
    ],
-   "notes": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain.",
-   "note": "Smart mode now orders by Orca attention classes on the painted path; settle/persistence/telemetry remain."
+   "notes": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet.",
+   "note": "SORT_SETTLE_MS=3000 and the settle gate exist and are tested; nothing calls them yet."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -4960,20 +4957,18 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/App.tsx:2063-2080",
-    "src/components/sidebar/WorktreeList.tsx:525"
+    "src/hooks/use-folder-workspace-path-statuses.ts:1-90",
+    "src/lib/folder-path-status-cache.ts:1-60"
    ],
    "backend": [
     "invoke('path_exists') -> src-tauri/src"
    ],
    "missing_behaviors": [
-    "efeito sempre-montado useFolderWorkspacePathStatuses",
-    "cache key + rota por runtime environment",
-    "getFreshFolderWorkspacePathStatus ignorando negativo expirado",
-    "re-execução em mudança de repos/ssh/runtime"
+    "cache key ignores the runtime/SSH environment (probe is local-only)",
+    "getFreshFolderWorkspacePathStatus selector not exposed"
    ],
-   "notes": "Probe one-shot path_exists; sem efeito sempre-montado/expiração de cache por host.",
-   "note": "Probe one-shot path_exists; sem efeito sempre-montado/expiração de cache por host."
+   "notes": "Always-mounted probe with TTL cache, confirmed-only negatives, and revalidation on repo/ssh/runtime epoch changes.",
+   "note": "Always-mounted probe with TTL cache, confirmed-only negatives, and revalidation on repo/ssh/runtime epoch changes."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5179,19 +5174,15 @@
    "components/sidebar/worktree-list/navigation/render-row-lookup.ts:10-135"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/listing/render-row.ts:12-31",
-    "src/components/sidebar/worktree-sidebar-row-preference.ts:9-41"
+    "src/components/sidebar/worktree-list/listing/reveal-row-lookup.ts:1-110",
+    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:1-120"
    ],
-   "missing_behaviors": [
-    "rowKeyMatchesRenderRow",
-    "renderRowContainsWorktree",
-    "findPreferredRenderRowIndexForWorktree"
-   ],
-   "notes": "A lookup de key foi portada (getRenderRowKey) e a preferência de row existe para navegação, mas contenção e índice preferido por worktree não têm módulo equivalente.",
+   "missing_behaviors": [],
+   "notes": "Key/containment/preferred-index lookups are consumed by the reveal path: a natural item beats a Pinned duplicate or a containing header, and folder-path reveals stay exact.",
    "backend": [],
-   "note": "A lookup de key foi portada (getRenderRowKey) e a preferência de row existe para navegação, mas contenção e índice preferido por worktree não têm módulo equivalente."
+   "note": "Key/containment/preferred-index lookups are consumed by the reveal path: a natural item beats a Pinned duplicate or a containing header, and folder-path reveals stay exact."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5304,22 +5295,18 @@
    "components/sidebar/worktree-list/rows/FolderPathStatusIndicator.tsx:14-47"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/FolderWorkspaceRow.tsx:44-58",
-    "src/components/sidebar/WorktreeList.tsx:525",
-    "src/App.tsx:2063-2080"
+    "src/hooks/use-folder-workspace-path-statuses.ts:1-80",
+    "src/components/sidebar/WorktreeList.tsx:folder row",
+    "src/components/sidebar/FolderWorkspaceRow.tsx:28-80"
    ],
    "backend": [
     "invoke('path_exists') -> src-tauri/src"
    ],
-   "missing_behaviors": [
-    "isConfirmedStaleFolderPathStatus (cor destructive)",
-    "tooltip com título + descrição detalhada",
-    "rota por host/SSH/runtime do status"
-   ],
-   "notes": "Indicador de path existe; sem status fresco por host/SSH.",
-   "note": "Indicador de path existe; sem status fresco por host/SSH."
+   "missing_behaviors": [],
+   "notes": "Confirmed-stale and ambiguous-connection statuses reach the row, both block activation, and the tooltip carries title+description; host routing stays local because the probe command has no remote variant.",
+   "note": "Confirmed-stale and ambiguous-connection statuses reach the row, both block activation, and the tooltip carries title+description; host routing stays local because the probe command has no remote variant."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5348,20 +5335,18 @@
    "components/sidebar/worktree-list/rows/RepoScanUnavailableIndicator.tsx:18-153"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-70",
-    "src/App.tsx:1355-1420"
+    "src-tauri/src/lib.rs:scan_worktrees",
+    "src/components/sidebar/RepoScanUnavailableIndicator.tsx:1-140",
+    "src/App.tsx:1355-1425"
    ],
    "backend": [
     "window.api.ui.writeClipboardText (Orca; equivalente Tauri: clipboard do webview)"
    ],
-   "missing_behaviors": [
-    "tooltip por failureKind (xcode-license/developer-tools/architecture-mismatch) — o backend devolve só a mensagem crua",
-    "Copy command (só Copy diagnostics existe)"
-   ],
-   "notes": "Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard.",
-   "note": "Failed scans are captured per repo, painted as a retryable status row and the diagnostics copy to the clipboard."
+   "missing_behaviors": [],
+   "notes": "Failed scans reject with a JSON failureKind/message/fixCommand payload; the indicator classifies it, shows a per-kind tooltip, offers Copy command only when the payload carries one, plus retry and diagnostics.",
+   "note": "Failed scans reject with a JSON failureKind/message/fixCommand payload; the indicator classifies it, shows a per-kind tooltip, offers Copy command only when the payload carries one, plus retry and diagnostics."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5505,15 +5490,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:1024-1075",
-    "src/components/sidebar/SectionHeader.tsx:172-183"
+    "src/components/sidebar/ProjectHeaderActions.tsx:event guards",
+    "src/components/sidebar/WorktreeSidebar.tsx:group menu"
    ],
    "missing_behaviors": [
-    "stopRepoHeaderMenuEvent no menu portalizado",
-    "hostId do dono do grupo repassado a rename/delete"
+    "App.tsx group handlers still ignore the forwarded hostId (sidebar-prefs pipeline has no per-host group mutation)"
    ],
-   "notes": "Ações de grupo parciais.",
-   "note": "Ações de grupo parciais."
+   "notes": "Menu portal events no longer bubble into the header, and rename/delete carry the group owner hostId.",
+   "note": "Menu portal events no longer bubble into the header, and rename/delete carry the group owner hostId."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5547,17 +5531,13 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:889-1022",
-    "src/components/sidebar/SectionHeader.tsx:157-170"
+    "src/components/sidebar/WorktreeSidebar.tsx:project menu"
    ],
    "missing_behaviors": [
-    "Change Project Icon",
-    "Hide/Show non-Hydra worktrees no menu",
-    "submenu 'Move to group' com grupo atual desabilitado",
-    "separador antes de Remove Project"
+    "Change Project Icon opens Settings but Hydra has no repository-icon write path"
    ],
-   "notes": "Menu de projeto parcial.",
-   "note": "Menu de projeto parcial."
+   "notes": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist.",
+   "note": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5568,17 +5548,14 @@
    "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:178-246"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:200-215",
-    "src/components/sidebar/WorktreeList.tsx:250-285"
+    "src/components/sidebar/SectionHeader.tsx:repo createState span/disabled button",
+    "src/components/sidebar/SectionHeader.parity.test.tsx:create-state cases"
    ],
-   "missing_behaviors": [
-    "estado desabilitado com span tabIndex=0 + botão interno disabled",
-    "tooltip com createState.tooltip"
-   ],
-   "notes": "Botão + do header de repo sem estado desabilitado.",
-   "note": "Botão + do header de repo sem estado desabilitado."
+   "missing_behaviors": [],
+   "notes": "The repo create button paints the disabled shape (focusable span wrapping a disabled button) with the createState tooltip/aria label.",
+   "note": "The repo create button paints the disabled shape (focusable span wrapping a disabled button) with the createState tooltip/aria label."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5589,16 +5566,14 @@
    "components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx:12-118"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ProjectGroupDeleteDialog.tsx",
-    "src/components/sidebar/WorktreeSidebar.tsx:170"
+    "src/components/sidebar/ProjectGroupDeleteDialog.tsx:1-140",
+    "src/components/sidebar/ProjectGroupDeleteDialog.parity.test.tsx:1-160"
    ],
-   "missing_behaviors": [
-    "toggle removeContainedProjects com contagem/nomes"
-   ],
-   "notes": "The delete dialog shows count and names but has no remove-contained-projects choice.",
-   "note": "The delete dialog shows count and names but has no remove-contained-projects choice."
+   "missing_behaviors": [],
+   "notes": "Delete dialog exposes a controlled Remove-contained-projects toggle with count/names and the on-disk-folder note.",
+   "note": "Delete dialog exposes a controlled Remove-contained-projects toggle with count/names and the on-disk-folder note."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5611,15 +5586,13 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:1220-1230"
+    "src/components/sidebar/WorktreeSidebar.tsx:group mutations"
    ],
    "missing_behaviors": [
-    "toasts de falha (Failed to rename/delete group etc.)",
-    "deleteProjectGroupWithContainedProjects com removeContainedProjects",
-    "roteamento por host dono do grupo"
+    "group mutations remain App-local sidebar_prefs state; hostId is ignored and contained-project removal failures cannot be reported individually"
    ],
-   "notes": "Fluxos de grupo parciais (sem toasts/contagem).",
-   "note": "Fluxos de grupo parciais (sem toasts/contagem)."
+   "notes": "Create/rename/delete toast on unacknowledged mutations, delete supports removeContainedProjects, and the owner host is resolved and forwarded.",
+   "note": "Create/rename/delete toast on unacknowledged mutations, delete supports removeContainedProjects, and the owner host is resolved and forwarded."
   },
   "domain": "D03a-worktree-list-module"
  },

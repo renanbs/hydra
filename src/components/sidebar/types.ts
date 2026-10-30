@@ -287,6 +287,8 @@ export interface WorktreeSidebarProps {
   liveWorkspacePaths?: ReadonlySet<string>;
   /** Folder paths the host reports as gone; Orca badges them with FolderX. */
   missingFolderPaths?: ReadonlySet<string>;
+  /** Rich path status per folder path (confirmed stale vs ambiguous connection). */
+  folderPathStatusByPath?: ReadonlyMap<string, import("../../shared/folder-workspace-path-status").FolderWorkspacePathStatus>;
   /** Failed authoritative scans, keyed by repo path (scan-failure indicator). */
   scanFailuresByProject?: Record<string, string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
