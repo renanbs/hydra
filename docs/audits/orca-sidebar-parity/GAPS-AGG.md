@@ -229,7 +229,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 289 capabilities
+## PARTIAL — 288 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -527,7 +527,7 @@
 - **D09-027** — Detecção de status de agentes atribuídos e frescos para transição de cold-start | falta: cold start do caminho pintado a partir do sortOrder persistido | components/sidebar/smart-attention.ts:45
 - **D09-031** — Pipeline de ordenação inteligente de worktrees com fallback de cold-start por snapshot persistido | falta: cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status | components/sidebar/smart-sort.ts:167
 
-### D10-visibility-inbox-notices (11)
+### D10-visibility-inbox-notices (10)
 
 - **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: busca window.api.worktrees.getBranchRenameFailureOutput ao abrir (Hydra só renderiza a prop `error`; `worktreeId` é declarado e não usado — :11); resposta null mantém o excerto persistido; rejeição do IPC mantém o excerto; guard de staleness no cleanup | components/sidebar/AutoRenameFailedDialog.tsx:31
 - **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
@@ -539,7 +539,6 @@
 - **D10-064** — Manter worktrees descobertos ocultos e dispensar o card | falta: superfície de erro/rollback (Hydra só faz console.error) | backend: invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304 | components/sidebar/imported-worktrees-card-actions.ts:34
 - **D10-067** — Importar worktrees do inbox para a allowlist do sidebar (com rollback explícito) | falta: import em lote para a allowlist (importedExternalWorktreePaths); rollback explícito quando o refresh falha | backend: invoke('import_worktree') -> src-tauri/src/lib.rs:418 | components/sidebar/new-external-worktrees-inbox-actions.ts:56
 - **D10-069** — Suprimir permanentemente a descoberta de worktrees externos | falta: fundir a baseline no mesmo write; gravar externalWorktreeDiscoverySuppressedAt no config do repo (Hydra grava suppressed_discovery em SQLite); mensagem de erro | backend: invoke('suppress_worktree_inbox') -> src-tauri/src/lib.rs:423; src-tauri/src/project_manager.rs:205 | components/sidebar/new-external-worktrees-inbox-actions.ts:127
-- **D10-077** — Toasts de lista de workspaces obsoleta | falta: toast 'No deletable workspaces selected' da seleção múltipla que resolve para zero alvos (o caminho de multi-select delete ainda não existe) | components/sidebar/stale-workspace-list-toast.ts:7
 
 ### D11-lineage-grouping-model (6)
 

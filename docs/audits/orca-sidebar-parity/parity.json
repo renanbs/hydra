@@ -17062,18 +17062,17 @@
    "components/sidebar/stale-workspace-list-toast.ts:28"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:516-521",
-    "src/App.tsx:2009",
-    "src/App.tsx:4379"
+    "src/components/sidebar/worktree-delete-selection.ts:1-20",
+    "src/components/sidebar/WorktreeList.tsx:1240-1262",
+    "src/App.tsx:505-535",
+    "src/components/sidebar/WorktreeList.parity.test.tsx:169-200"
    ],
    "backend": [],
-   "notes": "The stale-list toast matches Orca; the no-deletable variant has no caller because batch deletion from a selection is absent.",
-   "missing_behaviors": [
-    "toast 'No deletable workspaces selected' da seleção múltipla que resolve para zero alvos (o caminho de multi-select delete ainda não existe)"
-   ],
-   "note": "The stale-list toast matches Orca; the no-deletable variant has no caller because batch deletion from a selection is absent."
+   "notes": "Multi-selection delete opens the batch confirmation; the primary checkout is filtered out and an empty selection raises the no-deletable-workspaces toast.",
+   "missing_behaviors": [],
+   "note": "Multi-selection delete opens the batch confirmation; the primary checkout is filtered out and an empty selection raises the no-deletable-workspaces toast."
   },
   "par": [
    "PAR-86"
