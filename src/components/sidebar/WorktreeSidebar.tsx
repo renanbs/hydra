@@ -180,6 +180,15 @@ export function WorktreeSidebar({
   const [portsByWorktree, setPortsByWorktree] = useState<Map<string, WorkspacePort[]>>(() => new Map());
   const [highlightedRevealPath, setHighlightedRevealPath] = useState<string | null>(null);
   const highlightTimerRef = useRef<number | null>(null);
+  // D03a-090: the reveal highlight timer must not fire into an unmounted panel.
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current !== null) {
+        window.clearTimeout(highlightTimerRef.current);
+        highlightTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Context Menu state
   const [activeProjectMenu, setActiveProjectMenu] = useState<{ proj: HydraProject; x: number; y: number } | null>(null);

@@ -124,6 +124,36 @@
    ],
    "missing_behaviors": [],
    "note": "The visible host set now narrows repos by execution host and each worktree by its own resolved host before grouping."
+  },
+  {
+   "id": "D03a-051",
+   "status": "parity",
+   "evidence": [
+    "src/lib/reuse-array-if-equal.ts:1-20",
+    "src/components/sidebar/WorktreeList.tsx:786-820"
+   ],
+   "missing_behaviors": [],
+   "note": "The host/search projection keeps the previous array identity when every element is unchanged."
+  },
+  {
+   "id": "D03a-078",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/repo-header-event-guards.ts:1-25",
+    "src/components/sidebar/SectionHeader.tsx:310-330"
+   ],
+   "missing_behaviors": [],
+   "note": "Enter/Space from a nested header control (menu, create, drag handle) is ignored by the collapse toggle; menu/create handlers already stop propagation."
+  },
+  {
+   "id": "D03a-081",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:1-50",
+    "src/components/sidebar/worktree-list/rows/sidebar-worktree-active-dom.ts:1-60"
+   ],
+   "missing_behaviors": [],
+   "note": "Options publish worktree-list-option ids, only mounted ids feed activedescendant, and the active copy is marked immediately by host identity."
   }
  ]
 }

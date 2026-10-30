@@ -32,14 +32,23 @@ export function FolderWorkspaceRow({
 }: FolderWorkspaceRowProps): React.JSX.Element {
   return (
     <div
-      role="button"
+      role="option"
       tabIndex={0}
       aria-label={name}
+      aria-selected={isActive}
       aria-current={isActive ? "page" : undefined}
-      onClick={onActivate}
+      aria-disabled={pathMissing || undefined}
+      data-folder-workspace-path-status={pathMissing ? "confirmed-stale" : undefined}
+      onClick={() => {
+        // Orca blocks activation for a confirmed-stale path; the row stays
+        // visible so the FolderX badge (and the delete control) remain reachable.
+        if (pathMissing) return;
+        onActivate?.();
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
+          if (pathMissing) return;
           onActivate?.();
         }
       }}

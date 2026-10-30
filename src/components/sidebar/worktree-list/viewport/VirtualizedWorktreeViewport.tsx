@@ -165,6 +165,7 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
         role="listbox"
         aria-label={translate('auto.components.sidebar.WorktreeList.bfbedc547b', 'Worktrees')}
         aria-orientation="vertical"
+        aria-multiselectable="true"
         aria-activedescendant={activeDescendantOptionId}
         onKeyDown={handleContainerKeyDown}
         onScroll={handleScroll}

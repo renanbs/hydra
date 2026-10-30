@@ -4,6 +4,7 @@ import React, { useMemo, useCallback, useLayoutEffect, useEffect, useRef, useSta
 import { useAppStore } from "@/store";
 import { AlertTriangle, ChevronDown, FolderPlus, Loader2, Plus, Server, ServerOff } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { reuseArrayIfEqual } from "../../lib/reuse-array-if-equal";
 import { getShortcutPlatform } from "../../lib/shortcut-platform";
 import { keybindingMatchesAction } from "../../shared/keybindings";
 import type { KeybindingOverrides } from "../../shared/keybindings";
@@ -794,6 +795,7 @@ export function WorktreeList({
   );
 
   // Filter projects by search query (project identity or a matching workspace).
+  const visibleProjectsRef = useRef<HydraProject[]>([]);
   const visibleProjects = useMemo(() => {
     const searched = !query
       ? displayProjects
@@ -804,20 +806,25 @@ export function WorktreeList({
           const wts = getFilteredAndSortedWorktrees(proj);
           return wts.length > 0;
         });
-    if (!visibleHostIdSet) return searched;
-    const repoByProject = new Map(
-      (storeRepos as Repo[]).flatMap((repo) => [
-        [repo.id, repo] as const,
-        [repo.path, repo] as const,
-      ])
-    );
-    return searched.filter((proj) => {
-      const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
-      const hostId = repo
-        ? getRepoExecutionHostId(repo)
-        : focusedHostId;
-      return visibleHostIdSet.has(hostId);
-    });
+    let filtered = searched;
+    if (visibleHostIdSet) {
+      const repoByProject = new Map(
+        (storeRepos as Repo[]).flatMap((repo) => [
+          [repo.id, repo] as const,
+          [repo.path, repo] as const,
+        ])
+      );
+      filtered = searched.filter((proj) => {
+        const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
+        const hostId = repo ? getRepoExecutionHostId(repo) : focusedHostId;
+        return visibleHostIdSet.has(hostId);
+      });
+    }
+    // D03a-051: a recompute that kept the same project objects keeps the previous
+    // array identity, so memoized sections do not invalidate.
+    const stable = reuseArrayIfEqual(visibleProjectsRef.current, filtered);
+    visibleProjectsRef.current = stable;
+    return stable;
   }, [displayProjects, query, getFilteredAndSortedWorktrees, visibleHostIdSet, storeRepos, focusedHostId]);
 
   // Host ownership per repo, shared by the row pipeline and the delete-state

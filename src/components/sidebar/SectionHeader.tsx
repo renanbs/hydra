@@ -10,6 +10,7 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { shouldIgnoreRepoHeaderToggle } from "./repo-header-event-guards";
 import { ACTIVE_SHELL_FACE } from "../../lib/shell-face";
 import { RepoIconGlyph } from "../repo/repo-icon";
 import type { HydraProject, ProjectGroup } from "./types";
@@ -311,6 +312,9 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         }}
         onClick={handleClick}
         onKeyDown={(e) => {
+          // Orca `shouldIgnoreRepoHeaderToggle`: Enter on the menu/create trigger
+          // must not collapse the section on its way out.
+          if (shouldIgnoreRepoHeaderToggle(e)) return;
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             handleClick();

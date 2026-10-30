@@ -4828,15 +4828,14 @@
    "components/sidebar/worktree-list/listing/use-reused-array-identity.ts:4-13"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/visible-worktrees.ts:266"
+    "src/lib/reuse-array-if-equal.ts:1-20",
+    "src/components/sidebar/WorktreeList.tsx:786-820"
    ],
-   "missing_behaviors": [
-    "reuseArrayIfEqual",
-    "identidade de array preservada entre recomputos"
-   ],
-   "notes": "Não localizado após busca por use-reused-array-identity, reuseArrayIfEqual. (O cache de ids publicados em visible-worktrees é outro mecanismo.)"
+   "missing_behaviors": [],
+   "notes": "The host/search projection keeps the previous array identity when every element is unchanged.",
+   "note": "The host/search projection keeps the previous array identity when every element is unchanged."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5425,18 +5424,14 @@
    "components/sidebar/worktree-list/rows/header-event-guards.ts:4-31"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:110-165",
-    "src/components/sidebar/SectionHeader.tsx:284-306"
+    "src/components/sidebar/repo-header-event-guards.ts:1-25",
+    "src/components/sidebar/SectionHeader.tsx:310-330"
    ],
-   "missing_behaviors": [
-    "stopRepoHeaderKeyboardToggle / shouldIgnoreRepoHeaderToggle como módulo",
-    "stopRepoHeaderMenuEvent do menu portalizado",
-    "stopNestedWorktreeCardBubble"
-   ],
-   "notes": "Guards de evento do header parciais.",
-   "note": "Guards de evento do header parciais."
+   "missing_behaviors": [],
+   "notes": "Enter/Space from a nested header control (menu, create, drag handle) is ignored by the collapse toggle; menu/create handlers already stop propagation.",
+   "note": "Enter/Space from a nested header control (menu, create, drag handle) is ignored by the collapse toggle; menu/create handlers already stop propagation."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5494,18 +5489,14 @@
    "components/sidebar/worktree-list/rows/option-dom.ts:1-67"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-surface.tsx:80-84",
-    "src/components/sidebar/use-worktree-card-controller.ts:164-180"
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:1-50",
+    "src/components/sidebar/worktree-list/rows/sidebar-worktree-active-dom.ts:1-60"
    ],
-   "missing_behaviors": [
-    "getWorktreeOptionId (worktree-list-option-*)",
-    "getMountedWorktreeOptions",
-    "markSidebarWorktreeActiveImmediately (marcar cópias da mesma identidade de host)"
-   ],
-   "notes": "Ativação/alvo parcial.",
-   "note": "Ativação/alvo parcial."
+   "missing_behaviors": [],
+   "notes": "Options publish worktree-list-option ids, only mounted ids feed activedescendant, and the active copy is marked immediately by host identity.",
+   "note": "Options publish worktree-list-option ids, only mounted ids feed activedescendant, and the active copy is marked immediately by host identity."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5663,17 +5654,15 @@
    "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:32-373"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:158-174",
-    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:120-165"
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:161-175",
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:1-50"
    ],
-   "missing_behaviors": [
-    "aria-multiselectable=\"true\" no listbox"
-   ],
-   "notes": "Viewport TanStack com role=listbox, aria-orientation e aria-activedescendant; falta o aria-multiselectable que o Orca publica.",
+   "missing_behaviors": [],
+   "notes": "The scroll root is a vertical multiselectable listbox with aria-activedescendant pointing only at mounted options.",
    "backend": [],
-   "note": "Viewport TanStack com role=listbox, aria-orientation e aria-activedescendant; falta o aria-multiselectable que o Orca publica."
+   "note": "The scroll root is a vertical multiselectable listbox with aria-activedescendant pointing only at mounted options."
   },
   "domain": "D03a-worktree-list-module"
  },
@@ -5684,18 +5673,14 @@
    "components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:255-278"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64",
-    "src/components/sidebar/WorktreeSidebar.tsx:151-152",
-    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:100-104"
+    "src/components/sidebar/WorktreeSidebar.tsx:182-193"
    ],
-   "missing_behaviors": [
-    "cancelar o timeout do highlight de reveal no unmount (clearRevealHighlightTimeout)"
-   ],
-   "notes": "Drag, RAFs de medição e timer do jump-to-top são limpos no unmount; highlightTimerRef do WorktreeSidebar não tem cleanup.",
+   "missing_behaviors": [],
+   "notes": "Unmount clears the reveal-highlight timeout, so it cannot fire into a torn-down panel.",
    "backend": [],
-   "note": "Drag, RAFs de medição e timer do jump-to-top são limpos no unmount; highlightTimerRef do WorktreeSidebar não tem cleanup."
+   "note": "Unmount clears the reveal-highlight timeout, so it cannot fire into a torn-down panel."
   },
   "domain": "D03a-worktree-list-module"
  },

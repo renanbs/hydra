@@ -87,8 +87,16 @@ describe("FolderWorkspaceRow (Orca parity)", () => {
   it("activates on click and on Enter", () => {
     const onActivate = vi.fn();
     renderRow({ onActivate });
-    screen.getByRole("button", { name: "MalhaClub Dev workspace" }).click();
+    // Orca exposes the row as a listbox option, not a button.
+    screen.getByRole("option", { name: "MalhaClub Dev workspace" }).click();
     expect(onActivate).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses activation when the path is confirmed stale", () => {
+    const onActivate = vi.fn();
+    renderRow({ onActivate, pathMissing: true });
+    screen.getByRole("option", { name: "MalhaClub Dev workspace" }).click();
+    expect(onActivate).not.toHaveBeenCalled();
   });
 });
 

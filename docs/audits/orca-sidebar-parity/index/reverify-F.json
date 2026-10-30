@@ -188,30 +188,24 @@
   },
   {
    "id": "D03a-089",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:158-174",
-    "src/components/sidebar/worktree-list/viewport/use-virtualizer.ts:120-165"
+    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:161-175",
+    "src/components/sidebar/worktree-list/viewport/option-id.ts:1-50"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "aria-multiselectable=\"true\" no listbox"
-   ],
-   "note": "Viewport TanStack com role=listbox, aria-orientation e aria-activedescendant; falta o aria-multiselectable que o Orca publica."
+   "missing_behaviors": [],
+   "note": "The scroll root is a vertical multiselectable listbox with aria-activedescendant pointing only at mounted options."
   },
   {
    "id": "D03a-090",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/use-runtime.ts:62-64",
-    "src/components/sidebar/WorktreeSidebar.tsx:151-152",
-    "src/components/sidebar/worktree-list/viewport/use-row-measurement.ts:100-104"
+    "src/components/sidebar/WorktreeSidebar.tsx:182-193"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "cancelar o timeout do highlight de reveal no unmount (clearRevealHighlightTimeout)"
-   ],
-   "note": "Drag, RAFs de medição e timer do jump-to-top são limpos no unmount; highlightTimerRef do WorktreeSidebar não tem cleanup."
+   "missing_behaviors": [],
+   "note": "Unmount clears the reveal-highlight timeout, so it cannot fire into a torn-down panel."
   },
   {
    "id": "D03a-091",
