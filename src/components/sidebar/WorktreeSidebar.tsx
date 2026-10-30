@@ -33,6 +33,7 @@ import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
 import { resolveRevealWorktreePath } from "./reveal-target-resolution";
+import { requestProjectsRefresh } from "../../lib/refresh-projects-awaitable";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
@@ -1129,8 +1130,13 @@ export function WorktreeSidebar({
                     externalWorktreeDiscoverySuppressedAt:
                       proj.externalWorktreeDiscoverySuppressedAt ?? null,
                   });
+                  // The policy write only counts once the authoritative scan confirmed
+                  // it; otherwise the catch rolls the write back.
+                  const refreshed = await requestProjectsRefresh();
+                  if (!refreshed) {
+                    throw new Error("authoritative worktree refresh failed");
+                  }
                   setHiddenWorktreeError(proj.path, null);
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
                 } catch (err) {
                   console.error(err);
                   // Roll back the policy so the card does not claim a state the scan

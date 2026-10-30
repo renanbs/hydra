@@ -2,7 +2,27 @@
  "group": "AX",
  "generatedFrom": "2026-10-27 visibility surfaces: Orca's Add-location form (inline validation, aria wiring, reset) and the pinned-fallback copy qualified by repo/host",
  "rows": [
-  {"id":"D10-054","status":"parity","evidence":["src/components/sidebar/WorktreeVisibilitySourceAddForm.tsx:1-105","src/components/sidebar/WorktreeVisibilityDialog.tsx:547-580","src/components/sidebar/WorktreeVisibilitySourceAddForm.parity.test.tsx:14-44"],"missing_behaviors":[],"note":"The form owns the draft, flags aria-invalid on failure, describes the help text by id, announces the error with role=alert and resets only after a confirmed add."},
-  {"id":"D10-024","status":"partial","evidence":["src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:170-182","src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:53-59"],"missing_behaviors":["copy/layout da pílula compacta (NewExternalWorktreesInboxLine usa contador + 'hidden worktrees' em vez de 'Hiding N discovered worktrees')"],"note":"A linha expandida qualifica o placement pinned-fallback com '<repo> on <host>'; a pílula compacta mantém o layout próprio do Hydra."}
+  {
+   "id": "D10-054",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeVisibilitySourceAddForm.tsx:1-105",
+    "src/components/sidebar/WorktreeVisibilityDialog.tsx:547-580",
+    "src/components/sidebar/WorktreeVisibilitySourceAddForm.parity.test.tsx:14-44"
+   ],
+   "missing_behaviors": [],
+   "note": "The form owns the draft, flags aria-invalid on failure, describes the help text by id, announces the error with role=alert and resets only after a confirmed add."
+  },
+  {
+   "id": "D10-024",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:170-182",
+    "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:50-120",
+    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:53-59"
+   ],
+   "missing_behaviors": [],
+   "note": "Re-checked against Orca: the compact pill is badge + hidden worktrees there too; the placement-qualified copy lives in the expanded line, which now matches."
+  }
  ]
 }

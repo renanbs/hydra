@@ -564,17 +564,16 @@
     "components/sidebar/ImportedWorktreesVisibilityLine.tsx:132"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:170-182",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:50-120",
      "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:53-59"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "copy/layout da pílula compacta (NewExternalWorktreesInboxLine usa contador + 'hidden worktrees' em vez de 'Hiding N discovered worktrees')"
-    ],
-    "note": "A linha expandida qualifica o placement pinned-fallback com '<repo> on <host>'; a pílula compacta mantém o layout próprio do Hydra.",
-    "notes": "A linha expandida qualifica o placement pinned-fallback com '<repo> on <host>'; a pílula compacta mantém o layout próprio do Hydra."
+    "missing_behaviors": [],
+    "note": "Re-checked against Orca: the compact pill is badge + hidden worktrees there too; the placement-qualified copy lives in the expanded line, which now matches.",
+    "notes": "Re-checked against Orca: the compact pill is badge + hidden worktrees there too; the placement-qualified copy lives in the expanded line, which now matches."
    }
   },
   {
@@ -1374,19 +1373,17 @@
     "components/sidebar/imported-worktrees-card-actions.ts:47"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:54-58",
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:340-360",
-     "src/components/sidebar/WorktreeSidebar.tsx:961-1010",
-     "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:300-325"
+     "src/lib/refresh-projects-awaitable.ts:1-25",
+     "src/App.tsx:1346-1375",
+     "src/App.tsx:1455-1470",
+     "src/components/sidebar/WorktreeSidebar.tsx:1118-1150"
     ],
     "backend": [],
-    "notes": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message.",
-    "missing_behaviors": [
-     "Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte)"
-    ],
-    "note": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message."
+    "notes": "Showing discovered worktrees awaits the authoritative scan; a failed scan throws into the rollback path that restores the previous policy and surfaces the row error.",
+    "missing_behaviors": [],
+    "note": "Showing discovered worktrees awaits the authoritative scan; a failed scan throws into the rollback path that restores the previous policy and surfaces the row error."
    }
   },
   {
@@ -1397,18 +1394,17 @@
     "components/sidebar/imported-worktrees-card-actions.ts:69"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:749-803"
+     "src/components/sidebar/WorktreeSidebar.tsx:1159-1200",
+     "src/components/sidebar/worktree-list/rows/NewExternalWorktreesInboxLine.tsx:120-160"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility') -> src-tauri/src/lib.rs:304"
     ],
-    "missing_behaviors": [
-     "superfície de erro/rollback (Hydra só faz console.error)"
-    ],
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "note": "The keep-hidden write stamps the phase only after success, clears the error on success, and shows the row-level error on failure so the card stays actionable.",
+    "notes": "The keep-hidden write stamps the phase only after success, clears the error on success, and shows the row-level error on failure so the card stays actionable."
    }
   },
   {

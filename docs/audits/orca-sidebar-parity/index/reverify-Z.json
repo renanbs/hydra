@@ -4,17 +4,15 @@
  "rows": [
   {
    "id": "D10-063",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:54-58",
-    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.tsx:340-360",
-    "src/components/sidebar/WorktreeSidebar.tsx:961-1010",
-    "src/components/sidebar/worktree-list/rows/ImportedWorktreesVisibilityLine.parity.test.tsx:300-325"
+    "src/lib/refresh-projects-awaitable.ts:1-25",
+    "src/App.tsx:1346-1375",
+    "src/App.tsx:1455-1470",
+    "src/components/sidebar/WorktreeSidebar.tsx:1118-1150"
    ],
-   "missing_behaviors": [
-    "Rollback quando o refresh autoritativo falha (o dispatcher de refresh-projects é fire-and-forget; só a falha do write reverte)"
-   ],
-   "note": "The card button calls the policy writer with every other visibility field preserved; a failed write restores the previous external visibility and shows the error message."
+   "missing_behaviors": [],
+   "note": "Showing discovered worktrees awaits the authoritative scan; a failed scan throws into the rollback path that restores the previous policy and surfaces the row error."
   }
  ]
 }
