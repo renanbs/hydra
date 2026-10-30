@@ -1,0 +1,7 @@
+{
+ "group": "BC",
+ "generatedFrom": "2026-10-27 auto-rename failure output: the dialog asks the host for the captured output and keeps the persisted excerpt when the answer is null",
+ "rows": [
+  {"id":"D10-001","status":"partial","evidence":["src-tauri/src/lib.rs:596-624","src/components/sidebar/AutoRenameFailedDialog.tsx:20-70","src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:20-56"],"missing_behaviors":["output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido"],"note":"The fetch-and-fallback contract exists and is tested; the data source is the persisted excerpt because Hydra never runs a naming CLI."}
+ ]
+}

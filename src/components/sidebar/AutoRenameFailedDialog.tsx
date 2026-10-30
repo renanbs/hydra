@@ -1,6 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/AutoRenameFailedDialog.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { AlertCircle, Check, Copy, X } from "lucide-react";
 
 export interface AutoRenameFailedDialogProps {
@@ -14,10 +15,14 @@ export interface AutoRenameFailedDialogProps {
 export function AutoRenameFailedDialog({
   open,
   onOpenChange,
+  worktreeId,
   worktreeName,
   error,
 }: AutoRenameFailedDialogProps): React.JSX.Element | null {
   const [copied, setCopied] = useState(false);
+  // Orca `getBranchRenameFailureOutput`: the persisted excerpt is only a fallback;
+  // the full captured output wins when the host still has it.
+  const [fullOutput, setFullOutput] = useState<string | null>(null);
   const copiedResetTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -27,6 +32,27 @@ export function AutoRenameFailedDialog({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!open || !worktreeId) {
+      setFullOutput(null);
+      return;
+    }
+    let cancelled = false;
+    setFullOutput(null);
+    invoke<string | null>("get_branch_rename_failure_output", { worktreeId })
+      .then((value) => {
+        if (!cancelled && typeof value === "string" && value.trim().length > 0) {
+          setFullOutput(value);
+        }
+      })
+      .catch(() => {
+        // Best-effort: the persisted excerpt stays on screen.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, worktreeId]);
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +68,7 @@ export function AutoRenameFailedDialog({
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(error);
+      await navigator.clipboard.writeText(fullOutput ?? error);
       setCopied(true);
       if (copiedResetTimerRef.current !== null) {
         window.clearTimeout(copiedResetTimerRef.current);
@@ -54,7 +80,7 @@ export function AutoRenameFailedDialog({
     } catch {
       /* best-effort fallback */
     }
-  }, [error]);
+  }, [error, fullOutput]);
 
   if (!open) return null;
 
@@ -109,7 +135,7 @@ export function AutoRenameFailedDialog({
               )}
             </button>
             <div className="scrollbar-sleek max-h-[40vh] overflow-auto whitespace-pre-wrap rounded-lg border border-neutral-800 bg-[#0d0e11] py-3 pl-3 pr-9 font-mono text-[11px] leading-4 text-rose-300/90 select-text [overflow-wrap:anywhere]">
-              {error}
+              {fullOutput ?? error}
             </div>
           </div>
         </div>
