@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
 import type { PinnedWorktreeDisplayPolicy, WorktreeGroupBy, WorktreeRow } from '../grouping/row-types'
 
 /** What the virtual slot hands the row it wraps (D03a-103 — the viewport's props contract). */
@@ -22,7 +22,7 @@ export type WorktreeVirtualRowSlot = {
  * the rows need.
  */
 export type VirtualizedWorktreeViewportProps = {
-  rows: HostSectionRow[]
+  rows: RenderRow[]
   /** Row key of the active workspace, i.e. the row `aria-activedescendant` points at. */
   activeRowKey: string | null
   /** The grouping the rows were built with; the visible-review reporter tracks PR status lanes. */
@@ -34,11 +34,11 @@ export type VirtualizedWorktreeViewportProps = {
   revealRowKey?: string | null
   /** Called once the row-key reveal issued a scroll (or exhausted its retries). */
   onRevealRowIssued?: () => void
-  renderRow: (row: HostSectionRow, slot: WorktreeVirtualRowSlot) => React.ReactNode
+  renderRow: (row: RenderRow, slot: WorktreeVirtualRowSlot) => React.ReactNode
   /** Arrow-key navigation activated this row. */
   onActivateRow: (row: WorktreeRow) => void
   /** The row's section must collapse or expand. */
-  onToggleRowCollapse: (row: HostSectionRow) => void
+  onToggleRowCollapse: (row: RenderRow) => void
   /** Insertion line for an in-flight drag; painted with the rows so it shares their coordinates. */
   dropIndicator?: React.ReactNode
   /**

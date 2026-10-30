@@ -24,7 +24,7 @@ import {
   WORKTREE_SIDEBAR_VIRTUAL_ROW_GAP
 } from './virtual-rows'
 import { getRenderRowKey } from '../listing/render-row'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
 import {
   shouldAdjustWorktreeSidebarMeasuredRowScroll,
   USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS
@@ -48,7 +48,7 @@ export type WorktreeListVirtualizer = {
 }
 
 export type WorktreeListVirtualizerArgs = {
-  rows: HostSectionRow[]
+  rows: RenderRow[]
   firstHeaderIndex: number
   scrollRef: React.RefObject<HTMLDivElement | null>
   scrollOffsetRef: React.MutableRefObject<number>

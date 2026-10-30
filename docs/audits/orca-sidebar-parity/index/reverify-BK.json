@@ -134,15 +134,14 @@
   },
   {
    "id": "D03a-080",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/worktree-drag-surface.tsx",
-    "src/components/sidebar/WorktreeList.tsx"
+    "src/components/sidebar/worktree-list/listing/renderable-rows.ts",
+    "src/components/sidebar/worktree-list/rows/item-row.tsx",
+    "src/components/sidebar/WorktreeList.lineage-inline.parity.test.tsx"
    ],
-   "missing_behaviors": [
-    "true inline descendant painting needs the viewport/listing row fold"
-   ],
-   "note": "Lineage geometry, hideRepoBadge, drag/group attrs, reveal highlight and lineage toggles are wired; children still paint as sibling rows."
+   "missing_behaviors": [],
+   "note": "Descendants fold into the parent card slot (one virtual row), collapse hides the subtree, keyboard/activedescendant/reveal resolve a folded child, and children expose lineage depth/last-child markers with the inline geometry."
   },
   {
    "id": "D03a-092",

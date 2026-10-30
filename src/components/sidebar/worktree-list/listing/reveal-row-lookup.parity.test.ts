@@ -26,6 +26,11 @@ const folderRow = {
   key: "folder-workspace:fw-1",
   folderWorkspace: { id: "fw-1", folderPath: "/repo/folder" },
 } as never;
+const lineageGroupRow = {
+  type: "lineage-group",
+  key: "all:lineage:wt-1",
+  rows: [itemRow, pinnedItemRow],
+} as never;
 
 describe("reveal row lookup", () => {
   it("matches rows by key", () => {
@@ -63,5 +68,39 @@ describe("reveal row lookup", () => {
     expect(findRevealRowIndex([pinnedItemRow, headerRow, itemRow], "/repo/wt-1")).toBe(2);
     expect(findRevealRowIndex([headerRow, folderRow], "/repo/folder")).toBe(1);
     expect(findRevealRowIndex([headerRow], "/repo/missing")).toBe(-1);
+  });
+
+  it("resolves the lineage group when a reveal names a folded child", () => {
+    const group = {
+      type: "lineage-group",
+      key: "all:lineage:repo_a::/repo/parent",
+      rows: [
+        {
+          type: "item",
+          rowKey: "all:repo_a::/repo/parent",
+          sectionKey: "all",
+          worktree: { id: "parent", hostId: undefined, path: "/repo/parent" },
+        },
+        {
+          type: "item",
+          rowKey: "all:repo_a::/repo/child",
+          sectionKey: "all",
+          worktree: { id: "child", hostId: undefined, path: "/repo/child" },
+        },
+      ],
+    } as never;
+
+    // The child owns no virtual slot of its own; the group's slot is the scroll target.
+    expect(findRevealRowIndex([headerRow, group], "/repo/child")).toBe(1);
+    expect(findPreferredRenderRowIndexForWorktree([headerRow, group], {
+      id: "child",
+      hostId: undefined,
+      path: "/repo/child",
+    })).toBe(1);
+  });
+
+  it("matches a folded child's row key", () => {
+    expect(rowKeyMatchesRenderRow(lineageGroupRow, "wt:wt-1")).toBe(true);
+    expect(rowKeyMatchesRenderRow(lineageGroupRow, "wt:missing")).toBe(false);
   });
 });

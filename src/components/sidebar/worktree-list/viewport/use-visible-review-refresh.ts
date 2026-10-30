@@ -19,7 +19,8 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import { useAppStore, type AppState } from '@/store'
 import type { WorktreeCardProperty } from '../../../../shared/ui-chrome-types'
 import type { WorktreeGroupBy } from '../grouping/row-types'
-import type { HostSectionRow } from '../../host-section-rows'
+import type { RenderRow } from '../listing/render-row'
+import { getRenderRowItemRows } from '../listing/render-row'
 
 export function installWorktreeVisibleRefreshVisibilityListener(onChange: () => void): () => void {
   document.addEventListener('visibilitychange', onChange)
@@ -48,7 +49,7 @@ type ReviewRefreshState = AppState & ReviewRefreshSlice
 /** Reports the worktrees whose rows are on screen, so the PR/CI coordinator refreshes them. */
 export function useVisiblePrRefreshReporting(args: {
   groupBy: WorktreeGroupBy
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   virtualItems: readonly VirtualItem[]
   scrollRef: React.RefObject<HTMLDivElement | null>
 }): void {
@@ -115,13 +116,12 @@ export function useVisiblePrRefreshReporting(args: {
     // type, so an `item` row is already a git checkout with a repo behind it.
     const visibleRows = virtualItems
       .filter((item) => item.start < viewportBottom && item.end > viewportTop)
-      .map((item) => rows[item.index])
+      .flatMap((item) => {
+        const row = rows[item.index]
+        return row ? getRenderRowItemRows(row) : []
+      })
       .filter(
-        (row): row is Extract<HostSectionRow, { type: 'item' }> =>
-          row?.type === 'item' &&
-          row.repo !== undefined &&
-          !row.worktree.isBare &&
-          !!row.worktree.branch
+        (row) => row.repo !== undefined && !row.worktree.isBare && !!row.worktree.branch
       )
     const visibleIdentity = visibleRows
       .map((row) => `${row.worktree.id}:${row.worktree.branch}:${row.worktree.linkedPR ?? ''}`)

@@ -3,14 +3,21 @@
 //
 // The listbox option contract (D03a-089): every focusable row publishes a stable option id
 // and the scroll container points `aria-activedescendant` at the mounted one.
-import type { HostSectionRow } from '../../host-section-rows'
+//
+// D03a-080: a folded lineage group owns the parent's option id; its inline children still
+// publish their own ids, so an active child stays a valid `aria-activedescendant` target.
+import type { RenderRow } from '../listing/render-row'
 
 export function getWorktreeOptionId(rowKey: string): string {
   return `worktree-list-option-${encodeURIComponent(rowKey)}`
 }
 
 /** Option id of a painted row, or undefined when the row is not a focus target. */
-export function getRowOptionId(row: HostSectionRow): string | undefined {
+export function getRowOptionId(row: RenderRow): string | undefined {
+  if (row.type === 'lineage-group') {
+    const parent = row.rows[0]
+    return getWorktreeOptionId(parent ? parent.rowKey : row.key)
+  }
   if (row.type === 'item') {
     return getWorktreeOptionId(row.rowKey)
   }
@@ -23,10 +30,11 @@ export function getRowOptionId(row: HostSectionRow): string | undefined {
 /**
  * `aria-activedescendant` is only valid while the option it names is mounted — the
  * virtualizer unmounts everything outside its window, so an off-screen active row gets no
- * pointer instead of a dangling id.
+ * pointer instead of a dangling id. A lineage group mounts its whole subtree in one slot,
+ * so an active descendant inside it is mounted whenever the group is.
  */
 export function getActiveDescendantOptionId(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   virtualItems: readonly { index: number }[]
   activeOptionId: string | undefined
 }): string | undefined {
@@ -35,7 +43,14 @@ export function getActiveDescendantOptionId(args: {
   }
   for (const item of args.virtualItems) {
     const row = args.rows[item.index]
-    if (row && getRowOptionId(row) === args.activeOptionId) {
+    if (!row) continue
+    if (getRowOptionId(row) === args.activeOptionId) {
+      return args.activeOptionId
+    }
+    if (
+      row.type === 'lineage-group' &&
+      row.rows.some((child) => getWorktreeOptionId(child.rowKey) === args.activeOptionId)
+    ) {
       return args.activeOptionId
     }
   }

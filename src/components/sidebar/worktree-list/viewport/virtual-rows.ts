@@ -5,12 +5,14 @@
 // estimate, the sticky-header resolution and the slot helpers the virtualizer and the row
 // wrappers share.
 //
-// Adapted to Hydra: the row union has no `lineage-group`, so the sticky resolution here has
-// no rekey map to consult and the range extractor never has to keep a lineage parent mounted.
+// Adapted to Hydra: the row union now has a `lineage-group` (D03a-080), so the sticky
+// resolution skips group members and the rekey map follows a parent that flips between
+// `wt:` and `lineage-group:` when it gains or loses its subtree.
 import { defaultRangeExtractor } from '@tanstack/react-virtual'
 import type { Range, VirtualItem } from '@tanstack/react-virtual'
-import { PINNED_GROUP_KEY } from '../grouping/group-keys'
-import type { HostSectionRow } from '../../host-section-rows'
+import { PINNED_GROUP_KEY, getWorktreeLineageGroupKey } from '../grouping/group-keys'
+import { getRenderRowKey } from '../listing/render-row'
+import type { RenderRow } from '../listing/render-row'
 
 /** Hydra's lane/group headers paint at `h-7` (28px) in every grouping mode. */
 export const GROUP_HEADER_ROW_HEIGHT = 28
@@ -37,11 +39,42 @@ const FOLDER_WORKSPACE_ROW_HEIGHT = 64
 const WORKTREE_CARD_ROW_HEIGHT = 116
 
 /**
+ * Old row key -> current row key for rows this render re-keyed without moving.
+ *
+ * A parent's key flips between `wt:` and `lineage-group:` the moment it gains its first
+ * child (and back when it loses its last), even though the row still starts at the same
+ * pixel. Without this, a scroll anchor recorded under the old key resolves a fallback row
+ * below it and the sidebar visibly jumps.
+ */
+export function buildLineageRowRekeyMap(rows: readonly RenderRow[]): ReadonlyMap<string, string> {
+  const rekeyed = new Map<string, string>()
+  for (const row of rows) {
+    if (row.type === 'lineage-group') {
+      const groupKey = getRenderRowKey(row)
+      for (const member of row.rows) {
+        rekeyed.set(`wt:${member.rowKey}`, groupKey)
+      }
+      continue
+    }
+    if (row.type !== 'item') {
+      continue
+    }
+    // Why: deliberately unguarded by lineageChildCount — the dissolve case (last child
+    // deleted) is exactly when the count is already 0 but an anchor still holds the group key.
+    rekeyed.set(
+      `lineage-group:${row.sectionKey}:${getWorktreeLineageGroupKey(row.worktree)}`,
+      getRenderRowKey(row)
+    )
+  }
+  return rekeyed
+}
+
+/**
  * Headers paint a 4px top margin unless they open the list or follow the collapsed Pinned
  * header (whose section is empty while collapsed, so the margin would double the gap).
  */
 export function shouldUseHeaderTopSpacing(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   index: number
   firstHeaderIndex: number
 }): boolean {
@@ -53,7 +86,7 @@ export function shouldUseHeaderTopSpacing(args: {
 
 /** Size used until a row has been measured from the DOM. */
 export function estimateRenderRowSize(
-  rows: readonly HostSectionRow[],
+  rows: readonly RenderRow[],
   index: number,
   firstHeaderIndex: number
 ): number {
@@ -73,6 +106,11 @@ export function estimateRenderRowSize(
         ? SECONDARY_GROUP_HEADER_TOP_MARGIN
         : 0)
     )
+  }
+  if (row?.type === 'lineage-group') {
+    // Why: the group paints the parent card plus every inline child card. The exact height
+    // remeasures on mount; this only keeps the first window from under-allocating.
+    return WORKTREE_CARD_ROW_HEIGHT + Math.max(0, row.rows.length - 1) * 96
   }
   if (row?.type === 'imported-worktrees-card' || row?.type === 'new-external-worktrees-inbox') {
     return IMPORTED_WORKTREES_LINE_ROW_HEIGHT
@@ -132,7 +170,7 @@ export function pruneStaleVirtualRowElementCache<TElement extends Element>({
  * Why the depth check: a project group is the top-level repo context of the sidebar, so a repo
  * header nested inside one must not replace its containing group as the pinned header.
  */
-export function getStickyHeaderIndexes(rows: readonly HostSectionRow[]): number[] {
+export function getStickyHeaderIndexes(rows: readonly RenderRow[]): number[] {
   const indexes: number[] = []
   rows.forEach((row, index) => {
     if (
@@ -160,7 +198,7 @@ export type ActiveStickyIndexes = {
  *  for the whole section while group headers hand off beneath it. Without host sections this
  *  degrades to the original single-tier rules. */
 export function getActiveStickyIndexesForScroll(args: {
-  rows: readonly HostSectionRow[]
+  rows: readonly RenderRow[]
   rangeStartIndex: number
   scrollOffset: number
   stickyHeaderIndexes: readonly number[]
@@ -266,7 +304,7 @@ export function getPreviousStickyHeaderIndex(
 export function extractWorktreeVirtualRowIndexes(args: {
   range: Range
   stickyHeaderIndexes: readonly number[]
-  rows?: readonly HostSectionRow[]
+  rows?: readonly RenderRow[]
 }): number[] {
   const activeStickyHeaderIndex = getActiveStickyHeaderIndex(
     args.stickyHeaderIndexes,
