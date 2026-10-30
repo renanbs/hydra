@@ -1343,17 +1343,21 @@ export default function App() {
       });
   };
 
-  const refreshAllWorktrees = useCallback((projs: HydraProject[]) => {
-    if (projs.length === 0) return;
-    Promise.all(
+  const refreshAllWorktrees = useCallback((projs: HydraProject[]): Promise<boolean> => {
+    if (projs.length === 0) return Promise.resolve(true);
+    // Why count fallbacks: a failed authoritative scan is what a caller must be able
+    // to roll back against (D10-063); silently painting the legacy list hid it.
+    let authoritativeFailures = 0;
+    return Promise.all(
       projs.map((proj) =>
         invoke<{ visible: GitWorktreeInfo[]; hidden: GitWorktreeInfo[]; isSuppressed: boolean }>("scan_worktrees", { repoPath: proj.path })
           .then((scan) => ({ path: proj.path, wts: scan.visible, hidden: scan.hidden }))
-          .catch(() =>
-            invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
+          .catch(() => {
+            authoritativeFailures += 1;
+            return invoke<GitWorktreeInfo[]>("list_worktrees", { repoPath: proj.path })
               .then((wts) => ({ path: proj.path, wts, hidden: [] as GitWorktreeInfo[] }))
               .catch(() => ({ path: proj.path, wts: [] as GitWorktreeInfo[], hidden: [] as GitWorktreeInfo[] }))
-          )
+          })
       )
     ).then((results) => {
       const map: Record<string, GitWorktreeInfo[]> = {};
@@ -1386,6 +1390,7 @@ export default function App() {
       } else if (projs[0]) {
         setGitWorktrees(map[projs[0].path] ?? []);
       }
+      return authoritativeFailures === 0;
     });
   }, []);
 
@@ -1428,8 +1433,8 @@ export default function App() {
       })
       .catch(console.error);
 
-    const handleRefreshProjects = () => {
-      invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+    const handleRefreshProjects = (): Promise<boolean> => {
+      return invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
         const model = catalogToSidebarModel(envelope);
         let sorted = model.projects;
         try {
@@ -1450,10 +1455,16 @@ export default function App() {
         setProjectGroups(model.projectGroups);
         setFolderWorkspaces(model.folderWorkspaces);
         setProjectGroupMap(model.projectGroupMap);
-        refreshAllWorktrees(sorted);
-      }).catch(console.error);
+        return refreshAllWorktrees(sorted);
+      }).catch(() => false);
     };
-    window.addEventListener("hydra:refresh-projects", handleRefreshProjects);
+    // The event doubles as an awaitable request: a caller that must roll back on a
+    // failed authoritative refresh hands over a resolver in the detail.
+    const handleRefreshProjectsEvent = (event: Event) => {
+      const resolve = (event as CustomEvent<{ resolve?: (ok: boolean) => void }>).detail?.resolve;
+      void handleRefreshProjects().then((ok) => resolve?.(ok));
+    };
+    window.addEventListener("hydra:refresh-projects", handleRefreshProjectsEvent);
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
     // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
     // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
