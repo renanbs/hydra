@@ -1118,6 +1118,10 @@ export function WorktreeSidebar({
               onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
               onShowAllHiddenWorktrees={async (proj) => {
                 const previousExternal = proj.externalWorktreeVisibility ?? null;
+                const previousImports = proj.imported_worktrees ?? [];
+                const hiddenPaths = (hiddenWorktreesByProject?.[proj.path] ?? []).map(
+                  (worktree) => worktree.path
+                );
                 try {
                   await invoke("catalog_set_worktree_visibility_sources", {
                     repoPath: proj.path,
@@ -1130,6 +1134,14 @@ export function WorktreeSidebar({
                     externalWorktreeDiscoverySuppressedAt:
                       proj.externalWorktreeDiscoverySuppressedAt ?? null,
                   });
+                  // The policy only counts once the listed worktrees are in the
+                  // allowlist and the authoritative scan confirmed it (D10-067).
+                  if (hiddenPaths.length > 0) {
+                    await invoke("import_worktrees_batch", {
+                      projectPath: proj.path,
+                      worktreePaths: hiddenPaths,
+                    });
+                  }
                   // The policy write only counts once the authoritative scan confirmed
                   // it; otherwise the catch rolls the write back.
                   const refreshed = await requestProjectsRefresh();
@@ -1139,8 +1151,18 @@ export function WorktreeSidebar({
                   setHiddenWorktreeError(proj.path, null);
                 } catch (err) {
                   console.error(err);
-                  // Roll back the policy so the card does not claim a state the scan
-                  // never confirmed (Orca `showImportedWorktreesCard`).
+                  // Roll back both halves: the allowlist import and the policy write,
+                  // so the card never claims a state the scan did not confirm.
+                  if (hiddenPaths.length > 0) {
+                    try {
+                      await invoke("restore_imported_worktrees", {
+                        projectPath: proj.path,
+                        worktreePaths: previousImports,
+                      });
+                    } catch (restoreError) {
+                      console.error(restoreError);
+                    }
+                  }
                   try {
                     await invoke("catalog_set_worktree_visibility_sources", {
                       repoPath: proj.path,
@@ -1648,10 +1670,34 @@ export function WorktreeSidebar({
           const target = suppressInboxTarget;
           if (!target) return;
           setSuppressInboxPending(true);
+          const hiddenPaths = (hiddenWorktreesByProject?.[target.path] ?? []).map(
+            (worktree) => worktree.path
+          );
+          const suppressedAt = Date.now();
           try {
+            // Orca writes the baseline and the suppression stamp together, so the
+            // recovery list and the dismissed prompt can never disagree.
+            await invoke("catalog_set_worktree_visibility_sources", {
+              repoPath: target.path,
+              customSources: target.customWorktreeVisibilitySources ?? null,
+              sourcePreferences: target.worktreeVisibilitySourcePreferences ?? null,
+              externalWorktreeVisibility: target.externalWorktreeVisibility ?? null,
+              externalWorktreeVisibilityLegacy:
+                target.externalWorktreeVisibilityLegacy ?? null,
+              agentWorktreeVisibility: target.agentWorktreeVisibility ?? null,
+              externalWorktreeDiscoverySuppressedAt: suppressedAt,
+              inboxBaselinePaths: mergeExternalWorktreeInboxPaths(
+                target.externalWorktreeInboxBaselinePaths,
+                hiddenPaths
+              ),
+              inboxPromptDismissedAt: suppressedAt,
+            });
             await invoke("suppress_worktree_inbox", { projectPath: target.path });
+            const refreshed = await requestProjectsRefresh();
+            if (!refreshed) {
+              throw new Error("authoritative worktree refresh failed");
+            }
             setHiddenWorktreeError(target.path, null);
-            window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
             setSuppressInboxTarget(null);
           } catch (err) {
             console.error(err);

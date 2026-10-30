@@ -42,6 +42,8 @@ use pr_status::{fetch_pr_status, PrStatus};
 use shell_detection::{list_available_shells as probe_available_shells, AvailableShell};
 use preflight::{check_github_starred, check_preflight_tools, open_external_url, star_github_repo, PreflightStatus};
 use project_manager::{
+    import_external_worktrees_batch,
+    write_imported_worktrees,
     add_existing_project, get_project_worktree_base_path, import_external_worktree_for_project,
     list_local_projects, remove_added_project, set_project_worktree_base_path,
     suppress_discovery_for_project, HydraProject,
@@ -371,10 +373,12 @@ async fn catalog_set_worktree_visibility_sources(
     external_worktree_visibility_legacy: Option<bool>,
     agent_worktree_visibility: Option<String>,
     external_worktree_discovery_suppressed_at: Option<i64>,
+    inbox_baseline_paths: Option<Vec<String>>,
+    inbox_prompt_dismissed_at: Option<i64>,
 ) -> Result<CatalogEnvelope, String> {
     tokio::task::spawn_blocking(move || {
         let mut envelope = read_catalog();
-        catalog::set_worktree_visibility_sources(
+        catalog::set_worktree_visibility_sources_with_inbox(
             &mut envelope,
             &repo_path,
             custom_sources,
@@ -383,6 +387,8 @@ async fn catalog_set_worktree_visibility_sources(
             external_worktree_visibility_legacy,
             agent_worktree_visibility,
             external_worktree_discovery_suppressed_at,
+            inbox_baseline_paths,
+            inbox_prompt_dismissed_at,
         )?;
         write_catalog(&envelope)?;
         Ok(envelope)
@@ -446,6 +452,28 @@ async fn pr_status(repo_path: String, branch: String) -> Option<PrStatus> {
         .await
         .ok()
         .flatten()
+}
+
+#[tauri::command]
+async fn import_worktrees_batch(
+    project_path: String,
+    worktree_paths: Vec<String>,
+) -> Result<usize, String> {
+    tokio::task::spawn_blocking(move || {
+        import_external_worktrees_batch(&project_path, &worktree_paths)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn restore_imported_worktrees(
+    project_path: String,
+    worktree_paths: Vec<String>,
+) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || write_imported_worktrees(&project_path, &worktree_paths))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -1719,6 +1747,8 @@ pub fn run() {
             scan_worktrees,
             pr_status,
             import_worktree,
+            import_worktrees_batch,
+            restore_imported_worktrees,
             suppress_worktree_inbox,
             create_project,
             clone_project,
