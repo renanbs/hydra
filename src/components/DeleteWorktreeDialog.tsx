@@ -18,7 +18,6 @@ import { LoaderCircle, Trash2, Check } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import type { GitWorktreeInfo } from "./sidebar/types";
 import { getExecutionHostLabel, type ExecutionHostId } from "../shared/execution-host";
-import { isPathInsideOrEqual } from "../shared/cross-platform-path";
 import type { WorktreeDeleteState } from "../store/slices/worktree-delete-state-types";
 import { getDeleteStateForWorktreeHost } from "./sidebar/worktree-delete-state-host-match";
 import {
@@ -310,38 +309,52 @@ export function DeleteWorktreeDialog({
     // stay in post-order so a parent's force-delete cannot swallow a live child;
     // independent repos/hosts proceed concurrently (Orca `runWorktreeDeletesInParallel`).
     const runDeletes = async (): Promise<void> => {
+      // One batch command per repo+host keeps the child-first order inside the
+      // backend; independent groups still run concurrently.
       const runGroup = async (group: typeof payloads): Promise<void> => {
-      for (const payload of group) {
-        if (
-          failures.some(
-            (failure) =>
-              failure.path !== payload.path && isPathInsideOrEqual(failure.path, payload.path)
-          )
-        ) {
-          // A failed child makes removing its ancestor unsafe: Git would delete the
-          // child as untracked content under the parent.
-          continue;
+        // The batch command runs in this process; a remote owner keeps the existing
+        // per-target path (the host-aware routing lives there).
+        if (group.some((payload) => payload.hostId && payload.hostId !== "local")) {
+          for (const payload of group) {
+            try {
+              await invoke("delete_worktree", {
+                repoPath: payload.repoPath,
+                worktreePath: payload.path,
+                force,
+                ...(payload.hostId ? { hostId: payload.hostId } : {}),
+              });
+              deletedPaths.push(payload.path);
+              if (force && deletedPaths.length === 1) onForceDeleted(payload.path);
+            } catch (err) {
+              failures.push({ path: payload.path, error: String(err) });
+            }
+          }
+          return;
         }
         try {
-          // Why: `hostId` rides along so the backend can route a destructive removal
-          // to the host the user confirmed (STA-4343).
-          await invoke("delete_worktree", {
-            repoPath: payload.repoPath,
-            worktreePath: payload.path,
-            force,
-            ...(payload.hostId ? { hostId: payload.hostId } : {}),
+          const result = await invoke<{
+            deleted: string[];
+            failures: { worktree_path: string; error: string }[];
+          }>("delete_worktrees_batch", {
+            targets: group.map((payload) => ({
+              repo_path: payload.repoPath,
+              worktree_path: payload.path,
+              force,
+            })),
           });
-          deletedPaths.push(payload.path);
-          if (force && deletedPaths.length === 1) onForceDeleted(payload.path);
+          for (const path of result.deleted) {
+            deletedPaths.push(path);
+            if (force && deletedPaths.length === 1) onForceDeleted(path);
+          }
+          for (const failure of result.failures) {
+            failures.push({ path: failure.worktree_path, error: failure.error });
+          }
         } catch (err) {
-          failures.push({ path: payload.path, error: String(err) });
+          failures.push({ path: group[0]?.path ?? "", error: String(err) });
         }
-      }
       };
       await Promise.all(groupDeleteTargetsForDispatch(payloads).map(runGroup));
       setIsDeletingLocal(false);
-      // Release the card in the same settle that stops the dialog spinner: a
-      // refused removal must leave the row clickable again.
       onDeleteSettled?.(requestedIdentities);
       if (failures.length === 0) {
         onClose();

@@ -258,6 +258,14 @@ describe("DeleteWorktreeDialog lineage delete", () => {
   }
 
   it("names the descendants and deletes them child-first", async () => {
+    invokeMock.mockImplementation((command: string) =>
+      command === "delete_worktrees_batch"
+        ? Promise.resolve({
+            deleted: [GRANDCHILD_PATH, CHILD_PATH, WORKTREE_PATH],
+            failures: [],
+          })
+        : Promise.resolve(undefined)
+    );
     const onDeleted = vi.fn();
     renderDialog({
       deleteTargets: [PARENT_IDENTITY],
@@ -280,16 +288,15 @@ describe("DeleteWorktreeDialog lineage delete", () => {
     await waitFor(() =>
       expect(onDeleted).toHaveBeenCalledWith([GRANDCHILD_PATH, CHILD_PATH, WORKTREE_PATH])
     );
-    expect(invokeMock.mock.calls.map((call) => call[1].worktreePath)).toEqual([
-      GRANDCHILD_PATH,
-      CHILD_PATH,
-      WORKTREE_PATH,
-    ]);
-    expect(invokeMock.mock.calls.map((call) => call[1].hostId)).toEqual([
-      "local",
-      "local",
-      "local",
-    ]);
+    // One batch command per repo+host; the payload order is what keeps the removal
+    // child-first inside the backend.
+    expect(invokeMock).toHaveBeenCalledWith("delete_worktrees_batch", {
+      targets: [GRANDCHILD_PATH, CHILD_PATH, WORKTREE_PATH].map((path) => ({
+        repo_path: PROJECT_PATH,
+        worktree_path: path,
+        force: false,
+      })),
+    });
   });
 
   it("keeps the skip-confirmation choice away while children are at risk", () => {
