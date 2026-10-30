@@ -100,18 +100,15 @@
   },
   {
    "id": "D03a-060",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:39-53",
-    "src/components/sidebar/WorktreeList.tsx:805-826",
-    "src/components/sidebar/worktree-list/drag/worktree-pointer-drag.parity.test.tsx:423-505"
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.ts:30-90",
+    "src/components/sidebar/WorktreeList.tsx:1596-1610",
+    "src/components/sidebar/worktree-list/use-worktree-list-selection.parity.test.tsx:1-60"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "limpar a seleção por clique fora do container da lista",
-    "selectForContextMenu preservando a seleção"
-   ],
-   "note": "Clique/Ctrl/Shift + prune por render + identidade host-qualified estão ligados e testados; falta limpeza por clique externo e seleção ao abrir menu de contexto."
+   "missing_behaviors": [],
+   "note": "Press outside the list clears the selection; right-clicking a row outside the selection makes it the selection, while a right-click inside an existing multi-selection keeps it for the context menu."
   },
   {
    "id": "D03a-063",

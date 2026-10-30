@@ -21,6 +21,7 @@ export function WorktreeDragRow({
   hostIdentity,
   isActive = false,
   isSelected = false,
+  isRevealed = false,
   style,
   children
 }: {
@@ -35,6 +36,8 @@ export function WorktreeDragRow({
   isActive?: boolean
   /** True when the list's multi-selection holds this row (D03a-002). */
   isSelected?: boolean
+  /** True while the reveal highlight is on this row (D03a-080). */
+  isRevealed?: boolean
   style?: React.CSSProperties
   children: React.ReactNode
 }): React.JSX.Element {
@@ -56,6 +59,7 @@ export function WorktreeDragRow({
       data-worktree-host-identity={hostIdentity}
       data-worktree-nesting-id={worktreeId}
       data-worktree-selected={isSelected ? 'true' : undefined}
+      data-scroll-reveal-highlight={isRevealed ? '' : undefined}
       data-worktree-drag-id={groupKey ? worktreeId : undefined}
       data-worktree-drag-group-key={groupKey}
       data-worktree-drag-group-index={groupKey ? handlers?.groupIndexByRowKey.get(rowKey) : undefined}

@@ -1260,7 +1260,8 @@ export function WorktreeList({
     };
   }, [rows]);
 
-  const { selectedWorktreeIdentities, handleSelectionGesture } = useWorktreeListSelection({
+  const { selectedWorktreeIdentities, selectForContextMenu, handleSelectionGesture } =
+    useWorktreeListSelection({
     visibleIdentities: dragMultiSelectionInput.visibleIdentities,
   });
 
@@ -1526,6 +1527,7 @@ export function WorktreeList({
           })}
           isActive={slot.isActive}
           isSelected={isMultiSelected}
+          isRevealed={isRevealed}
           style={surfaceInset > 0 ? { paddingLeft: `${surfaceInset}px` } : undefined}
         >
           <WorktreeCard
@@ -1596,13 +1598,17 @@ export function WorktreeList({
             onRenameRequestConsumed={() => setRenameRequest(null)}
             onContextMenu={
               onWorktreeContextMenu
-                ? (event, worktree, project) =>
+                ? (event, worktree, project) => {
+                    // Keep an existing multi-selection; a right-click outside it
+                    // makes this row the selection (Orca `selectForContextMenu`).
+                    if (!isMultiSelected) selectForContextMenu(identity)
                     onWorktreeContextMenu(
                       event,
                       worktree,
                       project,
                       selectedContextWorktrees(identity, isMultiSelected)
                     )
+                  }
                 : undefined
             }
             onSelectSession={onSelectSession}
@@ -1708,6 +1714,15 @@ export function WorktreeList({
     (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
       const group = row.projectGroup;
       if (!group || typeof group.id !== "string") return null;
+      // A folder-backed group whose folder is gone cannot create a workspace there;
+      // the button stays visible but disabled with the reason (D03a-083).
+      const groupFolderPath = folderWorkspaces.find(
+        (workspace) => workspace.projectGroupId === group.id
+      )?.folderPath;
+      const createWorkspaceDisabledReason =
+        groupFolderPath && missingPaths.has(groupFolderPath)
+          ? `Folder not found: ${groupFolderPath}`
+          : undefined;
       return (
         <SectionHeader
           key={row.key}
@@ -1726,6 +1741,7 @@ export function WorktreeList({
           isDropTarget={groupDropTargetId === group.id}
           sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
           badgeColor={groupBadgeColorById.get(group.id as string)}
+          createWorkspaceDisabledReason={createWorkspaceDisabledReason}
           onDragOver={onGroupDragOver ? (e) => onGroupDragOver(e, group.id as string) : undefined}
           onDragLeave={
             onGroupDragLeave ? (e) => onGroupDragLeave(e, group.id as string) : undefined
@@ -1743,6 +1759,8 @@ export function WorktreeList({
       onGroupDragOver,
       onGroupDragLeave,
       onGroupDrop,
+      folderWorkspaces,
+      missingPaths,
     ]
   );
 

@@ -683,9 +683,16 @@ export function WorktreeSidebar({
       );
     }
 
-    requestAnimationFrame(() => {
+    // The row may mount a frame or two after the reveal (collapse expansion, the
+    // virtualizer window). Poll briefly instead of giving up on the first paint.
+    let revealAttempts = 0;
+    const revealMountedRow = (): void => {
       const el = document.querySelector(`[data-worktree-path="${CSS.escape(target)}"]`);
-      if (!el) return;
+      if (!el) {
+        revealAttempts += 1;
+        if (revealAttempts < 8) requestAnimationFrame(revealMountedRow);
+        return;
+      }
       const container = worktreeScrollRef.current;
       // Why not `scrollIntoView({ block: "nearest" })`: a card above the viewport would
       // land flush under the sticky group header. The reveal math reserves that inset
@@ -694,7 +701,8 @@ export function WorktreeSidebar({
       if (!container || !revealElementInScrollContainer(container, el, "smooth")) {
         el.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
-    });
+    };
+    requestAnimationFrame(revealMountedRow);
   }, [
     revealTargetPath,
     activeWorktreePath,

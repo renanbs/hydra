@@ -41,6 +41,8 @@ export interface GroupSectionHeaderProps {
   onDrop?: (e: React.DragEvent) => void;
   /** User-authored group color, resolved contextually (D15a-004). */
   badgeColor?: string;
+  /** Disables the create button for a folder-backed group whose path is confirmed stale. */
+  createWorkspaceDisabledReason?: string;
   /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
   sectionEnd?: number;
   className?: string;
@@ -93,6 +95,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   badgeColor,
   sectionEnd,
   className = "",
+  createWorkspaceDisabledReason,
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -201,11 +204,17 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
         {onOpenNewWorkspace && (
           <button
             type="button"
-            title="New workspace in this group"
+            title={createWorkspaceDisabledReason ?? "New workspace in this group"}
             aria-label="New workspace in this group"
-            className={cn(REPO_HEADER_ACTION_BUTTON_CLASS, "cursor-pointer")}
+            aria-disabled={createWorkspaceDisabledReason ? true : undefined}
+            disabled={Boolean(createWorkspaceDisabledReason)}
+            className={cn(
+              REPO_HEADER_ACTION_BUTTON_CLASS,
+              createWorkspaceDisabledReason ? "cursor-not-allowed opacity-40" : "cursor-pointer"
+            )}
             onClick={(e) => {
               e.stopPropagation();
+              if (createWorkspaceDisabledReason) return;
               onOpenNewWorkspace();
             }}
           >
