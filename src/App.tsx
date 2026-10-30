@@ -2472,6 +2472,57 @@ export default function App() {
     [ensureWorkspaceTerminal]
   );
 
+  /** D03a-100: visible sidebar rows request a PR refresh; the host `pr_status`
+   * probe answers, so scrolling to a stale card refreshes exactly those branches. */
+  const prVisibleRefreshAtRef = useRef<Map<string, number>>(new Map());
+  useEffect(() => {
+    const handleVisiblePrRefresh = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        items: Array<{ path: string; repoPath: string; branch: string }>;
+      }>).detail;
+      if (!detail?.items?.length) return;
+      const now = Date.now();
+      const pending = detail.items.filter((item) => {
+        const key = `${item.repoPath}::${item.branch}`;
+        const last = prVisibleRefreshAtRef.current.get(key) ?? 0;
+        if (now - last < 20_000) return false;
+        prVisibleRefreshAtRef.current.set(key, now);
+        return true;
+      });
+      if (pending.length === 0) return;
+      void Promise.all(
+        pending.map((item) =>
+          invoke<{ number: number; state: string; checks?: string | null } | null>("pr_status", {
+            repoPath: item.repoPath,
+            branch: item.branch,
+          })
+            .then((status) => ({ item, status }))
+            .catch(() => ({ item, status: null }))
+        )
+      ).then((results) => {
+        setPrByPath((prev) => {
+          const next = { ...prev };
+          for (const { item, status } of results) {
+            if (status) {
+              next[item.path] = {
+                number: status.number,
+                state: status.state as PrDisplay["state"],
+                status: (status.checks ?? null) as PrDisplay["status"],
+                provider: "github",
+              };
+            } else {
+              delete next[item.path];
+            }
+          }
+          return next;
+        });
+      });
+    };
+    window.addEventListener("hydra:refresh-visible-prs", handleVisiblePrRefresh);
+    return () =>
+      window.removeEventListener("hydra:refresh-visible-prs", handleVisiblePrRefresh);
+  }, []);
+
   /** Review display per worktree: one `pr_status` probe per repo/branch, cached for
    * the session so a re-render never re-shells out to `gh`. */
   useEffect(() => {

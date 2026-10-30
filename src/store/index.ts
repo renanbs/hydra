@@ -24,6 +24,8 @@ import {
   type ExecutionHostId,
 } from '../shared/execution-host'
 import { createUISlice } from './slices/ui'
+import { createDiffCommentsSlice, type DiffCommentsSlice } from './slices/diffComments'
+import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
 
@@ -43,7 +45,7 @@ export const EMPTY_TABS: TabItem[] = [];
  * `any`/placeholder literals. The live store literal spreads it, so the slice is the single
  * source for every ssh* key.
  */
-export interface AppState extends SshSlice {
+export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   /** Tabs grouped by workspace (worktree path) */
   tabsByWorktree: Record<string, TabItem[]>
   /** The currently active tab id for each workspace */
@@ -372,13 +374,9 @@ export interface AppState extends SshSlice {
   // ─── Cross-slice interop the composed UI slice calls ───
   /** nav-history slice (not composed yet) — `open*Page` records a visit. */
   recordViewVisit: (...args: any[]) => any
-  /** diffComments slice (not composed yet) — diff-notes menu reads a worktree's notes. */
-  getDiffComments: (...args: any[]) => any
   /** editor right-sidebar slice (not composed yet) — diff-notes menu opens Source Control. */
   setRightSidebarTab: (...args: any[]) => any
   setRightSidebarOpen: (...args: any[]) => any
-  /** github slice (not composed yet) — the task page prefetches work items. */
-  prefetchWorkItems: (...args: any[]) => any
   // ─── Orca Compat: Getters ───
   getActiveTab: (...args: any[]) => any
   getAgentLaunchConfigForStatusMetadata: (...args: any[]) => any
@@ -402,6 +400,8 @@ export const useAppStore = create<AppState>()(
     // `UISlice` is still an auto-stub (`any`) in this branch, so the slice's shape is
     // asserted at runtime by store-ui-slice-composition.parity.test.ts, not by tsc.
     ...createUISlice(set, get, store),
+    ...createDiffCommentsSlice(set, get, store),
+    ...createGitHubSlice(set, get, store),
     // The SSH slice is composed directly: its shape is real (see `SshSlice`), so the
     // live literal must not re-declare any key it provides.
     ...createSshSlice(set, get, store),
@@ -649,10 +649,8 @@ export const useAppStore = create<AppState>()(
     // still un-composed, so keep the live store's stub shape: without it those actions throw
     // on an undefined call. Each entry goes away when its own slice is composed.
     recordViewVisit: () => {},
-    getDiffComments: () => [],
     setRightSidebarTab: () => {},
     setRightSidebarOpen: () => {},
-    prefetchWorkItems: () => {},
     getActiveTab: () => null,
     getAgentLaunchConfigForStatusMetadata: () => null,
     getFreshFolderWorkspacePathStatus: () => null,

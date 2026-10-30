@@ -225,7 +225,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 263 capabilities
+## PARTIAL — 262 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -270,7 +270,7 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03a-worktree-list-module (37)
+### D03a-worktree-list-module (36)
 
 - **D03a-017** — Commit/abandono de drag fora do sidebar via listeners de documento em captura | falta: visibilitychange abandonando o drag em andamento; listeners de drop/dragend em documento (capture) para o caminho HTML5 nativo; commit de nest sem slot (nesting inexistente) | components/sidebar/worktree-list/drag/use-document-drop.ts:18-115
 - **D03a-020** — Reordenar os três níveis de header do sidebar (host, grupo de projeto, projeto) | falta: reorder de host sections; gating canReorderRepoHeaders (groupBy=repo + projectOrderBy=manual); canReorderProjectGroupHeaders/ordem manual por host; supressão de correção de âncora | components/sidebar/worktree-list/drag/use-header-drag.ts:45-235
@@ -307,7 +307,6 @@
 - **D03a-086** — Diálogos de project group e de supressão do inbox externo | falta: toggle removeContainedProjects com contagem/nomes | components/sidebar/worktree-list/rows/ProjectGroupDialogs.tsx:12-118
 - **D03a-087** — Fluxos de criação/renomeação/exclusão de project groups | falta: toasts de falha (Failed to rename/delete group etc.); deleteProjectGroupWithContainedProjects com removeContainedProjects; roteamento por host dono do grupo | components/sidebar/worktree-list/rows/use-project-group-dialogs.ts:10-206
 - **D03a-092** — Indicadores de drop flutuantes (linha de inserção) | falta: linhas de indicador para reorder de repo header (dragIndicatorY); linha para project group header; linha para host section (z-40) | components/sidebar/worktree-list/viewport/drop-indicators.tsx:5-36
-- **D03a-100** — Reportar rows visíveis ao coordenador de refresh de PR/CI | falta: coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null) | components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:11-134
 - **D03a-104** — Resolver a PR de um worktree para o lane de PR (escopo repo/repo-legado/path-legado/SSH/runtime) | falta: precedência repo-scoped sobre chaves legadas; respeitar isGitHubPRSuppressed; entradas escopadas por connectionId SSH | components/sidebar/worktree-list/grouping/group-keys.ts:108-167
 
 ### D03b-sidebar-list-orchestration (19)

@@ -2052,18 +2052,16 @@
     "components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:11-134"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:52-140",
-     "src/store/github/refresh-routing-actions.ts:57-69",
-     "src/store/github/worktree-refresh.ts:11"
+     "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.ts:1-160",
+     "src/App.tsx:2468-2530",
+     "src/components/sidebar/worktree-list/viewport/use-visible-review-refresh.parity.test.tsx:160-190"
     ],
-    "missing_behaviors": [
-     "coordenador de refresh de PR/CI (findWorktreeById/buildPRRefreshCandidate são stubs null)"
-    ],
-    "notes": "Reporter montado com janela start/end, dedupe por geração e visibilitychange; a ação do store degrada para no-op porque o slice do coordenador não está composto.",
+    "missing_behaviors": [],
+    "notes": "The visible window now asks the App for a native pr_status refresh (deduped by repo/branch with a 20s cooldown) and the fresh result lands in prByPath, so the PR lane/badges refresh for exactly the on-screen rows.",
     "backend": [],
-    "note": "Reporter montado com janela start/end, dedupe por geração e visibilitychange; a ação do store degrada para no-op porque o slice do coordenador não está composto."
+    "note": "The visible window now asks the App for a native pr_status refresh (deduped by repo/branch with a 20s cooldown) and the fresh result lands in prByPath, so the PR lane/badges refresh for exactly the on-screen rows."
    }
   },
   {

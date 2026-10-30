@@ -162,6 +162,26 @@ describe("visible review refresh reporting", () => {
     });
   }
 
+  it("requests a native PR refresh for the visible branches (D03a-100)", async () => {
+    const requests: Array<{ items: Array<{ path: string; repoPath: string; branch: string }> }> = [];
+    const listener = (event: Event) => {
+      requests.push((event as CustomEvent).detail);
+    };
+    window.addEventListener("hydra:refresh-visible-prs", listener);
+    try {
+      const { scroller } = renderList();
+      await settleWindow(scroller, 1);
+    } finally {
+      window.removeEventListener("hydra:refresh-visible-prs", listener);
+    }
+    expect(requests.length).toBeGreaterThan(0);
+    expect(requests[0].items).toContainEqual({
+      path: "/repo/hydra/w0",
+      repoPath: "/repo/hydra",
+      branch: "w0",
+    });
+  });
+
   it("reports the workspaces whose rows are on screen, and not the ones below the fold", async () => {
     const { scroller } = renderList();
     await settleWindow(scroller, 1);
