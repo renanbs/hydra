@@ -317,6 +317,11 @@ export interface WorktreeListProps {
   onSelectProject: (proj: HydraProject) => void;
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
   onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
+  /** Multi-select delete: the selection resolved to >1 workspace. */
+  onDeleteWorktreeSelection?: (
+    worktrees: readonly GitWorktreeInfo[],
+    proj?: HydraProject
+  ) => void;
   onSelectSession: (id: string) => void;
   onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
   /**
@@ -573,6 +578,7 @@ export function WorktreeList({
   onSelectProject,
   onSelectGitWorktree,
   onDeleteGitWorktree,
+  onDeleteWorktreeSelection,
   onSelectSession,
   onRenameWorktreeTitle,
   deleteStateByWorktreeId = EMPTY_DELETE_STATE,
@@ -1244,11 +1250,27 @@ export function WorktreeList({
         });
         return;
       }
+      if (selectedWorktreeIdentities.size > 1 && onDeleteWorktreeSelection) {
+        const selected = [...selectedWorktreeIdentities]
+          .map((identity) => worktreesByIdentity.get(identity))
+          .filter((worktree): worktree is GitWorktreeInfo => Boolean(worktree));
+        if (selected.length > 1) {
+          onDeleteWorktreeSelection(selected, workspaceShortcutTarget.project);
+          return;
+        }
+      }
       onDeleteGitWorktree(workspaceShortcutTarget.worktree, workspaceShortcutTarget.project);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onDeleteGitWorktree, storeKeybindings, workspaceShortcutTarget]);
+  }, [
+    onDeleteGitWorktree,
+    onDeleteWorktreeSelection,
+    selectedWorktreeIdentities,
+    worktreesByIdentity,
+    storeKeybindings,
+    workspaceShortcutTarget,
+  ]);
 
   // Why (D04b-010/022): the card's inline rename commit had no handler on the
   // mount, so it was a no-op. When the host provides one it wins (it owns the

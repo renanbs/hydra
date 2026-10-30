@@ -6,7 +6,7 @@
 // the component, so every lane/filter toggle was inert — the divergence this locks out.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
@@ -170,6 +170,36 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(
       container.querySelector(`[data-worktree-path="${pinnedPath}"]`)
     ).toBeNull();
+  });
+
+  it("routes the delete chord on a multi-selection to the batch handler", async () => {
+    const onDeleteWorktreeSelection = vi.fn();
+    const onDeleteGitWorktree = vi.fn();
+    const { container } = renderList({
+      projects: [PROJECT_A],
+      worktreesByProject: {
+        [PROJECT_A.path]: [
+          worktree("/repo/feature-a", "feat/a"),
+          worktree("/repo/feature-b", "feat/b"),
+        ],
+      },
+      onDeleteWorktreeSelection,
+      onDeleteGitWorktree,
+      activeWorktreePath: "/repo/feature-a",
+    });
+
+    const cards = container.querySelectorAll("[data-worktree-card-surface]");
+    fireEvent.click(cards[0]!, { ctrlKey: true });
+    fireEvent.click(cards[1]!, { ctrlKey: true });
+    fireEvent.keyDown(window, { key: "Backspace", ctrlKey: true, shiftKey: true });
+
+    await waitFor(() => expect(onDeleteWorktreeSelection).toHaveBeenCalledTimes(1));
+    const [selected] = onDeleteWorktreeSelection.mock.calls[0]!;
+    expect(selected.map((item: GitWorktreeInfo) => item.path)).toEqual([
+      "/repo/feature-a",
+      "/repo/feature-b",
+    ]);
+    expect(onDeleteGitWorktree).not.toHaveBeenCalled();
   });
 
   it("routes a card into its persisted workspace-status lane, not its agent activity", () => {

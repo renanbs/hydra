@@ -201,6 +201,11 @@ export interface WorktreeSidebarProps {
   onSelectSession: (id: string) => void;
   onSelectGitWorktree: (wt: GitWorktreeInfo) => void;
   onDeleteGitWorktree: (wt: GitWorktreeInfo, proj?: HydraProject) => void;
+  /** Multi-select delete: the selection resolved to more than one workspace. */
+  onDeleteWorktreeSelection?: (
+    worktrees: readonly GitWorktreeInfo[],
+    proj?: HydraProject
+  ) => void;
   onNewSessionWithAgent?: (agent: AvailableAgent) => void;
   onRenameWorktreeTitle?: (worktreePath: string, newTitle: string) => Promise<void> | void;
   /**

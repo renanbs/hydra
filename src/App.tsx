@@ -85,6 +85,7 @@ import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDele
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
 import { canHydrateDeleteTargetLocally } from "./components/sidebar/worktree-delete-dispatch";
 import { installOrcaApiShim } from "./lib/orca-api-shim";
+import { selectDeletableWorktrees } from "./components/sidebar/worktree-delete-selection";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
@@ -510,6 +511,34 @@ export default function App() {
     name: string;
     path: string;
   } | null>(null);
+  /**
+   * D10-077: a multi-selection delete opens the same confirmation with every
+   * removable workspace. A selection that resolves to nothing says so instead of
+   * opening an empty dialog.
+   */
+  const handleDeleteWorktreeSelection = useCallback(
+    (selected: readonly GitWorktreeInfo[], proj?: HydraProject) => {
+      const project = proj ?? activeProject;
+      if (!project) return;
+      const deletable = selectDeletableWorktrees(selected, project.path);
+      if (deletable.length === 0) {
+        toast.info("No deletable workspaces selected");
+        return;
+      }
+      const hostId =
+        getExecutionHostIdForRepoPath(useAppStore.getState().repos, project.path) ?? undefined;
+      setDeleteWorktreeModal({
+        repoPath: project.path,
+        worktrees: [...deletable],
+        deleteTargets: deletable.map((worktree) => ({
+          id: worktree.id ?? `${project.path}::${worktree.path}`,
+          ...(hostId ? { hostId } : {}),
+        })),
+        error: null,
+      });
+    },
+    [activeProject]
+  );
   const handleDeleteFolderWorkspace = useCallback((folderWorkspaceId: string) => {
     const folders = useAppStore.getState().folderWorkspaces as
       | readonly { id: string; name?: string; folderPath?: string; path?: string }[]
@@ -4149,6 +4178,7 @@ export default function App() {
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
                 onDeleteGitWorktree={handleDeleteGitWorktree}
+                onDeleteWorktreeSelection={handleDeleteWorktreeSelection}
                 onDeleteFolderWorkspace={handleDeleteFolderWorkspace}
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}

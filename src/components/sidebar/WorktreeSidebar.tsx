@@ -87,6 +87,7 @@ export function WorktreeSidebar({
   onSelectSession,
   onSelectGitWorktree,
   onDeleteGitWorktree,
+  onDeleteWorktreeSelection,
   onNewSessionWithAgent: _onNewSessionWithAgent,
   onRenameWorktreeTitle,
   deleteStateByWorktreeId,
@@ -1077,6 +1078,7 @@ export function WorktreeSidebar({
               onSelectProject={onSelectProject}
               onSelectGitWorktree={onSelectGitWorktree}
               onDeleteGitWorktree={onDeleteGitWorktree}
+              onDeleteWorktreeSelection={onDeleteWorktreeSelection}
               onSelectSession={onSelectSession}
               onRenameWorktreeTitle={onRenameWorktreeTitle}
               deleteStateByWorktreeId={deleteStateByWorktreeId}
