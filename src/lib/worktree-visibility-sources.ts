@@ -372,9 +372,20 @@ export function getWorktreeVisibilitySourceProvenance(
 export function classifyWorktreeVisibilitySource(
   worktreePath: string,
   repoPath: string | null | undefined,
-  customSources: readonly CustomWorktreeVisibilitySource[]
+  customSources: readonly CustomWorktreeVisibilitySource[],
+  configuredBasePaths: readonly string[] = []
 ): WorktreeVisibilitySourceMatch | null {
   const normalizedWorktree = normalizeRuntimePathForComparison(worktreePath);
+  // Orca counts a worktree under an explicitly configured base path as "other":
+  // the user moved the root, so it no longer belongs to the built-in source.
+  for (const basePath of configuredBasePaths) {
+    const trimmed = basePath?.replace(/[\\/]+$/, '');
+    if (!trimmed) continue;
+    const root = `${normalizeRuntimePathForComparison(trimmed)}/`;
+    if (normalizedWorktree.startsWith(root)) {
+      return null;
+    }
+  }
   // Orca matches built-in roots before custom ones; order decides the badge when overlap.
   if (repoPath) {
     const normalizedRepo = normalizeRuntimePathForComparison(repoPath.replace(/[\\/]+$/, ""));
@@ -406,11 +417,17 @@ export function worktreeVisibilitySourceRowKey(row: WorktreeVisibilitySourceRow)
 export function countWorktreesByVisibilitySource(
   worktrees: readonly { path: string }[],
   repoPath: string | null | undefined,
-  customSources: readonly CustomWorktreeVisibilitySource[]
+  customSources: readonly CustomWorktreeVisibilitySource[],
+  configuredBasePaths: readonly string[] = []
 ): Map<string, number> {
   const counts = new Map<string, number>();
   for (const worktree of worktrees) {
-    const match = classifyWorktreeVisibilitySource(worktree.path, repoPath, customSources);
+    const match = classifyWorktreeVisibilitySource(
+      worktree.path,
+      repoPath,
+      customSources,
+      configuredBasePaths
+    );
     const key = match ? `${match.kind}:${match.id}` : "other";
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }

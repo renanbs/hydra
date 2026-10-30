@@ -1,0 +1,29 @@
+{
+ "group": "AZ",
+ "generatedFrom": "2026-10-27 delete dialog copies: literal output region with a floating copy control, plural batch sentence and lineage child label",
+ "rows": [
+  {
+   "id": "D10-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/AutoRenameFailedDialog.tsx:95-120",
+    "src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:10-36"
+   ],
+   "missing_behaviors": [],
+   "note": "Output wraps anywhere inside a height-capped scroll region that reserves the copy gutter; the copy control floats in the region with an accessible name."
+  },
+  {
+   "id": "D10-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/DeleteWorktreeDialog.tsx:263-330",
+    "src/components/sidebar/FolderWorkspaceRow.tsx:20-75",
+    "src/components/sidebar/WorktreeList.tsx:1560-1575",
+    "src/components/DeleteWorktreeDialog.parity.test.tsx:369-400",
+    "src/lib/orca-api-shim.ts:1-50"
+   ],
+   "missing_behaviors": [],
+   "note": "Folder workspaces now delete through the same confirmation surface with the non-destructive copy; batch/lineage copies pluralize; the store slice reaches Rust through the window.api bridge."
+  }
+ ]
+}

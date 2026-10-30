@@ -303,6 +303,8 @@ export interface WorktreeListProps {
   liveWorkspacePaths?: ReadonlySet<string>;
   missingFolderPaths?: ReadonlySet<string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
+  /** Removes a folder workspace entry (folder on disk stays). */
+  onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
   /** Review display per worktree path (populated by the host PR lookup). */
   prByPath?: Record<string, PrDisplay>;
   collapsedProjects: Set<string>;
@@ -559,6 +561,7 @@ export function WorktreeList({
   liveWorkspacePaths,
   missingFolderPaths,
   onActivateFolderWorkspace,
+  onDeleteFolderWorkspace,
   prByPath,
   collapsedProjects,
   collapsedGroups,
@@ -1558,11 +1561,23 @@ export function WorktreeList({
             pathMissing={missingPaths.has(folderPath)}
             isActive={isActive}
             onActivate={() => onActivateFolderWorkspace?.(folderPath)}
+            onDelete={
+              onDeleteFolderWorkspace
+                ? () => onDeleteFolderWorkspace(row.folderWorkspace.id)
+                : undefined
+            }
           />
         </div>
       );
     },
-    [sessions, livePaths, missingPaths, activeWorktreePath, onActivateFolderWorkspace]
+    [
+      sessions,
+      livePaths,
+      missingPaths,
+      activeWorktreePath,
+      onActivateFolderWorkspace,
+      onDeleteFolderWorkspace,
+    ]
   );
 
   /** Notices read the live props; the row only decides placement in the stream. */

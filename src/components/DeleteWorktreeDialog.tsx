@@ -89,6 +89,12 @@ export interface DeleteWorktreeDialogProps {
    * inert (the regression this dialog's own state cannot clear).
    */
   onDeleteSettled?: (targets: readonly WorktreeDeleteIdentity[]) => void;
+  /**
+   * Folder-workspace mode: the dialog removes only Hydra's workspace entry; the
+   * folder on disk is untouched (Orca's non-destructive copy).
+   */
+  folderWorkspace?: { id: string; name: string; path: string } | null;
+  onDeleteFolderWorkspace?: (folderWorkspaceId: string) => Promise<boolean>;
 }
 
 export function DeleteWorktreeDialog({
@@ -108,10 +114,14 @@ export function DeleteWorktreeDialog({
   onStaleTargets,
   onDeleteStart,
   onDeleteSettled,
+  folderWorkspace = null,
+  onDeleteFolderWorkspace,
 }: DeleteWorktreeDialogProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isDeletingLocal, setIsDeletingLocal] = useState(false);
+  const [isFolderDeleting, setIsFolderDeleting] = useState(false);
+  const [folderError, setFolderError] = useState<string | null>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   const isBatchDelete = worktrees.length > 1;
@@ -245,7 +255,8 @@ export function DeleteWorktreeDialog({
 
   // Orca returns null when no target resolves; an empty destructive dialog would
   // offer a Delete button for nothing.
-  if (!open || worktrees.length === 0) return null;
+  if (!open) return null;
+  if (!folderWorkspace && worktrees.length === 0) return null;
 
   // Orca onOpenAutoFocus parity: focus the confirm button, not the first
   // tabbable control, so "Delete, Enter" works from the keyboard.
@@ -377,6 +388,74 @@ export function DeleteWorktreeDialog({
       ? getExecutionHostLabel(singleTargetLiveRow.hostId)
       : null;
 
+  if (folderWorkspace) {
+    return (
+      <div
+        className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/65 backdrop-blur-xs select-none"
+        onClick={() => {
+          if (!isFolderDeleting) onClose();
+        }}
+      >
+        <div
+          onClick={(event) => event.stopPropagation()}
+          className="w-full max-w-md rounded-xl border border-[#2a2b30] bg-[#141518] p-5 text-xs text-neutral-200 shadow-2xl"
+        >
+          <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
+            Remove Workspace
+          </h2>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-400">
+            Remove{" "}
+            <span className="break-all font-medium text-foreground">{folderWorkspace.name}</span>{" "}
+            from Hydra. The folder on disk will not be deleted.
+          </p>
+          <p className="mt-2 break-all font-mono text-[11px] text-neutral-500">
+            {folderWorkspace.path}
+          </p>
+          {folderError && (
+            <p role="alert" className="mt-2 text-[11px] text-red-400">
+              {folderError}
+            </p>
+          )}
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              disabled={isFolderDeleting}
+              onClick={onClose}
+              className="rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs font-medium text-neutral-300 transition hover:bg-neutral-800 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isFolderDeleting}
+              onClick={() => {
+                if (!onDeleteFolderWorkspace) {
+                  setFolderError("Removing folder workspaces is not available.");
+                  return;
+                }
+                setIsFolderDeleting(true);
+                setFolderError(null);
+                void onDeleteFolderWorkspace(folderWorkspace.id)
+                  .then((deleted: boolean) => {
+                    if (deleted) {
+                      onClose();
+                      return;
+                    }
+                    setFolderError("Could not remove the workspace. Try again.");
+                  })
+                  .catch(() => setFolderError("Could not remove the workspace. Try again."))
+                  .finally(() => setIsFolderDeleting(false));
+              }}
+              className="rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
+            >
+              {isFolderDeleting ? "Removing..." : "Remove Workspace"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/65 backdrop-blur-xs select-none"
@@ -392,10 +471,30 @@ export function DeleteWorktreeDialog({
         </h2>
         <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-400">
           Remove{" "}
-          <span className="break-all font-medium text-foreground">
-            {isBatchDelete ? `${worktrees.length} workspaces` : (worktrees[0]?.branch || worktrees[0]?.path)}
+          <span
+            className={
+              isBatchDelete ? "font-medium text-foreground" : "break-all font-medium text-foreground"
+            }
+          >
+            {isBatchDelete
+              ? `${worktrees.length} workspaces`
+              : worktrees[0]?.display_name || worktrees[0]?.branch || worktrees[0]?.path}
           </span>{" "}
-          from git and delete its workspace folder.
+          {canDeleteAllLineage ? (
+            <>
+              and{" "}
+              <span className="font-medium text-foreground">
+                {childWorkspaceCount === 1
+                  ? "1 child workspace"
+                  : `${childWorkspaceCount} child workspaces`}
+              </span>{" "}
+              from git and delete their workspace folders.
+            </>
+          ) : isBatchDelete ? (
+            <>from git and delete their workspace folders.</>
+          ) : (
+            <>from git and delete its workspace folder.</>
+          )}
         </p>
 
         {/* Orca DeleteWorktreeTargetPreview parity: path + dirty-change count */}

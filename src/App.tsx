@@ -82,6 +82,8 @@ import { CustomContextMenu, type ContextMenuItem } from "./components/CustomCont
 import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
+import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
+import { installOrcaApiShim } from "./lib/orca-api-shim";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
@@ -501,6 +503,24 @@ export default function App() {
     error: string | null;
   } | null>(null);
   const [deleteStateByWorktreeId, setDeleteStateByWorktreeId] = useState<DeleteWorktreeDialogState>({});
+  /** Folder-workspace removal target (non-destructive copy; folder stays on disk). */
+  const [folderDeleteTarget, setFolderDeleteTarget] = useState<{
+    id: string;
+    name: string;
+    path: string;
+  } | null>(null);
+  const handleDeleteFolderWorkspace = useCallback((folderWorkspaceId: string) => {
+    const folders = useAppStore.getState().folderWorkspaces as
+      | readonly { id: string; name?: string; folderPath?: string; path?: string }[]
+      | null;
+    const folder = (folders ?? []).find((candidate) => candidate.id === folderWorkspaceId);
+    if (!folder) return;
+    setFolderDeleteTarget({
+      id: folder.id,
+      name: folder.name ?? folder.id,
+      path: folder.folderPath ?? folder.path ?? "",
+    });
+  }, []);
   const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
   // Orca parity: the store's host-aware catalog is the one source that can name a
   // repo's execution host on the render path (`WorktreeList` reads the same slice).
@@ -1476,6 +1496,10 @@ export default function App() {
       setIsSettingsOpen(true);
     };
     window.addEventListener("hydra:open-settings", handleOpenSettingsPane);
+
+    // Orca-ported store slices reach host state through `window.api`; install the
+    // bridge before any slice call can happen.
+    installOrcaApiShim();
 
     invoke<AvailableAgent[]>("list_available_agents")
       .then(setAvailableAgents)
@@ -4108,6 +4132,7 @@ export default function App() {
                 onSelectSession={handleSelectSession}
                 onSelectGitWorktree={handleSelectGitWorktree}
                 onDeleteGitWorktree={handleDeleteGitWorktree}
+                onDeleteFolderWorkspace={handleDeleteFolderWorkspace}
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -4565,6 +4590,9 @@ export default function App() {
           if (deleteWorktreeModal) {
             publishDeleteStateForTargets(deleteWorktreeModal.deleteTargets, null);
           }
+          // Orca releases every entry this dialog could have published, not only the
+          // modal's targets; in-flight removals keep their busy state.
+          setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
           setDeleteWorktreeModal(null);
         }}
         onDeleted={(deletedPaths) => {
@@ -4598,6 +4626,30 @@ export default function App() {
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
         }}
         repoPath={deleteWorktreeModal?.repoPath ?? ""}
+      />
+
+      {/* Folder workspace removal: same confirmation surface, non-destructive copy. */}
+      <DeleteWorktreeDialog
+        open={folderDeleteTarget != null}
+        worktrees={[]}
+        isMainWorktree={false}
+        deleteStateByWorktreeId={{}}
+        dirtyChangeCountsByWorktreeId={{}}
+        onPersistSkipConfirmPreference={() => {}}
+        onClose={() => setFolderDeleteTarget(null)}
+        onDeleted={() => {}}
+        onForceDeleted={() => {}}
+        repoPath=""
+        folderWorkspace={folderDeleteTarget}
+        onDeleteFolderWorkspace={async (folderWorkspaceId) => {
+          const deleted = await (
+            useAppStore.getState() as unknown as {
+              deleteFolderWorkspace: (id: string) => Promise<boolean>;
+            }
+          ).deleteFolderWorkspace(folderWorkspaceId);
+          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+          return deleted === true;
+        }}
       />
 
       <WorktreeMetaDialog

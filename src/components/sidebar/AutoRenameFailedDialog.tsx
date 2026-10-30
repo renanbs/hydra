@@ -91,31 +91,26 @@ export function AutoRenameFailedDialog({
         </p>
 
         <div className="min-w-0 space-y-1.5 flex-1 flex flex-col">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium text-neutral-300">
-              Error output:
-            </p>
+          <p className="text-[11px] font-medium text-neutral-300">Error output:</p>
+          {/* Why: agent-CLI output is literal and often multi-line; the copy control
+              floats inside the region so the wrapped text reserves its gutter
+              (Orca `pr-9` + `[overflow-wrap:anywhere]`). */}
+          <div className="relative min-w-0">
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition cursor-pointer border border-neutral-700/60"
+              className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-200 cursor-pointer"
+              aria-label={copied ? "Copied" : "Copy error"}
             >
               {copied ? (
-                <>
-                  <Check className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400">Copied</span>
-                </>
+                <Check className="w-3 h-3 text-emerald-400" />
               ) : (
-                <>
-                  <Copy className="w-3 h-3" />
-                  <span>Copy error</span>
-                </>
+                <Copy className="w-3 h-3" />
               )}
             </button>
-          </div>
-
-          <div className="rounded-lg border border-neutral-800 bg-[#0d0e11] p-3 max-h-56 overflow-y-auto font-mono text-[11px] text-rose-300/90 whitespace-pre-wrap break-words leading-relaxed select-text">
-            {error}
+            <div className="scrollbar-sleek max-h-[40vh] overflow-auto whitespace-pre-wrap rounded-lg border border-neutral-800 bg-[#0d0e11] py-3 pl-3 pr-9 font-mono text-[11px] leading-4 text-rose-300/90 select-text [overflow-wrap:anywhere]">
+              {error}
+            </div>
           </div>
         </div>
 
