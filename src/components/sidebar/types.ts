@@ -15,6 +15,7 @@ import type {
   VisibleWorkspaceHostIds,
   WorkspaceHostScope,
 } from "../../shared/ui-chrome-types";
+import type { FolderWorkspacePathStatus } from "../../shared/folder-workspace-path-status";
 
 export type { ProjectGroup };
 
@@ -288,7 +289,13 @@ export interface WorktreeSidebarProps {
   /** Folder paths the host reports as gone; Orca badges them with FolderX. */
   missingFolderPaths?: ReadonlySet<string>;
   /** Rich path status per folder path (confirmed stale vs ambiguous connection). */
-  folderPathStatusByPath?: ReadonlyMap<string, import("../../shared/folder-workspace-path-status").FolderWorkspacePathStatus>;
+  folderPathStatusByPath?: ReadonlyMap<string, FolderWorkspacePathStatus>;
+  /**
+   * Fresh-only path status reader (Orca `getFreshFolderWorkspacePathStatus`).
+   * Null once the probe aged out or the folder is on an unprobeable host, so
+   * create/activation gates never act on an expired answer.
+   */
+  getFreshFolderPathStatus?: (folderPath: string) => FolderWorkspacePathStatus | null;
   /** Failed authoritative scans, keyed by repo path (scan-failure indicator). */
   scanFailuresByProject?: Record<string, string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;

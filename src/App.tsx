@@ -641,7 +641,17 @@ export default function App() {
     Array<{ id: string; name: string; tabOrder?: number }>
   >([]);
   const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
-  const [folderWorkspaces, setFolderWorkspaces] = useState<Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>>([]);
+  const [folderWorkspaces, setFolderWorkspaces] = useState<
+    Array<{
+      id: string;
+      projectGroupId: string;
+      name: string;
+      folderPath: string;
+      /** Host stamps from the catalog; local probing must not answer for them. */
+      connectionId?: string | null;
+      executionHostId?: string | null;
+    }>
+  >([]);
   const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
@@ -2619,11 +2629,14 @@ export default function App() {
       : Object.keys(environments ?? {}).length;
     return `${state.repos?.length ?? 0}:${environmentCount}:${state.sshConnectedGeneration ?? 0}`;
   });
-  const { missingFolderPaths, statusByPath: folderPathStatusByPath } =
-    useFolderWorkspacePathStatuses({
-      folderWorkspaces,
-      epoch: folderPathStatusEpoch,
-    });
+  const {
+    missingFolderPaths,
+    statusByPath: folderPathStatusByPath,
+    getFreshFolderWorkspacePathStatus,
+  } = useFolderWorkspacePathStatuses({
+    folderWorkspaces,
+    epoch: folderPathStatusEpoch,
+  });
 
   const handleLaunchAgent = (agent: AvailableAgent) => {
     const currentWorkspacePath = activeWorktreePathRef.current || activeProject?.path || "";
@@ -4318,6 +4331,7 @@ export default function App() {
                 liveWorkspacePaths={liveWorkspacePaths}
                 missingFolderPaths={missingFolderPaths}
                 folderPathStatusByPath={folderPathStatusByPath}
+                getFreshFolderPathStatus={getFreshFolderWorkspacePathStatus}
                 scanFailuresByProject={scanFailuresByProject}
                 onActivateFolderWorkspace={handleActivateFolderWorkspace}
                 prByPath={prByPath}

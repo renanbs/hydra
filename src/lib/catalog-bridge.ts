@@ -15,7 +15,14 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
   projects: HydraProject[];
   projectGroups: Array<{ id: string; name: string }>;
   projectGroupMap: Record<string, string>;
-  folderWorkspaces: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
+  folderWorkspaces: Array<{
+    id: string;
+    projectGroupId: string;
+    name: string;
+    folderPath: string;
+    connectionId?: string | null;
+    executionHostId?: string | null;
+  }>;
 } {
   const projectGroups = (envelope.projectGroups ?? []).map((g: CatalogProjectGroup) => ({
     id: g.id,
@@ -52,6 +59,10 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
     projectGroupId: w.projectGroupId,
     name: w.name,
     folderPath: w.folderPath,
+    // Host stamps must survive the bridge: a folder on another machine must not
+    // read this client's path probe (D03a-057).
+    connectionId: w.connectionId ?? null,
+    executionHostId: w.executionHostId ?? null,
   }));
   return { projects, projectGroups, projectGroupMap, folderWorkspaces };
 }

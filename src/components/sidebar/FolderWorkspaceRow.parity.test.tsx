@@ -168,6 +168,35 @@ describe("FolderWorkspaceRow (Orca parity)", () => {
     healthyRow.click();
     expect(healthy).toHaveBeenCalledTimes(1);
   });
+
+  it("lets an expired activation answer through while the badge keeps the last probe", () => {
+    const onActivate = vi.fn();
+    renderRow({
+      onActivate,
+      pathStatus: { path: FOLDER_PATH, exists: false, reason: "missing" },
+      // The fresh reader answers null once the probe ages out (D03a-057).
+      activationPathStatus: null,
+    });
+    const row = screen.getByRole("option", { name: "MalhaClub Dev workspace" });
+    expect(row).not.toHaveAttribute("aria-disabled");
+    row.click();
+    expect(onActivate).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Folder not found")).toBeInTheDocument();
+  });
+
+  it("blocks activation from the fresh answer even when the badge is healthy", () => {
+    const onActivate = vi.fn();
+    renderRow({
+      onActivate,
+      pathStatus: { path: FOLDER_PATH, exists: true },
+      activationPathStatus: { path: FOLDER_PATH, exists: false, reason: "missing" },
+    });
+    const row = screen.getByRole("option", { name: "MalhaClub Dev workspace" });
+    expect(row).toHaveAttribute("aria-disabled", "true");
+    row.click();
+    expect(onActivate).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Folder not found")).toBeNull();
+  });
 });
 
 describe("workspaceStatusFrom (Orca parity)", () => {

@@ -190,6 +190,7 @@ export function WorktreeSidebar({
   liveWorkspacePaths,
   missingFolderPaths,
   folderPathStatusByPath,
+  getFreshFolderPathStatus,
   scanFailuresByProject = {},
   prByPath,
   onActivateFolderWorkspace,
@@ -1722,6 +1723,7 @@ export function WorktreeSidebar({
               liveWorkspacePaths={liveWorkspacePaths}
               missingFolderPaths={missingFolderPaths}
               folderPathStatusByPath={folderPathStatusByPath}
+              getFreshFolderPathStatus={getFreshFolderPathStatus}
               scanFailuresByProject={scanFailuresByProject}
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}

@@ -361,6 +361,13 @@ export interface WorktreeListProps {
   missingFolderPaths?: ReadonlySet<string>;
   /** Rich folder path status, when the shell probed it (confirmed stale vs ambiguous). */
   folderPathStatusByPath?: ReadonlyMap<string, FolderWorkspacePathStatus>;
+  /**
+   * Fresh-only reader (Orca `getFreshFolderWorkspacePathStatus`): null once the
+   * probe aged past the TTL or the folder lives on a host this client cannot
+   * probe. Create and activation gates use it so an expired negative stops
+   * blocking without erasing the badge.
+   */
+  getFreshFolderPathStatus?: (folderPath: string) => FolderWorkspacePathStatus | null;
   /** Failed authoritative scans, keyed by repo path (`RepoScanUnavailableIndicator`). */
   scanFailuresByProject?: Record<string, string>;
   onActivateFolderWorkspace?: (folderPath: string) => void;
@@ -713,6 +720,7 @@ export function WorktreeList({
   liveWorkspacePaths,
   missingFolderPaths,
   folderPathStatusByPath,
+  getFreshFolderPathStatus,
   scanFailuresByProject = EMPTY_SCAN_FAILURES,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
@@ -2100,10 +2108,21 @@ export function WorktreeList({
       const groupPathStatus = groupFolderPath
         ? folderPathStatusByPath?.get(groupFolderPath)
         : undefined;
+      // Create gates read the non-expired answer: a negative the cache is about to
+      // re-probe must not keep the group's "+" disabled (Orca
+      // `getFreshFolderWorkspacePathStatus`). Without the reader, keep the last
+      // known answer so older shells behave as before.
+      const groupGateStatus: FolderWorkspacePathStatus | null | undefined = groupFolderPath
+        ? getFreshFolderPathStatus
+          ? getFreshFolderPathStatus(groupFolderPath)
+          : (groupPathStatus ??
+            (missingPaths.has(groupFolderPath)
+              ? { path: groupFolderPath, exists: false, reason: "missing" }
+              : undefined))
+        : undefined;
       const createWorkspaceDisabledReason =
-        groupFolderPath &&
-        (missingPaths.has(groupFolderPath) || isFolderWorkspaceCreateDisabled(groupPathStatus))
-          ? (getFolderWorkspaceCreateDisabledReason(groupPathStatus) ??
+        groupFolderPath && isFolderWorkspaceCreateDisabled(groupGateStatus)
+          ? (getFolderWorkspaceCreateDisabledReason(groupGateStatus) ??
             `Folder not found: ${groupFolderPath}`)
           : undefined;
       const dragHandlers = headerHandlersFor("project-group", group.id);
@@ -2154,6 +2173,7 @@ export function WorktreeList({
       folderWorkspaces,
       missingPaths,
       folderPathStatusByPath,
+      getFreshFolderPathStatus,
     ]
   );
 
@@ -2195,6 +2215,9 @@ export function WorktreeList({
           })}
           pathMissing={missingPaths.has(folderPath)}
           pathStatus={folderPathStatusByPath?.get(folderPath)}
+          activationPathStatus={
+            getFreshFolderPathStatus ? getFreshFolderPathStatus(folderPath) : undefined
+          }
           isActive={isActive}
           surfaceInset={surfaceInset}
           contentIndent={cardContentIndent}
@@ -2219,6 +2242,7 @@ export function WorktreeList({
       rowModel.worktreeById,
       prByPath,
       folderPathStatusByPath,
+      getFreshFolderPathStatus,
       onActivateFolderWorkspace,
       onDeleteFolderWorkspace,
     ]
