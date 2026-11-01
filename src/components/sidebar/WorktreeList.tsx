@@ -278,7 +278,7 @@ function toPipelineProjectGroup(
     parentPath: folderWorkspacePath ?? null,
     parentGroupId: null,
     createdFrom: "manual",
-    tabOrder: 0,
+    tabOrder: group.tabOrder ?? 0,
     isCollapsed: group.isCollapsed ?? false,
     color: null,
     createdAt: 0,

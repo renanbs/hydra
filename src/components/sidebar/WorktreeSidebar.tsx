@@ -523,19 +523,21 @@ export function WorktreeSidebar({
   // Listen for custom group creation events
   useEffect(() => {
     const handleOpenNewGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string }>).detail;
+      const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string; hostId?: string }>).detail;
       setGroupNameDialog({
         open: true,
         title: "New Project Group",
         description: "Create a group to organize projects in your sidebar.",
         confirmLabel: "Create",
         initialName: detail?.defaultName ?? "",
+        hostId: detail?.hostId,
         onSubmit: (name) => {
-          window.dispatchEvent(
-            new CustomEvent("hydra:create-project-group", {
-              detail: { name, projectId: detail?.projectId },
-            })
-          );
+          const created = dispatchProjectGroupChange("hydra:create-project-group", {
+            name,
+            projectId: detail?.projectId,
+            ...(detail?.hostId ? { hostId: detail.hostId } : {}),
+          });
+          if (!created) reportGroupCreateFailure();
         },
       });
     };
@@ -1411,10 +1413,14 @@ export function WorktreeSidebar({
 
   const resolveGroupOwnerHostId = useCallback(
     (groupId: string): string | undefined => {
+      // Why the stamp first: an empty group has no member to derive a host from,
+      // and App's host-qualified buckets already know which host owns the row.
+      const groupHostId = projectGroups.find((group) => group.id === groupId)?.hostId;
+      if (groupHostId) return groupHostId;
       const member = projects.find((project) => projectGroupMap?.[project.id] === groupId);
       return member ? resolveProjectHostId(member) : undefined;
     },
-    [projects, projectGroupMap, resolveProjectHostId]
+    [projectGroups, projects, projectGroupMap, resolveProjectHostId]
   );
 
   /**
@@ -1514,6 +1520,30 @@ export function WorktreeSidebar({
         description: translate(
           "auto.components.sidebar.WorktreeList.groupRenameFailedDesc",
           "Hydra could not confirm the new name with the group's host. Recheck the group after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupOrderFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupOrderFailed", "Failed to reorder group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupOrderFailedDesc",
+          "Hydra could not save the new group order on the group's host. Reorder it again after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupMoveFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupMoveFailed", "Failed to move project"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupMoveFailedDesc",
+          "Hydra could not confirm the move with the project's host. Recheck the group after reconnecting."
         ),
       }
     );
@@ -1981,12 +2011,14 @@ export function WorktreeSidebar({
               onReorderWorktreesInGroup={commitReorderedWorktrees}
               onReorderHostSections={setWorkspaceHostOrder}
               onUpdateProjectGroup={(groupId, updates) => {
-                // App owns group state; the drop only reports the new tab order.
-                window.dispatchEvent(
-                  new CustomEvent("hydra:update-project-group", {
-                    detail: { id: groupId, tabOrder: updates.tabOrder },
-                  })
-                );
+                // App owns group state; the drop reports the new tab order on the
+                // host bucket that owns the group row (D03a-021).
+                const applied = dispatchProjectGroupChange("hydra:update-project-group", {
+                  id: groupId,
+                  tabOrder: updates.tabOrder,
+                  hostId: resolveGroupOwnerHostId(groupId),
+                });
+                if (!applied) reportGroupOrderFailure();
               }}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
@@ -2020,11 +2052,14 @@ export function WorktreeSidebar({
                 if (draggedProjectId) {
                   e.preventDefault();
                   setGroupDropTargetId(null);
-                  window.dispatchEvent(
-                    new CustomEvent("hydra:move-project-to-group", {
-                      detail: { projectId: draggedProjectId, groupId },
-                    })
-                  );
+                  const draggedProject = projects.find((project) => project.id === draggedProjectId);
+                  const hostId = draggedProject ? resolveProjectHostId(draggedProject) : undefined;
+                  const moved = dispatchProjectGroupChange("hydra:move-project-to-group", {
+                    projectId: draggedProjectId,
+                    groupId,
+                    ...(hostId ? { hostId } : {}),
+                  });
+                  if (!moved) reportGroupMoveFailure();
                   setDraggedProjectId(null);
                 }
               }}
@@ -2301,11 +2336,15 @@ export function WorktreeSidebar({
                             const proj = activeProjectMenu.proj;
                             setActiveProjectMenu(null);
                             setProjectMenuSubmenu(null);
-                            dispatchProjectGroupChange("hydra:move-project-to-group", {
-                              projectId: proj.id,
-                              groupId: group.id,
-                              hostId: resolveProjectHostId(proj),
-                            });
+                            const moved = dispatchProjectGroupChange(
+                              "hydra:move-project-to-group",
+                              {
+                                projectId: proj.id,
+                                groupId: group.id,
+                                hostId: resolveProjectHostId(proj),
+                              }
+                            );
+                            if (!moved) reportGroupMoveFailure();
                           }}
                           className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left transition cursor-pointer text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent disabled:pointer-events-none disabled:opacity-40"
                         >
@@ -2325,10 +2364,14 @@ export function WorktreeSidebar({
                   const proj = activeProjectMenu.proj;
                   setActiveProjectMenu(null);
                   setProjectMenuSubmenu(null);
-                  dispatchProjectGroupChange("hydra:remove-project-from-group", {
-                    projectId: proj.id,
-                    hostId: resolveProjectHostId(proj),
-                  });
+                  const removed = dispatchProjectGroupChange(
+                    "hydra:remove-project-from-group",
+                    {
+                      projectId: proj.id,
+                      hostId: resolveProjectHostId(proj),
+                    }
+                  );
+                  if (!removed) reportGroupMoveFailure();
                 }}
                 className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/70 text-left transition cursor-pointer"
               >
@@ -2482,8 +2525,11 @@ export function WorktreeSidebar({
           if (!group) return;
           const deleted = dispatchProjectGroupChange("hydra:delete-project-group", {
             id: group.id,
-            removeProjectPaths: groupDeleteDialog.removeContainedProjects
-              ? groupDeleteMembers.map((project) => project.path)
+            groupName: group.name,
+            // Per-project identity, not just paths: App reports each removal that
+            // failed instead of collapsing them into one boolean.
+            removeProjects: groupDeleteDialog.removeContainedProjects
+              ? groupDeleteMembers.map((project) => ({ id: project.id, path: project.path }))
               : [],
             hostId: groupDeleteDialog.hostId,
           });

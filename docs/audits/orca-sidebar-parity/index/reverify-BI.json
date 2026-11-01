@@ -14,26 +14,25 @@
   },
   {
    "id": "D03a-082",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ProjectHeaderActions.tsx:event guards",
-    "src/components/sidebar/WorktreeSidebar.tsx:group menu"
+    "src/lib/project-group-host-state.ts",
+    "src/App.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx"
    ],
-   "missing_behaviors": [
-    "App.tsx group handlers still ignore the forwarded hostId (sidebar-prefs pipeline has no per-host group mutation)"
-   ],
-   "note": "Menu portal events no longer bubble into the header, and rename/delete carry the group owner hostId."
+   "missing_behaviors": [],
+   "note": "Group menus forward the owner host; App validates it against known hosts and mutates only the addressed bucket, failing malformed/unknown hosts instead of touching local groups."
   },
   {
    "id": "D03a-087",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:group mutations"
+    "src/lib/project-group-host-state.ts",
+    "src/App.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx"
    ],
-   "missing_behaviors": [
-    "group mutations remain App-local sidebar_prefs state; hostId is ignored and contained-project removal failures cannot be reported individually"
-   ],
-   "note": "Create/rename/delete toast on unacknowledged mutations, delete supports removeContainedProjects, and the owner host is resolved and forwarded."
+   "missing_behaviors": [],
+   "note": "Create/rename/delete/move run host-qualified through the bucket state; delete with removeContainedProjects reports each failed project id and acknowledges success only when every removal succeeds."
   },
   {
    "id": "D03a-040",

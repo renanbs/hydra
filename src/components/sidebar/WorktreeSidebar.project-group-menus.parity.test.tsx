@@ -47,7 +47,9 @@ const PROJECT_B: HydraProject = {
 
 const GROUPS = [
   { id: "grp_dev", name: "Marketplace" },
-  { id: "grp_platform", name: "Platform" },
+  // Stamped host differs from the member project's host: the row's owner stamp
+  // is authoritative, so an empty or reassigned group still targets its bucket.
+  { id: "grp_platform", name: "Platform", hostId: "ssh:stamp-host" },
 ];
 
 function resetStore() {
@@ -83,7 +85,13 @@ function resetStoreToLocalRepos() {
   });
 }
 
-function renderSidebar(onOpenSettings = vi.fn()) {
+function renderSidebar(
+  onOpenSettings = vi.fn(),
+  groupProps: {
+    projectGroups?: typeof GROUPS;
+    projectGroupMap?: Record<string, string>;
+  } = {}
+) {
   return render(
     <TooltipProvider>
       <WorktreeSidebar
@@ -104,8 +112,10 @@ function renderSidebar(onOpenSettings = vi.fn()) {
         onAssignWorktreeStatus={vi.fn()}
         onPinWorktree={vi.fn()}
         onCreateWorktree={vi.fn()}
-        projectGroups={GROUPS}
-        projectGroupMap={{ repo_a: "grp_dev", repo_b: "grp_dev" }}
+        projectGroups={groupProps.projectGroups ?? GROUPS}
+        projectGroupMap={
+          groupProps.projectGroupMap ?? { repo_a: "grp_dev", repo_b: "grp_dev" }
+        }
       />
     </TooltipProvider>
   );
@@ -326,7 +336,11 @@ describe("Project group menu (D03a-082 / D03a-087)", () => {
     await waitFor(() => expect(events).toHaveLength(1));
     expect(events[0].detail).toEqual({
       id: "grp_dev",
-      removeProjectPaths: ["/repo/a", "/repo/b"],
+      groupName: "Marketplace",
+      removeProjects: [
+        { id: "repo_a", path: "/repo/a" },
+        { id: "repo_b", path: "/repo/b" },
+      ],
       hostId: "ssh:srv",
     });
 
@@ -337,6 +351,35 @@ describe("Project group menu (D03a-082 / D03a-087)", () => {
     );
 
     window.removeEventListener("hydra:delete-project-group", capture);
+  });
+
+  it("routes rename through the group row's stamped owner host", async () => {
+    renderSidebar(vi.fn(), {
+      projectGroupMap: { repo_a: "grp_dev", repo_b: "grp_platform" },
+    });
+
+    const events: CustomEvent[] = [];
+    const capture = (event: Event) => events.push(event as CustomEvent);
+    window.addEventListener("hydra:rename-project-group", capture);
+    const acknowledge = acknowledgeNext("hydra:rename-project-group");
+
+    // Second group header row (Platform), whose member repo lives on ssh:srv.
+    fireEvent.click(screen.getAllByRole("button", { name: "Group options" })[1]);
+    fireEvent.click(screen.getByRole("button", { name: "Rename Group..." }));
+    fireEvent.change(screen.getByLabelText("Group Name"), {
+      target: { value: "Platform Renamed" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+
+    await waitFor(() => expect(events).toHaveLength(1));
+    expect(events[0].detail).toEqual({
+      id: "grp_platform",
+      name: "Platform Renamed",
+      hostId: "ssh:stamp-host",
+    });
+
+    acknowledge();
+    window.removeEventListener("hydra:rename-project-group", capture);
   });
 
   it("toasts when nothing acknowledges a rename", async () => {

@@ -69,6 +69,29 @@ import {
   applyProjectIconEvent,
   PROJECT_ICON_OPTIMISTIC_EVENT,
 } from "./lib/repo-icon-write";
+import {
+  EMPTY_PROJECT_GROUP_HOST_STATE,
+  collectKnownProjectGroupHostIds,
+  createProjectGroupInHost,
+  deleteProjectGroupInHost,
+  flattenProjectGroupHostState,
+  hasProjectGroupHostData,
+  mergeProjectGroupCatalogIntoHostState,
+  moveProjectToGroupInHost,
+  readProjectGroupHostState,
+  removeContainedProjectsForGroup,
+  removeProjectFromGroupInHost,
+  renameProjectGroupInHost,
+  resolveProjectGroupHost,
+  sanitizeLegacyProjectGroupMap,
+  sanitizeLegacyProjectGroups,
+  sanitizeProjectGroupMapByHost,
+  sanitizeProjectGroupsByHost,
+  serializeProjectGroupHostState,
+  updateProjectGroupOrderInHost,
+  type ProjectGroupHostState,
+  type ProjectGroupPrefEntry,
+} from "./lib/project-group-host-state";
 import type { PrDisplay } from "./components/sidebar/pr-display";
 import { StatusBar } from "./components/status-bar/StatusBar";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -205,12 +228,8 @@ function asStringRecordPref(value: unknown): Record<string, string> | undefined 
   return out;
 }
 
-function asProjectGroupsPref(value: unknown): Array<{ id: string; name: string }> | undefined {
-  if (!Array.isArray(value)) return undefined;
-  return value.filter(
-    (g): g is { id: string; name: string } =>
-      !!g && typeof g === "object" && "id" in g && typeof g.id === "string" && "name" in g && typeof g.name === "string"
-  );
+function asProjectGroupsPref(value: unknown): ProjectGroupPrefEntry[] | undefined {
+  return sanitizeLegacyProjectGroups(value);
 }
 
 function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | undefined {
@@ -273,6 +292,10 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
   if (projectGroupMap) out.projectGroupMap = projectGroupMap;
   const projectGroups = asProjectGroupsPref(src.projectGroups);
   if (projectGroups) out.projectGroups = projectGroups;
+  const projectGroupMapByHost = sanitizeProjectGroupMapByHost(src.projectGroupMapByHost);
+  if (projectGroupMapByHost) out.projectGroupMapByHost = projectGroupMapByHost;
+  const projectGroupsByHost = sanitizeProjectGroupsByHost(src.projectGroupsByHost);
+  if (projectGroupsByHost) out.projectGroupsByHost = projectGroupsByHost;
   const displayOptions = normalizeDisplayOptionsPref(src.displayOptions);
   if (displayOptions) out.displayOptions = displayOptions;
   if (
@@ -348,6 +371,35 @@ function getExecutionHostIdForRepoPath(
 ): ExecutionHostId | undefined {
   const repo = repos.find((candidate) => candidate.path === repoPath);
   return repo && (repo.connectionId || repo.executionHostId) ? getRepoExecutionHostId(repo) : undefined;
+}
+
+/**
+ * Normalizes the delete dialog's contained-project payload. The dialog sends ids
+ * (for per-project failure reporting); the path-only detail from older sidebars
+ * stays readable so the event contract is backward compatible.
+ */
+function normalizeContainedProjectRemovals(detail: {
+  removeProjects?: unknown;
+  removeProjectPaths?: unknown;
+}): Array<{ id: string; path: string }> {
+  const projects: Array<{ id: string; path: string }> = [];
+  if (Array.isArray(detail.removeProjects)) {
+    for (const candidate of detail.removeProjects) {
+      if (!candidate || typeof candidate !== "object") continue;
+      const entry = candidate as { id?: unknown; path?: unknown };
+      if (typeof entry.id === "string" && entry.id && typeof entry.path === "string" && entry.path) {
+        projects.push({ id: entry.id, path: entry.path });
+      }
+    }
+  }
+  if (projects.length === 0 && Array.isArray(detail.removeProjectPaths)) {
+    for (const path of detail.removeProjectPaths) {
+      if (typeof path === "string" && path) {
+        projects.push({ id: path, path });
+      }
+    }
+  }
+  return projects;
 }
 
 /**
@@ -647,10 +699,46 @@ export default function App() {
   const [unreadProjects, setUnreadProjects] = useState<Set<string>>(new Set());
   const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(new Set());
   const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(new Set());
-  const [projectGroups, setProjectGroups] = useState<
-    Array<{ id: string; name: string; tabOrder?: number }>
-  >([]);
-  const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
+  // Groups live per execution host (D03a-021/082/087): one bucket per
+  // `ExecutionHostId`, so a mutation addressed at one host can never touch
+  // another host's groups or memberships — even when a group id repeats.
+  const [projectGroupState, setProjectGroupState] = useState<ProjectGroupHostState>(
+    EMPTY_PROJECT_GROUP_HOST_STATE
+  );
+  const projectGroupStateRef = useRef<ProjectGroupHostState>(EMPTY_PROJECT_GROUP_HOST_STATE);
+  const applyProjectGroupHostState = useCallback((next: ProjectGroupHostState) => {
+    projectGroupStateRef.current = next;
+    setProjectGroupState(next);
+  }, []);
+  const flatProjectGroups = useMemo(
+    () => flattenProjectGroupHostState(projectGroupState),
+    [projectGroupState]
+  );
+  const projectGroups = flatProjectGroups.projectGroups;
+  const projectGroupMap = flatProjectGroups.projectGroupMap;
+  /** Latest authoritative catalog read, merged again when persisted prefs hydrate. */
+  const catalogProjectGroupsRef = useRef<{
+    groups: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
+    memberships: Record<string, string>;
+  } | null>(null);
+  const applyCatalogProjectGroups = useCallback(
+    (model: {
+      projectGroups: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
+      projectGroupMap: Record<string, string>;
+    }) => {
+      catalogProjectGroupsRef.current = {
+        groups: model.projectGroups,
+        memberships: model.projectGroupMap,
+      };
+      applyProjectGroupHostState(
+        mergeProjectGroupCatalogIntoHostState(projectGroupStateRef.current, {
+          groups: model.projectGroups,
+          memberships: model.projectGroupMap,
+        })
+      );
+    },
+    [applyProjectGroupHostState]
+  );
   const [folderWorkspaces, setFolderWorkspaces] = useState<
     Array<{
       id: string;
@@ -701,10 +789,15 @@ export default function App() {
     snap.unreadProjects = [...unreadProjects];
     snap.pinnedWorktrees = [...pinnedWorktrees];
     snap.unreadWorktrees = [...unreadWorktrees];
-    snap.projectGroups = projectGroups;
-    snap.projectGroupMap = projectGroupMap;
+    const serializedGroups = serializeProjectGroupHostState(projectGroupState);
+    snap.projectGroupsByHost = serializedGroups.projectGroupsByHost;
+    snap.projectGroupMapByHost = serializedGroups.projectGroupMapByHost;
+    // Why delete: legacy flat fields would re-seed the local bucket on the next
+    // boot and could resurrect a group a host-qualified write removed.
+    delete snap.projectGroups;
+    delete snap.projectGroupMap;
     scheduleSidebarPrefsSave();
-  }, [pinnedProjects, unreadProjects, pinnedWorktrees, unreadWorktrees, projectGroups, projectGroupMap, scheduleSidebarPrefsSave]);
+  }, [pinnedProjects, unreadProjects, pinnedWorktrees, unreadWorktrees, projectGroupState, scheduleSidebarPrefsSave]);
 
   // Fatia Shell-owned (body/collapsed/displayOptions/agents*) sobe por este callback.
   const handleSidebarPrefsChange = useCallback((prefs: SidebarShellPrefs) => {
@@ -1052,29 +1145,40 @@ export default function App() {
         // localStorage ainda guarda dados válidos, fazemos o merge aqui; o flush
         // direto abaixo persiste o blob merged (shape intacto) no SQLite e só então
         // aposenta as duas chaves legadas.
+        let recoveredGroupState = readProjectGroupHostState(stored);
         let recoveredLegacyGroups = false;
-        if (migrated) {
-          const storedHasGroups =
-            (stored.projectGroups?.length ?? 0) > 0 ||
-            Object.keys(stored.projectGroupMap ?? {}).length > 0;
-          if (!storedHasGroups) {
-            const legacyGroups = sanitizeSidebarPrefsSnapshot(readLegacyProjectGroupsRaw());
-            const legacyGroupCount = legacyGroups.projectGroups?.length ?? 0;
-            const legacyMappingCount = Object.keys(legacyGroups.projectGroupMap ?? {}).length;
-            if (legacyGroupCount > 0 || legacyMappingCount > 0) {
-              stored = { ...stored };
-              if (legacyGroups.projectGroups) stored.projectGroups = legacyGroups.projectGroups;
-              if (legacyGroups.projectGroupMap) stored.projectGroupMap = legacyGroups.projectGroupMap;
-              recoveredLegacyGroups = true;
-              // Feedback explícito de migração (uma vez por boot): grupos legados
-              // recuperados mesmo com os demais campos em defaults.
-              console.info(
-                `[sidebar] PR-16: recuperados ${legacyGroupCount} grupo(s) e ${legacyMappingCount} mapeamento(s) de projeto do localStorage legado para as prefs SQLite`
-              );
-            }
+        if (migrated && !hasProjectGroupHostData(recoveredGroupState)) {
+          const legacyRaw = readLegacyProjectGroupsRaw();
+          const legacyGroupCount = sanitizeLegacyProjectGroups(legacyRaw.projectGroups)?.length ?? 0;
+          const legacyMappingCount = Object.keys(
+            sanitizeLegacyProjectGroupMap(legacyRaw.projectGroupMap) ?? {}
+          ).length;
+          if (legacyGroupCount > 0 || legacyMappingCount > 0) {
+            recoveredGroupState = readProjectGroupHostState(legacyRaw);
+            recoveredLegacyGroups = true;
+            // Feedback explícito de migração (uma vez por boot): grupos legados
+            // recuperados mesmo com os demais campos em defaults.
+            console.info(
+              `[sidebar] PR-16: recuperados ${legacyGroupCount} grupo(s) e ${legacyMappingCount} mapeamento(s) de projeto do localStorage legado para as prefs SQLite`
+            );
           }
         }
-        const merged = stored;
+        // A catalog read can land before this hydration; fold it back in so the
+        // persisted snapshot never hides groups the runtime already listed.
+        const hydratedGroupState = catalogProjectGroupsRef.current
+          ? mergeProjectGroupCatalogIntoHostState(recoveredGroupState, {
+              groups: catalogProjectGroupsRef.current.groups,
+              memberships: catalogProjectGroupsRef.current.memberships,
+            })
+          : recoveredGroupState;
+        const persistedGroups = serializeProjectGroupHostState(hydratedGroupState);
+        const merged: SidebarPrefsSnapshot = {
+          ...stored,
+          projectGroupsByHost: persistedGroups.projectGroupsByHost,
+          projectGroupMapByHost: persistedGroups.projectGroupMapByHost,
+        };
+        delete merged.projectGroups;
+        delete merged.projectGroupMap;
         // Fast-forward do ref ANTES de liberar a gate: qualquer change posterior
         // (Effects acima ou do Shell) faz merge sobre o blob hidratado.
         sidebarPrefsRef.current = merged;
@@ -1084,8 +1188,7 @@ export default function App() {
         setUnreadProjects(new Set(merged.unreadProjects ?? []));
         setPinnedWorktrees(new Set(merged.pinnedWorktrees ?? []));
         setUnreadWorktrees(new Set(merged.unreadWorktrees ?? []));
-        setProjectGroups(merged.projectGroups ?? []);
-        setProjectGroupMap(merged.projectGroupMap ?? {});
+        applyProjectGroupHostState(hydratedGroupState);
         // Fatia Shell-owned desce como props one-shot (initialSidebarBody etc.).
         setInitialSidebarPrefs(merged);
         // Host scope vive no store; hidrata pelo mesmo blob (chaves ausentes →
@@ -1455,9 +1558,8 @@ export default function App() {
           }
         } catch {}
         setProjects(sorted);
-        setProjectGroups(model.projectGroups);
+        applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
-        setProjectGroupMap(model.projectGroupMap);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
           setActiveWorktreePath(sorted[0].path);
@@ -1488,9 +1590,8 @@ export default function App() {
           }
         } catch {}
         setProjects(sorted);
-        setProjectGroups(model.projectGroups);
+        applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
-        setProjectGroupMap(model.projectGroupMap);
         return refreshAllWorktrees(sorted);
       }).catch(() => false);
     };
@@ -1512,69 +1613,130 @@ export default function App() {
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
     // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
     // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
-    const handleCreateProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ name: string; projectId?: string }>).detail;
-      if (!detail?.name || typeof detail.name !== "string" || !detail.name.trim()) return;
-      const id = `grp_${Date.now()}`;
-      const newGroup = { id, name: detail.name.trim(), tabOrder: Date.now() };
-      setProjectGroups((prev) => [...prev, newGroup]);
-      if (detail.projectId) {
-        setProjectGroupMap((prev) => ({ ...prev, [detail.projectId!]: id }));
+    //
+    // D03a-021/082/087: every event is host-qualified. The handler resolves the event's
+    // `hostId` against the hosts the catalog actually owns, mutates only that host's
+    // bucket, and answers with `hydra:refresh-projects` only when it applied something —
+    // a silent no-op would leave the sidebar claiming success it cannot persist.
+    const resolveEventGroupHost = (hostId: unknown) => {
+      const knownHostIds = collectKnownProjectGroupHostIds(useAppStore.getState().repos);
+      // A bucket Hydra already persists is addressable even when no live repo row
+      // names the host (e.g. the repo list has not hydrated yet this boot).
+      for (const persistedHostId of Object.keys(projectGroupStateRef.current.groupsByHost)) {
+        knownHostIds.add(persistedHostId);
       }
+      return resolveProjectGroupHost(hostId, knownHostIds);
+    };
+    const acknowledgeProjectGroupChange = () => {
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    const handleCreateProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ name?: unknown; projectId?: unknown; hostId?: unknown }>).detail;
+      if (!detail) return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = createProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        name: typeof detail.name === "string" ? detail.name : "",
+        projectId: typeof detail.projectId === "string" ? detail.projectId : undefined,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleMoveProjectToGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId: string; groupId: string }>).detail;
-      if (!detail?.projectId || !detail?.groupId) return;
-      setProjectGroupMap((prev) => ({ ...prev, [detail.projectId]: detail.groupId }));
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      const detail = (e as CustomEvent<{ projectId?: unknown; groupId?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.projectId !== "string" || typeof detail.groupId !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = moveProjectToGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        projectId: detail.projectId,
+        groupId: detail.groupId,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleRemoveProjectFromGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId: string }>).detail;
-      if (!detail?.projectId) return;
-      setProjectGroupMap((prev) => {
-        const next = { ...prev };
-        delete next[detail.projectId];
-        return next;
+      const detail = (e as CustomEvent<{ projectId?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.projectId !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = removeProjectFromGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        projectId: detail.projectId,
       });
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleRenameProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; name: string }>).detail;
-      if (!detail?.id || typeof detail.name !== "string" || !detail.name.trim()) return;
-      setProjectGroups((prev) => prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g)));
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      const detail = (e as CustomEvent<{ id?: unknown; name?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.id !== "string" || typeof detail.name !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = renameProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
+        name: detail.name,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleUpdateProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; tabOrder?: number }>).detail;
-      if (!detail?.id || typeof detail.tabOrder !== "number") return;
-      setProjectGroups((prev) =>
-        prev
-          .map((group) =>
-            group.id === detail.id ? { ...group, tabOrder: detail.tabOrder } : group
-          )
-          .sort((left, right) => (left.tabOrder ?? 0) - (right.tabOrder ?? 0))
-      );
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      // Manual order from the group-header drop (D03a-021): the sidebar forwards the
+      // group row's owner host, so the re-sort lands in that bucket only.
+      const detail = (e as CustomEvent<{ id?: unknown; tabOrder?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.id !== "string" || typeof detail.tabOrder !== "number") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = updateProjectGroupOrderInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
+        tabOrder: detail.tabOrder,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleDeleteProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; removeProjectPaths?: string[] }>).detail;
-      if (!detail?.id) return;
-      // Orca `removeContainedProjects`: the checkbox deletes the member projects
-      // too; without it they stay, merely ungrouped.
-      for (const path of detail.removeProjectPaths ?? []) {
-        void invoke("remove_project", { path }).catch((error) =>
-          console.error("Failed to remove contained project:", error)
-        );
-      }
-      setProjectGroups((prev) => prev.filter((g) => g.id !== detail.id));
-      // Delete strips the membership map — member projects render ungrouped again.
-      setProjectGroupMap((prev) => {
-        const entries = Object.entries(prev).filter(([, gid]) => gid !== detail.id);
-        if (entries.length === Object.keys(prev).length) return prev;
-        return Object.fromEntries(entries);
+      const detail = (e as CustomEvent<{
+        id?: unknown;
+        hostId?: unknown;
+        groupName?: unknown;
+        removeProjects?: unknown;
+        removeProjectPaths?: unknown;
+      }>).detail;
+      if (!detail || typeof detail.id !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const removeProjects = normalizeContainedProjectRemovals(detail);
+      const deletion = deleteProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
       });
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      if (!deletion.ok) return;
+      applyProjectGroupHostState(deletion.state);
+      acknowledgeProjectGroupChange();
+      if (removeProjects.length === 0) return;
+      // Orca `removeContainedProjects`: each project reports its own removal, so a
+      // single failed project cannot hide behind a success for the rest.
+      void removeContainedProjectsForGroup({
+        hostId: host.hostId,
+        projects: removeProjects,
+        removeProject: (project) => invoke("remove_project", { path: project.path }),
+      }).then((outcome) => {
+        if (outcome.ok) return;
+        const groupLabel =
+          typeof detail.groupName === "string" && detail.groupName.trim()
+            ? detail.groupName.trim()
+            : detail.id;
+        toast.error("Some projects could not be removed", {
+          description: `${outcome.failedProjectIds.length} of ${removeProjects.length} contained project(s) remained in "${groupLabel}": ${outcome.failedProjectIds.join(", ")}`,
+        });
+      });
     };
     window.addEventListener("hydra:create-project-group", handleCreateProjectGroup);
     window.addEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
@@ -2026,9 +2188,8 @@ export default function App() {
         invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
           const model = catalogToSidebarModel(envelope);
           setProjects(model.projects);
-          setProjectGroups(model.projectGroups);
-        setFolderWorkspaces(model.folderWorkspaces);
-          setProjectGroupMap(model.projectGroupMap);
+          applyCatalogProjectGroups(model);
+          setFolderWorkspaces(model.folderWorkspaces);
           if (activeProject?.path === proj.path) {
             if (model.projects.length > 0) {
               handleSelectProject(model.projects[0]);
@@ -3842,7 +4003,8 @@ export default function App() {
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, onClick: () => togglePinProject(proj.id), separator: true },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadProject(proj.id) },
         { label: "New group from project", icon: <FolderPlus className="w-3.5 h-3.5" />, separator: true, onClick: () => {
-            window.dispatchEvent(new CustomEvent("hydra:open-new-group-dialog", { detail: { projectId: proj.id, defaultName: `${proj.name} group` } }));
+            const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path);
+            window.dispatchEvent(new CustomEvent("hydra:open-new-group-dialog", { detail: { projectId: proj.id, defaultName: `${proj.name} group`, ...(hostId ? { hostId } : {}) } }));
           }
         },
         ...(projectGroups.length > 0 ? [{
@@ -3853,14 +4015,13 @@ export default function App() {
             icon: undefined,
             disabled: projectGroupMap[proj.id] === g.id,
             onClick: () => {
-              const nextMap = { ...projectGroupMap, [proj.id]: g.id };
-              setProjectGroupMap(nextMap);
-              window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+              const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path);
+              window.dispatchEvent(new CustomEvent("hydra:move-project-to-group", { detail: { projectId: proj.id, groupId: g.id, ...(hostId ? { hostId } : {}) } }));
             },
           })),
           onClick: () => {},
         } as ContextMenuItem] : []),
-        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
+        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path); window.dispatchEvent(new CustomEvent("hydra:remove-project-from-group", { detail: { projectId: proj.id, ...(hostId ? { hostId } : {}) } })); } } as ContextMenuItem] : []),
         {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
@@ -4696,9 +4857,8 @@ export default function App() {
           invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
             const model = catalogToSidebarModel(envelope);
             setProjects(model.projects);
-            setProjectGroups(model.projectGroups);
-        setFolderWorkspaces(model.folderWorkspaces);
-            setProjectGroupMap(model.projectGroupMap);
+            applyCatalogProjectGroups(model);
+            setFolderWorkspaces(model.folderWorkspaces);
             if (model.projects.length > 0) {
               handleSelectProject(model.projects[0]);
               if (tabsRef.current.length === 0) {

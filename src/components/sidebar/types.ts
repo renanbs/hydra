@@ -10,6 +10,11 @@ import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
+import type {
+  ProjectGroupMapByHost,
+  ProjectGroupPrefEntry,
+  ProjectGroupsByHost,
+} from "../../lib/project-group-host-state";
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import type {
   VisibleWorkspaceHostIds,
@@ -34,8 +39,14 @@ export interface SidebarPrefsSnapshot {
   unreadProjects?: string[];
   pinnedWorktrees?: string[];
   unreadWorktrees?: string[];
+  /** Legacy flat membership map; loaded into the local host bucket (D03a-087). */
   projectGroupMap?: Record<string, string>;
-  projectGroups?: Array<{ id: string; name: string }>;
+  /** Legacy flat group list; loaded into the local host bucket (D03a-087). */
+  projectGroups?: ProjectGroupPrefEntry[];
+  /** Host-qualified groups, keyed by `ExecutionHostId` (local vs connection/runtime host). */
+  projectGroupsByHost?: ProjectGroupsByHost;
+  /** Host-qualified project → group map; a mutation only touches its own bucket. */
+  projectGroupMapByHost?: ProjectGroupMapByHost;
   displayOptions?: WorkspaceDisplayOptions;
   agentsReadFilter?: AgentsStatusFilter;
   agentsGroupBy?: AgentsGroupBy;
@@ -287,7 +298,8 @@ export interface WorktreeSidebarProps {
   unreadWorktrees?: Set<string>;
   hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
   projectGroupMap?: Record<string, string>;
-  projectGroups?: Array<{ id: string; name: string }>;
+  /** Groups merged from every host bucket; `hostId` names the bucket that owns the row. */
+  projectGroups?: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   /** Workspace paths with a mounted terminal tab (Orca's live-PTY signal for the status dot). */
   liveWorkspacePaths?: ReadonlySet<string>;
