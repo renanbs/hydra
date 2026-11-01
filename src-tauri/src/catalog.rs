@@ -19,6 +19,13 @@ const MAX_SOURCE_PATH_LENGTH: usize = 4096;
 /// Orca `BUILT_IN_WORKTREE_VISIBILITY_SOURCES` ids, in matcher order.
 pub const BUILT_IN_WORKTREE_VISIBILITY_SOURCE_IDS: &[&str] = &["claude", "gsd"];
 
+/// Caps from Orca `sanitizeRepoIcon` / `MAX_REPO_ICON_DATA_URL_LENGTH`.
+const MAX_REPO_ICON_EMOJI_LENGTH: usize = 16;
+const MAX_REPO_ICON_LUCIDE_NAME_LENGTH: usize = 40;
+const MAX_REPO_ICON_LABEL_LENGTH: usize = 80;
+const MAX_REPO_ICON_DATA_URL_LENGTH: usize = 400 * 1024;
+const REPO_ICON_IMAGE_SOURCES: &[&str] = &["upload", "file", "favicon", "github"];
+
 pub fn catalog_path() -> Result<PathBuf, String> {
     let home = std::env::var("HOME").map_err(|_| "HOME not found".to_string())?;
     let dir = PathBuf::from(home).join(".config").join("hydra");
@@ -533,6 +540,102 @@ fn find_repo_mut<'a>(
         .ok_or_else(|| format!("Repo not found in catalog: {original}"))
 }
 
+/// Writes (or clears, with `None`) the glyph the repo header paints. Keyed by
+/// catalog repo id: the renderer's project id is that id behind the sidebar's
+/// `repo_` prefix, and a repo's display path can change without the row moving.
+/// An unknown id is an error, like the path-keyed setters, so the caller never
+/// believes it persisted a value that went nowhere.
+pub fn set_repo_icon(
+    envelope: &mut CatalogEnvelope,
+    repo_id: &str,
+    repo_icon: Option<serde_json::Value>,
+) -> Result<(), String> {
+    let id = repo_id.trim();
+    if id.is_empty() {
+        return Err("Empty repo id".to_string());
+    }
+    // Validate before mutating: a rejected payload must leave the stored icon
+    // exactly as it was.
+    let normalized = match repo_icon {
+        Some(value) => Some(normalize_repo_icon(&value)?),
+        None => None,
+    };
+    let repo = envelope
+        .repos
+        .iter_mut()
+        .find(|r| r.id == id)
+        .ok_or_else(|| format!("Repo not found in catalog: {repo_id}"))?;
+    repo.repo_icon = normalized;
+    Ok(())
+}
+
+/// Orca `sanitizeRepoIcon` subset: keep only the fields `RepoIconGlyph` reads and
+/// reject a payload it cannot draw, instead of persisting an icon that renders as
+/// the default folder. URL/data-URI shape stays the renderer's check; Rust owns
+/// the type discriminator and the size caps.
+fn normalize_repo_icon(value: &serde_json::Value) -> Result<serde_json::Value, String> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| "repoIcon must be an object".to_string())?;
+    let kind = object.get("type").and_then(|v| v.as_str()).unwrap_or_default();
+    match kind {
+        "emoji" => {
+            let emoji = object
+                .get("emoji")
+                .and_then(|v| v.as_str())
+                .map(str::trim)
+                .unwrap_or_default();
+            if emoji.is_empty() || emoji.chars().count() > MAX_REPO_ICON_EMOJI_LENGTH {
+                return Err("repoIcon.emoji is empty or too long".to_string());
+            }
+            Ok(serde_json::json!({ "type": "emoji", "emoji": emoji }))
+        }
+        "lucide" => {
+            let name = object
+                .get("name")
+                .and_then(|v| v.as_str())
+                .map(str::trim)
+                .unwrap_or_default();
+            // Orca `LUCIDE_ICON_NAME_PATTERN: /^[A-Za-z][A-Za-z0-9]*$/`.
+            let valid = name.len() <= MAX_REPO_ICON_LUCIDE_NAME_LENGTH
+                && name.starts_with(|c: char| c.is_ascii_alphabetic())
+                && name.chars().all(|c| c.is_ascii_alphanumeric());
+            if !valid {
+                return Err("repoIcon.name is not a Lucide icon name".to_string());
+            }
+            Ok(serde_json::json!({ "type": "lucide", "name": name }))
+        }
+        "image" => {
+            let src = object
+                .get("src")
+                .and_then(|v| v.as_str())
+                .map(str::trim)
+                .unwrap_or_default();
+            if src.is_empty() || src.len() > MAX_REPO_ICON_DATA_URL_LENGTH {
+                return Err("repoIcon.src is empty or too long".to_string());
+            }
+            let source = object.get("source").and_then(|v| v.as_str()).unwrap_or_default();
+            if !REPO_ICON_IMAGE_SOURCES.contains(&source) {
+                return Err(format!("repoIcon.source is not supported: {source}"));
+            }
+            let label: String = object
+                .get("label")
+                .and_then(|v| v.as_str())
+                .map(str::trim)
+                .unwrap_or_default()
+                .chars()
+                .take(MAX_REPO_ICON_LABEL_LENGTH)
+                .collect();
+            Ok(if label.is_empty() {
+                serde_json::json!({ "type": "image", "src": src, "source": source })
+            } else {
+                serde_json::json!({ "type": "image", "src": src, "source": source, "label": label })
+            })
+        }
+        _ => Err(format!("repoIcon.type is not supported: {kind}")),
+    }
+}
+
 /// Orca `normalizeCustomWorktreeVisibilitySources`: drop invalid ids, non-absolute
 /// or blank roots, duplicate ids/roots, and cap at
 /// `MAX_CUSTOM_WORKTREE_VISIBILITY_SOURCES`.
@@ -925,6 +1028,106 @@ mod tests {
             custom_worktree_visibility_sources: None,
             worktree_visibility_source_preferences: None,
         }
+    }
+
+    #[test]
+    fn set_repo_icon_roundtrips_emoji_and_clears() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+
+        set_repo_icon(
+            &mut env,
+            "r1",
+            Some(serde_json::json!({ "type": "emoji", "emoji": "🚀" })),
+        )
+        .expect("known repo writes the icon");
+
+        // Persist and read back through the same serde layer the catalog file uses.
+        let raw = serde_json::to_string(&env).expect("serialize");
+        assert!(
+            raw.contains("\"repoIcon\""),
+            "camelCase key must reach the file: {raw}"
+        );
+        let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
+        let icon = back.repos[0].repo_icon.as_ref().expect("icon persisted");
+        assert_eq!(icon["type"], "emoji");
+        assert_eq!(icon["emoji"], "🚀");
+
+        // `None` clears: the renderer reads the absent field as "default folder".
+        set_repo_icon(&mut env, "r1", None).expect("clearing the icon");
+        let raw = serde_json::to_string(&env).expect("serialize");
+        let back: CatalogEnvelope = serde_json::from_str(&raw).expect("deserialize");
+        assert!(back.repos[0].repo_icon.is_none());
+        assert!(
+            !raw.contains("\"repoIcon\""),
+            "a cleared icon must leave the file: {raw}"
+        );
+    }
+
+    #[test]
+    fn set_repo_icon_normalizes_payloads_the_renderer_reads() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+
+        set_repo_icon(
+            &mut env,
+            "r1",
+            Some(serde_json::json!({ "type": "lucide", "name": "  Rocket " })),
+        )
+        .expect("lucide payload");
+        assert_eq!(env.repos[0].repo_icon.as_ref().unwrap()["name"], "Rocket");
+
+        let overlong_label = "x".repeat(MAX_REPO_ICON_LABEL_LENGTH + 20);
+        set_repo_icon(
+            &mut env,
+            "r1",
+            Some(serde_json::json!({
+                "type": "image",
+                "src": "https://github.com/owner.png?size=64",
+                "source": "github",
+                "label": overlong_label,
+            })),
+        )
+        .expect("image payload");
+        let icon = env.repos[0].repo_icon.as_ref().unwrap();
+        assert_eq!(
+            icon["label"].as_str().map(str::len),
+            Some(MAX_REPO_ICON_LABEL_LENGTH)
+        );
+        assert_eq!(icon["source"], "github");
+    }
+
+    #[test]
+    fn set_repo_icon_rejects_payloads_the_renderer_cannot_draw() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+        env.repos[0].repo_icon = Some(serde_json::json!({ "type": "emoji", "emoji": "🐙" }));
+
+        for payload in [
+            serde_json::json!({ "type": "emoji", "emoji": "   " }),
+            serde_json::json!({ "type": "emoji", "emoji": "x".repeat(MAX_REPO_ICON_EMOJI_LENGTH + 1) }),
+            serde_json::json!({ "type": "lucide", "name": "1Rocket" }),
+            serde_json::json!({ "type": "image", "src": "", "source": "github" }),
+            serde_json::json!({ "type": "image", "src": "https://x/y.png", "source": "ftp" }),
+            serde_json::json!({ "type": "sprite" }),
+            serde_json::json!("🚀"),
+        ] {
+            set_repo_icon(&mut env, "r1", Some(payload)).expect_err("invalid payload must error");
+            // A rejected write never touches the stored icon.
+            assert_eq!(env.repos[0].repo_icon.as_ref().unwrap()["emoji"], "🐙");
+        }
+    }
+
+    #[test]
+    fn set_repo_icon_unknown_id_errors() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at("/x/repo"));
+        let err = set_repo_icon(&mut env, "r404", None).expect_err("unknown id must error");
+        assert!(err.contains("r404"), "error must name the unknown id: {err}");
+        assert!(err.contains("not found"), "error must be explicit: {err}");
+
+        let err = set_repo_icon(&mut env, "  ", None).expect_err("blank id must error");
+        assert!(err.contains("Empty repo id"), "{err}");
     }
 
     #[test]

@@ -65,6 +65,10 @@ import {
 } from "./lib/orca-repo-icons";
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
+import {
+  applyProjectIconEvent,
+  PROJECT_ICON_OPTIMISTIC_EVENT,
+} from "./lib/repo-icon-write";
 import type { PrDisplay } from "./components/sidebar/pr-display";
 import { StatusBar } from "./components/status-bar/StatusBar";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -399,10 +403,16 @@ export default function App() {
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const orcaRepoIcons = useMemo(() => loadBundledOrcaRepoIcons(), []);
+  // Paths already resolved by the bundled-glyph effect below. Clearing a glyph in
+  // the header menu writes `repoIcon: null`; without this the effect would see a
+  // null icon on the next projects commit and resurrect the profile glyph.
+  const repoIconResolutionPathsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     setProjects((prev) => {
       let changed = false;
       const next = prev.map((project) => {
+        if (repoIconResolutionPathsRef.current.has(project.path)) return project;
+        repoIconResolutionPathsRef.current.add(project.path);
         // Folder scan promotes child git dirs into projects. Orca keeps the
         // glyph on the folder the user added, so drop any avatar those children
         // picked up from the profile or from origin.
@@ -1491,6 +1501,14 @@ export default function App() {
       void handleRefreshProjects().then((ok) => resolve?.(ok));
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjectsEvent);
+    // The sidebar's icon picker echoes the chosen glyph before the catalog write
+    // lands (and echoes the previous one back if that write fails). App owns
+    // `projects`, so it applies the echo; the authoritative catalog refresh that
+    // follows replaces the whole list.
+    const handleProjectIconOptimistic = (event: Event) => {
+      setProjects((previous) => applyProjectIconEvent(previous, event) ?? previous);
+    };
+    window.addEventListener(PROJECT_ICON_OPTIMISTIC_EVENT, handleProjectIconOptimistic);
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
     // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
     // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
@@ -1628,6 +1646,7 @@ export default function App() {
       window.removeEventListener("hydra:update-project-group", handleUpdateProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-settings", handleOpenSettingsPane);
+      window.removeEventListener(PROJECT_ICON_OPTIMISTIC_EVENT, handleProjectIconOptimistic);
       mql.removeEventListener("change", onSystemChange);
     };
   }, []);

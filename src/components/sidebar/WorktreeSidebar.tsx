@@ -63,6 +63,7 @@ import { resolveRevealWorktreePath } from "./reveal-target-resolution";
 import { requestProjectsRefresh } from "../../lib/refresh-projects-awaitable";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
 import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
+import { RepoIconPicker } from "./RepoIconPicker";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import type {
   HydraProject,
@@ -82,7 +83,13 @@ import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
 import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
-import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
+import { isRuntimeOwnedSshTargetId, parseExecutionHostId } from "../../shared/execution-host";
+import type { RepoIcon } from "../../shared/repo-icon";
+import { catalogRepoIdFromProjectId, setCatalogRepoIcon } from "../../lib/catalog-client";
+import {
+  PROJECT_ICON_OPTIMISTIC_EVENT,
+  REPO_ICON_REMOTE_DISABLED_REASON,
+} from "../../lib/repo-icon-write";
 import { RemoveFolderDialog } from "./RemoveFolderDialog";
 import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
 import { RevealHiddenWorkspaceDialog } from "./RevealHiddenWorkspaceDialog";
@@ -258,6 +265,12 @@ export function WorktreeSidebar({
   // Orca `RepoHeaderProjectActionsMenu`: "Move to group" is a submenu, not a flat
   // list of rows; the current group stays visible and disabled.
   const [projectMenuSubmenu, setProjectMenuSubmenu] = useState<"move-to-group" | null>(null);
+  /** Inline glyph picker anchored at the project menu it replaced. */
+  const [projectIconPicker, setProjectIconPicker] = useState<{
+    project: HydraProject;
+    x: number;
+    y: number;
+  } | null>(null);
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
@@ -1405,6 +1418,62 @@ export function WorktreeSidebar({
   );
 
   /**
+   * `catalog_set_repo_icon` writes this computer's catalog file, so a project
+   * owned by an SSH/runtime host has no row to write. The menu entry is disabled
+   * with this reason instead of reporting a save that only painted locally.
+   */
+  const repoIconDisabledReason = useCallback(
+    (project: HydraProject): string | null => {
+      const host = parseExecutionHostId(resolveProjectHostId(project) ?? null);
+      return host && host.kind !== "local" ? REPO_ICON_REMOTE_DISABLED_REASON : null;
+    },
+    [resolveProjectHostId]
+  );
+
+  /**
+   * Pick → optimistic echo (App patches `projects` immediately) → catalog write →
+   * authoritative refresh. A rejected write echoes the previous glyph back so the
+   * header cannot keep an icon the file never stored.
+   */
+  const commitProjectIcon = useCallback(
+    async (project: HydraProject, repoIcon: RepoIcon | null) => {
+      const previousIcon = project.repo_icon ?? null;
+      window.dispatchEvent(
+        new CustomEvent(PROJECT_ICON_OPTIMISTIC_EVENT, {
+          detail: { projectId: project.id, repoIcon },
+        })
+      );
+      try {
+        await setCatalogRepoIcon(catalogRepoIdFromProjectId(project.id), repoIcon);
+      } catch (error) {
+        window.dispatchEvent(
+          new CustomEvent(PROJECT_ICON_OPTIMISTIC_EVENT, {
+            detail: { projectId: project.id, repoIcon: previousIcon },
+          })
+        );
+        toast.error(
+          translate(
+            "auto.components.sidebar.WorktreeList.projectIconFailed",
+            "Could not change the project icon"
+          )
+        );
+        console.error(error);
+        return;
+      }
+      const refreshed = await requestProjectsRefresh();
+      if (!refreshed) {
+        toast.error(
+          translate(
+            "auto.components.sidebar.WorktreeList.projectIconRefreshFailed",
+            "Project icon saved, but the sidebar could not reload it"
+          )
+        );
+      }
+    },
+    []
+  );
+
+  /**
    * Orca group mutations return a result the caller can toast on. Hydra's menu
    * dispatches a window event and App acknowledges it synchronously with
    * `hydra:refresh-projects`; a missing acknowledgement means nothing applied.
@@ -1599,6 +1668,11 @@ export function WorktreeSidebar({
     },
     [onPinWorktree]
   );
+
+  // Resolved once per render: the menu row and its tooltip read the same reason.
+  const activeProjectMenuIconReason = activeProjectMenu
+    ? repoIconDisabledReason(activeProjectMenu.proj)
+    : null;
 
   return (
     <div
@@ -2052,13 +2126,17 @@ export function WorktreeSidebar({
 
             <button
               type="button"
+              disabled={Boolean(activeProjectMenuIconReason)}
+              aria-disabled={activeProjectMenuIconReason ? true : undefined}
+              title={activeProjectMenuIconReason ?? undefined}
               onClick={() => {
-                // Why: Hydra has no repository-icon settings pane yet; the entry
-                // still opens the settings surface instead of becoming a dead row.
+                if (activeProjectMenuIconReason) return;
+                const { proj, x, y } = activeProjectMenu;
                 setActiveProjectMenu(null);
-                onOpenSettings();
+                setProjectMenuSubmenu(null);
+                setProjectIconPicker({ project: proj, x, y });
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer disabled:pointer-events-none disabled:opacity-40"
             >
               <Shapes className="size-3.5 text-worktree-sidebar-foreground/60" />
               Change Project Icon
@@ -2275,6 +2353,28 @@ export function WorktreeSidebar({
             </button>
           </div>
         </>
+      )}
+
+      {projectIconPicker && (
+        <RepoIconPicker
+          projectName={
+            projectIconPicker.project.displayName || projectIconPicker.project.name
+          }
+          currentIcon={projectIconPicker.project.repo_icon}
+          x={projectIconPicker.x}
+          y={projectIconPicker.y}
+          onPick={(repoIcon) => {
+            const project = projectIconPicker.project;
+            setProjectIconPicker(null);
+            void commitProjectIcon(project, repoIcon);
+          }}
+          onClear={() => {
+            const project = projectIconPicker.project;
+            setProjectIconPicker(null);
+            void commitProjectIcon(project, null);
+          }}
+          onClose={() => setProjectIconPicker(null)}
+        />
       )}
 
       {activeGroupMenu && (

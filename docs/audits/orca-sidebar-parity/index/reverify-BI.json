@@ -25,17 +25,6 @@
    "note": "Menu portal events no longer bubble into the header, and rename/delete carry the group owner hostId."
   },
   {
-   "id": "D03a-084",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:project menu"
-   ],
-   "missing_behaviors": [
-    "Change Project Icon opens Settings but Hydra has no repository-icon write path"
-   ],
-   "note": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist."
-  },
-  {
    "id": "D03a-087",
    "status": "partial",
    "evidence": [

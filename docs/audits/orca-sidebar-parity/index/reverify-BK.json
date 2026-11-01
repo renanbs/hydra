@@ -183,6 +183,18 @@
    ],
    "missing_behaviors": [],
    "note": "The painted list is the computed visible id order (same pipeline as Cmd+1–9), fed by one live-agent snapshot per render epoch; the agent-send target is forced visible on both paths."
+  },
+  {
+   "id": "D03a-084",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/catalog.rs:set_repo_icon",
+    "src-tauri/src/lib.rs:catalog_set_repo_icon",
+    "src/components/sidebar/RepoIconPicker.tsx",
+    "src/lib/catalog-client.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Change Project Icon opens an inline emoji/clear picker that writes repoIcon through a validated catalog mutation, refreshes the catalog, and disables remote projects (their icon lives on the host)."
   }
  ]
 }

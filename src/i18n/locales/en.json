@@ -5730,6 +5730,8 @@
           "groupRenameFailedDesc": "Hydra could not confirm the new name with the group's host. Recheck the group after reconnecting.",
           "groupCreateFailed": "Failed to create group",
           "groupCreateFailedDesc": "Hydra could not create the group. Check the sidebar after reconnecting.",
+          "projectIconFailed": "Could not change the project icon",
+          "projectIconRefreshFailed": "Project icon saved, but the sidebar could not reload it",
           "failedNestWorkspace": "Failed to nest workspace",
           "sidebarRowMissing": "Target no longer exists",
           "failedUnnestWorkspace": "Failed to unnest workspace"

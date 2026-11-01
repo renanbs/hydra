@@ -458,6 +458,21 @@ async fn catalog_set_worktree_visibility_sources(
 }
 
 #[tauri::command]
+async fn catalog_set_repo_icon(
+    repo_id: String,
+    repo_icon: Option<serde_json::Value>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        catalog::set_repo_icon(&mut envelope, &repo_id, repo_icon)?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
 }
@@ -1842,6 +1857,7 @@ pub fn run() {
             catalog_remove_repo,
             catalog_set_worktree_visibility,
             catalog_set_worktree_visibility_sources,
+            catalog_set_repo_icon,
             register_existing_project,
             remove_project,
             get_project_worktree_base,

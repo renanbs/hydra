@@ -1641,15 +1641,16 @@
     "components/sidebar/worktree-list/rows/repo-header-project-actions.tsx:48-176"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:project menu"
+     "src-tauri/src/catalog.rs:set_repo_icon",
+     "src-tauri/src/lib.rs:catalog_set_repo_icon",
+     "src/components/sidebar/RepoIconPicker.tsx",
+     "src/lib/catalog-client.ts"
     ],
-    "missing_behaviors": [
-     "Change Project Icon opens Settings but Hydra has no repository-icon write path"
-    ],
-    "notes": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist.",
-    "note": "Icon entry, Hide/Show non-Hydra worktrees, Move-to-group submenu (current disabled) and the Remove separator exist."
+    "missing_behaviors": [],
+    "notes": "Change Project Icon opens an inline emoji/clear picker that writes repoIcon through a validated catalog mutation, refreshes the catalog, and disables remote projects (their icon lives on the host).",
+    "note": "Change Project Icon opens an inline emoji/clear picker that writes repoIcon through a validated catalog mutation, refreshes the catalog, and disables remote projects (their icon lives on the host)."
    }
   },
   {
