@@ -172,6 +172,17 @@
    ],
    "missing_behaviors": [],
    "note": "Repo/group/folder rows and headers are filtered by the same host scope as Cmd+1–9, folder rows honor other-device exclusion (forced targets excepted), and catalog host stamps reach the pipeline."
+  },
+  {
+   "id": "D03a-047",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/visible-worktree-selection.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/visible-worktrees.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "The painted list is the computed visible id order (same pipeline as Cmd+1–9), fed by one live-agent snapshot per render epoch; the agent-send target is forced visible on both paths."
   }
  ]
 }

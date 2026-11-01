@@ -86,11 +86,17 @@ function toSharedAgentStatusByPaneKey(
  * Why shared: the sidebar pipeline and the jump palette both apply this, and a
  * second copy is how the two surfaces drift.
  */
-type VisibleWorktreeOptions = {
+export type VisibleWorktreeOptions = {
   filterRepoIds: readonly string[]
   showSleepingWorkspaces: boolean
   tabsByWorktree: Record<string, Pick<TerminalTab, 'id'>[]> | null
   ptyIdsByTabId: Record<string, string[]> | null
+  /**
+   * Mounted browser pages per worktree, when the caller has them. A worktree
+   * with an open page is active even with no live PTY (Orca's
+   * `browserTabsByWorktree`); omitted means "no browser pages".
+   */
+  browserTabsByWorktree?: Record<string, readonly { id: string }[]> | null
   worktreeIdsWithLiveAgent: ReadonlySet<string>
   hideDefaultBranchWorkspace: boolean
   hideAutomationGeneratedWorkspaces: boolean
@@ -175,7 +181,7 @@ export function computeVisibleWorktrees(
           w.id,
           opts.tabsByWorktree,
           opts.ptyIdsByTabId,
-          opts.tabsByWorktree,
+          opts.browserTabsByWorktree,
           opts.worktreeIdsWithLiveAgent
         )
     )
@@ -293,11 +299,15 @@ export function buildVisibleWorktreeOptionsFromState(
   state: ReturnType<typeof useAppStore.getState>,
   repoMap: Map<string, Repo>
 ): VisibleWorktreeOptions {
+  // Why: the agent-send picker targets a worktree a filter may hide; the shortcut
+  // path owes it the same forced visibility the painted list gives it.
+  const agentSendTargetWorktreeId = state.agentSendPopoverTargetMode?.worktreeId
   return {
     filterRepoIds: state.filterRepoIds,
     showSleepingWorkspaces: state.showSleepingWorkspaces,
     tabsByWorktree: state.tabsByWorktree,
     ptyIdsByTabId: state.ptyIdsByTabId,
+    browserTabsByWorktree: state.browserTabsByWorktree,
     worktreeIdsWithLiveAgent: getWorktreeIdsWithLiveAgent(
       toSharedAgentStatusByPaneKey(state.agentStatusByPaneKey),
       state.tabsByWorktree,
@@ -319,7 +329,8 @@ export function buildVisibleWorktreeOptionsFromState(
     workspaceHostScope: state.workspaceHostScope,
     visibleWorkspaceHostIds: state.visibleWorkspaceHostIds,
     defaultHostId: getSettingsFocusedExecutionHostId(state.settings),
-    worktreeLineageById: state.worktreeLineageById
+    worktreeLineageById: state.worktreeLineageById,
+    forcedVisibleWorktreeIds: agentSendTargetWorktreeId ? [agentSendTargetWorktreeId] : undefined
   }
 }
 

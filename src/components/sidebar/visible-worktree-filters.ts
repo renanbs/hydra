@@ -47,13 +47,20 @@ export function buildSidebarLiveActivityIndex(
  * The sidebar's "Show" menu filters. Orca's ported predicates, never a re-derived
  * rule: the workspace board reads this so a hidden workspace cannot reappear on the
  * board while the sidebar has it filtered away.
+ *
+ * The sleeping sweep reads the panel's own `alwaysShowDefaultBranch` exemption, so
+ * the painted sidebar and this shared predicate cannot disagree on whether the main
+ * worktree survives "Hide sleeping".
  */
 export function isVisibleUnderSidebarMenuFilters(args: {
   worktree: Worktree;
   displayOptions: Pick<
     WorkspaceDisplayOptions,
     "hideAutomationCreated" | "hideCliCreated" | "hideSleeping"
-  >;
+  > & {
+    /** Orca's `alwaysShowDefaultBranchWorkspace`; absent means the exemption is on. */
+    alwaysShowDefaultBranch?: boolean;
+  };
   liveActivity: SidebarLiveActivityIndex;
 }): boolean {
   const { worktree, displayOptions, liveActivity } = args;
@@ -61,7 +68,7 @@ export function isVisibleUnderSidebarMenuFilters(args: {
   if (displayOptions.hideCliCreated && isCliCreatedWorkspace(worktree)) return false;
   if (
     displayOptions.hideSleeping &&
-    !isSleepingSweepExemptWorkspace(worktree, true) &&
+    !isSleepingSweepExemptWorkspace(worktree, displayOptions.alwaysShowDefaultBranch) &&
     isInactiveWorkspace(
       worktree.id,
       liveActivity.tabsByWorktree,

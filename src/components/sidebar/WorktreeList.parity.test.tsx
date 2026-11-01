@@ -66,6 +66,8 @@ const BASE_STORE_STATE = {
   // Reset per test: the lane assertions below read both of these from the store.
   workspaceStatuses: cloneDefaultWorkspaceStatuses(),
   worktreesByRepo: {},
+  // D03a-047: the agent-send picker forces its target visible.
+  agentSendPopoverTargetMode: null,
 };
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -596,6 +598,114 @@ describe("WorktreeList row model (Orca parity)", () => {
       });
 
       expect(screen.queryByLabelText(/hidden worktrees? in hydra/)).toBeNull();
+    });
+  });
+
+  // D03a-047 (Orca `use-visible-worktrees.ts`): the painted list consumes the
+  // computed visible id order — the panel's sort epoch flattened into the ordered
+  // id stream — instead of re-deriving candidates per row. The pure
+  // `visible-worktree-selection.parity.test.ts` proves that stream is exactly what
+  // `computeVisibleWorktreeIds` returns; these prove the paint and the Cmd+1–9
+  // publication both follow it, and that the agent-send target survives filters.
+  describe("computed visible order", () => {
+    const C = worktree("/repo/hydra-c", "feat/c");
+    const A = worktree("/repo/hydra-a", "feat/a");
+    const B = worktree("/repo/hydra-b", "feat/b");
+
+    function paintedPaths(container: HTMLElement): (string | null)[] {
+      return [...container.querySelectorAll('[role="option"][data-worktree-path]')].map((row) =>
+        row.getAttribute("data-worktree-path")
+      );
+    }
+
+    it("paints the computed visible id order and publishes it for Cmd+1–9", () => {
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [C, A, B] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none" },
+      });
+
+      expect(paintedPaths(container)).toEqual([C.path, A.path, B.path]);
+      expect(getVisibleWorktreeShortcutTargets().map((target) => target.id)).toEqual([
+        C.path,
+        A.path,
+        B.path,
+      ]);
+    });
+
+    it("drops a menu-filtered row from both the paint and the published order", () => {
+      const automation: GitWorktreeInfo = {
+        ...worktree("/repo/hydra-auto", "feat/auto"),
+        automationProvenanceKind: "created-by-automation",
+      };
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [automation, A] },
+        displayOptions: {
+          ...BASE_DISPLAY_OPTIONS,
+          groupBy: "none",
+          hideAutomationCreated: true,
+        },
+      });
+
+      expect(paintedPaths(container)).toEqual([A.path]);
+      expect(getVisibleWorktreeShortcutTargets().map((target) => target.id)).toEqual([A.path]);
+    });
+
+    it("forces the agent-send target visible through a menu filter", () => {
+      const automation: GitWorktreeInfo = {
+        ...worktree("/repo/hydra-auto", "feat/auto"),
+        automationProvenanceKind: "created-by-automation",
+      };
+      const props = {
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [automation, A] },
+        displayOptions: {
+          ...BASE_DISPLAY_OPTIONS,
+          groupBy: "none" as const,
+          hideAutomationCreated: true,
+        },
+      };
+
+      const hidden = renderList(props);
+      expect(paintedPaths(hidden.container)).toEqual([A.path]);
+      hidden.unmount();
+
+      resetStore({
+        agentSendPopoverTargetMode: {
+          id: "target-1",
+          instanceId: "instance-1",
+          worktreeId: automation.path,
+          status: "ready",
+        },
+      });
+      const forced = renderList(props);
+      expect(paintedPaths(forced.container)).toEqual([automation.path, A.path]);
+    });
+
+    it("keeps a workspace with a live agent under Hide sleeping", () => {
+      const live = worktree("/repo/hydra-live", "feat/live");
+      const idle = worktree("/repo/hydra-idle", "feat/idle");
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [live, idle] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none", hideSleeping: true },
+        sessions: [
+          {
+            id: "tab-live",
+            project_path: live.path,
+            title: "live",
+            branch: live.branch,
+            state: "working",
+            active: true,
+            agentName: "claude",
+            executable: "claude",
+          },
+        ],
+        liveWorkspacePaths: new Set([live.path]),
+      });
+
+      expect(paintedPaths(container)).toEqual([live.path]);
     });
   });
 

@@ -4722,18 +4722,15 @@
    "components/sidebar/worktree-list/listing/use-visible-worktrees.ts:23-138"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/visible-worktrees.ts:111",
-    "src/components/sidebar/WorktreeSidebar.tsx:533-599"
+    "src/components/sidebar/worktree-list/listing/visible-worktree-selection.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/visible-worktrees.ts"
    ],
-   "missing_behaviors": [
-    "computeVisibleWorktrees alimentando o render pintado",
-    "snapshot de worktreeIdsWithLiveAgent por epoch",
-    "agentSendTargetWorktreeId como forcedVisible"
-   ],
-   "notes": "Pipeline de visíveis portado mas alimenta só o caminho de atalhos/ordenação.",
-   "note": "Pipeline de visíveis portado mas alimenta só o caminho de atalhos/ordenação."
+   "missing_behaviors": [],
+   "notes": "The painted list is the computed visible id order (same pipeline as Cmd+1–9), fed by one live-agent snapshot per render epoch; the agent-send target is forced visible on both paths.",
+   "note": "The painted list is the computed visible id order (same pipeline as Cmd+1–9), fed by one live-agent snapshot per render epoch; the agent-send target is forced visible on both paths."
   },
   "domain": "D03a-worktree-list-module"
  },

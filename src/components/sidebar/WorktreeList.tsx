@@ -20,10 +20,7 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
-import {
-  buildSidebarLiveActivityIndex,
-  isVisibleUnderSidebarMenuFilters,
-} from "./visible-worktree-filters";
+import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
 import { sidebarHasActiveFilters } from "./sidebar-filter-actions";
 import type { SidebarFilterState } from "./visible-worktree-kinds";
 import { shouldFiltersHideAllRows } from "./sidebar-empty-state-gate";
@@ -104,7 +101,6 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
-import { getWorktreeExecutionHostId } from "../../shared/execution-host";
 import {
   filterFolderWorkspacesForVisibleHosts,
   filterProjectGroupsForVisibleHosts,
@@ -114,9 +110,9 @@ import {
 import {
   filterFolderWorkspacesFromOtherDevices,
   getPairedDeviceIdsByEnvironment,
-  isWorkspaceFromOtherDevice,
 } from "./workspace-creator-visibility";
 import { folderWorkspaceKey } from "../../shared/workspace-scope";
+import { selectVisibleSidebarWorktrees } from "./worktree-list/listing/visible-worktree-selection";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -189,6 +185,8 @@ export function pipelineCollapsedKeys(
 /** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
 /** No paired devices: the other-device sweep is off. */
 const EMPTY_OTHER_DEVICE_IDS: ReadonlyMap<string, string> = new Map();
+/** No mounted terminal pages: the shell omits the prop on a cold sidebar. */
+const EMPTY_LIVE_WORKSPACE_PATHS: ReadonlySet<string> = new Set();
 const EMPTY_SCAN_FAILURES: Record<string, string> = {};
 
 const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
@@ -848,7 +846,20 @@ export function WorktreeList({
   className = "",
 }: WorktreeListProps): React.JSX.Element {
   const query = filter.trim().toLowerCase();
-  const livePaths = liveWorkspacePaths ?? new Set<string>();
+  // Why a memo: the snapshot below and the painted-card liveness reads must share
+  // one set identity, and an inline `new Set()` re-keys them every render.
+  const livePaths = useMemo(
+    () => liveWorkspacePaths ?? EMPTY_LIVE_WORKSPACE_PATHS,
+    [liveWorkspacePaths]
+  );
+  // D03a-047: one live-activity sample per render pass. The visible pipeline and
+  // the status filters below read the SAME Set — re-deriving it between two calls
+  // would let a status write keep one row and hide its sibling mid-paint.
+  const liveActivity = useMemo(
+    () => buildSidebarLiveActivityIndex(sessions, livePaths),
+    [sessions, livePaths]
+  );
+  const liveAgentWorktreeIds = liveActivity.worktreeIdsWithLiveAgent;
   const missingPaths = missingFolderPaths ?? new Set<string>();
   const pinnedSet = pinnedWorktrees ?? new Set<string>();
   const unreadSet = unreadWorktrees ?? new Set<string>();
@@ -1057,7 +1068,6 @@ export function WorktreeList({
   }, [pendingWorktreeCreations]);
 
   const rowModel = useMemo<SidebarRowModel>(() => {
-    const repoById = new Map((storeRepos as Repo[]).map((repo) => [repo.id, repo]));
     const pipelineRepos = visibleProjects.map((project) =>
       toPipelineRepo({
         project,
@@ -1067,8 +1077,6 @@ export function WorktreeList({
     );
     const pipelineGroups = visibleProjectGroupsForRows;
     const pipelineFolderWorkspaces = visibleFolderWorkspacesForRows;
-
-    const liveActivity = buildSidebarLiveActivityIndex(sessions, livePaths);
 
     const propWorktreeByPath = new Map<string, GitWorktreeInfo>();
     const propProjectById = new Map<string, HydraProject>();
@@ -1084,14 +1092,22 @@ export function WorktreeList({
         persistedStatusByPath.set(row.path, row.workspaceStatus);
       }
     }
-    const worktreesByRepo: Record<string, Worktree[]> = {};
-    const candidates: { project: HydraProject; worktree: GitWorktreeInfo }[] = [];
+
+    // Step 1 — project every candidate row. The array a project contributes is
+    // already in the panel's filter + sort epoch order, so the flat id stream
+    // below is that same order: the rank index the visible pipeline sorts by and
+    // the numbering Cmd+1–9 publishes.
+    const projectedByRepo: Record<string, Worktree[]> = {};
+    const orderedIds: string[] = [];
+    const candidateById = new Map<
+      string,
+      { project: HydraProject; worktree: GitWorktreeInfo }
+    >();
     for (const project of visibleProjects) {
       propProjectById.set(project.id, project);
       const hostId = hostIdByRepoId.get(project.id);
       const projectedForRepo: Worktree[] = [];
       for (const worktree of getFilteredAndSortedWorktrees(project)) {
-        const forcedVisible = worktree.id === agentSendTargetWorktreeId;
         const status =
           persistedStatusByPath.get(worktree.path) ??
           (worktree.id ? persistedStatusById.get(worktree.id) : undefined) ??
@@ -1115,60 +1131,30 @@ export function WorktreeList({
               : null;
           })(),
         });
-        if (
-          !forcedVisible &&
-          pairedDeviceIdsByEnvironment.size > 0 &&
-          isWorkspaceFromOtherDevice(projected, pairedDeviceIdsByEnvironment)
-        ) {
-          continue;
-        }
-        if (
-          !forcedVisible &&
-          visibleHostIdSet &&
-          !visibleHostIdSet.has(
-            getWorktreeExecutionHostId(projected, repoById.get(project.id), focusedHostId)
-          )
-        ) {
-          continue;
-        }
-        // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
-        // with the workspace board so both surfaces hide the same workspaces.
-        if (
-          !forcedVisible &&
-          !isVisibleUnderSidebarMenuFilters({
-            worktree: projected,
-            displayOptions,
-            liveActivity,
-          })
-        ) {
-          continue;
-        }
         propWorktreeByPath.set(worktree.path, worktree);
-        candidates.push({ project, worktree });
         projectedForRepo.push(projected);
+        orderedIds.push(projected.id);
+        candidateById.set(projected.id, { project, worktree });
       }
-      if (projectedForRepo.length > 0) worktreesByRepo[project.id] = projectedForRepo;
+      projectedByRepo[project.id] = projectedForRepo;
     }
 
     // The app's path lineage is the single writer the row menus and delete use;
     // project it into the rich records the row pipeline validates, so a nest drag
-    // and the context menu paint the same tree.
+    // and the context menu paint the same tree. Built over the whole candidate
+    // universe: the visible pipeline below re-adds an ancestor its filters hid.
     const projectedLineageById: Record<string, WorktreeLineage> = {
       ...storeWorktreeLineageById,
     }
-    const worktreeByPath = new Map<string, Worktree>()
-    const worktreeById = new Map<string, Worktree>()
-    const pathByWorktreeId = new Map<string, string>()
-    for (const list of Object.values(worktreesByRepo)) {
+    const candidateWorktreeByPath = new Map<string, Worktree>()
+    for (const list of Object.values(projectedByRepo)) {
       for (const worktree of list) {
-        worktreeByPath.set(worktree.path, worktree)
-        worktreeById.set(worktree.id, worktree)
-        pathByWorktreeId.set(worktree.id, worktree.path)
+        candidateWorktreeByPath.set(worktree.path, worktree)
       }
     }
     for (const [childPath, parentPath] of Object.entries(lineageByPath ?? {})) {
-      const child = worktreeByPath.get(childPath)
-      const parent = worktreeByPath.get(parentPath)
+      const child = candidateWorktreeByPath.get(childPath)
+      const parent = candidateWorktreeByPath.get(parentPath)
       if (!child || !parent || child.repoId !== parent.repoId) {
         continue
       }
@@ -1183,6 +1169,58 @@ export function WorktreeList({
       }
     }
 
+    const repoMap = new Map(pipelineRepos.map((repo) => [repo.id, repo]))
+
+    // Step 2 — the ONE visible derivation (D03a-047). Device, host-scope,
+    // provenance and sleeping filters run there against the live-agent sample
+    // taken for this pass, and `agentSendTargetWorktreeId` is force-visible so the
+    // send picker can target a workspace a filter would otherwise hide. The row
+    // pipeline then paints exactly this order instead of re-deriving candidates.
+    const selection = selectVisibleSidebarWorktrees({
+      worktreesByRepo: projectedByRepo,
+      sortedIds: orderedIds,
+      options: {
+        // Project membership was already narrowed upstream (search + Show filter),
+        // so this only sharpens per-row; kept for parity with the shortcut path.
+        filterRepoIds: displayOptions.filterProjectIds ?? [],
+        showSleepingWorkspaces: !displayOptions.hideSleeping,
+        tabsByWorktree: liveActivity.tabsByWorktree,
+        ptyIdsByTabId: liveActivity.ptyIdsByTabId,
+        worktreeIdsWithLiveAgent: liveAgentWorktreeIds,
+        // Why false for the two branch filters: `getFilteredAndSortedWorktrees`
+        // already applied them with the active workspace spared, and re-applying
+        // them here would drop the workspace the user is looking at.
+        hideDefaultBranchWorkspace: false,
+        hideDetachedHeadWorkspaces: false,
+        hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+        hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+        hideWorkspacesFromOtherDevices: displayOptions.hideWorkspacesFromOtherDevices === true,
+        pairedDeviceIdsByEnvironment,
+        alwaysShowDefaultBranchWorkspace: displayOptions.alwaysShowDefaultBranch,
+        repoMap,
+        workspaceHostScope: pipelineHostScope,
+        visibleWorkspaceHostIds: pipelineVisibleHostIds,
+        defaultHostId: focusedHostId,
+        worktreeLineageById: projectedLineageById,
+        forcedVisibleWorktreeIds: agentSendTargetWorktreeId
+          ? [agentSendTargetWorktreeId]
+          : undefined,
+      },
+    })
+    const worktreesByRepo = selection.visibleWorktreesByRepo
+    const visibleWorktrees = selection.visibleWorktrees
+    // PR/hosted-review candidates read the prop rows the painted cards belong to.
+    const candidates = visibleWorktrees.flatMap((worktree) => {
+      const candidate = candidateById.get(worktree.id)
+      return candidate ? [candidate] : []
+    })
+    const worktreeById = new Map<string, Worktree>()
+    const pathByWorktreeId = new Map<string, string>()
+    for (const worktree of visibleWorktrees) {
+      worktreeById.set(worktree.id, worktree)
+      pathByWorktreeId.set(worktree.id, worktree.path)
+    }
+
     // D03a-077: the folder card's synthetic review walks workspace lineage, which the
     // live store never composes; project the lineage above into the workspace-keyed
     // records, so a worktree nested under a folder workspace reaches that card.
@@ -1191,7 +1229,7 @@ export function WorktreeList({
       lineageByPath,
       worktreeById,
       folderWorkspaces: pipelineFolderWorkspaces,
-    });
+    })
 
     // D03a-056: the row model reads the PR/hosted-review caches only when the painted
     // cards actually need them (PR grouping or synthetic folder-card reviews) instead
@@ -1232,7 +1270,6 @@ export function WorktreeList({
 
     // Mixed-host labels: one repo visible on more than one host needs the card
     // chip the same way its notice rows do (Orca `getMixedWorktreeHostContextLabels`).
-    const repoMap = new Map(pipelineRepos.map((repo) => [repo.id, repo]));
     const hostContextLabelByIdentity = new Map<string, string>();
     for (const rows of Object.values(worktreesByRepo)) {
       const labels = getMixedWorktreeHostContextLabels(rows, repoMap, hostLabelById, focusedHostId);
@@ -1242,7 +1279,7 @@ export function WorktreeList({
 
     const rows = computeSidebarRows(
       pipelineState,
-      Object.values(worktreesByRepo).flat(),
+      visibleWorktrees,
       buildExternalWorktreeNoticeCandidates({
         repos: pipelineRepos,
         hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
@@ -1253,7 +1290,7 @@ export function WorktreeList({
     return {
       rows,
       renderedSidebarRowKeys: collectRenderedSidebarRowKeys(rows),
-      worktrees: Object.values(worktreesByRepo).flat(),
+      worktrees: visibleWorktrees,
       worktreeById,
       workspaceLineageByChildKey,
       pipelineFolderWorkspaces,
@@ -1269,24 +1306,27 @@ export function WorktreeList({
     visibleProjectGroupsForRows,
     visibleFolderWorkspacesForRows,
     projectGroupMap,
-    sessions,
-    livePaths,
+    liveActivity,
+    liveAgentWorktreeIds,
     pinnedSet,
     unreadSet,
     hiddenWorktreesByProject,
     displayOptions.groupBy,
     displayOptions.projectsOrder,
+    displayOptions.filterProjectIds,
+    displayOptions.alwaysShowDefaultBranch,
+    displayOptions.hideWorkspacesFromOtherDevices,
     storeWorkspaceHostOrder,
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
     displayOptions.hideSleeping,
     pairedDeviceIdsByEnvironment,
+    agentSendTargetWorktreeId,
     getFilteredAndSortedWorktrees,
     prByPath,
     collapsedProjects,
     collapsedGroups,
     hostIdByRepoId,
-    storeRepos,
     storeSettings,
     pipelineHostScope,
     pipelineVisibleHostIds,
