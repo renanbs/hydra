@@ -161,6 +161,17 @@
    ],
    "missing_behaviors": [],
    "note": "The group + disables for confirmed-stale and ambiguous-connection paths with reason-specific tooltip copy."
+  },
+  {
+   "id": "D03a-046",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/listing/host-filtering.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/lib/catalog-bridge.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Repo/group/folder rows and headers are filtered by the same host scope as Cmd+1–9, folder rows honor other-device exclusion (forced targets excepted), and catalog host stamps reach the pipeline."
   }
  ]
 }

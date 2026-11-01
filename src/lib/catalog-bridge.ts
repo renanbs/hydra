@@ -52,6 +52,11 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
       customWorktreeVisibilitySources: r.customWorktreeVisibilitySources ?? null,
       worktreeVisibilitySourcePreferences: r.worktreeVisibilitySourcePreferences ?? null,
       repo_icon: (r.repoIcon as HydraProject["repo_icon"]) ?? null,
+      // Host stamps must survive the bridge or the row host scope reads a remote
+      // repo as local (D03a-046).
+      connectionId: r.connectionId ?? null,
+      executionHostId:
+        (r.executionHostId as HydraProject["executionHostId"]) ?? null,
     };
   });
   const folderWorkspaces = (envelope.folderWorkspaces ?? []).map((w) => ({

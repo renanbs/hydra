@@ -37,6 +37,9 @@ export interface CatalogRepo {
   kind?: string | null;
   worktreeBasePath?: string | null;
   projectGroupId?: string | null;
+  /** Host stamp carried by the Rust catalog (D03a-046). */
+  connectionId?: string | null;
+  executionHostId?: string | null;
   repoIcon?: unknown | null;
   importedExternalWorktreePaths?: string[];
   externalWorktreeDiscoverySuppressedAt?: number | null;

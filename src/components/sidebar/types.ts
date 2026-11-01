@@ -65,6 +65,8 @@ export interface AvailableAgent {
   is_installed: boolean;
 }
 
+type HydraProjectExecutionHostId = 'local' | `ssh:${string}` | `runtime:${string}`;
+
 export interface HydraProject {
   id: string;
   name: string;
@@ -98,6 +100,9 @@ export interface HydraProject {
    *  `worktreeVisibilitySourcePreferences`). */
   worktreeVisibilitySourcePreferences?: WorktreeVisibilitySourcePreferences | null;
   repo_icon?: RepoIcon | null;
+  /** Host stamp of the repo's checkout (D03a-046). Local repos leave both null. */
+  connectionId?: string | null;
+  executionHostId?: HydraProjectExecutionHostId | null;
 }
 
 export interface GitWorktreeInfo {

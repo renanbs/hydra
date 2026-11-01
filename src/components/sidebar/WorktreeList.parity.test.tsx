@@ -659,4 +659,155 @@ describe("WorktreeList row model (Orca parity)", () => {
       expect(onClearSidebarFilters).toHaveBeenCalledTimes(1);
     });
   });
+
+  // D03a-046 (Orca `worktree-list/listing/use-host-visible-scope.ts`): the PAINTED list
+  // restricts repos, project groups and folder workspaces to the visible host scope and
+  // the paired-device sweep. Before this, those filters only ran in the headless row
+  // pipeline, so the cards leaked rows the Cmd+1–9 order already excluded.
+  describe("visible host + device scope", () => {
+    const GROUP_AND_FOLDERS = {
+      projectGroups: [
+        { id: "grp_1", name: "Clients" },
+        { id: "grp_remote", name: "Remote clients", executionHostId: "ssh:build" },
+      ],
+      projectGroupMap: { repo_a: "grp_1" },
+      folderWorkspaces: [
+        { id: "fw_local", projectGroupId: "grp_1", name: "MalhaClub", folderPath: "/clients/malha" },
+        {
+          id: "fw_remote",
+          projectGroupId: "grp_remote",
+          name: "RemoteClub",
+          folderPath: "/clients/remote",
+          executionHostId: "ssh:build",
+        },
+      ],
+    };
+
+    it("hides repos whose execution host is outside the visible scope", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: ["local"],
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A, PROJECT_B],
+        worktreesByProject: {
+          [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+          [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+        },
+      });
+
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(container.querySelector('[data-repo-header-id="repo_b"]')).toBeNull();
+      expect(container.querySelector('[data-worktree-path="/repo/orca"]')).toBeNull();
+    });
+
+    it("hides project groups and folder workspaces owned by a hidden host", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: ["local"],
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        ...GROUP_AND_FOLDERS,
+      });
+
+      // The visible repo keeps its header; the remote group and its folder row do not paint.
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-section-header-id="project-group:grp_remote"]')
+      ).toBeNull();
+      expect(container.querySelector('[aria-label="RemoteClub"]')).toBeNull();
+      expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+    });
+
+    it("hides folder workspaces created by another paired device", () => {
+      resetStore({
+        repos: [{ id: "repo_a", connectionId: null, executionHostId: "local" }],
+        // No host scope: this isolates the paired-device sweep.
+        visibleWorkspaceHostIds: null,
+        workspaceHostScope: "all",
+        runtimeEnvironments: [{ id: "env-1" }],
+        runtimeStatusByEnvironmentId: {
+          "env-1": { status: { pairedDeviceId: "device-a" } },
+        },
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideWorkspacesFromOtherDevices: true },
+        projectGroups: [{ id: "grp_1", name: "Clients" }],
+        projectGroupMap: { repo_a: "grp_1" },
+        folderWorkspaces: [
+          {
+            id: "fw_host",
+            projectGroupId: "grp_1",
+            name: "HostClub",
+            folderPath: "/clients/host",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "host" },
+          },
+          {
+            id: "fw_own_device",
+            projectGroupId: "grp_1",
+            name: "OwnDeviceClub",
+            folderPath: "/clients/own-device",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "paired-device", deviceId: "device-a" },
+          },
+          {
+            id: "fw_other_device",
+            projectGroupId: "grp_1",
+            name: "OtherDeviceClub",
+            folderPath: "/clients/other-device",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "paired-device", deviceId: "device-b" },
+          },
+        ],
+      });
+
+      expect(container.querySelector('[aria-label="OwnDeviceClub"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="HostClub"]')).toBeNull();
+      expect(container.querySelector('[aria-label="OtherDeviceClub"]')).toBeNull();
+    });
+
+    it("paints every repo, group and folder when no scope filter is set", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: null,
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A, PROJECT_B],
+        worktreesByProject: {
+          [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+          [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+        },
+        ...GROUP_AND_FOLDERS,
+      });
+
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(container.querySelector('[data-repo-header-id="repo_b"]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-section-header-id="project-group:grp_remote"]')
+      ).not.toBeNull();
+      expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="RemoteClub"]')).not.toBeNull();
+    });
+  });
 });

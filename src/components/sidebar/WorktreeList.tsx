@@ -104,12 +104,19 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
-import { getRepoExecutionHostId, getWorktreeExecutionHostId } from "../../shared/execution-host";
-import { getVisibleSidebarHostIdSet } from "./worktree-list/listing/host-filtering";
+import { getWorktreeExecutionHostId } from "../../shared/execution-host";
 import {
+  filterFolderWorkspacesForVisibleHosts,
+  filterProjectGroupsForVisibleHosts,
+  filterReposForVisibleHosts,
+  getVisibleSidebarHostIdSet,
+} from "./worktree-list/listing/host-filtering";
+import {
+  filterFolderWorkspacesFromOtherDevices,
   getPairedDeviceIdsByEnvironment,
   isWorkspaceFromOtherDevice,
 } from "./workspace-creator-visibility";
+import { folderWorkspaceKey } from "../../shared/workspace-scope";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -239,8 +246,29 @@ export function resolveWorkspaceShortcutTarget(
   return null;
 }
 
+/**
+ * The painted list's group and folder props, plus the Orca catalog host/creator
+ * stamps when the caller carries them. The catalog→sidebar bridge drops them today,
+ * so every field is optional; the render-time host/device scope filters read them
+ * (Orca `useSidebarHostVisibleScope`).
+ */
+type SidebarProjectGroupForRows = ProjectGroup & {
+  connectionId?: string | null;
+  executionHostId?: string | null;
+};
+
+type SidebarFolderWorkspaceForRows = {
+  id: string;
+  projectGroupId: string;
+  name: string;
+  folderPath: string;
+  connectionId?: string | null;
+  executionHostId?: FolderWorkspace['executionHostId'];
+  creatorProvenance?: FolderWorkspace['creatorProvenance'];
+};
+
 function toPipelineProjectGroup(
-  group: ProjectGroup,
+  group: SidebarProjectGroupForRows,
   folderWorkspacePath: string | undefined
 ): SharedProjectGroup {
   return {
@@ -257,20 +285,24 @@ function toPipelineProjectGroup(
     color: null,
     createdAt: 0,
     updatedAt: 0,
+    connectionId: group.connectionId ?? null,
+    executionHostId: group.executionHostId ?? null,
   };
 }
 
-function toPipelineFolderWorkspace(workspace: {
-  id: string;
-  projectGroupId: string;
-  name: string;
-  folderPath: string;
-}): FolderWorkspace {
+function toPipelineFolderWorkspace(
+  workspace: SidebarFolderWorkspaceForRows
+): FolderWorkspace {
   return {
     id: workspace.id,
     projectGroupId: workspace.projectGroupId,
     name: workspace.name,
     folderPath: workspace.folderPath,
+    connectionId: workspace.connectionId ?? null,
+    executionHostId: workspace.executionHostId ?? null,
+    ...(workspace.creatorProvenance
+      ? { creatorProvenance: workspace.creatorProvenance }
+      : {}),
     linkedTask: null,
     comment: "",
     isArchived: false,
@@ -281,6 +313,27 @@ function toPipelineFolderWorkspace(workspace: {
     createdAt: 0,
     updatedAt: 0,
   };
+}
+
+/**
+ * A forced workspace (the agent-send target) outranks the other-device sweep, exactly
+ * like the worktree loop above: the user asked for this row, so a scope filter must not
+ * swallow it. Folder workspaces are addressed by both their raw id and their
+ * `folder:` workspace key, so both spellings match.
+ */
+function keepForcedVisibleFolderWorkspaces(
+  candidates: readonly FolderWorkspace[],
+  kept: readonly FolderWorkspace[],
+  forcedWorkspaceId: string | null
+): readonly FolderWorkspace[] {
+  if (!forcedWorkspaceId) return kept;
+  const keptIds = new Set(kept.map((workspace) => workspace.id));
+  return candidates.filter(
+    (workspace) =>
+      keptIds.has(workspace.id) ||
+      workspace.id === forcedWorkspaceId ||
+      folderWorkspaceKey(workspace.id) === forcedWorkspaceId
+  );
 }
 
 /** `prByPath` (Hydra's review display) → the Orca `prCache` shape PR lanes read. */
@@ -360,9 +413,9 @@ export interface WorktreeListProps {
   unreadProjects?: ReadonlySet<string> | Set<string>;
   pinnedWorktrees?: ReadonlySet<string> | Set<string>;
   unreadWorktrees?: ReadonlySet<string> | Set<string>;
-  projectGroups?: ProjectGroup[];
+  projectGroups?: SidebarProjectGroupForRows[];
   projectGroupMap?: Record<string, string>;
-  folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
+  folderWorkspaces?: SidebarFolderWorkspaceForRows[];
   liveWorkspacePaths?: ReadonlySet<string>;
   missingFolderPaths?: ReadonlySet<string>;
   /** Rich folder path status, when the shell probed it (confirmed stale vs ambiguous). */
@@ -877,6 +930,63 @@ export function WorktreeList({
     ]
   );
 
+  // Orca `useSidebarHostVisibleScope` → `visibleReposForRows`: the host set narrows the
+  // repo tier the list paints. Shared with the Cmd+1–9 order (`visible-worktrees`), so a
+  // numbered shortcut never targets a repo the cards hid.
+  const visibleReposForRows = useMemo(
+    () => filterReposForVisibleHosts(storeRepos as Repo[], visibleHostIdSet, focusedHostId),
+    [storeRepos, visibleHostIdSet, focusedHostId]
+  );
+  // The group tier needs its shared shape before the host filter can read the group's
+  // own ownership stamp. Built from the *unfiltered* folder props so a folder-backed
+  // group keeps its `parentPath` even when the folder row itself is filtered out.
+  const pipelineProjectGroups = useMemo(
+    () =>
+      projectGroups.map((group) =>
+        toPipelineProjectGroup(
+          group,
+          folderWorkspaces.find((workspace) => workspace.projectGroupId === group.id)?.folderPath
+        )
+      ),
+    [projectGroups, folderWorkspaces]
+  );
+  const visibleProjectGroupsForRows = useMemo(
+    () =>
+      filterProjectGroupsForVisibleHosts(pipelineProjectGroups, visibleHostIdSet, focusedHostId),
+    [pipelineProjectGroups, visibleHostIdSet, focusedHostId]
+  );
+  const pipelineFolderWorkspaces = useMemo(
+    () => folderWorkspaces.map(toPipelineFolderWorkspace),
+    [folderWorkspaces]
+  );
+  // Orca `useSidebarHostVisibleScope` → `visibleFolderWorkspacesForRows`: host scope
+  // first, then the paired-device sweep the worktree rows already run. The agent-send
+  // target stays forced visible, in both its raw-id and `folder:` key spellings.
+  const visibleFolderWorkspacesForRows = useMemo(() => {
+    const hostVisible = filterFolderWorkspacesForVisibleHosts(
+      pipelineFolderWorkspaces,
+      pipelineProjectGroups,
+      visibleHostIdSet,
+      focusedHostId
+    );
+    const deviceVisible =
+      pairedDeviceIdsByEnvironment.size > 0
+        ? filterFolderWorkspacesFromOtherDevices(hostVisible, pairedDeviceIdsByEnvironment)
+        : hostVisible;
+    return keepForcedVisibleFolderWorkspaces(
+      pipelineFolderWorkspaces,
+      deviceVisible,
+      agentSendTargetWorktreeId
+    );
+  }, [
+    agentSendTargetWorktreeId,
+    focusedHostId,
+    pairedDeviceIdsByEnvironment,
+    pipelineFolderWorkspaces,
+    pipelineProjectGroups,
+    visibleHostIdSet,
+  ]);
+
   // Filter projects by search query (project identity or a matching workspace).
   const visibleProjectsRef = useRef<HydraProject[]>([]);
   const visibleProjects = useMemo(() => {
@@ -889,28 +999,31 @@ export function WorktreeList({
           const wts = getFilteredAndSortedWorktrees(proj);
           return wts.length > 0;
         });
-    let filtered = searched;
-    if (visibleHostIdSet) {
-      const repoByProject = new Map(
-        (storeRepos as Repo[]).flatMap((repo) => [
-          [repo.id, repo] as const,
-          [repo.path, repo] as const,
-        ])
-      );
-      filtered = searched.filter((proj) => {
-        if (
-          agentSendTargetWorktreeId &&
-          getFilteredAndSortedWorktrees(proj).some(
-            (worktree) => worktree.id === agentSendTargetWorktreeId
-          )
-        ) {
-          return true;
-        }
-        const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
-        const hostId = repo ? getRepoExecutionHostId(repo) : focusedHostId;
-        return visibleHostIdSet.has(hostId);
-      });
-    }
+    // Orca `useSidebarHostVisibleScope` → `visibleReposForRows`: a project paints only
+    // when its repo row survived the host scope. A project without a store repo follows
+    // the focused host, the same default the repo filter gives an unstamped repo.
+    const repoByProject = new Map(
+      (storeRepos as Repo[]).flatMap((repo) => [
+        [repo.id, repo] as const,
+        [repo.path, repo] as const,
+      ])
+    );
+    const visibleRepoIds = new Set(visibleReposForRows.map((repo) => repo.id));
+    const filtered = searched.filter((proj) => {
+      if (
+        agentSendTargetWorktreeId &&
+        getFilteredAndSortedWorktrees(proj).some(
+          (worktree) => worktree.id === agentSendTargetWorktreeId
+        )
+      ) {
+        return true;
+      }
+      const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
+      if (!repo) {
+        return visibleHostIdSet ? visibleHostIdSet.has(focusedHostId) : true;
+      }
+      return visibleRepoIds.has(repo.id);
+    });
     // D03a-051: a recompute that kept the same project objects keeps the previous
     // array identity, so memoized sections do not invalidate.
     const stable = reuseArrayIfEqual(visibleProjectsRef.current, filtered);
@@ -920,6 +1033,7 @@ export function WorktreeList({
     displayProjects,
     query,
     getFilteredAndSortedWorktrees,
+    visibleReposForRows,
     visibleHostIdSet,
     storeRepos,
     focusedHostId,
@@ -951,13 +1065,8 @@ export function WorktreeList({
         hostId: hostIdByRepoId.get(project.id),
       })
     );
-    const pipelineGroups = projectGroups.map((group) =>
-      toPipelineProjectGroup(
-        group,
-        folderWorkspaces.find((workspace) => workspace.projectGroupId === group.id)?.folderPath
-      )
-    );
-    const pipelineFolderWorkspaces = folderWorkspaces.map(toPipelineFolderWorkspace);
+    const pipelineGroups = visibleProjectGroupsForRows;
+    const pipelineFolderWorkspaces = visibleFolderWorkspacesForRows;
 
     const liveActivity = buildSidebarLiveActivityIndex(sessions, livePaths);
 
@@ -1157,8 +1266,8 @@ export function WorktreeList({
     };
   }, [
     visibleProjects,
-    projectGroups,
-    folderWorkspaces,
+    visibleProjectGroupsForRows,
+    visibleFolderWorkspacesForRows,
     projectGroupMap,
     sessions,
     livePaths,

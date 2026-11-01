@@ -4703,16 +4703,15 @@
    "components/sidebar/worktree-list/listing/use-host-visible-scope.ts:17-72"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/listing/host-filtering.ts:26-59",
-    "src/components/sidebar/visible-worktrees.ts:311-313"
+    "src/components/sidebar/worktree-list/listing/host-filtering.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/lib/catalog-bridge.ts"
    ],
-   "missing_behaviors": [
-    "visibleReposForRows/visibleProjectGroupsForRows/visibleFolderWorkspacesForRows no render",
-    "filterFolderWorkspacesFromOtherDevices"
-   ],
-   "notes": "As funções de filtragem por host/dispositivo existem e são usadas no pipeline headless (rendered-sidebar-worktree-order.ts:21), não na lista pintada."
+   "missing_behaviors": [],
+   "notes": "Repo/group/folder rows and headers are filtered by the same host scope as Cmd+1–9, folder rows honor other-device exclusion (forced targets excepted), and catalog host stamps reach the pipeline.",
+   "note": "Repo/group/folder rows and headers are filtered by the same host scope as Cmd+1–9, folder rows honor other-device exclusion (forced targets excepted), and catalog host stamps reach the pipeline."
   },
   "domain": "D03a-worktree-list-module"
  },
