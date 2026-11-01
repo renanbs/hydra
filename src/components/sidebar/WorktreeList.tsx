@@ -35,10 +35,10 @@ import {
   normalizeVisibleExecutionHostIds,
 } from "../../shared/execution-host";
 import type { Repo } from "../../shared/repo-types";
-import type { FolderWorkspace } from "../../shared/folder-workspace-types";
+import type { FolderWorkspace, WorkspaceKey } from "../../shared/folder-workspace-types";
 import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
-import type { WorktreeLineage } from "../../shared/worktree/lineage-types";
+import type { WorkspaceLineage, WorktreeLineage } from "../../shared/worktree/lineage-types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
 import { RepoScanUnavailableIndicator } from "./RepoScanUnavailableIndicator";
@@ -71,6 +71,7 @@ import {
   type ExternalWorktreeCardActionState,
 } from "./worktree-list/rows/external-worktree-card-actions";
 import { getFolderWorkspaceCardPrDisplay } from "./worktree-list/rows/folder-workspace-card-pr-display";
+import { getProjectedWorkspaceLineageByChildKey } from "./worktree-list/rows/workspace-lineage-projection";
 import { getWorktreeItemRowGeometry } from "./worktree-list/rows/item-row-geometry";
 import {
   createLineageToggleHandlerCache,
@@ -321,6 +322,11 @@ interface SidebarRowModel {
   worktrees: Worktree[];
   /** Projected worktree by bare id, for the folder card's attached-worktree walk. */
   worktreeById: Map<string, Worktree>;
+  /**
+   * Workspace lineage keyed by child workspace key, for the folder card's synthetic
+   * review walk (D03a-077). Derived from the lineage this model already projects.
+   */
+  workspaceLineageByChildKey: Record<WorkspaceKey, WorkspaceLineage>;
   /** Folder workspaces the pipeline painted, in the shared shape reveal lookups read. */
   pipelineFolderWorkspaces: readonly FolderWorkspace[];
   /**
@@ -1068,6 +1074,16 @@ export function WorktreeList({
       }
     }
 
+    // D03a-077: the folder card's synthetic review walks workspace lineage, which the
+    // live store never composes; project the lineage above into the workspace-keyed
+    // records, so a worktree nested under a folder workspace reaches that card.
+    const workspaceLineageByChildKey = getProjectedWorkspaceLineageByChildKey({
+      lineageById: projectedLineageById,
+      lineageByPath,
+      worktreeById,
+      folderWorkspaces: pipelineFolderWorkspaces,
+    });
+
     // D03a-056: the row model reads the PR/hosted-review caches only when the painted
     // cards actually need them (PR grouping or synthetic folder-card reviews) instead
     // of scanning the whole cache on every render.
@@ -1130,6 +1146,7 @@ export function WorktreeList({
       renderedSidebarRowKeys: collectRenderedSidebarRowKeys(rows),
       worktrees: Object.values(worktreesByRepo).flat(),
       worktreeById,
+      workspaceLineageByChildKey,
       pipelineFolderWorkspaces,
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       hostContextLabelByIdentity,
@@ -2196,7 +2213,7 @@ export function WorktreeList({
       });
       const folderPrDisplay = getFolderWorkspaceCardPrDisplay({
         folderWorkspaceId: row.folderWorkspace.id,
-        workspaceLineageByChildKey: null,
+        workspaceLineageByChildKey: rowModel.workspaceLineageByChildKey,
         worktreeLineageById: storeWorktreeLineageById,
         worktreeById: rowModel.worktreeById,
         prByPath,
@@ -2240,6 +2257,7 @@ export function WorktreeList({
       storeSettings,
       storeWorktreeLineageById,
       rowModel.worktreeById,
+      rowModel.workspaceLineageByChildKey,
       prByPath,
       folderPathStatusByPath,
       getFreshFolderPathStatus,

@@ -5322,16 +5322,15 @@
    "components/sidebar/worktree-list/rows/folder-row.tsx:23-132"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/FolderWorkspaceRow.tsx",
-    "src/components/sidebar/worktree-list/rows/folder-workspace-card-pr-display.ts"
+    "src/components/sidebar/worktree-list/rows/workspace-lineage-projection.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeList.folder-pr-lineage.parity.test.tsx"
    ],
-   "missing_behaviors": [
-    "synthetic PR display needs workspaceLineageByChildKey, absent from the composed AppState"
-   ],
-   "notes": "Option role/aria, geometry and stale/ambiguous activation gating are wired; the synthetic PR walk is passed null lineage.",
-   "note": "Option role/aria, geometry and stale/ambiguous activation gating are wired; the synthetic PR walk is passed null lineage."
+   "missing_behaviors": [],
+   "notes": "The composed row model derives workspaceLineageByChildKey from the app's rich and path lineage, so a folder row inherits its parent PR; no-lineage rows stay unchanged.",
+   "note": "The composed row model derives workspaceLineageByChildKey from the app's rich and path lineage, so a folder row inherits its parent PR; no-lineage rows stay unchanged."
   },
   "domain": "D03a-worktree-list-module"
  },
