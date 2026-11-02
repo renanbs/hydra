@@ -195,6 +195,87 @@
    ],
    "missing_behaviors": [],
    "note": "Change Project Icon opens an inline emoji/clear picker that writes repoIcon through a validated catalog mutation, refreshes the catalog, and disables remote projects (their icon lives on the host)."
+  },
+  {
+   "id": "D09-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Projects filter panel with repo badge, SSH badge, search/empty/highlight reset, keydown containment, repo-id filtering."
+  },
+  {
+   "id": "D09-011",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Four Orca group-by modes incl. project-group; pressed semantics and persisted normalization."
+  },
+  {
+   "id": "D09-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "rAF focus with cleanup, query reset on reopen, alternating placeholder."
+  },
+  {
+   "id": "D09-017",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Hide other-client workspaces toggle with hydration gate and persisted visibility."
+  },
+  {
+   "id": "D09-018",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Worktree activation publishes a reveal request consumed by the single displayOptions writer."
+  },
+  {
+   "id": "D09-019",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Trigger badge and empty-state gate share sidebarHasActiveFilters including host/device flags."
+  },
+  {
+   "id": "D09-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Reset filters executes the computed clear plan through the single writer."
+  },
+  {
+   "id": "D09-021",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "worktreePassesSidebarFilters predicate used by the batch pipeline, host-qualified; collapse/order stays out."
+  },
+  {
+   "id": "D09-024",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Attention timestamps scan done/blocked/waiting history and feed the painted sort."
   }
  ]
 }

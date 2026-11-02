@@ -59,6 +59,10 @@ import type { Worktree } from "../../shared/worktree/types";
 import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
+import {
+  SIDEBAR_REVEAL_FILTER_REQUEST_EVENT,
+} from "./reveal-filter-request";
+import type { RevealTargetTraits } from "./reveal-filter-relaxation";
 import { resolveRevealWorktreePath } from "./reveal-target-resolution";
 import { requestProjectsRefresh } from "../../lib/refresh-projects-awaitable";
 import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
@@ -77,8 +81,19 @@ import type {
 } from "./types";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
-import { applyPersistedWorktreeOrder, resolveComparatorSortBy, sortSidebarWorktrees } from "./sidebar-worktree-sort";
+import {
+  applyPersistedWorktreeOrder,
+  isSidebarSortColdStart,
+  resolveComparatorSortBy,
+  sortSidebarWorktrees,
+} from "./sidebar-worktree-sort";
+import { isDefaultBranchWorkspace } from "./default-branch-workspace";
+import { isDetachedHeadWorkspace } from "./visible-worktree-kinds";
+import { tabHasLivePty } from "@/lib/tab-has-live-pty";
+import type { AgentStateHistoryEntry } from "../../shared/agent-status-types";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
+import { toSharedAgentStatusByPaneKey } from "./visible-worktrees";
+import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
@@ -609,6 +624,25 @@ export function WorktreeSidebar({
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
 
+  // Orca `revealWorkspaceFilters` (D09-018): activation asks the sidebar to lift only
+  // the filters hiding its target. The request names the workspace; this component
+  // owns the display options, so it is the only writer that can act on it.
+  useEffect(() => {
+    const onRelaxRequest = (event: Event) => {
+      const target = (event as CustomEvent<RevealTargetTraits | undefined>).detail;
+      if (!target) return;
+      const { displayOptions: nextOptions, changed } = relaxFiltersForReveal(
+        displayOptions,
+        target
+      );
+      if (!changed) return;
+      handleDisplayOptionsChange(nextOptions);
+    };
+    window.addEventListener(SIDEBAR_REVEAL_FILTER_REQUEST_EVENT, onRelaxRequest);
+    return () =>
+      window.removeEventListener(SIDEBAR_REVEAL_FILTER_REQUEST_EVENT, onRelaxRequest);
+  }, [displayOptions, handleDisplayOptionsChange]);
+
   // Registry-dispatched toggle (D09-005): one writer, the same one the menu uses.
   useEffect(() => {
     const onToggle = () => {
@@ -659,6 +693,19 @@ export function WorktreeSidebar({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
   const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder);
+  // The trigger's badge and the empty-state gate read the same answer (Orca
+  // `sidebarHasActiveFilters` + the per-flag count), so they cannot disagree.
+  const sidebarFilterChrome = useMemo(() => {
+    const filterState = toSidebarFilterState(displayOptions, {
+      visibleWorkspaceHostIds: storeVisibleWorkspaceHostIds,
+      workspaceHostScope: storeWorkspaceHostScope,
+    })
+    return {
+      hasActiveFilters: sidebarHasActiveFilters(filterState),
+      activeFilterCount: countActiveWorkspaceFilters(displayOptions),
+    }
+  }, [displayOptions, storeVisibleWorkspaceHostIds, storeWorkspaceHostScope]);
+
   const handleClearSidebarFilters = useCallback(() => {
     // Orca `clearFilters`: reset only the filters that are actually set, so the
     // button never churns unrelated display options or the debounced write-back.
@@ -1563,6 +1610,55 @@ export function WorktreeSidebar({
 
   const query = filter.trim().toLowerCase();
 
+  // ─── Smart-sort inputs (Orca `sortWorktreesSmart`) ────────────────────────
+  // Why the store here: the painted order needs the PTY/agent evidence the props do
+  // not carry. Reading it in WorktreeSidebar keeps one writer over the painted order.
+  const storeTabsByWorktree = useAppStore((s) => s.tabsByWorktree);
+  const storePtyIdsByTabId = useAppStore((s) => s.ptyIdsByTabId);
+  const storeAgentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey);
+
+  // Session ids whose tab still holds a live PTY: title-only evidence may promote them.
+  const liveSessionIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const tabs of Object.values(storeTabsByWorktree ?? {})) {
+      for (const tab of tabs) {
+        if (tab.sessionId && tabHasLivePty(storePtyIdsByTabId ?? {}, tab.id)) {
+          ids.add(tab.sessionId);
+        }
+      }
+    }
+    return ids;
+  }, [storeTabsByWorktree, storePtyIdsByTabId]);
+
+  // Rolling hook history per worktree path: Class 3's prior-attention stamp
+  // (`mostRecentAttentionInHistory`), newest entry wins.
+  const hookHistoryByWorktreePath = useMemo(() => {
+    const byPath = new Map<string, { updatedAt: number; history: readonly AgentStateHistoryEntry[] }>();
+    for (const entry of Object.values(storeAgentStatusByPaneKey ?? {})) {
+      if (!entry.worktreePath || !entry.stateHistory || entry.stateHistory.length === 0) continue;
+      const current = byPath.get(entry.worktreePath);
+      if (!current || entry.updatedAt > current.updatedAt) {
+        byPath.set(entry.worktreePath, { updatedAt: entry.updatedAt, history: entry.stateHistory });
+      }
+    }
+    return new Map(
+      [...byPath.entries()].map(([path, value]) => [path, value.history] as const)
+    );
+  }, [storeAgentStatusByPaneKey]);
+
+  // Cold start: no live PTY and no fresh hook-attributed status means the agent
+  // snapshot has not landed, so the smart modes keep the persisted order.
+  const sortColdStart = useMemo(
+    () =>
+      isSidebarSortColdStart({
+        tabsByWorktree: storeTabsByWorktree,
+        ptyIdsByTabId: storePtyIdsByTabId,
+        agentStatusByPaneKey: toSharedAgentStatusByPaneKey(storeAgentStatusByPaneKey),
+        now: Date.now(),
+      }),
+    [storeTabsByWorktree, storePtyIdsByTabId, storeAgentStatusByPaneKey]
+  );
+
   // Why settled only for attention-driven modes: Smart and Recent rank by time-decaying
   // scores, so background activity must not reorder them mid-read. Name/Repo/Manual are
   // deterministic or direct manipulation and always paint the fresh order.
@@ -1587,13 +1683,23 @@ export function WorktreeSidebar({
         ? new Map(
             projected.map((row) => {
               const worktree = wts.find((candidate) => candidate.path === row.path);
-              const rowSessions = sessions.filter(
-                (session) =>
-                  session.project_path === row.path ||
-                  ((worktree?.is_main || worktree?.isMainWorktree) &&
-                    session.project_path === proj.path)
-              );
-              return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
+              const history = hookHistoryByWorktreePath.get(row.path);
+              const rowSessions = sessions
+                .filter(
+                  (session) =>
+                    session.project_path === row.path ||
+                    ((worktree?.is_main || worktree?.isMainWorktree) &&
+                      session.project_path === proj.path)
+                )
+                .map((session) => ({
+                  ...session,
+                  hasLivePty: liveSessionIds.has(session.id),
+                  ...(history ? { stateHistory: history } : {}),
+                }));
+              return [
+                row.id,
+                resolveWorktreeAttentionFromSessions(rowSessions, now),
+              ] as const;
             })
           )
         : undefined;
@@ -1603,13 +1709,22 @@ export function WorktreeSidebar({
         repoMap: pipelineRepoMap,
         now,
         attentionByWorktree,
+        coldStart: sortColdStart,
       });
       const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
       return ordered
         .map((row) => byPath.get(row.path))
         .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
     },
-    [displayOptions.sortBy, sessions, pipelineRepoMap, worktreesByRepo]
+    [
+      displayOptions.sortBy,
+      sessions,
+      pipelineRepoMap,
+      worktreesByRepo,
+      hookHistoryByWorktreePath,
+      liveSessionIds,
+      sortColdStart,
+    ]
   );
 
   // Why a ref: only the settle gate may move an attention-driven order. Routing the
@@ -1637,12 +1752,27 @@ export function WorktreeSidebar({
   const getFilteredAndSortedWorktrees = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
     let wts = getWorktreesForProject(proj);
 
-    // Filter by display options
+    // Filter by display options through the SAME predicates the filter pipeline
+    // uses, projected onto the Orca row shape: `isDefaultBranchWorkspace` keeps a
+    // recipe-provisioned root visible, and `isDetachedHeadWorkspace` needs the git
+    // identity rather than a branch-string guess. The active workspace stays
+    // visible so a filter cannot hide the row the user is looking at.
+    const projectedByPath = new Map(
+      wts.map((worktree) => [worktree.path, toWorktreeRow(worktree, { repoId: proj.id })])
+    );
     if (displayOptions.hideDefaultBranch) {
-      wts = wts.filter((w) => !(w.is_main || w.isMainWorktree) || w.path === activeWorktreePath);
+      wts = wts.filter((w) => {
+        if (w.path === activeWorktreePath) return true;
+        const row = projectedByPath.get(w.path);
+        return !row || !isDefaultBranchWorkspace(row);
+      });
     }
     if (displayOptions.hideDetachedHead) {
-      wts = wts.filter((w) => (w.branch !== "HEAD" && w.branch !== "(detached)") || w.path === activeWorktreePath);
+      wts = wts.filter((w) => {
+        if (w.path === activeWorktreePath) return true;
+        const row = projectedByPath.get(w.path);
+        return !row || !isDetachedHeadWorkspace(row);
+      });
     }
 
     // Filter by text search query
@@ -1743,7 +1873,8 @@ export function WorktreeSidebar({
         optionsMenuOpen={optionsMenuOpen}
         setOptionsMenuOpen={setOptionsMenuOpen}
         projects={projects}
-        activeFilterCount={countActiveWorkspaceFilters(displayOptions)}
+        activeFilterCount={sidebarFilterChrome.activeFilterCount}
+        hasActiveFilters={sidebarFilterChrome.hasActiveFilters}
       />
 
       {/* 3. Main Body */}
@@ -2077,6 +2208,9 @@ export function WorktreeSidebar({
         onClose={() => setOptionsMenuOpen(false)}
         onOptionsChange={handleDisplayOptionsChange}
         onAddProject={onOpenAddRepoDialog}
+        // Orca `clearFilters`: the shell's writer resets every narrowing filter
+        // (and the host scope) and persists it, so the menu never forks the logic.
+        onClearFilters={handleClearSidebarFilters}
       />
 
       <AgentSendTargetPicker />

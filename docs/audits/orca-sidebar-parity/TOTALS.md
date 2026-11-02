@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 361 | 47.2% |
-| partial | 226 | 29.5% |
+| parity | 376 | 49.2% |
+| partial | 211 | 27.6% |
 | missing | 169 | 22.1% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
@@ -28,7 +28,7 @@
 | D06-drag-order-keyboard | 35 | 22 | 11 | 2 | 0 | 0 |
 | D07-menus-actions | 45 | 15 | 29 | 1 | 0 | 0 |
 | D08-kanban-board | 45 | 25 | 13 | 7 | 0 | 0 |
-| D09-filters-sort | 31 | 16 | 15 | 0 | 0 | 0 |
+| D09-filters-sort | 31 | 31 | 0 | 0 | 0 | 0 |
 | D10-visibility-inbox-notices | 91 | 81 | 5 | 5 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
 | D12-markdown-inline-render | 14 | 9 | 4 | 1 | 0 | 0 |

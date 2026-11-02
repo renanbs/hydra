@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner'
 import { isDetachedHeadWorkspace } from '@/components/sidebar/visible-worktrees'
 import { revealRepoInProjectFilter } from '@/components/sidebar/project-filter-reveal'
+import { requestSidebarFilterRelaxation } from '@/components/sidebar/reveal-filter-request'
 import type { ExecutionHostId } from '../shared/execution-host'
 import { findFolderWorkspaceOwner } from './folder-workspace-runtime-owner'
 import type { WorktreeStartupPayload } from '@/lib/worktree-startup-payload'
@@ -277,6 +278,17 @@ export function activateAndRevealWorktree(
   // 5. Lift the sidebar filters hiding the target — reveal needs the card rendered, else it silently no-ops.
   if (opts?.clearSidebarFilters !== false) {
     revealRepoInProjectFilter(state, wt.repoId)
+    // The painted sidebar renders `displayOptions`, not the store's filter flags, so
+    // the activation hands it the target and lets its one writer relax only the
+    // filters that actually hide the workspace (Orca `revealWorkspaceFilters`).
+    requestSidebarFilterRelaxation({
+      path: wt.path,
+      projectId: wt.repoId,
+      isMainWorktree: wt.isMainWorktree === true,
+      automationCreated: wt.automationProvenance?.kind === 'created-by-automation',
+      cliCreated: wt.cliProvenance?.kind === 'created-by-cli',
+      detachedHead: isDetachedHeadWorkspace(wt)
+    })
     if (
       state.hideAutomationGeneratedWorkspaces &&
       wt.automationProvenance?.kind === 'created-by-automation'

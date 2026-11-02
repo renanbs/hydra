@@ -147,6 +147,9 @@ export interface GitWorktreeInfo {
   /** Proveniência vinda do scan: `'created-by-cli'` quando a worktree foi criada
    *  via CLI; omitido quando não há proveniência. Projetado em `Worktree.cliProvenance`. */
   cliProvenanceKind?: string;
+  /** Recipe-provisioned opener (`'provisioned-root'`): the default-branch filter
+   *  must keep it visible (Orca `isDefaultBranchWorkspace`). */
+  ephemeralVmCheckoutMode?: "orca-worktree" | "provisioned-root";
 }
 
 export interface WorkspacePort {

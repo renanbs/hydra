@@ -46,6 +46,7 @@ function seedStore(overrides: Record<string, unknown> = {}) {
     sshTargetLabels: new Map([["srv", "Build server"]]),
     sshConnectionStates: new Map(),
     runtimeEnvironments: [],
+    runtimeEnvironmentCatalogHydrated: false,
     settings: null,
     visibleWorkspaceHostIds: null,
     workspaceHostScope: "all",
@@ -171,11 +172,11 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
     expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, hideSleeping: true });
   });
 
-  it("clears every filter and opens Add project from the footer", () => {
-    const onOptionsChange = vi.fn();
+  it("resets filters through the shell writer and opens Add project from the footer", () => {
+    const onClearFilters = vi.fn();
     const onAddProject = vi.fn();
     renderMenu({
-      onOptionsChange,
+      onClearFilters,
       onAddProject,
       options: {
         ...OPTIONS,
@@ -186,21 +187,34 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
       },
     });
 
-    fireEvent.click(screen.getByText("Clear filters"));
-    expect(onOptionsChange).toHaveBeenCalledWith({
-      ...OPTIONS,
-      hideSleeping: false,
-      hideDefaultBranch: false,
-      hideAutomationCreated: false,
-      hideCliCreated: false,
-      hideDetachedHead: false,
-      alwaysShowDefaultBranch: false,
-      hideWorkspacesFromOtherDevices: false,
-      filterProjectIds: [],
-    });
+    // D09-020: the footer runs the SAME `computeClearFilterActions` plan the shell
+    // owns, so the menu never forks the reset logic into a second writer.
+    fireEvent.click(screen.getByText("Reset filters"));
+    expect(onClearFilters).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByText("+ Add project"));
     expect(onAddProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the shared clear plan when no shell writer is supplied", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({
+      onOptionsChange,
+      options: {
+        ...OPTIONS,
+        hideSleeping: true,
+        alwaysShowDefaultBranch: true,
+        filterProjectIds: ["repo_a"],
+      },
+    });
+
+    fireEvent.click(screen.getByText("Reset filters"));
+    expect(onOptionsChange).toHaveBeenCalledWith({
+      ...OPTIONS,
+      hideSleeping: false,
+      alwaysShowDefaultBranch: true,
+      filterProjectIds: [],
+    });
   });
 
   it("moves the project highlight with the arrows and toggles it on Enter", () => {
@@ -208,7 +222,7 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
     const { container } = renderMenu({ onOptionsChange });
 
     fireEvent.click(screen.getByText("Projects"));
-    const input = screen.getByPlaceholderText("Add project...");
+    const input = screen.getByPlaceholderText("Filter projects...");
     fireEvent.keyDown(input, { key: "ArrowDown" });
 
     expect(container.querySelector('[data-active-project="true"]')?.textContent).toContain("orca");
@@ -303,5 +317,83 @@ describe("WorkspaceOptionsMenu project order (Orca parity)", () => {
     expect(screen.getByText("Recent")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Project order"));
     expect(screen.getAllByText("Most recent workspace activity").length).toBeGreaterThan(0);
+  });
+});
+
+describe("WorkspaceOptionsMenu grouping and filters (D09-011/017)", () => {
+  beforeEach(() => seedStore());
+  afterEach(() => {
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
+  });
+
+  it("offers exactly Orca's grouping modes with a pressed state", () => {
+    const { container } = renderMenu();
+    const values = [...container.querySelectorAll("[data-group-by-option]")].map((node) =>
+      node.getAttribute("data-group-by-option")
+    );
+    expect(values).toEqual(["none", "workspace-status", "pr-status", "repo"]);
+    expect(
+      container
+        .querySelector('[data-group-by-option="repo"]')
+        ?.getAttribute("aria-pressed")
+    ).toBe("true");
+  });
+
+  it("commits the pointer-down intent before focus can swallow the click", () => {
+    const onOptionsChange = vi.fn();
+    const { container } = renderMenu({ onOptionsChange });
+    const prOption = container.querySelector(
+      '[data-group-by-option="pr-status"]'
+    ) as HTMLElement;
+
+    // Pointerdown alone commits (Orca SidebarGroupByToggle); the click is a no-op.
+    fireEvent.pointerDown(prOption);
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, groupBy: "pr-status" });
+    onOptionsChange.mockClear();
+    // A real pointer click carries a click count; only that form is swallowed.
+    fireEvent.click(prOption, { detail: 1 });
+    expect(onOptionsChange).not.toHaveBeenCalled();
+  });
+
+  it("commits a keyboard activation through the click", () => {
+    const onOptionsChange = vi.fn();
+    const { container } = renderMenu({ onOptionsChange });
+    const prOption = container.querySelector(
+      '[data-group-by-option="pr-status"]'
+    ) as HTMLElement;
+    // detail 0 is the DOM's marker for a keyboard-triggered click.
+    fireEvent.click(prOption, { detail: 0 });
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, groupBy: "pr-status" });
+  });
+
+  it("hides the other-client toggle only after hydration proves no other client", () => {
+    seedStore({ runtimeEnvironmentCatalogHydrated: true, runtimeEnvironments: [] });
+    renderMenu();
+    expect(screen.queryByRole("switch", { name: /other Hydra clients/i })).toBeNull();
+  });
+
+  it("keeps the other-client toggle while its sweep is applied", () => {
+    seedStore({ runtimeEnvironmentCatalogHydrated: true, runtimeEnvironments: [] });
+    renderMenu({ options: { ...OPTIONS, hideWorkspacesFromOtherDevices: true } });
+    expect(
+      screen.getByRole("switch", { name: /other Hydra clients/i })
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("shows the other-client toggle before the catalog hydrates", () => {
+    renderMenu();
+    expect(
+      screen.getByRole("switch", { name: /other Hydra clients/i })
+    ).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("persists the other-client toggle through the options writer", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+    fireEvent.click(screen.getByRole("switch", { name: /other Hydra clients/i }));
+    expect(onOptionsChange).toHaveBeenCalledWith({
+      ...OPTIONS,
+      hideWorkspacesFromOtherDevices: true,
+    });
   });
 });

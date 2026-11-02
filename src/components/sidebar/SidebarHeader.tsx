@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { Bell, FolderPlus, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Bell, FolderPlus, ListFilter, Plus, Sparkles } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { translate } from "@/i18n/i18n";
 import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
@@ -24,6 +24,12 @@ type SidebarHeaderProps = {
   projects: HydraProject[];
   /** Orca `getSidebarActiveFilterCount`: badge + dynamic label on the options trigger. */
   activeFilterCount: number;
+  /**
+   * Orca `sidebarHasActiveFilters`: the comprehensive "is anything filtered" answer,
+   * including host scope. It drives the trigger's label, so a host-scope-only filter
+   * still reads as filtered even though the count (Orca's) is zero.
+   */
+  hasActiveFilters: boolean;
 };
 
 export function SidebarHeader({
@@ -38,6 +44,7 @@ export function SidebarHeader({
   optionsMenuOpen,
   setOptionsMenuOpen,
   projects,
+  hasActiveFilters,
   activeFilterCount,
 }: SidebarHeaderProps) {
   // Subscribe this header to locale changes before using translate().
@@ -162,15 +169,20 @@ export function SidebarHeader({
               title={
                 activeFilterCount > 0
                   ? `Workspace display options (${activeFilterCount} active)`
-                  : "Workspace display options"
+                  : hasActiveFilters
+                    ? "Workspace display options (filtered)"
+                    : "Workspace display options"
               }
               aria-label={
                 activeFilterCount > 0
                   ? `Workspace display options (${activeFilterCount} active)`
-                  : "Workspace display options"
+                  : hasActiveFilters
+                    ? "Workspace display options (filtered)"
+                    : "Workspace display options"
               }
               aria-haspopup="menu"
               aria-expanded={optionsMenuOpen}
+              data-workspace-board-preserve-open=""
               className={cn(
                 "relative inline-flex size-6 items-center justify-center rounded-md transition-all outline-none cursor-pointer",
                 "focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50",
@@ -179,7 +191,7 @@ export function SidebarHeader({
                   : "text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60"
               )}
             >
-              <SlidersHorizontal className="size-3.5" strokeWidth={2.25} />
+              <ListFilter className="size-3.5" strokeWidth={2.25} />
               {activeFilterCount > 0 ? (
                 <span
                   aria-hidden="true"

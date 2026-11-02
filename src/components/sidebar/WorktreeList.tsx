@@ -21,7 +21,7 @@ import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-sta
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
-import { sidebarHasActiveFilters } from "./sidebar-filter-actions";
+import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import type { SidebarFilterState } from "./visible-worktree-kinds";
 import { shouldFiltersHideAllRows } from "./sidebar-empty-state-gate";
 import { WorktreeListEmptyState } from "./worktree-list/listing/WorktreeListEmptyState";
@@ -1352,30 +1352,16 @@ export function WorktreeList({
   // The menu filters (display options + host scope) reduce the row model before it is
   // painted, so both the reveal path (D03a-052) and the empty-state gate (#15362) read
   // the same "are filters active" answer.
+  // Why the shared projection: the badge, the empty-state gate and Clear Filters
+  // must agree on what counts as "filtered", so this reads the same mapping the
+  // shell's Clear Filters plan uses instead of listing flags locally.
   const sidebarFilterState = useMemo<SidebarFilterState>(
-    () => ({
-      showSleepingWorkspaces: !displayOptions.hideSleeping,
-      filterRepoIds: displayOptions.filterProjectIds ?? [],
-      hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
-      hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
-      hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
-      hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
-      // Hydra's sidebar has no per-device filter; false mirrors Orca's default so the
-      // gate's contract is unchanged.
-      hideWorkspacesFromOtherDevices: false,
-      visibleWorkspaceHostIds: pipelineVisibleHostIds,
-      workspaceHostScope: pipelineHostScope,
-    }),
-    [
-      displayOptions.hideSleeping,
-      displayOptions.filterProjectIds,
-      displayOptions.hideDefaultBranch,
-      displayOptions.hideAutomationCreated,
-      displayOptions.hideCliCreated,
-      displayOptions.hideDetachedHead,
-      pipelineVisibleHostIds,
-      pipelineHostScope,
-    ]
+    () =>
+      toSidebarFilterState(displayOptions, {
+        visibleWorkspaceHostIds: pipelineVisibleHostIds,
+        workspaceHostScope: pipelineHostScope,
+      }),
+    [displayOptions, pipelineVisibleHostIds, pipelineHostScope]
   );
   const hasFilters = useMemo(
     () => sidebarHasActiveFilters(sidebarFilterState),

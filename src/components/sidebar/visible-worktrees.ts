@@ -30,6 +30,7 @@ import {
   ALL_EXECUTION_HOSTS_SCOPE,
   getSettingsFocusedExecutionHostId,
   getWorktreeExecutionHostId,
+  normalizeExecutionHostId,
   type ExecutionHostId,
   type ExecutionHostScope
 } from '../../shared/execution-host'
@@ -53,7 +54,7 @@ import type { AgentStatusEntry as SidebarAgentStatusEntry } from './agent-status
 import type { AgentStatusEntry as SharedAgentStatusEntry } from '../../shared/agent-status-types'
 
 /** Orca freshness only knows working/blocked/waiting/done. Hydra sidebar rows also use idle/unknown. */
-function toSharedAgentStatusByPaneKey(
+export function toSharedAgentStatusByPaneKey(
   entries: Record<string, SidebarAgentStatusEntry> | null | undefined
 ): Record<string, SharedAgentStatusEntry> {
   const out: Record<string, SharedAgentStatusEntry> = {}
@@ -114,78 +115,97 @@ export type VisibleWorktreeOptions = {
   forcedVisibleWorktreeIds?: readonly string[]
 }
 
-export function computeVisibleWorktrees(
-  worktreesByRepo: Record<string, Worktree[]>,
-  sortedIds: string[],
-  opts: VisibleWorktreeOptions
-): Worktree[] {
-  let all: Worktree[] = getAllWorktreesFromState({ worktreesByRepo })
-
-  // Filter archived
-  all = all.filter((w) => !w.isArchived)
-
-  // Why: sidebar lineage is structural. Archived workspaces stay hidden, but
-  // every other valid ancestor can bypass filters so children never orphan.
-  const lineageAncestorById = getLineageAncestorIndex(worktreesByRepo)
-
-  if (opts.hideWorkspacesFromOtherDevices) {
-    all = all.filter(
-      (worktree) => !isWorkspaceFromOtherDevice(worktree, opts.pairedDeviceIdsByEnvironment)
-    )
+/** Every predicate that hides ONE worktree; collapse/order stay out of it. */
+function passesSidebarFilterPredicates(worktree: Worktree, opts: VisibleWorktreeOptions): boolean {
+  if (worktree.isArchived) return false
+  if (
+    opts.hideWorkspacesFromOtherDevices &&
+    isWorkspaceFromOtherDevice(worktree, opts.pairedDeviceIdsByEnvironment)
+  ) {
+    return false
   }
-
-  if (opts.hideDefaultBranchWorkspace) {
-    all = all.filter((w) => !isDefaultBranchWorkspace(w))
+  if (opts.hideDefaultBranchWorkspace && isDefaultBranchWorkspace(worktree)) return false
+  if (opts.hideAutomationGeneratedWorkspaces && isAutomationGeneratedWorkspace(worktree)) {
+    return false
   }
-
-  if (opts.hideAutomationGeneratedWorkspaces) {
-    all = all.filter((w) => !isAutomationGeneratedWorkspace(w))
-  }
-
-  if (opts.hideCliCreatedWorkspaces) {
-    all = all.filter((w) => !isCliCreatedWorkspace(w))
-  }
-
-  if (opts.hideDetachedHeadWorkspaces) {
-    all = all.filter((w) => !isDetachedHeadWorkspace(w))
-  }
+  if (opts.hideCliCreatedWorkspaces && isCliCreatedWorkspace(worktree)) return false
+  if (opts.hideDetachedHeadWorkspaces && isDetachedHeadWorkspace(worktree)) return false
 
   const visibleHostIds =
     opts.visibleWorkspaceHostIds ??
     (opts.workspaceHostScope === ALL_EXECUTION_HOSTS_SCOPE ? null : [opts.workspaceHostScope])
   if (visibleHostIds) {
-    const visibleHostIdSet = new Set(visibleHostIds)
-    all = all.filter((w) => {
-      const repo = opts.repoMap.get(w.repoId)
-      if (!repo) {
-        return false
-      }
-      const hostId = getWorktreeExecutionHostId(w, repo, opts.defaultHostId)
-      return visibleHostIdSet.has(hostId)
-    })
+    const repo = opts.repoMap.get(worktree.repoId)
+    if (!repo) return false
+    const hostId = getWorktreeExecutionHostId(worktree, repo, opts.defaultHostId)
+    if (!visibleHostIds.includes(hostId)) return false
   }
 
-  // Filter by repo
-  if (opts.filterRepoIds.length > 0) {
-    const selectedRepoIds = new Set(opts.filterRepoIds)
-    all = all.filter((w) => selectedRepoIds.has(w.repoId))
+  if (opts.filterRepoIds.length > 0 && !opts.filterRepoIds.includes(worktree.repoId)) {
+    return false
   }
 
   if (!opts.showSleepingWorkspaces) {
     // Why no !hideDefaultBranchWorkspace term: that filter already ran above, so
     // an explicit hide still wins over the exemption.
-    all = all.filter(
-      (w) =>
-        isSleepingSweepExemptWorkspace(w, opts.alwaysShowDefaultBranchWorkspace) ||
-        !isInactiveWorkspace(
-          w.id,
-          opts.tabsByWorktree,
-          opts.ptyIdsByTabId,
-          opts.browserTabsByWorktree,
-          opts.worktreeIdsWithLiveAgent
-        )
-    )
+    const exempt = isSleepingSweepExemptWorkspace(worktree, opts.alwaysShowDefaultBranchWorkspace)
+    if (
+      !exempt &&
+      isInactiveWorkspace(
+        worktree.id,
+        opts.tabsByWorktree,
+        opts.ptyIdsByTabId,
+        opts.browserTabsByWorktree,
+        opts.worktreeIdsWithLiveAgent
+      )
+    ) {
+      return false
+    }
   }
+
+  return true
+}
+
+/**
+ * Orca `worktreePassesSidebarFilters`: filter-only visibility for ONE worktree.
+ *
+ * Why it exists next to the batch pipeline: a reveal target inside a collapsed
+ * group is hidden by the GROUP, not by a filter, and the batch pipeline applies
+ * grouping/elision afterwards (`rendered-sidebar-worktree-order.ts`). Asking the
+ * predicate keeps the two answers from drifting.
+ *
+ * Why host-qualified: worktree ids are not host-qualified (STA-4343), so an
+ * id-only match would let a visible local twin vouch for a filtered remote row.
+ */
+export function worktreePassesSidebarFilters(args: {
+  worktree: Worktree
+  options: VisibleWorktreeOptions
+  executionHostId?: ExecutionHostId
+}): boolean {
+  const { worktree, options } = args
+  if (!passesSidebarFilterPredicates(worktree, options)) return false
+  if (!args.executionHostId) return true
+  const repo = options.repoMap.get(worktree.repoId)
+  if (!repo) return false
+  return (
+    normalizeExecutionHostId(
+      getWorktreeExecutionHostId(worktree, repo, options.defaultHostId)
+    ) === normalizeExecutionHostId(args.executionHostId)
+  )
+}
+
+export function computeVisibleWorktrees(
+  worktreesByRepo: Record<string, Worktree[]>,
+  sortedIds: string[],
+  opts: VisibleWorktreeOptions
+): Worktree[] {
+  // Why: sidebar lineage is structural. Archived workspaces stay hidden, but
+  // every other valid ancestor can bypass filters so children never orphan.
+  const lineageAncestorById = getLineageAncestorIndex(worktreesByRepo)
+  // The ONE filter set: the batch path and the per-worktree predicate share it.
+  let all: Worktree[] = getAllWorktreesFromState({ worktreesByRepo }).filter((worktree) =>
+    passesSidebarFilterPredicates(worktree, opts)
+  )
 
   if (opts.forcedVisibleWorktreeIds && opts.forcedVisibleWorktreeIds.length > 0) {
     const includedIds = new Set(all.map((worktree) => worktree.id))

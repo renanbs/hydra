@@ -8,7 +8,12 @@ import type { GroupByMode } from "./WorkspaceOptionsMenu";
 
 function renderHeader(
   groupBy: GroupByMode,
-  options: { sidebarBody?: "workspaces" | "agents"; introShown?: boolean } = {}
+  options: {
+    sidebarBody?: "workspaces" | "agents";
+    introShown?: boolean;
+    activeFilterCount?: number;
+    hasActiveFilters?: boolean;
+  } = {}
 ) {
   const optionsButtonRef = React.createRef<HTMLButtonElement>();
   const onAcknowledgeIntro = vi.fn();
@@ -25,6 +30,8 @@ function renderHeader(
       optionsMenuOpen={false}
       setOptionsMenuOpen={vi.fn()}
       projects={[]}
+      activeFilterCount={options.activeFilterCount ?? 0}
+      hasActiveFilters={options.hasActiveFilters ?? false}
     />
   );
   return { onAcknowledgeIntro };
@@ -159,5 +166,35 @@ describe("SidebarHeader action cluster (D01-011 / D01-012)", () => {
   it("labels New workspace with the registry shortcut rather than a hardcoded chord", () => {
     renderHeader("repo");
     expect(screen.getByRole("button", { name: /^New workspace \(.+\)$/ })).toBeInTheDocument();
+  });
+});
+
+describe("SidebarHeader filter trigger (D09-004)", () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  it("uses Orca's ListFilter glyph and preserves the workspace board", () => {
+    renderHeader("repo");
+    const trigger = screen.getByRole("button", { name: "Workspace display options" });
+    expect(trigger).toHaveAttribute("data-workspace-board-preserve-open");
+    expect(trigger.querySelector(".lucide-list-filter")).not.toBeNull();
+    expect(trigger.querySelector(".lucide-sliders-horizontal")).toBeNull();
+  });
+
+  it("caps the badge at 9+ and labels the count", () => {
+    renderHeader("repo", { activeFilterCount: 12, hasActiveFilters: true });
+    const trigger = screen.getByRole("button", {
+      name: "Workspace display options (12 active)",
+    });
+    expect(trigger.textContent).toContain("9+");
+  });
+
+  it("reads a host-scope-only filter as filtered without inventing a count", () => {
+    renderHeader("repo", { activeFilterCount: 0, hasActiveFilters: true });
+    const trigger = screen.getByRole("button", {
+      name: "Workspace display options (filtered)",
+    });
+    expect(trigger.textContent).toBe("");
   });
 });

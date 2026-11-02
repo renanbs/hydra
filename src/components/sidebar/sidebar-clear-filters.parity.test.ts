@@ -2,7 +2,12 @@
 // undo. Hydra had the pure plan ported but no caller, so the button always reset every
 // option (and the host scope) even when only one filter narrowed the list.
 import { describe, expect, it } from "vitest";
-import { planSidebarClearFilters } from "./sidebar-filter-actions";
+import {
+  planSidebarClearFilters,
+  shouldShowOtherClientFilter,
+  sidebarHasActiveFilters,
+  toSidebarFilterState,
+} from "./sidebar-filter-actions";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 
 const OPTIONS: WorkspaceDisplayOptions = {
@@ -52,5 +57,102 @@ describe("planSidebarClearFilters", () => {
         workspaceHostScope: "ssh:srv",
       }).resetHostScope
     ).toBe(true);
+  });
+});
+
+// D09-017 / D09-019: the other-client gate and the ONE filter-state projection.
+describe("shouldShowOtherClientFilter (Orca SidebarWorkspaceFilterSection)", () => {
+  it("stays visible until the runtime-environment catalog hydrates", () => {
+    expect(
+      shouldShowOtherClientFilter({
+        runtimeEnvironmentCatalogHydrated: false,
+        runtimeEnvironmentCount: 0,
+        hideWorkspacesFromOtherDevices: false,
+      })
+    ).toBe(true);
+  });
+
+  it("hides itself once hydration proves no other client exists", () => {
+    expect(
+      shouldShowOtherClientFilter({
+        runtimeEnvironmentCatalogHydrated: true,
+        runtimeEnvironmentCount: 0,
+        hideWorkspacesFromOtherDevices: false,
+      })
+    ).toBe(false);
+  });
+
+  it("stays visible with paired environments or while its sweep is applied", () => {
+    expect(
+      shouldShowOtherClientFilter({
+        runtimeEnvironmentCatalogHydrated: true,
+        runtimeEnvironmentCount: 2,
+        hideWorkspacesFromOtherDevices: false,
+      })
+    ).toBe(true);
+    expect(
+      shouldShowOtherClientFilter({
+        runtimeEnvironmentCatalogHydrated: true,
+        runtimeEnvironmentCount: 0,
+        hideWorkspacesFromOtherDevices: true,
+      })
+    ).toBe(true);
+  });
+});
+
+describe("toSidebarFilterState", () => {
+  it("projects every narrowing option, including the ones the old readers dropped", () => {
+    const state = toSidebarFilterState(
+      {
+        ...OPTIONS,
+        hideSleeping: true,
+        hideWorkspacesFromOtherDevices: true,
+        alwaysShowDefaultBranch: false,
+        filterProjectIds: ["repo_a"],
+      },
+      { visibleWorkspaceHostIds: ["ssh:srv"], workspaceHostScope: "ssh:srv" }
+    );
+    expect(state).toEqual({
+      showSleepingWorkspaces: false,
+      filterRepoIds: ["repo_a"],
+      hideDefaultBranchWorkspace: false,
+      hideAutomationGeneratedWorkspaces: false,
+      hideCliCreatedWorkspaces: false,
+      hideDetachedHeadWorkspaces: false,
+      hideWorkspacesFromOtherDevices: true,
+      alwaysShowDefaultBranchWorkspace: false,
+      visibleWorkspaceHostIds: ["ssh:srv"],
+      workspaceHostScope: "ssh:srv",
+    });
+    expect(sidebarHasActiveFilters(state)).toBe(true);
+  });
+
+  it("counts a host-scope-only narrowing as active and none of the defaults", () => {
+    const idle = toSidebarFilterState(OPTIONS, ALL_HOSTS);
+    expect(sidebarHasActiveFilters(idle)).toBe(false);
+    expect(
+      sidebarHasActiveFilters({
+        ...idle,
+        visibleWorkspaceHostIds: ["local"],
+      })
+    ).toBe(true);
+    expect(
+      sidebarHasActiveFilters({ ...idle, workspaceHostScope: "ssh:srv" })
+    ).toBe(true);
+  });
+
+  it("treats the default-branch exemption being off as a filter", () => {
+    const idle = toSidebarFilterState(OPTIONS, ALL_HOSTS);
+    expect(sidebarHasActiveFilters({ ...idle, alwaysShowDefaultBranchWorkspace: false })).toBe(
+      true
+    );
+  });
+
+  it("makes Clear Filters reset the other-client sweep too", () => {
+    const plan = planSidebarClearFilters(
+      { ...OPTIONS, hideWorkspacesFromOtherDevices: true },
+      ALL_HOSTS
+    );
+    expect(plan.displayOptions.hideWorkspacesFromOtherDevices).toBe(false);
   });
 });

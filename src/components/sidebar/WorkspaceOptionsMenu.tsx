@@ -6,9 +6,7 @@ import {
   CalendarClock, 
   SquareTerminal, 
   GitCommitHorizontal,
-  Search,
-  Server,
-  X
+  MonitorSmartphone,
 } from "lucide-react";
 import { useAppStore } from "@/store";
 import { ALL_EXECUTION_HOSTS_SCOPE, type ExecutionHostId } from "../../shared/execution-host";
@@ -21,11 +19,12 @@ import {
   type SidebarHostOption,
   type SidebarHostScopeOption,
 } from "./sidebar-host-options";
+import { planSidebarClearFilters, shouldShowOtherClientFilter } from "./sidebar-filter-actions";
 import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
 import { FilterToggleRow } from "./FilterToggleRow";
 import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
-import { searchProjects } from "./project-filter-search";
+import { SidebarRepositoryFilterSection } from "./SidebarRepositoryFilterSection";
 
 export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
 
@@ -74,6 +73,14 @@ export function toggleWorkspaceHostVisibility(args: {
   };
 }
 
+/** Orca `GROUP_BY_OPTIONS` (sidebar-workspace-option-items.ts): ids are persisted. */
+const GROUP_BY_OPTIONS = [
+  { id: "none", label: "None" },
+  { id: "workspace-status", label: "Status" },
+  { id: "pr-status", label: "PR" },
+  { id: "repo", label: "Project" },
+] as const satisfies readonly { id: GroupByMode; label: string }[];
+
 /** The menu's five modes; ids stay compatible with the persisted prefs. */
 const SORT_BY_OPTIONS = [
   { id: "agent-activity", label: "Agent Activity" },
@@ -119,6 +126,11 @@ interface WorkspaceOptionsMenuProps {
   onOptionsChange: (newOptions: WorkspaceDisplayOptions) => void;
   /** Opens the Add project dialog from the menu footer (Orca SidebarFilter footer). */
   onAddProject?: () => void;
+  /**
+   * Orca `clearFilters`: the ONE writer that resets every narrowing filter
+   * (`computeClearFilterActions` + host scope), owned by the sidebar shell.
+   */
+  onClearFilters?: () => void;
 }
 
 export function WorkspaceOptionsMenu({
@@ -129,13 +141,11 @@ export function WorkspaceOptionsMenu({
   onClose,
   onOptionsChange,
   onAddProject,
+  onClearFilters,
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | "hosts" | null>(null);
-  const [projectSearch, setProjectSearch] = useState("");
-  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const sleepingShortcut = useOptionalShortcutLabel("sidebar.sleepingWorkspaces.toggle");
 
   // ─── Host scope (Orca SidebarHostScopeMenuSection) ────────────────────────
@@ -143,8 +153,12 @@ export function WorkspaceOptionsMenu({
   const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
   const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
   const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
+  const storeRuntimeEnvironmentCatalogHydrated = useAppStore(
+    (s) => s.runtimeEnvironmentCatalogHydrated
+  );
   const storeSettings = useAppStore((s) => s.settings);
   const visibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
 
@@ -169,10 +183,7 @@ export function WorkspaceOptionsMenu({
   );
   const hostScopeOptions = useMemo(() => buildSidebarHostScopeOptions(hostOptions), [hostOptions]);
   useEffect(() => {
-    if (!isOpen) {
-      setOpenSubmenu(null);
-      setProjectSearch("");
-    }
+    if (!isOpen) setOpenSubmenu(null);
   }, [isOpen]);
 
   useEffect(() => {
@@ -226,35 +237,6 @@ export function WorkspaceOptionsMenu({
 
   if (!isOpen) return null;
 
-  // Orca SidebarRepositoryFilterSection.getProjectFilterVisibilityLabel: o label do
-  // submenu "Show → Projects" reflete o filtro ativo — "All projects" sem sufixo,
-  // o nome do projeto quando só um está selecionado, ou "N projects". Derivado de
-  // `projects` para ids obsoletos (projeto removido) não inflarem a contagem.
-  const selectedFilterProjects = options.filterProjectIds?.length
-    ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
-    : [];
-  const filteredProjects = useMemo(
-    () => searchProjects(projects, projectSearch),
-    [projects, projectSearch]
-  );
-
-  const toggleProjectFilter = (projectId: string) => {
-    const current = options.filterProjectIds || [];
-    const next = current.length === 0
-      ? [projectId]
-      : current.includes(projectId)
-        ? current.filter((id) => id !== projectId)
-        : [...current, projectId];
-    onOptionsChange({ ...options, filterProjectIds: next });
-  };
-
-  const projectFilterLabel =
-    selectedFilterProjects.length === 0
-      ? "All projects"
-      : selectedFilterProjects.length === 1
-        ? selectedFilterProjects[0].name
-        : `${selectedFilterProjects.length} projects`;
-
   // ─── Host scope handlers (Orca SidebarHostScopeMenuSection) ───────────────
   const showHostScopeControls = shouldShowHostScopeControls(hostOptions);
   const allHostsVisible = visibleWorkspaceHostIds == null;
@@ -287,6 +269,41 @@ export function WorkspaceOptionsMenu({
     if (result.changed) setVisibleWorkspaceHostIds(result.visibleWorkspaceHostIds);
   };
 
+  // Orca `showOtherClientFilter`: hidden only once the runtime-environment catalog
+  // is hydrated AND knows no other client — never while a sweep is still applied.
+  const showOtherClientFilter = shouldShowOtherClientFilter({
+    runtimeEnvironmentCatalogHydrated: storeRuntimeEnvironmentCatalogHydrated === true,
+    runtimeEnvironmentCount: Array.isArray(storeRuntimeEnvironments)
+      ? storeRuntimeEnvironments.length
+      : 0,
+    hideWorkspacesFromOtherDevices: options.hideWorkspacesFromOtherDevices === true,
+  });
+  // Orca's badge/footer gate reads the same state Clear Filters resets; host scope
+  // is part of this menu, so it counts as an active filter here too.
+  const hasAnyFilter =
+    countActiveWorkspaceFilters(options) > 0 || visibleWorkspaceHostIds != null;
+
+  /**
+   * Orca `clearFilters`. The shell owns the writer when it supplies one; the
+   * fallback runs the SAME pure plan, so no surface can invent a different reset.
+   */
+  const handleResetFilters = () => {
+    if (onClearFilters) {
+      onClearFilters();
+      return;
+    }
+    const plan = planSidebarClearFilters(options, {
+      visibleWorkspaceHostIds: visibleWorkspaceHostIds ?? null,
+      workspaceHostScope: storeWorkspaceHostScope,
+    });
+    if (!plan.changed) return;
+    if (plan.displayOptions !== options) onOptionsChange(plan.displayOptions);
+    if (plan.resetHostScope) {
+      setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+      setVisibleWorkspaceHostIds(null);
+    }
+  };
+
   return (
     <div
       ref={menuRef}
@@ -304,191 +321,16 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Show
         </div>
-        {projects.length > 1 ? (
-        <div className="relative">
-          <div
-            onClick={() => {
-              const next = openSubmenu === "show" ? null : "show";
-              // Orca resets the query when the panel is reopened.
-              if (next === "show") setProjectSearch("");
-              setOpenSubmenu(next);
-            }}
-            className={`flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors ${openSubmenu === "show" ? "bg-accent" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <span>Projects</span>
-            </div>
-            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-              <span>{projectFilterLabel}</span>
-              <ChevronRight className="w-3 h-3 text-muted-foreground" />
-            </span>
-          </div>
-          {openSubmenu === "show" && (
-            <div className="absolute left-full top-0 ml-1 w-64 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-80 overflow-hidden flex flex-col">
-              <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
-                  Projects
-                  {selectedFilterProjects.length > 0 && (
-                    <span className="ml-1.5 font-medium text-foreground normal-case">· {selectedFilterProjects.length}</span>
-                  )}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    disabled={(options.filterProjectIds?.length ?? 0) === projects.length}
-                    onClick={() =>
-                      onOptionsChange({
-                        ...options,
-                        filterProjectIds: projects.map((project) => project.id),
-                      })
-                    }
-                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!options.filterProjectIds?.length}
-                    onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
-                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-              {options.filterProjectIds?.length ? (
-                <div className="flex max-h-16 flex-wrap gap-1 overflow-y-auto px-2 py-1">
-                  {options.filterProjectIds.map((id) => {
-                    const proj = projects.find((p) => p.id === id);
-                    if (!proj) return null;
-                    return (
-                      <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent border border-border text-[10px] text-foreground">
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: proj.color || "var(--color-emerald-500)" }}
-                        />
-                        <span className="max-w-[8rem] truncate">{proj.name}</span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${proj.displayName || proj.name} filter`}
-                          onClick={() => {
-                            const next = (options.filterProjectIds || []).filter((pid) => pid !== id);
-                            onOptionsChange({ ...options, filterProjectIds: next });
-                          }}
-                          className="ml-1 hover:text-foreground cursor-pointer"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              ) : null}
-              <div className="px-1 py-1">
-                <div className="relative">
-                  <input
-                    ref={projectSearchInputRef}
-                    autoFocus
-                    type="text"
-                    value={projectSearch}
-                    onChange={(e) => {
-                      setProjectSearch(e.target.value);
-                      setActiveProjectIndex(0);
-                    }}
-                    onKeyDown={(e) => {
-                      // Orca SidebarFilter pattern: Escape clears a non-empty query
-                      // first (keeps the menu open); an empty query lets the menu's
-                      // own window-level Escape close run.
-                      if (e.key === "Escape" && projectSearch) {
-                        e.stopPropagation();
-                        setProjectSearch("");
-                        return;
-                      }
-                      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                        e.preventDefault();
-                        if (filteredProjects.length === 0) return;
-                        const delta = e.key === "ArrowDown" ? 1 : -1;
-                        setActiveProjectIndex(
-                          (previous) =>
-                            (previous + delta + filteredProjects.length) % filteredProjects.length
-                        );
-                        return;
-                      }
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const project = filteredProjects[activeProjectIndex];
-                        if (project) toggleProjectFilter(project.id);
-                        return;
-                      }
-                      if (e.key === "Backspace" && !projectSearch) {
-                        const selected = options.filterProjectIds ?? [];
-                        const last = selected[selected.length - 1];
-                        if (last) {
-                          e.preventDefault();
-                          onOptionsChange({
-                            ...options,
-                            filterProjectIds: selected.slice(0, -1),
-                          });
-                        }
-                        return;
-                      }
-                      if (e.key === "ArrowLeft" && e.currentTarget.selectionStart === 0) {
-                        e.preventDefault();
-                        setOpenSubmenu(null);
-                        return;
-                      }
-                      // Arrows stay local; every other key must not reach the menu typeahead.
-                      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
-                        e.stopPropagation();
-                      }
-                    }}
-                    placeholder="Add project..."
-                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-6 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <span className="absolute left-2 top-1.5 text-muted-foreground pointer-events-none">
-                    <Search className="w-3 h-3" />
-                  </span>
-                  {projectSearch ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setProjectSearch("");
-                        projectSearchInputRef.current?.focus();
-                      }}
-                      aria-label="Clear project search"
-                      title="Clear project search"
-                      className="absolute right-1.5 top-1 inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
-                {filteredProjects.map((proj, index) => {
-                    const isExplicitlySelected = options.filterProjectIds?.includes(proj.id);
-                    const showAsSelected = options.filterProjectIds?.length ? isExplicitlySelected : true;
-                    const isActive = index === activeProjectIndex;
-                    return (
-                      <button
-                        key={proj.id}
-                        data-active-project={isActive || undefined}
-                        onClick={() => toggleProjectFilter(proj.id)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${showAsSelected ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"} ${isActive ? "ring-1 ring-ring/50" : ""}`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${showAsSelected ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
-                        <span className="truncate">{proj.name}</span>
-                        {showAsSelected && options.filterProjectIds?.length ? <span className="ml-auto text-[10px] text-muted-foreground">✓</span> : null}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-        </div>
-        ) : null}
+        <SidebarRepositoryFilterSection
+          projects={projects}
+          filterRepoIds={options.filterProjectIds ?? []}
+          setFilterRepoIds={(filterProjectIds) =>
+            onOptionsChange({ ...options, filterProjectIds })
+          }
+          open={openSubmenu === "show"}
+          onOpenChange={(open) => setOpenSubmenu(open ? "show" : null)}
+          preserveWorkspaceBoardOpen
+        />
 
         {/* Hosts — Orca SidebarHostScopeMenuSection: single row, multi-select panel */}
         {showHostScopeControls && (
@@ -565,19 +407,31 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
-          {[
-            { id: "none", label: "None" },
-            { id: "workspace-status", label: "Status" },
-            { id: "pr-status", label: "PR" },
-            { id: "repo", label: "Project" },
-          ].map((item) => {
+        <div
+          role="group"
+          aria-label="Group by"
+          className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border"
+        >
+          {GROUP_BY_OPTIONS.map((item) => {
             const isSelected = options.groupBy === item.id;
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => onOptionsChange({ ...options, groupBy: item.id as GroupByMode })}
+                aria-pressed={isSelected}
+                data-group-by-option={item.id}
+                // Why pointer-down: inside a menu the roving-focus handling can
+                // swallow the click that a pointer started, so the intent is
+                // committed before focus moves (Orca SidebarGroupByToggle).
+                // Keyboard activation (detail 0) commits from the click instead.
+                onPointerDownCapture={() =>
+                  onOptionsChange({ ...options, groupBy: item.id })
+                }
+                onClick={(event) => {
+                  if (event.detail === 0) {
+                    onOptionsChange({ ...options, groupBy: item.id })
+                  }
+                }}
                 className={`py-1 text-[10px] font-medium rounded transition text-center cursor-pointer ${
                   isSelected
                     ? "bg-background text-foreground font-semibold shadow-xs"
@@ -746,42 +600,33 @@ export function WorkspaceOptionsMenu({
           checked={options.hideCliCreated}
           onChange={(hideCliCreated) => onOptionsChange({ ...options, hideCliCreated })}
         />
+        {showOtherClientFilter ? (
+          <FilterToggleRow
+            icon={<MonitorSmartphone className="w-3.5 h-3.5" />}
+            label="Hide other-client workspaces"
+            ariaLabel="Hide workspaces created from other Hydra clients on shared remote servers"
+            checked={options.hideWorkspacesFromOtherDevices ?? false}
+            onChange={(hideWorkspacesFromOtherDevices) =>
+              onOptionsChange({ ...options, hideWorkspacesFromOtherDevices })
+            }
+          />
+        ) : null}
         <FilterToggleRow
           icon={<GitCommitHorizontal className="w-3.5 h-3.5" />}
           label="Hide detached HEAD"
           checked={options.hideDetachedHead}
           onChange={(hideDetachedHead) => onOptionsChange({ ...options, hideDetachedHead })}
         />
-        <FilterToggleRow
-          icon={<Server className="w-3.5 h-3.5" />}
-          label="Hide other devices"
-          ariaLabel="Hide workspaces created on other devices"
-          checked={options.hideWorkspacesFromOtherDevices ?? false}
-          onChange={(hideWorkspacesFromOtherDevices) =>
-            onOptionsChange({ ...options, hideWorkspacesFromOtherDevices })
-          }
-        />
 
         <div className="flex items-center justify-between gap-2 px-2 pt-1">
-          {countActiveWorkspaceFilters(options) > 0 ? (
+          {hasAnyFilter ? (
           <button
             type="button"
-            onClick={() =>
-              onOptionsChange({
-                ...options,
-                hideSleeping: false,
-                hideDefaultBranch: false,
-                hideAutomationCreated: false,
-                hideCliCreated: false,
-                hideDetachedHead: false,
-                alwaysShowDefaultBranch: false,
-                hideWorkspacesFromOtherDevices: false,
-                filterProjectIds: [],
-              })
-            }
+            data-sidebar-reset-filters=""
+            onClick={handleResetFilters}
             className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
-            Clear filters
+            Reset filters
           </button>
           ) : <span />}
           {onAddProject ? (

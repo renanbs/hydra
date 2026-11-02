@@ -239,8 +239,26 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
   const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder, hideWorkspacesFromOtherDevices } = src;
-  if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
-  if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
+  if (
+    groupBy !== "none" &&
+    groupBy !== "workspace-status" &&
+    groupBy !== "pr-status" &&
+    groupBy !== "repo"
+  ) {
+    return undefined;
+  }
+  // Every mode the menu can write must survive the reload, or picking PR grouping /
+  // Project / Manual sort silently falls back to the default after a restart.
+  if (
+    sortBy !== "agent-activity" &&
+    sortBy !== "smart" &&
+    sortBy !== "name" &&
+    sortBy !== "recent" &&
+    sortBy !== "project" &&
+    sortBy !== "manual"
+  ) {
+    return undefined;
+  }
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||

@@ -28,6 +28,51 @@ export function sidebarHasActiveFilters(state: SidebarFilterState): boolean {
   )
 }
 
+/**
+ * Orca `SidebarWorkspaceFilterSection.showOtherClientFilter`: the row only makes
+ * sense once the runtime-environment catalog can answer "is another client paired
+ * to this server?" — before hydration it stays visible so a user who already
+ * swept other-client workspaces can always undo it.
+ */
+export function shouldShowOtherClientFilter(args: {
+  runtimeEnvironmentCatalogHydrated: boolean
+  runtimeEnvironmentCount: number
+  hideWorkspacesFromOtherDevices: boolean
+}): boolean {
+  return (
+    !args.runtimeEnvironmentCatalogHydrated ||
+    args.runtimeEnvironmentCount > 0 ||
+    args.hideWorkspacesFromOtherDevices
+  )
+}
+
+/**
+ * The ONE mapping from the painted `displayOptions` (+ host scope) onto Orca's
+ * `SidebarFilterState`. The badge, the empty-state gate and Clear Filters must
+ * read the same answer, so they share this projection instead of each listing
+ * the flags it happens to remember.
+ */
+export function toSidebarFilterState(
+  displayOptions: WorkspaceDisplayOptions,
+  hostState: {
+    visibleWorkspaceHostIds: readonly ExecutionHostId[] | null
+    workspaceHostScope: ExecutionHostScope
+  }
+): SidebarFilterState {
+  return {
+    showSleepingWorkspaces: !displayOptions.hideSleeping,
+    filterRepoIds: displayOptions.filterProjectIds ?? [],
+    hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
+    hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+    hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+    hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
+    hideWorkspacesFromOtherDevices: displayOptions.hideWorkspacesFromOtherDevices === true,
+    alwaysShowDefaultBranchWorkspace: displayOptions.alwaysShowDefaultBranch,
+    visibleWorkspaceHostIds: hostState.visibleWorkspaceHostIds,
+    workspaceHostScope: hostState.workspaceHostScope,
+  }
+}
+
 /** Describes which mutators the Clear Filters button must invoke, separated
  *  from the mutators themselves so the decision logic is testable. */
 export type ClearFilterActions = {
@@ -98,18 +143,7 @@ export function planSidebarClearFilters(
     workspaceHostScope: ExecutionHostScope
   }
 ): SidebarClearPlan {
-  const actions = computeClearFilterActions({
-    showSleepingWorkspaces: !displayOptions.hideSleeping,
-    filterRepoIds: displayOptions.filterProjectIds ?? [],
-    hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
-    hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
-    hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
-    hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
-    hideWorkspacesFromOtherDevices: false,
-    alwaysShowDefaultBranchWorkspace: displayOptions.alwaysShowDefaultBranch,
-    visibleWorkspaceHostIds: hostState.visibleWorkspaceHostIds,
-    workspaceHostScope: hostState.workspaceHostScope,
-  })
+  const actions = computeClearFilterActions(toSidebarFilterState(displayOptions, hostState))
   const patches: Partial<WorkspaceDisplayOptions> = {}
   if (actions.resetShowSleepingWorkspaces) patches.hideSleeping = false
   if (actions.resetFilterRepoIds) patches.filterProjectIds = []
@@ -117,6 +151,7 @@ export function planSidebarClearFilters(
   if (actions.resetHideAutomationGeneratedWorkspaces) patches.hideAutomationCreated = false
   if (actions.resetHideCliCreatedWorkspaces) patches.hideCliCreated = false
   if (actions.resetHideDetachedHeadWorkspaces) patches.hideDetachedHead = false
+  if (actions.resetHideWorkspacesFromOtherDevices) patches.hideWorkspacesFromOtherDevices = false
   if (actions.resetAlwaysShowDefaultBranchWorkspace) patches.alwaysShowDefaultBranch = true
   const changed = Object.keys(patches).length > 0 || actions.resetVisibleWorkspaceHostIds
   return {

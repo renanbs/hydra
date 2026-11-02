@@ -24,6 +24,8 @@ export type WorktreeRowSource = {
   /** Scan-only provenance kind (`'created-by-cli'`), projected into
    *  `Worktree.cliProvenance`. */
   cliProvenanceKind?: string
+  /** Recipe-provisioned opener; the default-branch filter keeps it visible. */
+  ephemeralVmCheckoutMode?: "orca-worktree" | "provisioned-root"
   is_pinned?: boolean | null
   is_unread?: boolean | null
 }
@@ -87,6 +89,9 @@ export function toWorktreeRow(
       worktree.cliProvenanceKind === "created-by-cli"
         ? ({ kind: "created-by-cli" } as Worktree["cliProvenance"])
         : undefined,
+    ...(worktree.ephemeralVmCheckoutMode
+      ? { ephemeralVmCheckoutMode: worktree.ephemeralVmCheckoutMode }
+      : {}),
     ...(hostId ? { hostId } : {}),
   }
 }
