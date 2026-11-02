@@ -600,6 +600,29 @@
    ],
    "missing_behaviors": [],
    "note": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast."
+  },
+  {
+   "id": "D07-023",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/db.rs",
+    "src-tauri/src/lib.rs",
+    "src/hooks/useWorktreeLineage.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Lineage persists through the new worktree_lineage table + get/set commands; the anchored picker applies/removes parents for all selected workspaces, and the menu disables the action while deleting."
+  },
+  {
+   "id": "D07-028",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/ssh_hosts.rs",
+    "src-tauri/src/catalog.rs",
+    "src/components/sidebar/ForgetSshWorkspaceDialog.tsx",
+    "src/components/sidebar/ssh-reconnect-state.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation."
   }
  ]
 }

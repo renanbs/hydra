@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::LazyLock;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -274,6 +274,56 @@ pub struct PersistedSshState {
     pub deleted_ssh_config_aliases: Vec<String>,
     #[serde(default)]
     pub removed_ssh_target_tombstones: Vec<RemovedSshTargetTombstone>,
+    /// Last observed connection probe per target, written by
+    /// `ssh_reconnect_target`. The renderer keeps live connection state in
+    /// memory; this row is the durable diagnostic the settings surface can read
+    /// after a restart instead of claiming a connection that was never retried.
+    #[serde(default)]
+    pub ssh_connection_records: Vec<SshConnectionRecord>,
+    /// Workspaces the user explicitly forgot while their host was unreachable.
+    /// Persisted so a later reconnect does not silently resurrect the row.
+    #[serde(default)]
+    pub forgotten_ssh_workspaces: Vec<SshForgottenWorkspace>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshConnectionRecord {
+    pub connection_id: String,
+    /// `connected` | `auth-failed` | `host-key-verification` | `unreachable` | `error`
+    pub status: String,
+    pub latency_ms: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    pub updated_at: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshForgottenWorkspace {
+    pub connection_id: String,
+    pub worktree_path: String,
+    pub forgotten_at: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshReconnectResult {
+    pub connection_id: String,
+    pub status: String,
+    pub latency_ms: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshForgetWorkspaceResult {
+    pub connection_id: String,
+    pub worktree_path: String,
+    pub closed_sessions: usize,
+    pub purged_worktree_metadata: bool,
+    pub removed_catalog_workspaces: usize,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -341,6 +391,201 @@ pub fn reclaim_alias(deleted_aliases: &mut Vec<String>, alias: Option<&str>) {
         return;
     }
     deleted_aliases.retain(|stored| normalize_ssh_config_alias(stored) != norm);
+}
+
+pub fn ssh_now_millis() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0)
+}
+
+/// Catalog paths are compared with one separator and no trailing slash, so a
+/// forget issued from a renderer that still echoes `/repo/wt/` matches the
+/// persisted `/repo/wt` record.
+pub fn normalize_workspace_path(path: &str) -> String {
+    let mut normalized = path.trim().replace('\\', "/");
+    while normalized.ends_with('/') && normalized.len() > 1 {
+        normalized.pop();
+    }
+    normalized
+}
+
+/// Replaces the probe row for one target. Records are keyed by connection id,
+/// so a reconnect history never grows into duplicate rows.
+pub fn upsert_ssh_connection_record(
+    state: &mut PersistedSshState,
+    record: SshConnectionRecord,
+) {
+    state
+        .ssh_connection_records
+        .retain(|existing| existing.connection_id != record.connection_id);
+    state.ssh_connection_records.push(record);
+}
+
+/// Records a local-only forget. Idempotent: forgetting the same path twice
+/// refreshes the timestamp instead of appending a second row.
+pub fn upsert_forgotten_ssh_workspace(
+    state: &mut PersistedSshState,
+    connection_id: &str,
+    worktree_path: &str,
+    forgotten_at: i64,
+) {
+    let normalized_path = normalize_workspace_path(worktree_path);
+    state.forgotten_ssh_workspaces.retain(|existing| {
+        !(existing.connection_id == connection_id
+            && normalize_workspace_path(&existing.worktree_path) == normalized_path)
+    });
+    state.forgotten_ssh_workspaces.push(SshForgottenWorkspace {
+        connection_id: connection_id.to_string(),
+        worktree_path: normalized_path,
+        forgotten_at,
+    });
+}
+
+/// Maps OpenSSH's stderr onto the renderer's connection status vocabulary.
+/// Matching is substring-based because OpenSSH has no stable machine-readable
+/// error codes; the first matching class wins.
+pub fn classify_ssh_probe_error(stderr: &str) -> &'static str {
+    let lower = stderr.to_lowercase();
+    if lower.contains("permission denied")
+        || lower.contains("authentication failed")
+        || lower.contains("no more authentication methods")
+        || lower.contains("too many authentication failures")
+    {
+        "auth-failed"
+    } else if lower.contains("host key verification failed")
+        || lower.contains("remote host identification has changed")
+        || lower.contains("no matching host key type")
+    {
+        "host-key-verification"
+    } else if lower.contains("connection timed out")
+        || lower.contains("operation timed out")
+        || lower.contains("connection refused")
+        || lower.contains("network is unreachable")
+        || lower.contains("no route to host")
+        || lower.contains("could not resolve hostname")
+        || lower.contains("name or service not known")
+        || lower.contains("connection closed")
+    {
+        "unreachable"
+    } else {
+        "error"
+    }
+}
+
+/// Arguments for a non-interactive `ssh` reachability probe. `BatchMode`
+/// guarantees a missing credential fails fast instead of hanging on a prompt.
+/// The target's explicit host/port/identity are preferred over its config alias
+/// so a later edit of `~/.ssh/config` cannot redirect the probe to another host.
+pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
+    let mut args = vec![
+        "-T".to_string(),
+        "-o".to_string(),
+        "BatchMode=yes".to_string(),
+        "-o".to_string(),
+        "ConnectTimeout=8".to_string(),
+        "-o".to_string(),
+        "NumberOfPasswordPrompts=0".to_string(),
+        "-o".to_string(),
+        "LogLevel=ERROR".to_string(),
+    ];
+    if target.port != 0 && target.port != default_ssh_port() {
+        args.push("-p".to_string());
+        args.push(target.port.to_string());
+    }
+    if let Some(identity_file) = target.identity_file.as_deref().filter(|v| !v.trim().is_empty()) {
+        args.push("-i".to_string());
+        args.push(identity_file.to_string());
+    }
+    if let Some(identity_agent) = target.identity_agent.as_deref().filter(|v| !v.trim().is_empty()) {
+        args.push("-o".to_string());
+        args.push(format!("IdentityAgent={identity_agent}"));
+    }
+    if target.identities_only == Some(true) {
+        args.push("-o".to_string());
+        args.push("IdentitiesOnly=yes".to_string());
+    }
+    if let Some(proxy_command) = target.proxy_command.as_deref().filter(|v| !v.trim().is_empty()) {
+        args.push("-o".to_string());
+        args.push(format!("ProxyCommand={proxy_command}"));
+    }
+    if let Some(jump_host) = target.jump_host.as_deref().filter(|v| !v.trim().is_empty()) {
+        args.push("-J".to_string());
+        args.push(jump_host.to_string());
+    }
+    let username = target.username.trim();
+    let host = target.host.trim();
+    args.push(if username.is_empty() {
+        host.to_string()
+    } else {
+        format!("{username}@{host}")
+    });
+    args.push("true".to_string());
+    args
+}
+
+fn run_ssh_probe_command(args: &[String], timeout: Duration) -> Result<std::process::Output, String> {
+    let mut child = Command::new("ssh")
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("Failed to spawn ssh: {e}"))?;
+    let started = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => {
+                return child
+                    .wait_with_output()
+                    .map_err(|e| format!("Failed to read ssh output: {e}"))
+            }
+            Ok(None) if started.elapsed() >= timeout => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(format!(
+                    "ssh probe timed out after {}s",
+                    timeout.as_secs()
+                ));
+            }
+            Ok(None) => std::thread::sleep(Duration::from_millis(25)),
+            Err(error) => return Err(format!("Failed to wait for ssh: {error}")),
+        }
+    }
+}
+
+/// Runs the real probe and classifies the outcome. Splitting the command out
+/// keeps `classify_ssh_probe_error` and `build_ssh_probe_args` unit-testable
+/// without a reachable host.
+pub fn probe_ssh_target(target: &SshTarget) -> (String, u64, Option<String>) {
+    let args = build_ssh_probe_args(target);
+    let started = Instant::now();
+    match run_ssh_probe_command(&args, Duration::from_secs(15)) {
+        Ok(output) => {
+            let latency_ms = started.elapsed().as_millis() as u64;
+            if output.status.success() {
+                (("connected").to_string(), latency_ms, None)
+            } else {
+                let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+                let detail = if stderr.is_empty() {
+                    format!("ssh exited with status {}", output.status)
+                } else {
+                    stderr
+                };
+                (
+                    classify_ssh_probe_error(&detail).to_string(),
+                    latency_ms,
+                    Some(detail),
+                )
+            }
+        }
+        Err(error) => (
+            "unreachable".to_string(),
+            started.elapsed().as_millis() as u64,
+            Some(error),
+        ),
+    }
 }
 
 pub fn resolve_ssh_config_home_path(filepath: &str) -> String {
@@ -1534,6 +1779,140 @@ pub async fn ssh_resolve_config_host(
         .map_err(|e| e.to_string())?
 }
 
+/// Probes a configured target with the system OpenSSH client.
+///
+/// The renderer keeps `sshConnectionStates` in memory; persisting the probe row
+/// gives Settings a truthful last-attempt record after a restart. A missing
+/// target is an error (a ghost host cannot be reconnected) while a reachable
+/// host behind a bad key is a classified result, not an IPC rejection.
+#[tauri::command]
+pub async fn ssh_reconnect_target(
+    connection_id: String,
+    state: State<'_, AppState>,
+) -> Result<SshReconnectResult, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let target = {
+            let persisted = db.get_ssh_state()?;
+            persisted
+                .ssh_targets
+                .into_iter()
+                .find(|target| target.id == connection_id)
+        };
+        let Some(target) = target else {
+            return Err(format!("SSH target not found: {connection_id}"));
+        };
+
+        let (status, latency_ms, error) = probe_ssh_target(&target);
+
+        // Re-read after the network call: a long probe must not clobber target
+        // edits or removals that landed while it was in flight.
+        let mut persisted = db.get_ssh_state()?;
+        upsert_ssh_connection_record(
+            &mut persisted,
+            SshConnectionRecord {
+                connection_id: connection_id.clone(),
+                status: status.clone(),
+                latency_ms,
+                error: error.clone(),
+                updated_at: ssh_now_millis(),
+            },
+        );
+        db.save_ssh_state(&persisted)?;
+
+        Ok(SshReconnectResult {
+            connection_id,
+            status,
+            latency_ms,
+            error,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Local-only forget for a workspace whose SSH host is disconnected or gone.
+///
+/// It never touches the remote checkout: it closes whatever live PTYs and
+/// persisted sessions still point at the path, drops the sidebar metadata and
+/// the catalog's SSH workspace row, and records the forget so a future
+/// reconnect does not resurrect the workspace. Every step is idempotent.
+#[tauri::command]
+pub async fn ssh_forget_workspace(
+    connection_id: String,
+    worktree_path: String,
+    state: State<'_, AppState>,
+) -> Result<SshForgetWorkspaceResult, String> {
+    let terminal = state.terminal.clone();
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let connection_id = connection_id.trim().to_string();
+        if connection_id.is_empty() {
+            return Err("connection_id is required".to_string());
+        }
+        let worktree_path = normalize_workspace_path(&worktree_path);
+        if worktree_path.is_empty() {
+            return Err("worktree_path is required".to_string());
+        }
+
+        let mut doomed_sessions: HashSet<String> = db
+            .delete_sessions_for_project_path(&worktree_path)?
+            .into_iter()
+            .collect();
+        // Persisted rows miss a PTY whose session record was never written;
+        // the live manager still knows the cwd it spawned in.
+        for session_id in terminal.session_ids_for_cwd(&worktree_path) {
+            doomed_sessions.insert(session_id);
+        }
+        for session_id in &doomed_sessions {
+            if crate::daemon_client::daemon_available() {
+                let request = crate::daemon_client::DaemonRequest {
+                    op: "close".to_string(),
+                    session_id: Some(session_id.clone()),
+                    executable: None,
+                    args: None,
+                    cwd: None,
+                    input: None,
+                    rows: None,
+                    cols: None,
+                    offset: None,
+                };
+                let _ = crate::daemon_client::daemon_request(&request);
+            }
+            terminal.close_session(session_id);
+        }
+
+        let purged_worktree_metadata = db.delete_worktree_metadata(&worktree_path)?;
+
+        let mut removed_catalog_workspaces = 0;
+        let mut envelope = crate::catalog::read_catalog();
+        removed_catalog_workspaces +=
+            crate::catalog::remove_ssh_workspace_records(&mut envelope, &connection_id, &worktree_path);
+        if removed_catalog_workspaces > 0 {
+            crate::catalog::write_catalog(&envelope)?;
+        }
+
+        let mut persisted = db.get_ssh_state()?;
+        upsert_forgotten_ssh_workspace(
+            &mut persisted,
+            &connection_id,
+            &worktree_path,
+            ssh_now_millis(),
+        );
+        db.save_ssh_state(&persisted)?;
+
+        Ok(SshForgetWorkspaceResult {
+            connection_id,
+            worktree_path,
+            closed_sessions: doomed_sessions.len(),
+            purged_worktree_metadata,
+            removed_catalog_workspaces,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 // ─── UNIT TESTS ───────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -2090,5 +2469,150 @@ proxyusefdpass no
         assert!(absent.is_none());
 
         let _ = std::fs::remove_dir_all(temp_dir);
+    }
+
+    fn probe_target() -> SshTarget {
+        SshTarget {
+            id: "ssh-test".to_string(),
+            label: "test".to_string(),
+            owner: None,
+            config_host: Some("prod-alias".to_string()),
+            host: "prod.example.com".to_string(),
+            port: 2222,
+            username: "deploy".to_string(),
+            identity_file: Some("/home/renan/.ssh/id_prod".to_string()),
+            identity_agent: Some("/run/user/1000/ssh-agent".to_string()),
+            identities_only: Some(true),
+            gssapi_authentication: None,
+            proxy_command: Some("ssh -W %h:%p bastion".to_string()),
+            jump_host: Some("jump.example.com".to_string()),
+            source: Some("manual".to_string()),
+            relay_grace_period_seconds: None,
+            last_required_passphrase: None,
+            port_forwards: None,
+            system_ssh_connection_reuse: None,
+            generation: Some(1),
+        }
+    }
+
+    #[test]
+    fn classify_ssh_probe_error_covers_each_connection_class() {
+        assert_eq!(
+            classify_ssh_probe_error("deploy@host: Permission denied (publickey)."),
+            "auth-failed"
+        );
+        assert_eq!(
+            classify_ssh_probe_error("Too many authentication failures"),
+            "auth-failed"
+        );
+        assert_eq!(
+            classify_ssh_probe_error("Host key verification failed."),
+            "host-key-verification"
+        );
+        assert_eq!(
+            classify_ssh_probe_error("WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!"),
+            "host-key-verification"
+        );
+        assert_eq!(
+            classify_ssh_probe_error("ssh: connect to host prod port 22: Connection timed out"),
+            "unreachable"
+        );
+        assert_eq!(
+            classify_ssh_probe_error("ssh: Could not resolve hostname prod"),
+            "unreachable"
+        );
+        assert_eq!(classify_ssh_probe_error("some unexpected failure"), "error");
+        assert_eq!(classify_ssh_probe_error(""), "error");
+    }
+
+    #[test]
+    fn build_ssh_probe_args_is_non_interactive_and_uses_the_target_host() {
+        let target = probe_target();
+        let args = build_ssh_probe_args(&target);
+
+        assert!(args.windows(2).any(|pair| pair == ["-o", "BatchMode=yes"]));
+        assert!(args
+            .windows(2)
+            .any(|pair| pair == ["-o", "NumberOfPasswordPrompts=0"]));
+        assert!(args.windows(2).any(|pair| pair == ["-o", "ConnectTimeout=8"]));
+        assert!(args.windows(2).any(|pair| pair == ["-p", "2222"]));
+        assert!(args
+            .windows(2)
+            .any(|pair| pair == ["-i", "/home/renan/.ssh/id_prod"]));
+        assert!(args
+            .windows(2)
+            .any(|pair| pair == ["-J", "jump.example.com"]));
+        assert!(args.iter().any(|arg| arg == "IdentitiesOnly=yes"));
+        assert!(args.iter().any(|arg| arg == "ProxyCommand=ssh -W %h:%p bastion"));
+        assert_eq!(args[args.len() - 2], "deploy@prod.example.com");
+        assert_eq!(args[args.len() - 1], "true");
+        // The explicit host wins over the stale config alias.
+        assert!(!args.iter().any(|arg| arg == "prod-alias"));
+    }
+
+    #[test]
+    fn build_ssh_probe_args_omits_default_port_and_empty_identity() {
+        let mut target = probe_target();
+        target.port = 22;
+        target.username = String::new();
+        target.identity_file = None;
+        target.identity_agent = None;
+        target.identities_only = None;
+        target.proxy_command = None;
+        target.jump_host = None;
+
+        let args = build_ssh_probe_args(&target);
+        assert!(!args.iter().any(|arg| arg == "-p"));
+        assert!(!args.iter().any(|arg| arg == "-i"));
+        assert_eq!(args[args.len() - 2], "prod.example.com");
+    }
+
+    #[test]
+    fn connection_record_and_forget_are_upserted() {
+        let mut state = PersistedSshState::default();
+        state.ssh_connection_records.push(SshConnectionRecord {
+            connection_id: "ssh-1".to_string(),
+            status: "unreachable".to_string(),
+            latency_ms: 900,
+            error: Some("timeout".to_string()),
+            updated_at: 1,
+        });
+        upsert_ssh_connection_record(
+            &mut state,
+            SshConnectionRecord {
+                connection_id: "ssh-1".to_string(),
+                status: "connected".to_string(),
+                latency_ms: 42,
+                error: None,
+                updated_at: 2,
+            },
+        );
+        assert_eq!(state.ssh_connection_records.len(), 1);
+        assert_eq!(state.ssh_connection_records[0].status, "connected");
+        assert_eq!(state.ssh_connection_records[0].latency_ms, 42);
+
+        upsert_forgotten_ssh_workspace(&mut state, "ssh-1", "/srv/wt/", 10);
+        upsert_forgotten_ssh_workspace(&mut state, "ssh-1", "/srv/wt", 20);
+        assert_eq!(
+            state.forgotten_ssh_workspaces,
+            vec![SshForgottenWorkspace {
+                connection_id: "ssh-1".to_string(),
+                worktree_path: "/srv/wt".to_string(),
+                forgotten_at: 20,
+            }],
+            "same host + normalized path refreshes instead of duplicating"
+        );
+
+        // A different host keeps its own record for the same path.
+        upsert_forgotten_ssh_workspace(&mut state, "ssh-2", "/srv/wt", 30);
+        assert_eq!(state.forgotten_ssh_workspaces.len(), 2);
+    }
+
+    #[test]
+    fn normalize_workspace_path_matches_catalog_normalization() {
+        assert_eq!(normalize_workspace_path("/srv/wt/"), "/srv/wt");
+        assert_eq!(normalize_workspace_path(" /srv/wt "), "/srv/wt");
+        assert_eq!(normalize_workspace_path("/"), "/");
+        assert_eq!(normalize_workspace_path(""), "");
     }
 }

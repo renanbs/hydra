@@ -12314,20 +12314,16 @@
    "components/sidebar/worktree-context-menu-policy.ts:98"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3445",
-    "src/components/sidebar/ParentPickerModal.tsx:125"
+    "src-tauri/src/db.rs",
+    "src-tauri/src/lib.rs",
+    "src/hooks/useWorktreeLineage.ts"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Desabilitar a ação quando isDeleting: Hydra só considera eligibleParents.length === 0 (App.tsx:3449)",
-    "Picker flutuante ancorado no card: Hydra abre ParentPickerModal como modal central",
-    "Remoção da relação para todos os workspaces do contexto atual: Hydra apaga só a chave do worktree clicado (App.tsx:3485)",
-    "Persistência da linhagem em store/backend (Orca unnestWorktrees/updateWorktreeLineage): Hydra usa localStorage 'hydra:worktree_lineage' (App.tsx:434)"
-   ],
-   "notes": "Hierarquia/linhagem no menu parcial.",
-   "note": "Hierarquia/linhagem no menu parcial."
+   "missing_behaviors": [],
+   "notes": "Lineage persists through the new worktree_lineage table + get/set commands; the anchored picker applies/removes parents for all selected workspaces, and the menu disables the action while deleting.",
+   "note": "Lineage persists through the new worktree_lineage table + get/set commands; the anchored picker applies/removes parents for all selected workspaces, and the menu disables the action while deleting."
   },
   "par": [
    "PAR-43"
@@ -12439,24 +12435,19 @@
    "components/sidebar/delete-worktree-flow.ts:106"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:1756",
-    "src-tauri/src/lib.rs:476",
-    "src/components/DeleteWorktreeDialog.tsx:103"
+    "src-tauri/src/ssh_hosts.rs",
+    "src-tauri/src/catalog.rs",
+    "src/components/sidebar/ForgetSshWorkspaceDialog.tsx",
+    "src/components/sidebar/ssh-reconnect-state.ts"
    ],
    "backend": [
     "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476: sweep de PTYs/sessões do worktree e remove_git_worktree (worktree_ops.rs:1208) que roda `git worktree remove --force` (worktree_ops.rs:1321)"
    ],
-   "missing_behaviors": [
-    "Validação de expectedInstanceId e toast de lista desatualizada",
-    "Modal 'confirm-remove-folder' para checkout principal (Hydra desabilita o item e mostra painel textual; não oferece remover o projeto no mesmo fluxo)",
-    "Resolução SSH (resolveSshWorkspaceForget) e modal 'forget-ssh-workspace' para host ghost/desconectado",
-    "Linhagem de descendentes forçando allowSkipConfirm:false",
-    "Qualificação por host: o repoPath é descoberto por varredura local em projectsRef/worktreesByProject (App.tsx:1760-1771)"
-   ],
-   "notes": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado).",
-   "note": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado)."
+   "missing_behaviors": [],
+   "notes": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation.",
+   "note": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation."
   },
   "domain": "D07-menus-actions"
  },

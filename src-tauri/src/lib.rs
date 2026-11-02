@@ -944,6 +944,37 @@ async fn set_worktree_flags(
     state.db.set_worktree_flags(&worktree_path, is_pinned, is_unread)
 }
 
+/// D07-023: sidebar hierarchy lives in SQLite, not localStorage. Reads the
+/// whole `child -> parent` map once at startup.
+#[tauri::command]
+async fn get_worktree_lineage(
+    state: State<'_, AppState>,
+) -> Result<std::collections::HashMap<String, String>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_all_worktree_lineage())
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+/// Sets one parent edge, or clears it when `parent_path` is `None`. Scoped to a
+/// single child so a concurrent hierarchy edit cannot overwrite unrelated rows.
+#[tauri::command]
+async fn set_worktree_lineage(
+    child_path: String,
+    parent_path: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || match parent_path.as_deref() {
+        Some(parent) if !parent.trim().is_empty() => {
+            db.set_worktree_lineage(&child_path, parent)
+        }
+        _ => db.clear_worktree_lineage(&child_path).map(|_| ()),
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 async fn auto_rename_worktree(
     worktree_path: String,
@@ -1963,6 +1994,8 @@ pub fn run() {
             get_workspace_sleep_states,
             set_workspace_sleep_state,
             clear_workspace_sleep_state,
+            get_worktree_lineage,
+            set_worktree_lineage,
             auto_rename_worktree,
             scan_workspace_ports,
             kill_port_process,
@@ -2024,6 +2057,8 @@ pub fn run() {
             ssh_hosts::ssh_import_config,
             ssh_hosts::ssh_list_config_hosts,
             ssh_hosts::ssh_resolve_config_host,
+            ssh_hosts::ssh_reconnect_target,
+            ssh_hosts::ssh_forget_workspace,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

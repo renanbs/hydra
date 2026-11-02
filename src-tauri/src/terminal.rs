@@ -14,6 +14,9 @@ pub struct TerminalSession {
     pub master: Arc<Mutex<Box<dyn MasterPty + Send>>>,
     pub agent_id: String,
     pub output: Arc<Mutex<OutputBuffer>>,
+    /// Working directory the PTY was spawned in, when the caller supplied one.
+    /// Used by workspace forget to close sessions that have not been persisted.
+    pub cwd: Option<String>,
     /// Handle of the spawned process, kept so `close_session` can signal it and
     /// reap it. Without the wait, the process becomes a zombie when it exits.
     pub child: Box<dyn Child + Send + Sync>,
@@ -253,6 +256,7 @@ impl TerminalManager {
                 master,
                 agent_id: executable.to_string(),
                 output,
+                cwd: cwd.clone(),
                 child,
                 reader_thread: Some(reader_thread),
             },
@@ -352,6 +356,27 @@ impl TerminalManager {
         if let Some(thread) = reader_thread {
             let _ = thread.join();
         }
+    }
+
+    /// Ids of live PTYs spawned in `path` (exact match after trimming trailing
+    /// separators). The caller closes them after dropping this lock.
+    pub fn session_ids_for_cwd(&self, path: &str) -> Vec<String> {
+        let target = path.trim().trim_end_matches(['/', '\\']);
+        if target.is_empty() {
+            return Vec::new();
+        }
+        self.sessions
+            .lock()
+            .iter()
+            .filter(|(_, session)| {
+                session
+                    .cwd
+                    .as_deref()
+                    .map(|cwd| cwd.trim().trim_end_matches(['/', '\\']) == target)
+                    .unwrap_or(false)
+            })
+            .map(|(id, _)| id.clone())
+            .collect()
     }
 
     pub fn resize_session(&self, session_id: &str, rows: u16, cols: u16) -> Result<(), String> {
@@ -680,5 +705,38 @@ mod tests {
             seen.contains("CI=unset"),
             "inherited CI must not mark the PTY as non-interactive, saw: {seen:?}"
         );
+    }
+
+    #[test]
+    fn session_ids_for_cwd_matches_the_spawn_directory() {
+        let manager = TerminalManager::new(Arc::new(
+            crate::db::DatabaseManager::new_in_memory().expect("in-memory db")
+        ));
+        let temp_dir = std::env::temp_dir();
+        let temp_path = temp_dir.to_string_lossy().to_string();
+
+        manager
+            .start_session_headless(
+                "cwd-hit",
+                "/bin/sh",
+                vec!["-c".into(), "sleep 300".into()],
+                Some(format!("{temp_path}/")),
+            )
+            .unwrap();
+        manager
+            .start_session_headless(
+                "cwd-miss",
+                "/bin/sh",
+                vec!["-c".into(), "sleep 300".into()],
+                None,
+            )
+            .unwrap();
+
+        assert_eq!(manager.session_ids_for_cwd(&temp_path), vec!["cwd-hit".to_string()]);
+        assert!(manager.session_ids_for_cwd("/definitely/not/this/path").is_empty());
+        assert!(manager.session_ids_for_cwd("").is_empty());
+
+        manager.close_session("cwd-hit");
+        manager.close_session("cwd-miss");
     }
 }

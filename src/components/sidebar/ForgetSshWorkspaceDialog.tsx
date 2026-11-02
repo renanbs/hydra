@@ -1,10 +1,9 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/ForgetSshWorkspaceDialog.tsx
 // A disconnected or ghost SSH host cannot run the remote worktree removal. The
-// frontend contract is: explain the state, offer reconnect-and-delete (when the
-// host is still configured) and a local-only forget. Hydra has no per-worktree
-// forget IPC yet, so the forget action reports the missing command instead of
-// pretending the remote checkout was removed.
+// dialog offers reconnect-and-delete when the target still exists, and a
+// local-only forget backed by `ssh_forget_workspace` in both cases.
+import { useState } from 'react'
 import type { SshWorkspaceForgetResolution } from './ssh-workspace-forget-resolution'
 
 export interface ForgetSshWorkspaceDialogProps {
@@ -13,8 +12,8 @@ export interface ForgetSshWorkspaceDialogProps {
   resolution: Exclude<SshWorkspaceForgetResolution, { kind: 'not-ssh' } | { kind: 'connected' }>
   onOpenChange: (open: boolean) => void
   /** Reconnect the SSH target, then retry the delete. */
-  onReconnectAndDelete?: () => void
-  /** Forget the workspace locally; rejected while the IPC is missing. */
+  onReconnectAndDelete?: () => void | Promise<boolean>
+  /** Forget the workspace locally. Resolves false when the IPC rejected. */
   onForgetWorkspace?: () => Promise<boolean>
 }
 
@@ -24,9 +23,25 @@ export function ForgetSshWorkspaceDialog({
   resolution,
   onOpenChange,
   onReconnectAndDelete,
+  onForgetWorkspace,
 }: ForgetSshWorkspaceDialogProps): React.JSX.Element | null {
+  const [busy, setBusy] = useState(false)
   if (!open) return null
   const isGhost = resolution.kind === 'ghost'
+
+  const run = async (action?: () => void | Promise<boolean>): Promise<void> => {
+    if (!action || busy) return
+    setBusy(true)
+    try {
+      const applied = await action()
+      if (applied !== false) onOpenChange(false)
+    } catch {
+      // The action owner reports its own failure toast; never close on throw.
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/65 backdrop-blur-xs select-none"
@@ -57,20 +72,18 @@ export function ForgetSshWorkspaceDialog({
           {!isGhost && onReconnectAndDelete ? (
             <button
               type="button"
-              onClick={() => {
-                onReconnectAndDelete()
-                onOpenChange(false)
-              }}
-              className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs font-medium text-neutral-100 transition hover:bg-neutral-800"
+              disabled={busy}
+              onClick={() => void run(onReconnectAndDelete)}
+              className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs font-medium text-neutral-100 transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Reconnect & Delete
             </button>
           ) : null}
           <button
             type="button"
-            disabled
-            title="Hydra has no per-workspace forget command yet"
-            className="cursor-not-allowed rounded-lg bg-neutral-700 px-3.5 py-1.5 text-xs font-medium text-neutral-300 opacity-60"
+            disabled={busy || !onForgetWorkspace}
+            onClick={() => void run(onForgetWorkspace)}
+            className="rounded-lg bg-neutral-700 px-3.5 py-1.5 text-xs font-medium text-neutral-100 transition hover:bg-neutral-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Forget Workspace
           </button>

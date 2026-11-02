@@ -384,6 +384,30 @@ pub fn remove_folder_workspace_from_catalog(
     Ok(())
 }
 
+/// Drops the catalog row(s) that represent one SSH-hosted workspace.
+///
+/// Scoped to both the connection and the normalized path: a local folder that
+/// happens to share the path string, or another host's row, must survive a
+/// forget. Returns how many folder-workspace rows were removed so the IPC
+/// result can report a truthful count (zero on a repeat forget).
+pub fn remove_ssh_workspace_records(
+    envelope: &mut CatalogEnvelope,
+    connection_id: &str,
+    worktree_path: &str,
+) -> usize {
+    let connection_id = connection_id.trim();
+    let normalized_path = normalize_catalog_path(worktree_path);
+    if connection_id.is_empty() || normalized_path.is_empty() {
+        return 0;
+    }
+    let before = envelope.folder_workspaces.len();
+    envelope.folder_workspaces.retain(|workspace| {
+        !(workspace.connection_id.as_deref() == Some(connection_id)
+            && normalize_catalog_path(&workspace.folder_path) == normalized_path)
+    });
+    before - envelope.folder_workspaces.len()
+}
+
 pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Result<(), String> {
     use std::path::PathBuf as PB;
     let norm = normalize_catalog_path(path);
@@ -888,6 +912,43 @@ mod tests {
         assert_eq!(env.folder_workspaces.len(), 1);
         assert_eq!(env.folder_workspaces[0].id, "fw2");
         assert!(remove_folder_workspace_from_catalog("missing", &mut env).is_err());
+    }
+
+    #[test]
+    fn remove_ssh_workspace_records_matches_connection_and_normalized_path() {
+        let mut env = CatalogEnvelope::empty();
+        let workspace = |id: &str, path: &str, connection: Option<&str>| CatalogFolderWorkspace {
+            id: id.to_string(),
+            project_group_id: "g1".to_string(),
+            name: id.to_string(),
+            folder_path: path.to_string(),
+            connection_id: connection.map(str::to_string),
+            execution_host_id: None,
+            sort_order: 0,
+            created_at: 1,
+            updated_at: 1,
+        };
+        env.folder_workspaces.push(workspace("ssh-hit", "/srv/wt/", Some("ssh-1")));
+        env.folder_workspaces.push(workspace("ssh-other-host", "/srv/wt", Some("ssh-2")));
+        env.folder_workspaces.push(workspace("local-same-path", "/srv/wt", None));
+        env.folder_workspaces.push(workspace("ssh-other-path", "/srv/keep", Some("ssh-1")));
+
+        assert_eq!(
+            remove_ssh_workspace_records(&mut env, "ssh-1", "/srv/wt"),
+            1,
+            "only the exact connection + normalized path row is removed"
+        );
+        let remaining: Vec<&str> = env
+            .folder_workspaces
+            .iter()
+            .map(|workspace| workspace.id.as_str())
+            .collect();
+        assert_eq!(remaining, vec!["ssh-other-host", "local-same-path", "ssh-other-path"]);
+
+        // Repeat forget is a no-op, not an error.
+        assert_eq!(remove_ssh_workspace_records(&mut env, "ssh-1", "/srv/wt/"), 0);
+        // Blank scope never removes anything.
+        assert_eq!(remove_ssh_workspace_records(&mut env, "", "/srv/keep"), 0);
     }
 
     #[test]

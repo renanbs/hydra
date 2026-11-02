@@ -27,6 +27,14 @@ import {
 } from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import { useFolderWorkspacePathStatuses } from "./hooks/use-folder-workspace-path-statuses";
+import { useWorktreeLineage } from "./hooks/useWorktreeLineage";
+import { requestProjectsRefresh } from "./lib/refresh-projects-awaitable";
+import {
+  buildSshConnectingState,
+  buildSshReconnectConnectionState,
+  sshReconnectFailureMessage,
+} from "./components/sidebar/ssh-reconnect-state";
+import type { SshForgetWorkspaceResult, SshReconnectResult } from "./shared/ssh-types";
 import {
   createWorktreeFlagApplier,
   reconcileProjectFlagSet,
@@ -196,7 +204,6 @@ import {
   getEligibleWorktreeParents,
   type WorktreeParentPickerCandidate,
 } from "./components/sidebar/worktree-parent-eligibility";
-import { unnestWorktrees } from "./components/sidebar/worktree-unnest";
 import { 
   Copy,
   ClipboardPaste,
@@ -706,8 +713,6 @@ export default function App() {
   // Orca sleep eligibility reads browser activity from the store slice; Hydra's
   // terminals/sessions are App-owned and folded in by `buildHydraSleepActivityMaps`.
   const storeBrowserTabsByWorktree = useAppStore((s) => s.browserTabsByWorktree);
-  const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
-  const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
   // Orca parity (D01-052): the global shortcut path reads the keybinding registry
   // (definitions + user overrides) instead of hardcoded chords.
   const keybindings = useAppStore((s) => s.keybindings);
@@ -872,17 +877,13 @@ export default function App() {
       executionHostId?: string | null;
     }>
   >([]);
-  const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
-    try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
-  });
-  const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
-  // Why a throwing sibling: the picker/unnest writers report a failure toast, and swallowing
-  // the storage error would let a lineage write look applied when it was not persisted.
-  const persistWorktreeLineage = useCallback((next: Record<string, string>) => {
-    localStorage.setItem("hydra:worktree_lineage", JSON.stringify(next));
-  }, []);
-  const worktreeLineageRef = useRef(worktreeLineage);
-  worktreeLineageRef.current = worktreeLineage;
+  // D07-023: hydrated once from SQLite; legacy localStorage is migrated through
+  // the IPC on first boot and then retired.
+  const {
+    worktreeLineage,
+    setParents: persistWorktreeLineageParents,
+    clearParents: clearWorktreeLineageParents,
+  } = useWorktreeLineage();
   const [worktreeMetadataByPath, setWorktreeMetadataByPath] = useState<WorktreeMetadataByPath>({});
   const [worktreeMetaDialog, setWorktreeMetaDialog] = useState<{ wt: GitWorktreeInfo } | null>(null);
 
@@ -2293,31 +2294,17 @@ export default function App() {
           repoPathByWorktreePath.get(childPath) === parentRepoPath
       );
       if (nestable.length === 0) return;
-      setWorktreeLineage((previous) => {
-        const next = { ...previous };
-        for (const childPath of nestable) next[childPath] = parentWorktreePath;
-        persistLineage(next);
-        return next;
-      });
+      void persistWorktreeLineageParents(nestable, parentWorktreePath).catch(() => {});
     },
-    [worktreesByProject]
+    [persistWorktreeLineageParents, worktreesByProject]
   );
 
-  const handleUnnestWorktrees = useCallback((childWorktreePaths: readonly string[]) => {
-    setWorktreeLineage((previous) => {
-      const next = { ...previous };
-      let changed = false;
-      for (const childPath of childWorktreePaths) {
-        if (next[childPath] !== undefined) {
-          delete next[childPath];
-          changed = true;
-        }
-      }
-      if (!changed) return previous;
-      persistLineage(next);
-      return next;
-    });
-  }, []);
+  const handleUnnestWorktrees = useCallback(
+    (childWorktreePaths: readonly string[]) => {
+      void clearWorktreeLineageParents(childWorktreePaths).catch(() => {});
+    },
+    [clearWorktreeLineageParents]
+  );
 
   const handleRemoveProject = (proj: HydraProject) => {
     invoke("catalog_remove_repo", { path: proj.path })
@@ -2825,10 +2812,11 @@ export default function App() {
     // A disconnected/ghost SSH host cannot run the remote removal; surface the
     // reconnect/forget decision instead of a backend refusal.
     const sshRepo = useAppStore.getState().repos.find((repo) => repo.path === repoPath) ?? null;
+    const liveSshState = useAppStore.getState();
     const sshResolution = resolveSshWorkspaceForget({
       repo: sshRepo,
-      sshConnectionStates: storeSshConnectionStates,
-      sshTargetLabels: storeSshTargetLabels,
+      sshConnectionStates: liveSshState.sshConnectionStates,
+      sshTargetLabels: liveSshState.sshTargetLabels,
     });
     if (sshResolution.kind === 'ghost' || sshResolution.kind === 'disconnected') {
       setForgetSshTarget({
@@ -2861,6 +2849,86 @@ export default function App() {
       error: null,
     });
   };
+
+  /** D07-028: local-only forget for a disconnected/ghost SSH workspace. */
+  const handleForgetSshWorkspace = useCallback(async (): Promise<boolean> => {
+    const target = forgetSshTarget;
+    if (!target) return false;
+    try {
+      await invoke<SshForgetWorkspaceResult>("ssh_forget_workspace", {
+        connectionId: target.resolution.targetId,
+        worktreePath: target.worktreePath,
+      });
+      setForgetSshTarget(null);
+      toast.success("Workspace forgotten");
+      await requestProjectsRefresh();
+      return true;
+    } catch (error) {
+      toast.error("Could not forget the SSH workspace", {
+        description: String(error),
+      });
+      return false;
+    }
+  }, [forgetSshTarget]);
+
+  /** D07-028: probe the target, publish the connection state, then retry delete. */
+  const handleReconnectAndDeleteSshWorkspace = useCallback(async (): Promise<boolean> => {
+    const target = forgetSshTarget;
+    if (!target) return false;
+    const connectionId = target.resolution.targetId;
+    const store = useAppStore.getState();
+    store.setSshConnectionState(
+      connectionId,
+      buildSshConnectingState(connectionId, store.sshConnectionStates.get(connectionId))
+    );
+    try {
+      const result = await invoke<SshReconnectResult>("ssh_reconnect_target", {
+        connectionId,
+      });
+      const latest = useAppStore.getState();
+      latest.setSshConnectionState(
+        connectionId,
+        buildSshReconnectConnectionState(
+          result,
+          latest.sshConnectionStates.get(connectionId)
+        )
+      );
+      if (result.status !== "connected") {
+        toast.error("SSH reconnect failed", {
+          description: sshReconnectFailureMessage(result),
+        });
+        return false;
+      }
+      setForgetSshTarget(null);
+      toast.success("SSH host reconnected");
+      await requestProjectsRefresh();
+      const row = (worktreesByProject[target.repoPath] ?? []).find(
+        (worktree) => worktree.path === target.worktreePath
+      );
+      if (row) {
+        handleDeleteGitWorktree(row);
+      } else {
+        toast.info("Host reconnected. Delete the workspace again from the sidebar.");
+      }
+      return true;
+    } catch (error) {
+      const latest = useAppStore.getState();
+      const previous = latest.sshConnectionStates.get(connectionId);
+      latest.setSshConnectionState(connectionId, {
+        ...(previous ?? {
+          targetId: connectionId,
+          status: "disconnected" as const,
+          error: null,
+          reconnectAttempt: 0,
+        }),
+        targetId: connectionId,
+        status: "reconnection-failed",
+        error: String(error),
+      });
+      toast.error("SSH reconnect failed", { description: String(error) });
+      return false;
+    }
+  }, [forgetSshTarget, worktreesByProject]);
 
   /**
    * Orca `hovered-workspace-delete`: Option/Alt + Backspace/Delete deletes the
@@ -3406,34 +3474,24 @@ export default function App() {
     },
     [parentPickerCandidateByPath, parentPickerCandidates, worktreeLineage]
   );
-  /** Persist first, then publish: a failed write leaves the tree exactly as it was. */
+  /**
+   * Optimistic publish through the persistence hook: state updates immediately,
+   * the IPC write follows, and a rejection rolls the affected edges back with a
+   * toast. Callers may fire-and-forget; the hook owns the failure surface.
+   */
   const setWorktreeLineageParents = useCallback(
     async (keys: readonly string[], parentPath: string) => {
-      const next = { ...worktreeLineageRef.current };
-      for (const key of keys) next[key] = parentPath;
-      persistWorktreeLineage(next);
-      worktreeLineageRef.current = next;
-      setWorktreeLineage(next);
+      await persistWorktreeLineageParents(keys, parentPath).catch(() => {});
     },
-    [persistWorktreeLineage]
-  );
-  const clearWorktreeLineageParent = useCallback(
-    async (key: string) => {
-      const next = { ...worktreeLineageRef.current };
-      delete next[key];
-      persistWorktreeLineage(next);
-      worktreeLineageRef.current = next;
-      setWorktreeLineage(next);
-    },
-    [persistWorktreeLineage]
+    [persistWorktreeLineageParents]
   );
   const unnestWorktreePaths = useCallback(
     (keys: readonly string[]) => {
-      // Why the shared helper: every un-nest entry point reports one translated toast for a
-      // batch that rejected, instead of an unhandled rejection per key.
-      void unnestWorktrees(keys, clearWorktreeLineageParent);
+      // One optimistic state update + one persisted batch, so a rejected
+      // un-nest rolls back once and reports one toast.
+      void clearWorktreeLineageParents(keys).catch(() => {});
     },
-    [clearWorktreeLineageParent]
+    [clearWorktreeLineageParents]
   );
 
   /** Folder workspaces whose directory is gone: Orca badges those with FolderX
@@ -6079,6 +6137,8 @@ export default function App() {
         onOpenChange={(open) => {
           if (!open) setForgetSshTarget(null);
         }}
+        onReconnectAndDelete={handleReconnectAndDeleteSshWorkspace}
+        onForgetWorkspace={handleForgetSshWorkspace}
       />
 
       {/* Folder workspace removal: same confirmation surface, non-destructive copy. */}

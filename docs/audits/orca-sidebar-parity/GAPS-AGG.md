@@ -212,7 +212,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 174 capabilities
+## PARTIAL — 172 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -373,11 +373,6 @@
 ### D06-drag-order-keyboard (1)
 
 - **D06-019** — Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes | falta: buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos; buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop; shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros); Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem | components/sidebar/worktree-manual-order.ts:108-251
-
-### D07-menus-actions (2)
-
-- **D07-023** — Ações de hierarquia e linhagem no menu de contexto (abrir pai, selecionar pai e desaninhamento) | falta: Desabilitar a ação quando isDeleting: Hydra só considera eligibleParents.length === 0 (App.tsx:3449); Picker flutuante ancorado no card: Hydra abre ParentPickerModal como modal central; Remoção da relação para todos os workspaces do contexto atual: Hydra apaga só a chave do worktree clicado (App.tsx:3485); Persistência da linhagem em store/backend (Orca unnestWorktrees/updateWorktreeLineage): Hydra usa localStorage 'hydra:worktree_lineage' (App.tsx:434) | components/sidebar/use-worktree-context-menu-commands.ts:161
-- **D07-028** — Árvore de decisão para deleção de worktree individual com validação de instância, host e tratamento de checkout principal e SSH desconectado | falta: Validação de expectedInstanceId e toast de lista desatualizada; Modal 'confirm-remove-folder' para checkout principal (Hydra desabilita o item e mostra painel textual; não oferece remover o projeto no mesmo fluxo); Resolução SSH (resolveSshWorkspaceForget) e modal 'forget-ssh-workspace' para host ghost/desconectado; Linhagem de descendentes forçando allowSkipConfirm:false | backend: invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476: sweep de PTYs/sessões do worktree e remove_git_worktree (worktree_ops.rs:1208) que roda `git worktree remove --force` | components/sidebar/delete-worktree-flow.ts:35
 
 ### D08-kanban-board (13)
 
