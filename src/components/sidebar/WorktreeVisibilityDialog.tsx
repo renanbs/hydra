@@ -37,9 +37,10 @@ import {
   addCustomWorktreeVisibilitySource,
   buildWorktreeVisibilitySourceRows,
   countWorktreesByVisibilitySource,
-  effectiveBuiltInWorktreeSourceVisibility,
-  effectiveExternalWorktreeVisibility,
   getWorktreeVisibilitySourceProvenance,
+  getWorktreeVisibilityOverrideNotice,
+  getWorktreeVisibilitySourceNote,
+  listInheritedWorktreeVisibilitySources,
   normalizeCustomWorktreeVisibilitySources,
   normalizeWorktreeVisibilitySourcePreferences,
   removeBuiltInWorktreeSourcePreference,
@@ -48,6 +49,7 @@ import {
   resolveCustomWorktreeVisibilitySources,
   worktreeVisibilitySourceRowKey,
   worktreeVisibilitySourceRowVisibility,
+  worktreeVisibilityValueLabel,
   type CustomWorktreeVisibilitySource,
   type ExternalWorktreeVisibility,
   type WorktreeVisibilityDefaults,
@@ -384,6 +386,13 @@ export function WorktreeVisibilityDialog({
     [customSources]
   );
 
+  // The global values this project can override (Orca `listInheritedWorktreeVisibilitySources`):
+  // a root the project added itself is excluded — Global Settings has no value behind it.
+  const inheritedSources = useMemo(
+    () => listInheritedWorktreeVisibilitySources(config, visibilityDefaults),
+    [config, visibilityDefaults]
+  );
+
   // Until a scan lands, the sidebar's snapshot is the best list the dialog has.
   const recoveredWorktrees = scannedHidden ?? hiddenWorktrees;
 
@@ -705,6 +714,11 @@ export function WorktreeVisibilityDialog({
                 const matchingOverride =
                   provenance?.kind === "project-override" &&
                   provenance.globalVisibility === visibility;
+                const overrideNotice = getWorktreeVisibilityOverrideNotice(
+                  provenance,
+                  visibility
+                );
+                const sourceNote = getWorktreeVisibilitySourceNote(provenance);
                 return (
                   <div
                     key={worktreeVisibilitySourceRowKey(row)}
@@ -722,12 +736,11 @@ export function WorktreeVisibilityDialog({
                       <div className="truncate font-mono text-[10px] text-neutral-500">
                         {sourceRowPath(row)}
                       </div>
-                      {provenance?.kind === "project-override" &&
-                      provenance.globalVisibility !== visibility ? (
-                        <div className="text-[10px] text-amber-400/90">
-                          Overriding global setting:{" "}
-                          {provenance.globalVisibility === "show" ? "Show" : "Hide"}
-                        </div>
+                      {overrideNotice ? (
+                        <div className="text-[10px] text-amber-400/90">{overrideNotice}</div>
+                      ) : null}
+                      {sourceNote ? (
+                        <div className="text-[10px] text-neutral-500">{sourceNote}</div>
                       ) : null}
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
@@ -780,7 +793,7 @@ export function WorktreeVisibilityDialog({
                                 : "text-neutral-400 hover:text-neutral-200"
                             }`}
                           >
-                            {option === "show" ? "Show" : "Hide"}
+                            {worktreeVisibilityValueLabel(option)}
                           </button>
                         ))}
                       </div>
@@ -808,30 +821,22 @@ export function WorktreeVisibilityDialog({
               These sources have a global setting you can override here:
             </p>
             <ul className="space-y-1" aria-label="Global source visibility">
-              <li className="flex items-center justify-between text-[11px] text-neutral-400">
-                <span>Claude Code</span>
-                <span className="font-medium text-neutral-200">
-                  {effectiveBuiltInWorktreeSourceVisibility(null, "claude", visibilityDefaults) === "show"
-                    ? "Show"
-                    : "Hide"}
-                </span>
-              </li>
-              <li className="flex items-center justify-between text-[11px] text-neutral-400">
-                <span>GSD</span>
-                <span className="font-medium text-neutral-200">
-                  {effectiveBuiltInWorktreeSourceVisibility(null, "gsd", visibilityDefaults) === "show"
-                    ? "Show"
-                    : "Hide"}
-                </span>
-              </li>
-              <li className="flex items-center justify-between text-[11px] text-neutral-400">
-                <span>{OTHER_LOCATIONS_SOURCE_LABEL}</span>
-                <span className="font-medium text-neutral-200">
-                  {effectiveExternalWorktreeVisibility(null, visibilityDefaults) === "show"
-                    ? "Show"
-                    : "Hide"}
-                </span>
-              </li>
+              {inheritedSources.map(({ source, globalVisibility }) => (
+                <li
+                  key={worktreeVisibilitySourceRowKey(source)}
+                  className="flex items-center justify-between gap-2 text-[11px] text-neutral-400"
+                >
+                  <span className="truncate">{sourceRowLabel(source)}</span>
+                  <span className="shrink-0 font-medium text-neutral-200">
+                    {worktreeVisibilityValueLabel(globalVisibility)}
+                  </span>
+                </li>
+              ))}
+              {inheritedSources.length === 0 ? (
+                <li className="text-[11px] text-neutral-500">
+                  This project has no inherited sources.
+                </li>
+              ) : null}
             </ul>
             <button
               type="button"

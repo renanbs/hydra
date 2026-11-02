@@ -138,6 +138,7 @@ import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pendi
 import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
+import { buildWorktreeManualOrderCatalog } from "./worktree-manual-order-catalog";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
 import { buildLineageParentIdByChildId } from "./worktree-list/drag/nesting";
 import {
@@ -768,6 +769,7 @@ export function WorktreeList({
   activeWorktreePath,
   highlightedRevealPath,
   sessions,
+  worktreesByProject = {},
   hiddenWorktreesByProject,
   pinnedWorktrees,
   unreadWorktrees,
@@ -1054,6 +1056,36 @@ export function WorktreeList({
   // Host ownership per repo, shared by the row pipeline and the delete-state
   // resolution below: a card's delete state is keyed by host-qualified identity.
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos as Repo[]), [storeRepos]);
+
+  /**
+   * The durable Manual sequence a reorder interpolates against.
+   *
+   * Built from every scanned workspace (not the painted slice) plus the folder workspaces, so a
+   * drag in a filtered or collapsed list never erases the rank of a row it cannot see, and a
+   * folder workspace keeps its place beside the git rows. Hydra persists manual order as the
+   * project's array order rather than a per-row rank, so each row's position in that array is
+   * handed to the catalog as its `sortOrder`; multi-host clusters still collapse to one id.
+   */
+  const manualOrderCatalog = useMemo(() => {
+    const projectByPath = new Map(projects.map((project) => [project.path, project]));
+    const allWorktrees: Worktree[] = [];
+    for (const [projectPath, list] of Object.entries(worktreesByProject ?? {})) {
+      const project = projectByPath.get(projectPath);
+      if (!project) continue;
+      list.forEach((worktree, index) => {
+        const row = toWorktreeRow(worktree, {
+          repoId: project.id,
+          hostId: hostIdByRepoId.get(project.id),
+        });
+        // Descending like Orca's rank: the first painted row has the highest value.
+        allWorktrees.push({ ...row, sortOrder: list.length - index });
+      });
+    }
+    return buildWorktreeManualOrderCatalog({
+      worktrees: allWorktrees,
+      folderWorkspaces: [...pipelineFolderWorkspaces],
+    });
+  }, [hostIdByRepoId, pipelineFolderWorkspaces, projects, worktreesByProject]);
 
   const pendingCreationRefs = useMemo(() => {
     const pending = pendingWorktreeCreations ?? [];
@@ -1627,8 +1659,6 @@ export function WorktreeList({
     [dragWorktreeEntriesById]
   );
 
-  const dragWorktreeIds = useMemo(() => [...dragWorktreeById.keys()], [dragWorktreeById]);
-
   // ─── Multi-selection → the batch a press drags (D03a-002) ───────────────────
   //
   // The rows address their workspace by the same host-qualified identity the board's cards use
@@ -1710,7 +1740,10 @@ export function WorktreeList({
         draggedIds: dragArgs.draggedIds,
         dropIndex: dragArgs.dropIndex,
         now: Date.now(),
-        allWorktreeIds: dragWorktreeIds,
+        // Why the catalog: the written sequence is every known row, not just the painted
+        // slice — a filtered/collapsed workspace and a folder workspace keep their place.
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
       });
       if (!changed) return;
 
@@ -1737,8 +1770,8 @@ export function WorktreeList({
     },
     [
       dragWorktreeById,
-      dragWorktreeIds,
       getFilteredAndSortedWorktrees,
+      manualOrderCatalog,
       onReorderWorktreesInGroup,
     ]
   );

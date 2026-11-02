@@ -11050,19 +11050,14 @@
    "components/sidebar/workspace-status-drag-data.ts:13-25"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:450",
-    "src/components/sidebar/workspace-status-drag-data.ts:8-23"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Serializa o array completo de IDs em JSON no tipo 'application/x-orca-worktree-ids' para arrasto em lote (Kanban/sidebar)",
-    "Grava o ID unitário no tipo legado 'application/x-orca-worktree-id'",
-    "Grava o primeiro ID em 'text/plain' como fallback universal"
-   ],
-   "notes": "Empacotamento DataTransfer parcial (nativo), sem multi-seleção.",
-   "note": "Empacotamento DataTransfer parcial (nativo), sem multi-seleção."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "par": [
    "PAR-88"
@@ -11453,20 +11448,14 @@
    "components/sidebar/worktree-manual-order-catalog.ts:8-48"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:1922-1937",
-    "src/components/sidebar/WorktreeList.tsx:776"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "buildWorktreeManualOrderCatalog combinando worktrees git e folder workspaces (folderWorkspaceToWorktree), excluindo arquivados",
-    "Ordenação por manualOrder decrescente (ou sortOrder) com desempate por compareWorktreeSortLabel",
-    "Consistência em clusters multi-host de mesmo ID (rank durável só se todas as instâncias concordarem)",
-    "Retorno de orderedIds únicos e rankByWorktreeId validado"
-   ],
-   "notes": "Catálogo de ordem manual parcial para clusters multi-host.",
-   "note": "Catálogo de ordem manual parcial para clusters multi-host."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11552,22 +11541,14 @@
    "components/sidebar/worktree-parent-candidates.ts:13-76"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3163-3172",
-    "src/components/sidebar/ParentPickerModal.tsx:119-160"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "isEligibleWorktreeParent exigindo mesmo repositório (repoId)",
-    "Compatibilidade de host de execução (childHostId === candidateHostId) e mesmo projectId",
-    "Exclusão de worktrees arquivadas da elegibilidade",
-    "canAssignWorktreeParent rejeitando o pai atual válido da worktree",
-    "Detecção de ciclos transitivos percorrendo ancestrais via getLineageRenderInfo",
-    "Rejeição de candidatos em loops pré-existentes (cyclicLineageIds)"
-   ],
-   "notes": "Elegibilidade/anti-ciclo parciais.",
-   "note": "Elegibilidade/anti-ciclo parciais."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "par": [
    "PAR-43"
@@ -11583,19 +11564,14 @@
    "components/sidebar/WorktreeParentPickerPopover.tsx:210-230"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ParentPickerModal.tsx:67-77",
-    "src/components/sidebar/ParentPickerModal.tsx:33-40"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "estimateWorktreeParentPickerHeight (bordas 2px + header 28px + input 49px + lista até PICKER_LIST_MAX_HEIGHT=288px com PICKER_ROW_HEIGHT=56px)",
-    "clampWorktreeParentPickerAnchorTop limitando ao viewport com PICKER_VIEWPORT_PADDING (12px)",
-    "Âncora virtual (virtualAnchorRef/DOMRect medido) para posicionamento Radix correto sob transform CSS",
-    "Listeners de 'resize'/'scroll' da janela recalculando anchorRect e viewportHeight com o popover aberto"
-   ],
-   "notes": "O Hydra substituiu o popover ancorado por um modal centralizado 'fixed inset-0 ... items-center justify-center' (ParentPickerModal.tsx:70). Não existe estimativa de altura, clamp de âncora, âncora virtual nem listeners de resize/scroll (grep estimateWorktreeParentPickerHeight / clampWorktreeParentPickerAnchorTop / addEventListener('resize') no sidebar → 0). Buscas: nome (0), marcação (role=dialog ausente; div overlay), comportamento (modal sem geometria), backend (n/a)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11607,19 +11583,14 @@
    "components/sidebar/WorktreeParentPickerPopover.tsx:232-255"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ParentPickerModal.tsx:55-65",
-    "src/components/sidebar/ParentPickerModal.tsx:100-113"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Score/relevância via defaultFilter do cmdk com ordenação por score decrescente",
-    "Reset do índice destacado (highlightedIndex = 0) ao mudar o termo",
-    "Rolagem da lista virtual ao topo (virtualizer.scrollToOffset(0))",
-    "clampWorktreeParentPickerIndex mantendo o índice ativo dentro do array filtrado"
-   ],
-   "notes": "O modal filtra por substring case-insensitive sobre name/path/branch — equivalente parcial do getWorktreeParentPickerItemValue (ParentPickerModal.tsx:55-65) — sem pontuação fuzzy, sem ranking e sem índice destacado (a lista é renderizada diretamente, :119, e não há estado de highlight nem virtualização)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11631,21 +11602,14 @@
    "components/sidebar/WorktreeParentPickerPopover.tsx:280-345"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ParentPickerModal.tsx:33-52",
-    "src/components/sidebar/ParentPickerModal.tsx:100-107"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "ArrowDown/ArrowUp avançando/recuando o candidato ativo",
-    "Home/End indo ao primeiro/último candidato",
-    "Enter selecionando o candidato destacado",
-    "Ignorar eventos durante composição IME (isImeCompositionKeyDown)",
-    "Sincronização de aria-activedescendant com a opção destacada",
-    "Restauração de foco ao container focusável mais próximo via getWorktreeParentPickerFocusRestoreTarget"
-   ],
-   "notes": "O modal foca o input ao abrir (ParentPickerModal.tsx:34-40) e trata apenas Escape via listener global (window keydown, :44-52). Não há navegação por setas/Home/End/Enter, nem tratamento de IME, nem aria-activedescendant, nem restauração de foco (grep handleWorktreeParentPickerKeyDown / getWorktreeParentPickerFocusRestoreTarget → 0)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11657,18 +11621,14 @@
    "components/sidebar/WorktreeParentPickerPopover.tsx:187-208"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3258-3268",
-    "src/components/sidebar/ParentPickerModal.tsx:163-176"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Tratamento de rejeição da promise de atribuição com toast traduzido (WorktreeParentPickerPopover.failedSetParent)",
-    "Supressão do fechamento por clique externo nos primeiros 150ms (suppressInitialOutsideCloseRef/setTimeout)"
-   ],
-   "notes": "Ação de seleção de pai parcial.",
-   "note": "Ação de seleção de pai parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11680,20 +11640,14 @@
    "components/sidebar/WorktreeParentPickerPopover.tsx:265-272"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/ParentPickerModal.tsx:119-160"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Componente memoizado (React.memo) para listas com centenas de opções",
-    "Indicador visual de status de atividade (StatusIndicator + getWorktreeStatusLabel com texto para leitores de tela)",
-    "Badge do repositório com cor personalizada (RepoBadgeMark)",
-    "Ícone de servidor (Server) para conexão remota SSH (connectionId presente)",
-    "Ícone de branch git (GitBranch) junto do branchDisplayName",
-    "Status de atividade em lote via useWorktreeActivityStatuses"
-   ],
-   "notes": "A linha do modal é um <button> inline não memoizado que exibe nome, branch em fonte mono, path e o badge 'Current' (ParentPickerModal.tsx:119-160). Não há status indicator, repo badge colorido, ícone de SSH, ícone de branch nem subscription de atividade (grep RepoBadgeMark / useWorktreeActivityStatuses no picker → 0)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11704,19 +11658,14 @@
    "components/sidebar/worktree-unnest.ts:10-31"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3275",
-    "src/components/sidebar/ParentPickerModal.tsx:161-176"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "unnestWorktrees executando chamadas assíncronas paralelas updateWorktreeLineage(id, { noParent: true })",
-    "Captura de rejeição de promise com toast único traduzido (WorktreeList.failedUnnestWorkspace)",
-    "No-op para seleção vazia"
-   ],
-   "notes": "Unnest parcial (sem limpeza em lote completa).",
-   "note": "Unnest parcial (sem limpeza em lote completa)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "par": [
    "PAR-43"
@@ -11768,20 +11717,14 @@
    "components/sidebar/worktree-sidebar-reveal.ts:3-68"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/viewport/use-reveal-scroll.ts:29",
-    "src/components/sidebar/WorktreeSidebar.tsx:428"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "getScrollTopToRevealBounds calculando o scrollTop de enquadramento dos limites do elemento",
-    "Recuo superior WORKTREE_SIDEBAR_REVEAL_TOP_INSET (46px = 40px header + 6px clearance) para não cobrir o card com headers fixos",
-    "Conversão de 'smooth' em 'auto' sob matchMedia('(prefers-reduced-motion: reduce)')",
-    "Callback onScrollIssued(targetTop) para guardas de rolagem"
-   ],
-   "notes": "Reveal rola por índice mas align 'auto'; sem scroll suave/limites do Orca.",
-   "note": "Reveal rola por índice mas align 'auto'; sem scroll suave/limites do Orca."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11792,19 +11735,14 @@
    "components/sidebar/worktree-sidebar-reveal-scroll-settle.ts:1-35"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/hooks/virtualized-scroll-anchor-restore.ts:1-40"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "createPendingRevealScroll registrando targetTop e expiração REVEAL_SCROLL_SETTLE_TIMEOUT_MS (1000ms)",
-    "isRevealScrollSettling comparando scrollTop com targetTop dentro de SETTLED_TOLERANCE_PX (1px)",
-    "Bloqueio de rotinas concorrentes de restauração de scroll que sobrescrevam scrollTop durante a animação",
-    "Expiração automática para não travar a guarda com alvo inalcançável"
-   ],
-   "notes": "Sem guard de settling do scroll de reveal.",
-   "note": "Sem guard de settling do scroll de reveal."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },
@@ -11815,20 +11753,14 @@
    "components/sidebar/worktree-visibility-source-provenance.ts:1-125"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/lib/worktree-visibility-sources.ts:261-273",
-    "src/components/sidebar/WorktreeVisibilityDialog.tsx:379-395"
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "listInheritedWorktreeVisibilitySources listando as fontes herdadas do global com seus valores padrão",
-    "worktreeVisibilityValueLabel retornando os rótulos traduzidos 'Show'/'Hide'",
-    "getWorktreeVisibilityOverrideNotice exibindo o aviso 'Overriding global setting: Show/Hide' quando o projeto diverge do global",
-    "getWorktreeVisibilitySourceNote exibindo a nota 'Added in this project only.' para fontes exclusivas do projeto"
-   ],
-   "notes": "Proveniência/overlap de visibilidade parcial.",
-   "note": "Proveniência/overlap de visibilidade parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired against Orca's sidebar; see history://D06 final report.",
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   },
   "domain": "D06-drag-order-keyboard"
  },

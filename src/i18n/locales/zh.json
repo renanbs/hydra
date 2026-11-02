@@ -5230,7 +5230,10 @@
           "current": "当前",
           "searchPlaceholder": "搜索工作树...",
           "empty": "没有匹配的可用工作树。",
-          "setParentFor": "为以下工作树设置父级"
+          "setParentFor": "为以下工作树设置父级",
+          "searchLabel": "搜索工作区",
+          "listLabel": "可用作父级的工作树",
+          "removeParent": "移除父级链接"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "分支"

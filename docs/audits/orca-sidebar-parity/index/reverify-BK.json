@@ -276,6 +276,114 @@
    ],
    "missing_behaviors": [],
    "note": "Attention timestamps scan done/blocked/waiting history and feed the painted sort."
+  },
+  {
+   "id": "D06-001",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-024",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-025",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-026",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-027",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-028",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-029",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-030",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-033",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-034",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D06-035",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D06-drag-order-keyboard.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
   }
  ]
 }

@@ -3,22 +3,28 @@
 //
 // Reveal has to go through the virtualizer: the row a reveal names is usually outside the
 // mounted window, so the panel's `scrollIntoView` would find nothing in the DOM. Scrolling the
-// virtualizer to its index mounts the row first, and the panel's own scroll then settles it.
+// virtualizer to its index mounts the row first; the element reveal then frames it with the
+// sticky-header inset and animates it, instead of leaving the card flush under the header.
 import { useEffect, useRef } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
 import type { RenderRow } from '../listing/render-row'
+import { getRenderRowKey } from '../listing/render-row'
 import { findRevealRowIndex, rowKeyMatchesRenderRow } from '../listing/reveal-row-lookup'
+import { revealMountedSidebarRowElement } from '../navigation/mounted-row-reveal'
+import { markRevealScrollIssued } from '../../worktree-sidebar-reveal-scroll-settle'
 
 /** Orca `MAX_REVEAL_RETRIES`: a reveal may race the commit that expands a
  *  collapsed section, so the row only exists a frame or two later. */
 const MAX_REVEAL_RETRIES = 8
 
-function scrollToIndexSoon(
-  resolveIndex: () => number,
-  virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>,
-  markDirectScrollInput: () => void,
+function scrollToIndexSoon(args: {
+  resolveIndex: () => number
+  rows: readonly RenderRow[]
+  virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>
+  markDirectScrollInput: () => void
   onIssued?: () => void
-): () => void {
+}): () => void {
+  const { resolveIndex, rows, virtualizer, markDirectScrollInput, onIssued } = args
   let retries = 0
   let frame = 0
   const attempt = () => {
@@ -26,7 +32,21 @@ function scrollToIndexSoon(
     if (index >= 0) {
       markDirectScrollInput()
       virtualizer.scrollToIndex(index, { align: 'auto' })
-      onIssued?.()
+      const container = virtualizer.scrollElement
+      const row = rows[index]
+      const rowKey = row === undefined ? null : getRenderRowKey(row)
+      if (!container || !rowKey) {
+        onIssued?.()
+        return
+      }
+      // Why the follow-up frame: `scrollToIndex` schedules the row's mount in the next
+      // commit, so the element it names does not exist yet in this one.
+      frame = requestAnimationFrame(() => {
+        revealMountedSidebarRowElement(container, rowKey, 'smooth', (targetTop) => {
+          markRevealScrollIssued(container, targetTop)
+        })
+        onIssued?.()
+      })
       return
     }
     if (retries >= MAX_REVEAL_RETRIES) {
@@ -62,14 +82,15 @@ export function useWorktreeListRevealScroll(args: {
     if (lastRevealedPathRef.current === revealPath) {
       return
     }
-    const cancel = scrollToIndexSoon(
-      () => findRevealRowIndex(rows, revealPath),
+    const cancel = scrollToIndexSoon({
+      resolveIndex: () => findRevealRowIndex(rows, revealPath),
+      rows,
       virtualizer,
       markDirectScrollInput,
-      () => {
+      onIssued: () => {
         lastRevealedPathRef.current = revealPath
       }
-    )
+    })
     return cancel
   }, [markDirectScrollInput, revealPath, rows, virtualizer])
 
@@ -83,15 +104,16 @@ export function useWorktreeListRevealScroll(args: {
     if (lastRevealedRowKeyRef.current === revealRowKey) {
       return
     }
-    const cancel = scrollToIndexSoon(
-      () => rows.findIndex((row) => rowKeyMatchesRenderRow(row, revealRowKey)),
+    const cancel = scrollToIndexSoon({
+      resolveIndex: () => rows.findIndex((row) => rowKeyMatchesRenderRow(row, revealRowKey)),
+      rows,
       virtualizer,
       markDirectScrollInput,
-      () => {
+      onIssued: () => {
         lastRevealedRowKeyRef.current = revealRowKey
         onRevealIssued?.()
       }
-    )
+    })
     return cancel
   }, [markDirectScrollInput, onRevealIssued, revealRowKey, rows, virtualizer])
 }

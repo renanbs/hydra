@@ -5,10 +5,10 @@
 // scroll, TanStack must not write scrollTop from a mid-wheel measurement correction — that
 // reads as rubber-banding.
 //
-// Adapted to Hydra: Orca also tracks a "reveal scroll settling" window so an anchor restore
-// cannot cancel a smooth reveal. Hydra's reveal scrolls the virtualizer directly
-// (`use-reveal-scroll.ts`), so the port keeps the measurement and direct-input windows only.
+// Also owns the reveal settle window (D06-034): a smooth reveal the sidebar issued is cancelled
+// by any other scrollTop write, and the scroll-anchor restore writes exactly that.
 import { useCallback, useEffect, useRef } from 'react'
+import { isRevealScrollSettlingForContainer } from '../../worktree-sidebar-reveal-scroll-settle'
 
 /**
  * Fired by an expanding agent panel so the row may grow in place instead of the virtualizer
@@ -28,10 +28,13 @@ export function shouldAdjustWorktreeSidebarMeasuredRowScroll(args: {
   return !args.isScrolling && args.now >= args.suppressUntil
 }
 
-// Why no scroll element parameter (Orca's takes one): Orca also reads it to tell a settling
-// reveal scroll apart from a user gesture. Hydra's reveal scrolls the virtualizer directly, so
-// the hook only owns the two suppression windows and the expanding-card listener.
-export function useWorktreeSidebarScrollSuppression() {
+export function useWorktreeSidebarScrollSuppression(
+  args: {
+    /** The scroll container whose issued reveal scrolls must not be interrupted. */
+    scrollRef?: { current: Element | null }
+  } = {}
+) {
+  const { scrollRef } = args
   const suppressMeasurementAdjustmentUntilRef = useRef(0)
   const directScrollInputUntilRef = useRef(0)
 
@@ -50,10 +53,15 @@ export function useWorktreeSidebarScrollSuppression() {
   )
   // Why: programmatic scrolls keep measurement correction quiet, but only direct user input
   // blocks an anchor restore — a restore mid-gesture would fight the scroll the user owns.
-  const shouldSkipScrollAnchorRestore = useCallback(
-    () => window.performance.now() < directScrollInputUntilRef.current,
-    []
-  )
+  // A reveal the sidebar issued is treated the same way: it is our own animation, and the
+  // restore's scrollTop write would cancel it mid-flight.
+  const shouldSkipScrollAnchorRestore = useCallback(() => {
+    const container = scrollRef?.current ?? null
+    if (container && isRevealScrollSettlingForContainer(container, container.scrollTop)) {
+      return true
+    }
+    return window.performance.now() < directScrollInputUntilRef.current
+  }, [scrollRef])
 
   useEffect(() => {
     const handleSuppress = (): void => {

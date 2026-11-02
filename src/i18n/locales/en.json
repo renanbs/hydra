@@ -6133,7 +6133,10 @@
           "current": "Current",
           "searchPlaceholder": "Search worktrees...",
           "empty": "No matching eligible worktrees.",
-          "setParentFor": "Set parent for"
+          "setParentFor": "Set parent for",
+          "searchLabel": "Search workspaces",
+          "listLabel": "Eligible parent workspaces",
+          "removeParent": "Remove parent link"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "Branch"

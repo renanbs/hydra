@@ -135,7 +135,15 @@ import {
 import type { Repo } from "./shared/repo-types";
 import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
-import { ParentPickerModal, type ParentCandidate } from "./components/sidebar/ParentPickerModal";
+import { WorktreeParentPickerPopover } from "./components/sidebar/WorktreeParentPickerPopover";
+import { selectWorktreeParent } from "./components/sidebar/worktree-parent-picker-actions";
+import type { WorktreeParentPickerAnchorRect } from "./components/sidebar/worktree-parent-picker-placement";
+import { buildWorktreeParentPickerCandidates } from "./components/sidebar/worktree-parent-picker-candidates";
+import {
+  getEligibleWorktreeParents,
+  type WorktreeParentPickerCandidate,
+} from "./components/sidebar/worktree-parent-eligibility";
+import { unnestWorktrees } from "./components/sidebar/worktree-unnest";
 import { 
   Copy,
   ClipboardPaste,
@@ -700,12 +708,12 @@ export default function App() {
   );
   // Non-blocking prompt & picker dialogs (replaces window.prompt to prevent WebKitGTK / Wayland freezes)
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
-  const [parentPickerModal, setParentPickerModal] = useState<{
-    targetName: string;
-    currentParentPath?: string | null;
-    candidates: ParentCandidate[];
-    onSelect: (path: string) => void;
-    onRemoveParent?: () => void;
+  const [parentPickerState, setParentPickerState] = useState<{
+    child: WorktreeParentPickerCandidate;
+    anchorRect: WorktreeParentPickerAnchorRect;
+    focusRestoreElement: HTMLElement | null;
+    selectParent: (parentPath: string) => Promise<void>;
+    removeParent?: () => void;
   } | null>(null);
 
 
@@ -772,6 +780,13 @@ export default function App() {
     try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
   });
   const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
+  // Why a throwing sibling: the picker/unnest writers report a failure toast, and swallowing
+  // the storage error would let a lineage write look applied when it was not persisted.
+  const persistWorktreeLineage = useCallback((next: Record<string, string>) => {
+    localStorage.setItem("hydra:worktree_lineage", JSON.stringify(next));
+  }, []);
+  const worktreeLineageRef = useRef(worktreeLineage);
+  worktreeLineageRef.current = worktreeLineage;
   const [worktreeMetadataByPath, setWorktreeMetadataByPath] = useState<WorktreeMetadataByPath>({});
   const [worktreeMetaDialog, setWorktreeMetaDialog] = useState<{ wt: GitWorktreeInfo } | null>(null);
 
@@ -2817,6 +2832,72 @@ export default function App() {
     [tabs]
   );
 
+  // ─── Parent picker: candidate universe, eligibility, lineage writers ────────
+  //
+  // Orca's picker computes its own eligibility (`getEligibleWorktreeParents`) from the whole
+  // workspace universe; Hydra's menu used to offer every other project and worktree, so a
+  // cross-repo or already-parented choice could be made and then silently dropped by the
+  // sidebar projection. The universe below is the same one the sidebar paints: each project's
+  // main row plus its scanned worktrees, with the host/repo chrome the picker row shows.
+  const parentPickerCandidates = useMemo(
+    () =>
+      buildWorktreeParentPickerCandidates({
+        projects,
+        worktreesByProject,
+        repos: storeRepos,
+        sessions,
+        liveWorkspacePaths,
+        activeWorktreePath,
+      }),
+    [projects, worktreesByProject, storeRepos, sessions, liveWorkspacePaths, activeWorktreePath]
+  );
+  const parentPickerCandidateByPath = useMemo(
+    () => new Map(parentPickerCandidates.map((candidate) => [candidate.path, candidate])),
+    [parentPickerCandidates]
+  );
+  const getEligibleParentCandidates = useCallback(
+    (childPath: string): WorktreeParentPickerCandidate[] => {
+      const child = parentPickerCandidateByPath.get(childPath);
+      return child
+        ? getEligibleWorktreeParents({
+            child,
+            candidates: parentPickerCandidates,
+            lineageByPath: worktreeLineage,
+          })
+        : [];
+    },
+    [parentPickerCandidateByPath, parentPickerCandidates, worktreeLineage]
+  );
+  /** Persist first, then publish: a failed write leaves the tree exactly as it was. */
+  const setWorktreeLineageParents = useCallback(
+    async (keys: readonly string[], parentPath: string) => {
+      const next = { ...worktreeLineageRef.current };
+      for (const key of keys) next[key] = parentPath;
+      persistWorktreeLineage(next);
+      worktreeLineageRef.current = next;
+      setWorktreeLineage(next);
+    },
+    [persistWorktreeLineage]
+  );
+  const clearWorktreeLineageParent = useCallback(
+    async (key: string) => {
+      const next = { ...worktreeLineageRef.current };
+      delete next[key];
+      persistWorktreeLineage(next);
+      worktreeLineageRef.current = next;
+      setWorktreeLineage(next);
+    },
+    [persistWorktreeLineage]
+  );
+  const unnestWorktreePaths = useCallback(
+    (keys: readonly string[]) => {
+      // Why the shared helper: every un-nest entry point reports one translated toast for a
+      // batch that rejected, instead of an unhandled rejection per key.
+      void unnestWorktrees(keys, clearWorktreeLineageParent);
+    },
+    [clearWorktreeLineageParent]
+  );
+
   /** Folder workspaces whose directory is gone: Orca badges those with FolderX
    * (`FolderPathStatusIndicator`). The probe is cached and revalidated on
    * repo/ssh/runtime changes (D03a-057). */
@@ -3967,14 +4048,7 @@ export default function App() {
     const groupName = groupId ? projectGroups.find((g) => g.id === groupId)?.name : undefined;
     void groupName;
     const lineageParent = worktreeLineage[proj.path];
-    const eligibleParents: ParentCandidate[] = projects
-      .filter((p) => p.id !== proj.id)
-      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
-      .concat(
-        gitWorktrees
-          .filter((w) => w.path !== proj.path)
-          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
-      );
+    const eligibleParents = getEligibleParentCandidates(proj.path);
     const developerRevealed = e.altKey;
     const openInChildren = getOpenInItems(proj.path);
 
@@ -4047,30 +4121,15 @@ export default function App() {
           disabled: eligibleParents.length === 0,
           title: eligibleParents.length === 0 ? "No eligible parents" : undefined,
           onClick: () => {
-            if (eligibleParents.length === 0) return;
-            const candidates: ParentCandidate[] = eligibleParents.map(
-              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
-                id: p.id || p.path || "",
-                name: p.name || p.id || "",
-                path: p.path || p.id || "",
-                branch: p.branch,
-              })
-            );
-            setParentPickerModal({
-              targetName: proj.name,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = { ...worktreeLineage, [proj.path]: selectedPath };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[proj.path];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(proj.path);
+            if (!child || eligibleParents.length === 0) return;
+            setParentPickerState({
+              child,
+              anchorRect: { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              selectParent: (selectedPath) => setWorktreeLineageParents([proj.path], selectedPath),
+              removeParent: () => unnestWorktreePaths([proj.path]),
             });
           },
         },
@@ -4078,7 +4137,7 @@ export default function App() {
               const parentProj = projects.find((p) => p.path === lineageParent);
               if (parentProj) handleSelectProject(parentProj);
               else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[proj.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([proj.path]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Path: ${proj.path}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(proj.path).catch(console.error) } as ContextMenuItem, { label: `Is Git: ${proj.is_git ? "yes" : "no"} · Branch: ${proj.current_branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
         { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([proj.path]) },
         { label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", onClick: () => {}, separator: true },
@@ -4135,14 +4194,7 @@ export default function App() {
     const isPinned = pinnedWorktrees.has(wt.path);
     const isUnread = unreadWorktrees.has(wt.path);
     const lineageParent = worktreeLineage[wt.path];
-    const eligibleParents: ParentCandidate[] = projects
-      .filter((p) => p.path !== wt.path)
-      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
-      .concat(
-        gitWorktrees
-          .filter((w) => w.path !== wt.path)
-          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
-      );
+    const eligibleParents = getEligibleParentCandidates(wt.path);
     const developerRevealed = e.altKey;
     const openInChildren = getOpenInItems(wt.path);
     const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
@@ -4265,30 +4317,15 @@ export default function App() {
           separator: true,
           disabled: eligibleParents.length === 0,
           onClick: () => {
-            if (eligibleParents.length === 0) return;
-            const candidates: ParentCandidate[] = eligibleParents.map(
-              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
-                id: p.id || p.path || "",
-                name: p.name || p.branch || p.id || "",
-                path: p.path || p.id || "",
-                branch: p.branch,
-              })
-            );
-            setParentPickerModal({
-              targetName: wt.branch || wt.path,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = { ...worktreeLineage, [wt.path]: selectedPath };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[wt.path];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(wt.path);
+            if (!child || eligibleParents.length === 0) return;
+            setParentPickerState({
+              child,
+              anchorRect: { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              selectParent: (selectedPath) => setWorktreeLineageParents([wt.path], selectedPath),
+              removeParent: () => unnestWorktreePaths([wt.path]),
             });
           },
         },
@@ -4300,7 +4337,7 @@ export default function App() {
                 if (wtParent) handleSelectGitWorktree(wtParent);
                 else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
               }
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[wt.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([wt.path]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) } as ContextMenuItem] : []),
         {
           label:
@@ -4329,6 +4366,7 @@ export default function App() {
     const isPinned = pinnedWorktrees.has(session.id) || pinnedWorktrees.has(session.project_path);
     const isUnread = unreadWorktrees.has(session.id);
     const lineageParent = worktreeLineage[session.project_path] || worktreeLineage[session.id];
+    const eligibleParents = getEligibleParentCandidates(session.project_path);
     const openInChildren = getOpenInItems(session.project_path);
     const developerRevealed = e.altKey;
     setContextMenu({
@@ -4388,41 +4426,32 @@ export default function App() {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
           separator: true,
-          disabled: projects.length === 0,
+          disabled: eligibleParents.length === 0,
+          title: eligibleParents.length === 0 ? "No eligible parents" : undefined,
           onClick: () => {
-            const candidates: ParentCandidate[] = projects.map((p) => ({
-              id: p.id,
-              name: p.name,
-              path: p.path,
-              branch: p.current_branch,
-            }));
-            setParentPickerModal({
-              targetName: session.title,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = {
-                  ...worktreeLineage,
-                  [session.project_path]: selectedPath,
-                  [session.id]: selectedPath,
-                };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[session.project_path];
-                delete next[session.id];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(session.project_path);
+            if (!child || eligibleParents.length === 0) return;
+            setParentPickerState({
+              child,
+              anchorRect: { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              // A fleet session records its lineage under both the workspace path and its own
+              // id; the picker edits the workspace, so both keys move together.
+              selectParent: (selectedPath) =>
+                setWorktreeLineageParents(
+                  [session.project_path, session.id],
+                  selectedPath
+                ),
+              removeParent: () =>
+                unnestWorktreePaths([session.project_path, session.id]),
             });
           },
         },
         ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
               const parentProj = projects.find((p) => p.path === lineageParent);
               if (parentProj) handleSelectProject(parentProj);
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[session.project_path]; delete m[session.id]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([session.project_path, session.id]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `ID: ${session.id}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.id).catch(console.error) } as ContextMenuItem, { label: `Agent: ${session.agentName} · ${session.executable}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
         { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([session.project_path]) },
         { label: "Close / Delete Fleet Session", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, separator: true, onClick: () => handleDeleteSession(session.id) },
@@ -4786,26 +4815,30 @@ export default function App() {
         />
       )}
 
-      {/* Non-blocking Parent Picker Modal */}
-      {parentPickerModal && (
-        <ParentPickerModal
-          open={true}
-          targetName={parentPickerModal.targetName}
-          currentParentPath={parentPickerModal.currentParentPath}
-          candidates={parentPickerModal.candidates}
+      {/* Anchored parent picker (Orca `WorktreeParentPickerPopover`) */}
+      {parentPickerState && (
+        <WorktreeParentPickerPopover
+          open
+          child={parentPickerState.child}
+          candidates={getEligibleParentCandidates(parentPickerState.child.path)}
+          getAnchorRect={() => parentPickerState.anchorRect}
+          focusRestoreElement={parentPickerState.focusRestoreElement}
           onOpenChange={(open) => {
-            if (!open) setParentPickerModal(null);
+            if (!open) setParentPickerState(null);
           }}
-          onSelect={(parentPath) => {
-            parentPickerModal.onSelect(parentPath);
-            setParentPickerModal(null);
-          }}
+          // One path for every rejection: close, then report a translated toast if the
+          // lineage write fails (`selectWorktreeParent`).
+          onSelect={(candidate) =>
+            selectWorktreeParent({
+              childPath: parentPickerState.child.path,
+              parentPath: candidate.path,
+              assignWorktreeParent: parentPickerState.selectParent,
+              close: () => setParentPickerState(null),
+            })
+          }
           onRemoveParent={
-            parentPickerModal.onRemoveParent
-              ? () => {
-                  parentPickerModal.onRemoveParent?.();
-                  setParentPickerModal(null);
-                }
+            parentPickerState.removeParent
+              ? () => parentPickerState.removeParent?.()
               : undefined
           }
         />
