@@ -30,6 +30,11 @@ import {
   type WorktreeDeleteResolvableTarget,
 } from "./sidebar/worktree-delete-request";
 import { DeleteWorktreeLineageNotice } from "./DeleteWorktreeLineageNotice";
+import { DeleteWorktreeDirtyChangeHint } from "./DeleteWorktreeDirtyChangeHint";
+import {
+  getDeleteWorktreeDialogCopy,
+  getDeleteWorktreeLineageDialogCopy,
+} from "./sidebar/delete-worktree-dialog-copy";
 import { describeWorktreeDeleteFailure } from "./sidebar/worktree-delete-failure";
 import { groupDeleteTargetsForDispatch } from "./sidebar/worktree-delete-dispatch";
 
@@ -95,6 +100,26 @@ export interface DeleteWorktreeDialogProps {
    */
   folderWorkspace?: { id: string; name: string; path: string } | null;
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => Promise<boolean>;
+  /**
+   * Orca `runDialogForceDelete`: the explicit Force Delete closes the dialog
+   * immediately (the cards already show progress) and runs the retry itself.
+   */
+  onForceDelete?: (targets: readonly WorktreeDeleteIdentity[]) => void;
+  /** Orca `showDeleteWorktreeFailureToast`: recovery moves to the toast row. */
+  onDeleteFailed?: (failures: readonly { path: string; error: string }[]) => void;
+  /**
+   * Orca `runWorktreeDeletesInParallel`: the confirmed removal is dispatched by the
+   * host's parallel pipeline (grouping, depth order, turn serialization) instead of
+   * this dialog fanning out concurrent invokes.
+   */
+  executeDelete?: (
+    targets: readonly WorktreeDeleteIdentity[],
+    options: { force: boolean }
+  ) => Promise<{
+    deletedPaths: string[];
+    failures: { path: string; error: string }[];
+    missing: boolean;
+  }>;
 }
 
 export function DeleteWorktreeDialog({
@@ -116,6 +141,9 @@ export function DeleteWorktreeDialog({
   onDeleteSettled,
   folderWorkspace = null,
   onDeleteFolderWorkspace,
+  onForceDelete,
+  onDeleteFailed,
+  executeDelete,
 }: DeleteWorktreeDialogProps) {
   const [dontAskAgain, setDontAskAgain] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -211,6 +239,25 @@ export function DeleteWorktreeDialog({
   const canForceDelete = !isBatchDelete && effectiveError != null;
   const allowSkipConfirm =
     !isBatchDelete && !isMainWorktree && !canForceDelete && childWorkspaceCount === 0;
+  // A descendant delete reads as a plural batch ("their workspace folders"), even
+  // when the confirmed target itself is a single worktree.
+  const lineageDialogCopy =
+    childWorkspaceCount > 0
+      ? getDeleteWorktreeLineageDialogCopy({
+          childWorkspaceCount,
+          deleteTargetCount: worktrees.length + childWorkspaceCount,
+          folderWorkspaceDeleteCount: 0,
+        })
+      : null;
+  const dialogCopy = getDeleteWorktreeDialogCopy({
+    isBatchDelete,
+    worktreeDisplayName: worktrees[0]?.display_name ?? worktrees[0]?.displayName ?? worktrees[0]?.branch,
+    worktreeCount: worktrees.length,
+    // The dialog is the git-worktree confirmation; folder workspaces take the
+    // dedicated `folderWorkspace` branch below.
+    folderWorkspaceDeleteCount: 0,
+    isFolderWorkspaceDelete: false,
+  });
 
   const label = isDeleting
     ? canForceDelete
@@ -279,6 +326,54 @@ export function DeleteWorktreeDialog({
       return;
     }
     if (dontAskAgain && allowSkipConfirm && !force) onPersistSkipConfirmPreference();
+    // Orca `runDialogForceDelete`: close immediately and let the card progress own
+    // the feedback; the App performs the retry and the focus transfer.
+    if (force && onForceDelete) {
+      onForceDelete(requestedIdentities);
+      return;
+    }
+    if (executeDelete) {
+      setIsDeletingLocal(true);
+      setLocalError(null);
+      onDeleteStart?.(requestedIdentities);
+      void executeDelete(requestedIdentities, { force })
+        .then((result) => {
+          setIsDeletingLocal(false);
+          onDeleteSettled?.(requestedIdentities);
+          if (result.missing) {
+            onStaleTargets?.();
+            onClose();
+            return;
+          }
+          if (result.failures.length === 0) {
+            onClose();
+            if (result.deletedPaths.length > 0) onDeleted(result.deletedPaths);
+            return;
+          }
+          setLocalError(
+            result.failures
+              .map((failure) => {
+                const described = describeWorktreeDeleteFailure(
+                  failure.error,
+                  failure.path
+                );
+                return [described.summary, described.guidance, `(${failure.error})`]
+                  .filter(Boolean)
+                  .join(' ');
+              })
+              .join('\n')
+          );
+          // The executor's failure port already raised the recovery toast.
+        })
+        .catch((error: unknown) => {
+          setIsDeletingLocal(false);
+          onDeleteSettled?.(requestedIdentities);
+          const described = describeWorktreeDeleteFailure(String(error));
+          setLocalError(described.summary);
+        });
+      return;
+    }
+
     setIsDeletingLocal(true);
     setLocalError(null);
 
@@ -370,6 +465,7 @@ export function DeleteWorktreeDialog({
             })
             .join('\n')
         )
+        onDeleteFailed?.(failures)
       }
     };
     void runDeletes();
@@ -488,29 +584,27 @@ export function DeleteWorktreeDialog({
         </h2>
         <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-400">
           Remove{" "}
-          <span
-            className={
-              isBatchDelete ? "font-medium text-foreground" : "break-all font-medium text-foreground"
-            }
-          >
+          <span className={dialogCopy.targetClassName}>
             {isBatchDelete
-              ? `${worktrees.length} workspaces`
-              : worktrees[0]?.display_name || worktrees[0]?.branch || worktrees[0]?.path}
+              ? dialogCopy.targetLabel
+              : worktrees[0]?.display_name ||
+                worktrees[0]?.displayName ||
+                worktrees[0]?.branch ||
+                worktrees[0]?.path}
           </span>{" "}
           {canDeleteAllLineage ? (
             <>
               and{" "}
               <span className="font-medium text-foreground">
-                {childWorkspaceCount === 1
-                  ? "1 child workspace"
-                  : `${childWorkspaceCount} child workspaces`}
+                {lineageDialogCopy?.childTargetLabel ??
+                  (childWorkspaceCount === 1
+                    ? "1 child workspace"
+                    : `${childWorkspaceCount} child workspaces`)}
               </span>{" "}
-              from git and delete their workspace folders.
+              {lineageDialogCopy?.descriptionSuffix ?? dialogCopy.descriptionSuffix}
             </>
-          ) : isBatchDelete ? (
-            <>from git and delete their workspace folders.</>
           ) : (
-            <>from git and delete its workspace folder.</>
+            <>{dialogCopy.descriptionSuffix}</>
           )}
         </p>
 
@@ -588,11 +682,7 @@ export function DeleteWorktreeDialog({
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {dirty != null && dirty > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                      {dirty} uncommitted
-                    </span>
-                  )}
+                  <DeleteWorktreeDirtyChangeHint count={dirty} />
                   {state?.isDeleting && <LoaderCircle className="w-3 h-3 animate-spin text-neutral-400" />}
                 </div>
               </div>
@@ -614,7 +704,7 @@ export function DeleteWorktreeDialog({
         )}
         {isMainWorktree && (
           <div className="mt-3 p-2.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px]">
-            Git does not allow removing the main worktree.
+            {dialogCopy.mainWorktreeBlocker}
           </div>
         )}
 

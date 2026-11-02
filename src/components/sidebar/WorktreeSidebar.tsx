@@ -217,6 +217,7 @@ export function WorktreeSidebar({
   prByPath,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
+  onFolderWorkspaceContextMenu,
   compactCards = false,
   onSelectNextSession,
   onSelectPrevSession,
@@ -231,6 +232,7 @@ export function WorktreeSidebar({
   initialAgentsGroupBy,
   initialAgentsIntroShown,
   onSidebarPrefsChange,
+  onUpdateSettings,
 }: WorktreeSidebarProps): React.JSX.Element {
   // ─── View & Preference State ─────────────────────────────────────────────
   const [sidebarBody, setSidebarBody] = useState<SidebarBody>(initialSidebarBody ?? "workspaces");
@@ -1963,6 +1965,7 @@ export function WorktreeSidebar({
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
               onDeleteFolderWorkspace={onDeleteFolderWorkspace}
+              onFolderWorkspaceContextMenu={onFolderWorkspaceContextMenu}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}
               filter={filter}
@@ -2211,6 +2214,7 @@ export function WorktreeSidebar({
         // Orca `clearFilters`: the shell's writer resets every narrowing filter
         // (and the host scope) and persists it, so the menu never forks the logic.
         onClearFilters={handleClearSidebarFilters}
+        onUpdateSettings={onUpdateSettings}
       />
 
       <AgentSendTargetPicker />

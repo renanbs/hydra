@@ -53,6 +53,7 @@ export function WorktreeDragRow({
       role="option"
       aria-selected={isActive || isSelected}
       aria-current={isActive ? 'page' : undefined}
+      data-worktree-context-menu-scope=""
       data-worktree-path={worktreePath}
       data-worktree-id={worktreeId}
       data-worktree-row-key={rowKey}

@@ -10,6 +10,10 @@ import {
 } from "./ui/dropdown-menu";
 import type { ContextMenuItem } from "./CustomContextMenu";
 import { shouldSuppressContextMenuFollowUpClick } from "./sidebar/context-menu-click-debounce";
+import {
+  CLOSE_ALL_CONTEXT_MENUS_EVENT,
+  restoreWorktreeSidebarFocus,
+} from "./sidebar/worktree-context-menu-policy";
 import { useEffect } from "react";
 
 /**
@@ -86,11 +90,18 @@ export function RadixContextMenu({
   y,
   items,
   onClose,
+  onLifecycleComplete,
 }: {
   x: number;
   y: number;
   items: ContextMenuItem[];
   onClose: () => void;
+  /**
+   * Orca `onLifecycleComplete`: fires on a later task, once the menu and any
+   * sub-dialog/picker it opened have closed, so the caller can restore focus or
+   * reveal a row without fighting the menu's unmount.
+   */
+  onLifecycleComplete?: () => void;
 }) {
   // Why capture: the click that opened the menu (right-click release, card click)
   // can land on the card underneath and activate it. Keep it out for 500ms; menu
@@ -107,15 +118,36 @@ export function RadixContextMenu({
     document.addEventListener("click", handleClick, true);
     return () => document.removeEventListener("click", handleClick, true);
   }, []);
+
+  // Orca `CLOSE_ALL_CONTEXT_MENUS_EVENT`: opening another sidebar menu closes this
+  // one even when the new menu is portaled outside this subtree.
+  useEffect(() => {
+    const close = () => onClose();
+    window.addEventListener(CLOSE_ALL_CONTEXT_MENUS_EVENT, close);
+    return () => window.removeEventListener(CLOSE_ALL_CONTEXT_MENUS_EVENT, close);
+  }, [onClose]);
+
+  const handleOpenChange = (open: boolean): void => {
+    if (open) return;
+    onClose();
+    // Orca lifecycle: schedule on the next task, after the menu's close/focus cycle.
+    if (onLifecycleComplete) window.setTimeout(() => onLifecycleComplete(), 0);
+  };
+
   return (
-    <DropdownMenu open onOpenChange={(open) => !open && onClose()}>
+    <DropdownMenu open onOpenChange={handleOpenChange}>
       <DropdownMenuContent
         align="start"
         side="right"
         sideOffset={-8}
         alignOffset={-8}
         style={{ position: "fixed", left: x, top: y }}
-        onCloseAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => {
+          // Orca `handleCloseAutoFocus`: do not focus/scroll the trigger; land the
+          // focus on the sidebar itself without scrolling.
+          e.preventDefault();
+          restoreWorktreeSidebarFocus();
+        }}
       >
         <RadixContextMenuItems items={items} onClose={onClose} />
       </DropdownMenuContent>

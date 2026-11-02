@@ -431,6 +431,10 @@ export interface WorktreeListProps {
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry (folder on disk stays). */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
+  onFolderWorkspaceContextMenu?: (
+    event: React.MouseEvent,
+    folderWorkspace: { id: string; name: string; folderPath: string }
+  ) => void;
   /** Review display per worktree path (populated by the host PR lookup). */
   prByPath?: Record<string, PrDisplay>;
   collapsedProjects: Set<string>;
@@ -783,6 +787,7 @@ export function WorktreeList({
   scanFailuresByProject = EMPTY_SCAN_FAILURES,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
+  onFolderWorkspaceContextMenu,
   prByPath,
   collapsedProjects,
   collapsedGroups,
@@ -1960,7 +1965,7 @@ export function WorktreeList({
         <WorktreeDragRow
           key={row.rowKey}
           rowKey={row.rowKey}
-          worktreeId={row.worktree.id}
+          worktreeId={row.worktree.id || row.worktree.path}
           worktreePath={wt.path}
           optionId={slot.optionId}
           hostIdentity={getWorktreeHostIdentity({
@@ -2394,6 +2399,11 @@ export function WorktreeList({
           id={slot.optionId}
           name={row.folderWorkspace.name}
           folderPath={folderPath}
+          workspaceId={row.folderWorkspace.id}
+          hostIdentity={composeWorktreeHostIdentity(
+            row.folderWorkspace.executionHostId ?? undefined,
+            row.folderWorkspace.id
+          )}
           status={workspaceStatusFrom({
             sessions: folderSessions,
             hasLiveTerminal: livePaths.has(folderPath),
@@ -2411,6 +2421,16 @@ export function WorktreeList({
           onDelete={
             onDeleteFolderWorkspace
               ? () => onDeleteFolderWorkspace(row.folderWorkspace.id)
+              : undefined
+          }
+          onContextMenu={
+            onFolderWorkspaceContextMenu
+              ? (event) =>
+                  onFolderWorkspaceContextMenu(event, {
+                    id: row.folderWorkspace.id,
+                    name: row.folderWorkspace.name,
+                    folderPath,
+                  })
               : undefined
           }
         />
@@ -2431,6 +2451,7 @@ export function WorktreeList({
       getFreshFolderPathStatus,
       onActivateFolderWorkspace,
       onDeleteFolderWorkspace,
+      onFolderWorkspaceContextMenu,
     ]
   );
 

@@ -321,6 +321,11 @@ export interface WorktreeSidebarProps {
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry; the folder on disk stays. */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
+  /** Orca folder-row context menu: remove the entry through the typed delete intent. */
+  onFolderWorkspaceContextMenu?: (
+    event: React.MouseEvent,
+    folderWorkspace: { id: string; name: string; folderPath: string }
+  ) => void;
   /** Review display per worktree path, from the host `pr_status` probe. */
   prByPath?: Record<string, import("./pr-display").PrDisplay>;
   compactCards?: boolean;
@@ -346,4 +351,9 @@ export interface WorktreeSidebarProps {
   initialAgentsGroupBy?: AgentsGroupBy;
   initialAgentsIntroShown?: boolean;
   onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;
+  /**
+   * Orca `setWorktreeCardMode` writes `compactWorktreeCards` through the settings
+   * writer; App owns that write, so the menu delegates the preset change here.
+   */
+  onUpdateSettings?: (patch: { compact_worktree_cards: boolean }) => void;
 }

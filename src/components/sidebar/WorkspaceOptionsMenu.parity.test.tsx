@@ -397,3 +397,67 @@ describe("WorkspaceOptionsMenu grouping and filters (D09-011/017)", () => {
     });
   });
 });
+
+describe("WorkspaceOptionsMenu display controls (Orca parity)", () => {
+  beforeEach(() => {
+    seedStore({
+      worktreeCardProperties: ["status", "pr"],
+      setWorktreeCardProperties: vi.fn(),
+      agentActivityDisplayMode: "compact",
+      setAgentActivityDisplayMode: vi.fn(),
+      projectGroups: [],
+      settings: { compact_worktree_cards: false },
+    });
+  });
+  afterEach(() => {
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
+  });
+
+  it("keeps the workspace board open from the menu and its submenus", () => {
+    renderMenu({ options: { ...OPTIONS, groupBy: "repo" } });
+    expect(document.querySelector("[data-workspace-board-preserve-open]")).not.toBeNull();
+
+    fireEvent.click(screen.getByText("Sort by"));
+    expect(document.querySelector('[data-sort-by-option="manual"]')).not.toBeNull();
+    fireEvent.click(screen.getByText("Project order"));
+    expect(document.querySelector('[data-project-order-option="recent"]')).not.toBeNull();
+  });
+
+  it("exposes the four group-by modes with Orca identifiers", () => {
+    renderMenu();
+    expect(document.querySelector('[data-group-by-option="none"]')).toHaveAttribute(
+      "data-option-id",
+      "c2c7a45cda"
+    );
+    expect(document.querySelector('[data-group-by-option="pr-status"]')).toHaveTextContent("PR");
+    expect(document.querySelector('[data-group-by-option="repo"]')).toHaveAttribute(
+      "data-option-id",
+      "2170d553cf"
+    );
+  });
+
+  it("keeps the Sort submenu open while choosing a mode", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+    fireEvent.click(screen.getByText("Sort by"));
+    fireEvent.click(document.querySelector('[data-sort-by-option="repo"]') as HTMLElement);
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, sortBy: "repo" });
+    // The panel is still mounted, so the remaining modes stay clickable.
+    expect(document.querySelector('[data-sort-by-option="manual"]')).not.toBeNull();
+  });
+
+  it("writes the card layout preset and agent activity mode", () => {
+    const onUpdateSettings = vi.fn();
+    renderMenu({ onUpdateSettings });
+    fireEvent.click(screen.getByText("Card display"));
+    fireEvent.click(
+      document.querySelector('[data-card-layout-option="compact"]') as HTMLElement
+    );
+    expect(onUpdateSettings).toHaveBeenCalledWith({ compact_worktree_cards: true });
+    expect(screen.getByText("Agent activity layout")).toBeInTheDocument();
+    fireEvent.click(
+      document.querySelector('[data-agent-activity-option="full"]') as HTMLElement
+    );
+    expect(useAppStore.getState().setAgentActivityDisplayMode).toHaveBeenCalledWith("full");
+  });
+});

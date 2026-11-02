@@ -1,6 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/worktree-card-presentation.tsx
 import React from 'react'
+import { canShowWorkspaceDeleteQuickAction } from './workspace-delete-quick-action'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPortsTrigger'
 import { WorktreeCardReviewBadge } from './WorktreeCardReviewBadge'
@@ -38,7 +39,10 @@ export interface WorktreeCardPresentation {
   titleOnlyCard: boolean
 }
 
-export function buildWorktreeCardPresentation(card: WorktreeCardController): WorktreeCardPresentation {
+export function buildWorktreeCardPresentation(
+  card: WorktreeCardController,
+  { deleteModifierPressed = false }: { deleteModifierPressed?: boolean } = {}
+): WorktreeCardPresentation {
   const {
     worktree,
     repo,
@@ -126,9 +130,13 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController): Wor
       ? hasMetadataBadge || cacheStartedAt != null || Boolean(metaRowChildren)
       : hasDetailedMetaRowContent
   )
-  const showDeleteQuickAction = Boolean(
-    !affiliateListMode && !isDeleting && !(worktree.is_main ?? worktree.isMainWorktree)
-  )
+  // Orca `canShowWorkspaceDeleteQuickAction`: the trash affordance is gated on the
+  // held Option/Alt modifier, and is never offered for an in-flight delete or the
+  // primary checkout.
+  const isMainWorktree = Boolean(worktree.is_main ?? worktree.isMainWorktree)
+  const showDeleteQuickAction =
+    !affiliateListMode &&
+    canShowWorkspaceDeleteQuickAction({ deleteModifierPressed, isDeleting, isMainWorktree })
   const showHeaderActions = Boolean(showTitleRowPrimary || showDeleteQuickAction)
 
   const trimmedVisibleCardTitle = visibleCardTitle.trim()

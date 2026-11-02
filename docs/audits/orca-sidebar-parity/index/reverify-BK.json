@@ -384,6 +384,186 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented and wired against Orca's sidebar; see history://D06 final report."
+  },
+  {
+   "id": "D07-003",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-011",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-013",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-014",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-015",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-016",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-017",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-021",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-024",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-025",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-026",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-029",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-031",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-032",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-033",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-034",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-038",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-045",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
   }
  ]
 }

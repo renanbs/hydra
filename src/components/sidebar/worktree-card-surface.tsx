@@ -9,13 +9,17 @@ import { WorktreeContextMenu } from './WorktreeContextMenu'
 import { WorktreeCardParentContent } from './worktree-card-parent-content'
 import { buildWorktreeCardPresentation } from './worktree-card-presentation'
 import type { WorktreeCardController } from './use-worktree-card-controller'
+import { useWorkspaceDeleteModifierPressed } from './workspace-delete-quick-action'
 
 export interface WorktreeCardSurfaceProps {
   card: WorktreeCardController
 }
 
 export function WorktreeCardSurface({ card }: WorktreeCardSurfaceProps): React.JSX.Element {
-  const presentation = buildWorktreeCardPresentation(card)
+  // Orca `useWorkspaceDeleteModifierPressed`: Option/Alt reveals the destructive
+  // quick action; without it the card never offers a one-click delete.
+  const deleteModifierPressed = useWorkspaceDeleteModifierPressed()
+  const presentation = buildWorktreeCardPresentation(card, { deleteModifierPressed })
   const {
     worktree,
     selectedWorktrees,
