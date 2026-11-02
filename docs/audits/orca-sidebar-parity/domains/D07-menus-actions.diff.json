@@ -12,21 +12,17 @@
     "components/sidebar/workspace-lineage-menu-actions.ts:20"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3284",
-     "src/App.tsx:3487",
-     "src/components/sidebar/WorktreeContextMenu.tsx:21"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Item desabilitado quando não há abas com PTY ativa nem abas de navegador (Hydra mostra Sleep sempre habilitado — src/App.tsx:3487)",
-     "Teardown real de navegadores/webviews antes dos terminais (Hydra não toca PTY: só remove abas React e marca a sessão 'idle' — src/App.tsx:3122-3127)",
-     "Marca de sleep intent persistente e wake explícito",
-     "Disparo com delay de 50ms após o fechamento do menu"
-    ],
-    "notes": "Sleep individual parcial.",
-    "note": "Sleep individual parcial."
+    "missing_behaviors": [],
+    "notes": "Sleep eligibility, real webview/guest destruction, terminal teardown, durable sleep intent/wake and 50ms delay are wired; Hydra has no ephemeral VM, so the suspend contract persists via workspace_sleep_state.",
+    "note": "Sleep eligibility, real webview/guest destruction, terminal teardown, durable sleep intent/wake and 50ms delay are wired; Hydra has no ephemeral VM, so the suspend contract persists via workspace_sleep_state."
    },
    "par": [
     "PAR-21"
@@ -90,20 +86,17 @@
     "components/sidebar/sleep-worktree-flow.ts:191"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3122-3126"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "shutdownWorktreeBrowsers antes de shutdownWorktreeTerminals (destruição de persistent webviews)",
-     "shutdownWorktreeTerminals com keepIdentifiers:true (preservar histórico/layout em disco)",
-     "Suspensão da VM efêmera (window.api.ephemeralVm.suspendWorkspace) — não há IPC equivalente no caminho",
-     "markWorktreeSleepIntent e limpeza de activeWorktreeId antes do teardown",
-     "Guarda de re-ativação: se o usuário reativar o workspace durante o lote, mantê-lo acordado"
-    ],
-    "notes": "Pipeline sequencial de sleep parcial.",
-    "note": "Pipeline sequencial de sleep parcial."
+    "missing_behaviors": [],
+    "notes": "Ordered pipeline: webviews destroyed before terminals (keepIdentifiers), durable suspend state written/restored, active-row clearance and re-activation guard; no VM runtime to suspend.",
+    "note": "Ordered pipeline: webviews destroyed before terminals (keepIdentifiers), durable suspend state written/restored, active-row clearance and re-activation guard; no VM runtime to suspend."
    },
    "par": [
     "PAR-21"
@@ -966,19 +959,17 @@
     "components/sidebar/delete-worktree-failure-toast.tsx:114"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:2028-2070",
-     "src/components/sidebar/worktree-delete-failure.ts:15-75",
-     "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão 'View' abrindo o diff viewer com as alterações pendentes",
-     "Botão 'Delete Anyway' para o caso de registro ausente"
-    ],
-    "notes": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway.",
-    "note": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway."
+    "missing_behaviors": [],
+    "notes": "Failure toast offers View and Force Delete, plus Delete Anyway only for the archive-hook refusal via the allowArchiveSkip waiver.",
+    "note": "Failure toast offers View and Force Delete, plus Delete Anyway only for the archive-hook refusal via the allowArchiveSkip waiver."
    },
    "par": [
     "PAR-86"
@@ -1046,24 +1037,19 @@
     "components/sidebar/worktree-delete-execution.ts:182"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:100-111"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [
      "invoke('delete_worktree') N chamadas concorrentes -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476"
     ],
-    "missing_behaviors": [
-     "Desduplicação por identidade qualificada e marcação 'deleting' imediata no store",
-     "beginWorktreeSnapshotPruneBatch",
-     "Agrupamento por host+repositório e ordenação por profundidade (path.length) para excluir filhos antes do pai",
-     "Serialização por turno (runInWorktreeDeleteTurn) para o mesmo diretório",
-     "Cancelamento de ancestrais quando um filho falha",
-     "Toast consolidado de branches preservadas (showPreservedBranchBatchToast)",
-     "Transferência única de foco do workspace ativo após o lote"
-    ],
-    "notes": "Pipeline de delete paralelo parcial.",
-    "note": "Pipeline de delete paralelo parcial."
+    "missing_behaviors": [],
+    "notes": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast.",
+    "note": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast."
    }
   },
   {

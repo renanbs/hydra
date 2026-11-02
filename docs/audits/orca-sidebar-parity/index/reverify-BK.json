@@ -564,6 +564,42 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-001",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/worktree_ops.rs",
+    "src-tauri/src/lib.rs",
+    "src/store/slices/browser-webview-cleanup.ts",
+    "src/lib/worktree-sleep-state-persistence.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Sleep eligibility, real webview/guest destruction, terminal teardown, durable sleep intent/wake and 50ms delay are wired; Hydra has no ephemeral VM, so the suspend contract persists via workspace_sleep_state."
+  },
+  {
+   "id": "D07-004",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/worktree_ops.rs",
+    "src-tauri/src/lib.rs",
+    "src/store/slices/browser-webview-cleanup.ts",
+    "src/lib/worktree-sleep-state-persistence.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Ordered pipeline: webviews destroyed before terminals (keepIdentifiers), durable suspend state written/restored, active-row clearance and re-activation guard; no VM runtime to suspend."
+  },
+  {
+   "id": "D07-044",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/worktree_ops.rs",
+    "src-tauri/src/lib.rs",
+    "src/store/slices/browser-webview-cleanup.ts",
+    "src/lib/worktree-sleep-state-persistence.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast."
   }
  ]
 }

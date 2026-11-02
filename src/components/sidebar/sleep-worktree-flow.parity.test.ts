@@ -48,6 +48,19 @@ describe("sleep-worktree-flow (Orca parity)", () => {
     expect(anchors).toEqual(["/w/a"]);
   });
 
+  it("marks the active and per-target intent with the persisted sleep payload", async () => {
+    const payloadCalls: string[] = [];
+    const { ports } = createPorts({
+      getSleepPayload: (id) => {
+        payloadCalls.push(id);
+        return `payload:${id}`;
+      },
+    });
+    await runSleepWorktrees(["/w/a"], ports);
+    // Once before clearing the active workspace, once for the per-workspace mark.
+    expect(payloadCalls).toEqual(["/w/a", "/w/a"]);
+  });
+
   it("keeps the workspace open and restores it when teardown fails", async () => {
     const { ports, calls } = createPorts({
       shutdownWorktreeTerminals: async () => {

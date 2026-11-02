@@ -3,20 +3,6 @@
  "generatedFrom": "2026-10-20 delete-failure increment: explicit force through the Tauri command/Rust removal, Git stderr catalog and a recovery toast with Force Delete",
  "rows": [
   {
-   "id": "D07-041",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:2028-2070",
-    "src/components/sidebar/worktree-delete-failure.ts:15-75",
-    "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
-   ],
-   "missing_behaviors": [
-    "Botão 'View' abrindo o diff viewer com as alterações pendentes",
-    "Botão 'Delete Anyway' para o caso de registro ausente"
-   ],
-   "note": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway."
-  },
-  {
    "id": "D10-014",
    "status": "parity",
    "evidence": [
@@ -42,6 +28,18 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
+  },
+  {
+   "id": "D07-041",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/worktree_ops.rs",
+    "src-tauri/src/lib.rs",
+    "src/store/slices/browser-webview-cleanup.ts",
+    "src/lib/worktree-sleep-state-persistence.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Failure toast offers View and Force Delete, plus Delete Anyway only for the archive-hook refusal via the allowArchiveSkip waiver."
   }
  ]
 }

@@ -5,11 +5,55 @@
 // that marks the workspace awake resumes every waiting connect. Hydra's sleep
 // pipeline keeps the same contract so a wake (explicit or by activating the row)
 // is observable instead of implicit.
+//
+// D07: the marker's durable half lives in SQLite (`workspace_sleep_state`), so a
+// workspace slept before a restart stays asleep after it. This module stays
+// synchronous for the hot path (`hasWorktreeSleepIntent` is read from PTY
+// binding) and mirrors every transition through an injected sink.
 const sleepingWorktreeIds = new Set<string>()
 const tearingDownWorktreeIds = new Set<string>()
 const wakeListenersByWorktreeId = new Map<string, Set<() => void>>()
 
-export function markWorktreeSleepIntent(worktreeId: string): void {
+/**
+ * Durable projection of the sleep intent. Injected once at app boot so this
+ * module never imports Tauri (pure tests and non-Tauri surfaces keep working).
+ * Failures are logged, never thrown: an unpersisted marker degrades the next
+ * boot, it must not break the sleep or the wake.
+ */
+export type WorktreeSleepIntentSink = {
+  persist: (worktreeId: string, payload?: string) => Promise<unknown>
+  clear: (worktreeId: string) => Promise<unknown>
+}
+
+let intentSink: WorktreeSleepIntentSink | null = null
+
+export function setWorktreeSleepIntentSink(sink: WorktreeSleepIntentSink | null): void {
+  intentSink = sink
+}
+
+function runSink(operation: () => Promise<unknown>, event: string, worktreeId: string): void {
+  try {
+    void operation().catch((error) => {
+      console.error(`[sleep-intent] ${event} failed`, { worktreeId, error })
+    })
+  } catch (error) {
+    console.error(`[sleep-intent] ${event} threw`, { worktreeId, error })
+  }
+}
+
+export function markWorktreeSleepIntent(worktreeId: string, payload?: string): void {
+  sleepingWorktreeIds.add(worktreeId)
+  if (intentSink) {
+    runSink(() => intentSink!.persist(worktreeId, payload), 'persist sleep intent', worktreeId)
+  }
+}
+
+/**
+ * Re-adds a marker restored from the database without writing it back. Used by
+ * boot hydration: persisting on restore would refresh `suspended_at` for a
+ * workspace that never slept again.
+ */
+export function restoreWorktreeSleepIntent(worktreeId: string): void {
   sleepingWorktreeIds.add(worktreeId)
 }
 
@@ -37,6 +81,9 @@ export function clearWorktreeSleepIntent(worktreeId: string | null): void {
   if (!sleepingWorktreeIds.delete(worktreeId)) {
     return
   }
+  if (intentSink) {
+    runSink(() => intentSink!.clear(worktreeId), 'clear sleep intent', worktreeId)
+  }
   const listeners = wakeListenersByWorktreeId.get(worktreeId)
   wakeListenersByWorktreeId.delete(worktreeId)
   for (const listener of listeners ?? []) {
@@ -49,11 +96,15 @@ export function clearWorktreeSleepIntent(worktreeId: string | null): void {
   }
 }
 
-// Why: a purged worktree must not wake its panes; they are being unmounted.
+// Why: a purged worktree must not wake its panes; they are being unmounted. Its
+// persisted row must go too, or a future workspace reusing the path starts asleep.
 export function forgetWorktreeSleepIntent(worktreeId: string): void {
-  sleepingWorktreeIds.delete(worktreeId)
+  const hadMarker = sleepingWorktreeIds.delete(worktreeId)
   tearingDownWorktreeIds.delete(worktreeId)
   wakeListenersByWorktreeId.delete(worktreeId)
+  if (hadMarker && intentSink) {
+    runSink(() => intentSink!.clear(worktreeId), 'forget sleep intent', worktreeId)
+  }
 }
 
 export function hasWorktreeSleepIntent(worktreeId: string | null): boolean {

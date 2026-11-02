@@ -85,6 +85,21 @@ pub struct WorktreeMetadataRecord {
     pub linked_linear_issue: Option<String>,
     pub updated_at: i64,
 }
+
+/// D07: durable sleep marker for a workspace. Hydra has no ephemeral VM to
+/// suspend, so the suspend contract is this row: a workspace whose PTYs were
+/// released on purpose survives an app restart and is still known to be asleep.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct WorkspaceSleepStateRecord {
+    /// Workspace path (`Worktree.path` / folder workspace key).
+    pub worktree_path: String,
+    /// Epoch ms at which the workspace was put to sleep.
+    pub suspended_at: i64,
+    /// Opaque JSON the sleep flow wants restored with the marker. `None` when
+    /// the caller persisted only the fact of sleeping.
+    pub payload: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UiLayoutState {
     pub left_sidebar_open: bool,
@@ -721,6 +736,11 @@ impl DatabaseManager {
                  linked_pr INTEGER,
                  linked_linear_issue TEXT,
                  updated_at INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS workspace_sleep_state (
+                 worktree_path TEXT PRIMARY KEY,
+                 suspended_at INTEGER NOT NULL,
+                 payload TEXT
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1347,6 +1367,63 @@ impl DatabaseManager {
         Ok(())
     }
 
+    /// Persists the sleep marker for one workspace. Upsert so a repeated sleep
+    /// refreshes `suspended_at` instead of failing on the primary key.
+    pub fn set_workspace_sleep_state(
+        &self,
+        worktree_path: &str,
+        payload: Option<&str>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO workspace_sleep_state (worktree_path, suspended_at, payload)
+             VALUES (?1, ?2, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                suspended_at = excluded.suspended_at,
+                payload = excluded.payload",
+            params![worktree_path, now, payload],
+        )
+        .map_err(|e| format!("Error setting workspace sleep state: {e}"))?;
+        Ok(())
+    }
+
+    /// Every persisted sleep marker, oldest first so a boot restore walks them
+    /// in the order the workspaces were put to sleep.
+    pub fn get_workspace_sleep_states(&self) -> Result<Vec<WorkspaceSleepStateRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare(
+                "SELECT worktree_path, suspended_at, payload
+                 FROM workspace_sleep_state
+                 ORDER BY suspended_at ASC",
+            )
+            .map_err(|e| format!("Error preparing workspace sleep state select: {e}"))?;
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok(WorkspaceSleepStateRecord {
+                    worktree_path: row.get(0)?,
+                    suspended_at: row.get(1)?,
+                    payload: row.get(2).ok().flatten(),
+                })
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("Error reading workspace sleep states: {e}"))
+    }
+
+    /// Drops the marker on wake. Deleting an absent row is a successful no-op,
+    /// so a wake that races a second wake never fails.
+    pub fn clear_workspace_sleep_state(&self, worktree_path: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "DELETE FROM workspace_sleep_state WHERE worktree_path = ?1",
+            params![worktree_path],
+        )
+        .map_err(|e| format!("Error clearing workspace sleep state: {e}"))?;
+        Ok(())
+    }
+
     /// Records how a worktree came to exist (Orca `WorktreeMeta.createdAt` /
     /// `createdWithAgent`). Either field makes the worktree `orca-managed` and
     /// therefore visible regardless of the `external` visibility policy (Orca
@@ -1466,6 +1543,11 @@ impl DatabaseManager {
                  linked_pr INTEGER,
                  linked_linear_issue TEXT,
                  updated_at INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS workspace_sleep_state (
+                 worktree_path TEXT PRIMARY KEY,
+                 suspended_at INTEGER NOT NULL,
+                 payload TEXT
              );"
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1957,6 +2039,53 @@ mod tests {
         db.set_worktree_flags(wt_path, Some(false), None).expect("unpin");
         let after_flags = db.get_worktree_metadata(wt_path).expect("query after flags").expect("record exists");
         assert_eq!(after_flags.provenance_kind.as_deref(), Some("created-by-cli"));
+    }
+
+    #[test]
+    fn test_workspace_sleep_state_roundtrip_and_clear() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let first = "/home/renan/src/hydra/.worktrees/sleep-a";
+        let second = "/home/renan/src/hydra/.worktrees/sleep-b";
+
+        assert!(db.get_workspace_sleep_states().expect("initial states").is_empty());
+
+        db.set_workspace_sleep_state(first, Some(r#"{"reason":"manual-sleep"}"#))
+            .expect("set first");
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        db.set_workspace_sleep_state(second, None).expect("set second");
+
+        let states = db.get_workspace_sleep_states().expect("read states");
+        assert_eq!(states.len(), 2);
+        assert_eq!(states[0].worktree_path, first, "oldest sleep comes first");
+        assert_eq!(
+            states[0].payload.as_deref(),
+            Some(r#"{"reason":"manual-sleep"}"#)
+        );
+        assert!(states[0].suspended_at > 0);
+        assert_eq!(states[1].worktree_path, second);
+        assert_eq!(states[1].payload, None);
+        assert!(states[1].suspended_at >= states[0].suspended_at);
+
+        // A repeated sleep refreshes the timestamp and payload in place.
+        db.set_workspace_sleep_state(first, Some(r#"{"reason":"retry"}"#))
+            .expect("refresh first");
+        let refreshed = db.get_workspace_sleep_states().expect("read refreshed");
+        assert_eq!(refreshed.len(), 2, "upsert must not duplicate the row");
+        let first_row = refreshed
+            .iter()
+            .find(|row| row.worktree_path == first)
+            .expect("first row");
+        assert_eq!(first_row.payload.as_deref(), Some(r#"{"reason":"retry"}"#));
+
+        db.clear_workspace_sleep_state(first).expect("clear first");
+        let after_clear = db.get_workspace_sleep_states().expect("read after clear");
+        assert_eq!(after_clear.len(), 1);
+        assert_eq!(after_clear[0].worktree_path, second);
+
+        // Wake is idempotent: clearing an absent marker succeeds.
+        db.clear_workspace_sleep_state(first).expect("clear missing");
+        db.clear_workspace_sleep_state("/never/slept").expect("clear unknown");
+        assert_eq!(db.get_workspace_sleep_states().expect("final states").len(), 1);
     }
 }
 

@@ -42,7 +42,15 @@ export type ParallelDeleteOutcome =
 export type ParallelDeletePorts = {
   /** Resolves the live row by host-qualified identity (never the id-only map). */
   resolveLiveTarget: (id: string, hostId: ExecutionHostId | undefined) => ParallelDeleteTarget | undefined
-  deleteTarget: (target: ParallelDeleteTarget, options: { force?: boolean }) => Promise<ParallelDeleteOutcome>
+  deleteTarget: (
+    target: ParallelDeleteTarget,
+    options: { force?: boolean; allowArchiveSkip?: boolean }
+  ) => Promise<ParallelDeleteOutcome>
+  /**
+   * Batch-wide removal options. `force` and the archive waiver belong to the whole
+   * batch: a retry must not inherit the options of the attempt that just failed.
+   */
+  deleteOptions?: { force?: boolean; allowArchiveSkip?: boolean }
   markDeleting: (targets: readonly ParallelDeleteTarget[]) => void
   clearDeleting: (target: ParallelDeleteTarget) => void
   onFailure?: (target: ParallelDeleteTarget, error: string) => void
@@ -149,7 +157,7 @@ export async function runWorktreeDeletesInParallel(
             ports.clearDeleting(target)
             return
           }
-          const outcome = await ports.deleteTarget(current, {})
+          const outcome = await ports.deleteTarget(current, ports.deleteOptions ?? {})
           if (outcome.ok) {
             if (outcome.preservedBranch) {
               preservedBranches.push(outcome.preservedBranch)

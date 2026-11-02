@@ -125,6 +125,13 @@ import {
 } from "./components/sidebar/workspace-sleep-eligibility";
 import { runSleepWorktrees, scheduleSleepWorktreesAfterMenuClose } from "./components/sidebar/sleep-worktree-flow";
 import {
+  hydrateWorktreeSleepStates,
+  installWorktreeSleepStatePersistence,
+  serializeWorktreeSleepIntentPayload,
+} from "./lib/worktree-sleep-state-persistence";
+import { destroyWorkspaceWebviews } from "./store/slices/browser-webview-cleanup";
+import { forgetWorktreeSleepIntent } from "./lib/worktree-sleep-intent";
+import {
   CLOSE_ALL_CONTEXT_MENUS_EVENT,
   getWorktreeParentPickerLabel,
   isContextWorktreeDeletable,
@@ -523,6 +530,15 @@ export default function App() {
     rightSidebarOpenRef.current = isRightSidebarOpen;
     leftSidebarWidthRef.current = leftSidebarWidth;
   }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebarWidth]);
+  // D07: the sleep marker's durable half. Install the IPC sink before any sleep
+  // can run, then restore the markers written before this renderer started — a
+  // workspace slept earlier stays cold instead of re-spawning its PTYs on boot.
+  useEffect(() => {
+    installWorktreeSleepStatePersistence();
+    void hydrateWorktreeSleepStates().catch((error) => {
+      console.error("Failed to restore workspace sleep states:", error);
+    });
+  }, []);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
   const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({});
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
@@ -2522,7 +2538,10 @@ export default function App() {
    * group, immediate per-row progress, aggregated failure toasts.
    */
   const runDeleteIdentitiesNow = useCallback(
-    async (identities: readonly WorktreeDeleteIdentity[], options: { force?: boolean } = {}) => {
+    async (
+      identities: readonly WorktreeDeleteIdentity[],
+      options: { force?: boolean; allowArchiveSkip?: boolean } = {}
+    ) => {
       const targets: ParallelDeleteTarget[] = [];
       for (const identity of identities) {
         const live = deleteLiveTargets.find(
@@ -2586,15 +2605,32 @@ export default function App() {
               }
             : undefined;
         },
-        deleteTarget: async (target) => {
+        deleteOptions: options,
+        deleteTarget: async (target, targetOptions) => {
           try {
-            await invoke("delete_worktree", {
+            const result = await invoke<{
+              path: string;
+              removed: boolean;
+              preserved_branches?: { branch_name: string; head?: string | null }[];
+            } | null>("delete_worktree", {
               repoPath: target.repoPath,
               worktreePath: target.path,
-              force: options.force === true,
+              force: targetOptions.force === true,
+              allowArchiveSkip: targetOptions.allowArchiveSkip === true,
+              // Remote owners route the same command to their host-aware path.
               ...(target.hostId ? { hostId: target.hostId } : {}),
             });
-            return { ok: true };
+            const preserved = result?.preserved_branches?.[0];
+            return preserved?.branch_name
+              ? {
+                  ok: true,
+                  preservedBranch: {
+                    worktreeId: target.id,
+                    branchName: preserved.branch_name,
+                    ...(target.hostId ? { hostId: target.hostId } : {}),
+                  },
+                }
+              : { ok: true };
           } catch (error) {
             return { ok: false, error: String(error) };
           }
@@ -2627,16 +2663,18 @@ export default function App() {
             hasKnownChanges:
               (dirtyByPath[target.path] ?? 0) > 0 ||
               failure.summary.toLowerCase().includes("uncommitted"),
-            // Orca waives an archive-hook refusal here; Hydra's backend has no
-            // archive hook channel, so the waiver cannot be reported.
-            canDeleteAnyway: false,
+            // Only the archive-hook refusal has a waiver; Git's dirty/locked
+            // refusals are recovered with Force Delete instead.
+            canDeleteAnyway: failure.canWaiveArchiveHook,
             onViewChanges: () => {
               void viewWorktreeChanges(target.path);
             },
             onForceDelete: () => {
               if (identity) void runDeleteIdentitiesNow([identity], { force: true });
             },
-            onDeleteAnyway: () => {},
+            onDeleteAnyway: () => {
+              if (identity) void runDeleteIdentitiesNow([identity], { allowArchiveSkip: true });
+            },
           });
         },
         onListChanged: showWorkspaceListChangedToast,
@@ -2645,6 +2683,9 @@ export default function App() {
         },
         onDeleted: (rows) => {
           const repoPaths = rows.map((row) => row.repoPath).filter(Boolean);
+          // A deleted workspace must not leave a durable sleep marker behind: a
+          // later workspace reusing the path would boot asleep.
+          for (const row of rows) forgetWorktreeSleepIntent(row.path);
           refreshAfterDelete(repoPaths);
           setDeleteStateByWorktreeId((prev) => {
             const next = { ...prev };
@@ -4551,14 +4592,49 @@ export default function App() {
         setActiveWorktree: (worktreePath) => {
           setActiveWorktreePath(worktreePath);
         },
+        getSleepPayload: (worktreePath) => {
+          const keptTabs = tabsRef.current.filter((tab) => {
+            const cwd = tab.cwd ?? "";
+            return cwd === worktreePath || cwd.startsWith(`${worktreePath}/`);
+          });
+          return serializeWorktreeSleepIntentPayload({
+            version: 1,
+            reason: "manual-sleep",
+            tabIds: keptTabs.map((tab) => tab.id),
+            activeTabId:
+              activeWorktreePathRef.current === worktreePath
+                ? activeTabIdRef.current || null
+                : null,
+          });
+        },
         shutdownWorktreeBrowsers: async (worktreePath) => {
-          const browserTabs = useAppStore.getState().browserTabsByWorktree[worktreePath] ?? [];
-          if (browserTabs.length === 0) return;
-          await (
-            useAppStore.getState() as unknown as {
-              shutdownWorktreeBrowsers: (id: string) => Promise<void>;
+          // The live store does not compose the browser slice yet, so the guest
+          // teardown cannot depend on its action existing. Destroy by registry
+          // first (idempotent), then let the action clear rows if it is present.
+          const state = useAppStore.getState();
+          const pages = state.browserPagesByWorkspace;
+          const tabs: unknown = state.browserTabsByWorktree[worktreePath] ?? [];
+          if (Array.isArray(tabs)) {
+            for (const tab of tabs) {
+              if (
+                tab !== null &&
+                typeof tab === "object" &&
+                "id" in tab &&
+                typeof tab.id === "string"
+              ) {
+                destroyWorkspaceWebviews(pages, tab.id);
+              }
             }
-          ).shutdownWorktreeBrowsers(worktreePath);
+          }
+          // Legacy sessions keyed by the workspace itself own a guest too.
+          destroyWorkspaceWebviews(pages, worktreePath);
+          const shutdown =
+            "shutdownWorktreeBrowsers" in state
+              ? state.shutdownWorktreeBrowsers
+              : undefined;
+          if (typeof shutdown === "function") {
+            await shutdown.call(state, worktreePath);
+          }
         },
         shutdownWorktreeTerminals: async (worktreePath) => {
           const sessionIds = new Set<string>();
@@ -5900,7 +5976,7 @@ export default function App() {
               guidance: described.guidance,
               canForceDelete: described.canForce,
               hasKnownChanges: described.summary.toLowerCase().includes("uncommitted"),
-              canDeleteAnyway: false,
+              canDeleteAnyway: described.canWaiveArchiveHook,
               onViewChanges: () => {
                 void viewWorktreeChanges(failure.path);
               },
@@ -5918,7 +5994,20 @@ export default function App() {
                 setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
                 void runDeleteIdentitiesNow([identity], { force: true });
               },
-              onDeleteAnyway: () => {},
+              onDeleteAnyway: () => {
+                // Same retry shape as Force Delete, with the archive waiver instead
+                // of force: the backend runs the hook again and deletes on failure.
+                const identity = deleteWorktreeModal?.deleteTargets.find(
+                  (target) => findWorktreeByIdentity(target)?.worktree.path === failure.path
+                );
+                if (!identity) {
+                  showWorkspaceListChangedToast();
+                  return;
+                }
+                setDeleteWorktreeModal(null);
+                setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
+                void runDeleteIdentitiesNow([identity], { allowArchiveSkip: true });
+              },
             });
           }
         }}

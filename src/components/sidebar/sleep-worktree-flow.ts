@@ -28,10 +28,16 @@ export type SleepWorktreePorts = {
   ) => Promise<void>
   /**
    * Ephemeral-VM suspension. Optional because Hydra has no
-   * `window.api.ephemeralVm.suspendWorkspace` bridge yet; the flow must still run
-   * the browser/terminal teardown it can prove.
+   * `window.api.ephemeralVm.suspendWorkspace` bridge; Hydra's suspend contract is
+   * the durable `workspace_sleep_state` row written by the sleep-intent sink, so
+   * this stays the residual hook for a future VM-backed host.
    */
   suspendEphemeralVm?: (worktreeId: string) => Promise<void>
+  /**
+   * Serialized intent stored with the durable marker (kept tab ids / active tab),
+   * so a restore after restart can rebuild the same wake target.
+   */
+  getSleepPayload?: (worktreeId: string) => string | undefined
   /** Captures the virtualized scroll anchor in the same tick rows disappear. */
   captureScrollAnchor?: (worktreeId: string) => void
 }
@@ -73,7 +79,7 @@ export async function runSleepWorktrees(
     // Why mark before clearing: clearing the active workspace can unmount panes
     // before the teardown writes PTY suppressions, so those exits must not stamp
     // activity. Kept out of the UI state so it cannot disturb scroll restoration.
-    markWorktreeSleepIntent(sleptActiveWorktreeId)
+    markWorktreeSleepIntent(sleptActiveWorktreeId, ports.getSleepPayload?.(sleptActiveWorktreeId))
     ports.setActiveWorktree(null)
   }
 
@@ -85,7 +91,7 @@ export async function runSleepWorktrees(
       // Why: the marker outlives teardown so panes left mounted stay cold until an
       // explicit wake; marking per workspace keeps an earlier slow teardown from
       // leaving a later, still-awake workspace marked.
-      markWorktreeSleepIntent(worktreeId)
+      markWorktreeSleepIntent(worktreeId, ports.getSleepPayload?.(worktreeId))
       try {
         // Why browsers first: unregistering the browser guests must happen before
         // any other teardown, mirroring the remove-worktree shutdown sequence.

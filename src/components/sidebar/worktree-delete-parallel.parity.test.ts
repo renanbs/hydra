@@ -70,6 +70,27 @@ describe("runWorktreeDeletesInParallel (Orca parity)", () => {
     expect(listChanged).toEqual([true]);
   });
 
+  it("forwards the batch force/waiver options to every target", async () => {
+    const rows = [target("a"), target("b")];
+    const received: ({ force?: boolean; allowArchiveSkip?: boolean } | undefined)[] = [];
+    await runWorktreeDeletesInParallel(rows, {
+      resolveLiveTarget: (id) => rows.find((row) => row.id === id),
+      deleteTarget: async (_row, options) => {
+        received.push(options);
+        return { ok: true };
+      },
+      deleteOptions: { force: true, allowArchiveSkip: true },
+      markDeleting: () => {},
+      clearDeleting: () => {},
+      onListChanged: () => {},
+      showPreservedBranches: () => {},
+    });
+    expect(received).toEqual([
+      { force: true, allowArchiveSkip: true },
+      { force: true, allowArchiveSkip: true },
+    ]);
+  });
+
   it("aggregates preserved branches into one toast", async () => {
     const rows = [target("a"), target("b")];
     const preservedBatches: number[] = [];

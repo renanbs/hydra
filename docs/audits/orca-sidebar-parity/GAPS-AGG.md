@@ -212,7 +212,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 178 capabilities
+## PARTIAL — 174 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -374,14 +374,10 @@
 
 - **D06-019** — Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes | falta: buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos; buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop; shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros); Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem | components/sidebar/worktree-manual-order.ts:108-251
 
-### D07-menus-actions (6)
+### D07-menus-actions (2)
 
-- **D07-001** — Colocar workspace individual em modo sleep através do item de menu de contexto para liberar memória e processos | falta: Item desabilitado quando não há abas com PTY ativa nem abas de navegador (Hydra mostra Sleep sempre habilitado — src/App.tsx:3487); Teardown real de navegadores/webviews antes dos terminais (Hydra não toca PTY: só remove abas React e marca a sessão 'idle' — src/App.tsx:3122-3127); Marca de sleep intent persistente e wake explícito; Disparo com delay de 50ms após o fechamento do menu | components/sidebar/WorkspaceSleepMenuItems.tsx:28
-- **D07-004** — Executar o pipeline sequencial de sleep de workspaces com teardown ordenado de navegadores, terminais e suspensão de VM efêmera | falta: shutdownWorktreeBrowsers antes de shutdownWorktreeTerminals (destruição de persistent webviews); shutdownWorktreeTerminals com keepIdentifiers:true (preservar histórico/layout em disco); Suspensão da VM efêmera (window.api.ephemeralVm.suspendWorkspace) — não há IPC equivalente no caminho; markWorktreeSleepIntent e limpeza de activeWorktreeId antes do teardown | components/sidebar/sleep-worktree-flow.ts:22
 - **D07-023** — Ações de hierarquia e linhagem no menu de contexto (abrir pai, selecionar pai e desaninhamento) | falta: Desabilitar a ação quando isDeleting: Hydra só considera eligibleParents.length === 0 (App.tsx:3449); Picker flutuante ancorado no card: Hydra abre ParentPickerModal como modal central; Remoção da relação para todos os workspaces do contexto atual: Hydra apaga só a chave do worktree clicado (App.tsx:3485); Persistência da linhagem em store/backend (Orca unnestWorktrees/updateWorktreeLineage): Hydra usa localStorage 'hydra:worktree_lineage' (App.tsx:434) | components/sidebar/use-worktree-context-menu-commands.ts:161
 - **D07-028** — Árvore de decisão para deleção de worktree individual com validação de instância, host e tratamento de checkout principal e SSH desconectado | falta: Validação de expectedInstanceId e toast de lista desatualizada; Modal 'confirm-remove-folder' para checkout principal (Hydra desabilita o item e mostra painel textual; não oferece remover o projeto no mesmo fluxo); Resolução SSH (resolveSshWorkspaceForget) e modal 'forget-ssh-workspace' para host ghost/desconectado; Linhagem de descendentes forçando allowSkipConfirm:false | backend: invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476: sweep de PTYs/sessões do worktree e remove_git_worktree (worktree_ops.rs:1208) que roda `git worktree remove --force` | components/sidebar/delete-worktree-flow.ts:35
-- **D07-041** — Toast customizado de falha na exclusão de worktree com rodapé de ações interativas (View, Force Delete, Delete Anyway) | falta: Botão 'View' abrindo o diff viewer com as alterações pendentes; Botão 'Delete Anyway' para o caso de registro ausente | components/sidebar/delete-worktree-failure-toast.tsx:29
-- **D07-044** — Pipeline assíncrono de deleção paralela com agrupamento por repositório, ordenação por profundidade de caminho e serialização de travas | falta: Desduplicação por identidade qualificada e marcação 'deleting' imediata no store; beginWorktreeSnapshotPruneBatch; Agrupamento por host+repositório e ordenação por profundidade (path.length) para excluir filhos antes do pai; Serialização por turno (runInWorktreeDeleteTurn) para o mesmo diretório | backend: invoke('delete_worktree') N chamadas concorrentes -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476 | components/sidebar/worktree-delete-execution.ts:32
 
 ### D08-kanban-board (13)
 

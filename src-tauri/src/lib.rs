@@ -54,9 +54,9 @@ use catalog::{
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
-    clone_git_repository, create_git_worktree, create_new_project, list_git_worktrees,
-    remove_git_worktree, scan_project_worktrees, CreateProjectParams, CreateWorktreeParams,
-    GitWorktreeInfo, ProjectWorktreeScanResult,
+    clone_git_repository, create_git_worktree, create_new_project, gate_worktree_archive_hook,
+    list_git_worktrees, remove_git_worktree, scan_project_worktrees, CreateProjectParams,
+    CreateWorktreeParams, GitWorktreeInfo, ProjectWorktreeScanResult, WorktreeDeleteOutcome,
 };
 
 pub struct AppState {
@@ -659,6 +659,10 @@ pub struct BatchDeleteTarget {
     pub worktree_path: String,
     #[serde(default)]
     pub force: bool,
+    /// Explicit waiver for a FAILED archive hook (#19334 analogue). Only the
+    /// "Delete Anyway" retry sets it; the ordinary confirmation never does.
+    #[serde(default)]
+    pub allow_archive_skip: bool,
 }
 
 #[derive(serde::Serialize)]
@@ -671,6 +675,9 @@ pub struct BatchDeleteFailure {
 pub struct BatchDeleteResult {
     pub deleted: Vec<String>,
     pub failures: Vec<BatchDeleteFailure>,
+    /// Structured per-target results (preserved branches + waived archive hooks),
+    /// in the order the targets settled.
+    pub outcomes: Vec<WorktreeDeleteOutcome>,
 }
 
 /// True when `path` lives inside `ancestor` (or is it). Used to stop a parent removal
@@ -691,6 +698,7 @@ async fn delete_worktrees_batch(
     tokio::task::spawn_blocking(move || {
         let mut deleted = Vec::new();
         let mut failures: Vec<BatchDeleteFailure> = Vec::new();
+        let mut outcomes: Vec<WorktreeDeleteOutcome> = Vec::new();
         // Why sequential: the payload is post-order per repo (child before parent) and
         // git worktree removal shares repo locks. Independent repos may arrive
         // interleaved; order within the list is still child-first.
@@ -705,6 +713,22 @@ async fn delete_worktrees_batch(
                 });
                 continue;
             }
+            // Archive hook first: on refusal nothing below may stop a PTY or touch
+            // the checkout, exactly like the single-target command.
+            let archive_hook_override = match gate_worktree_archive_hook(
+                &target.repo_path,
+                &target.worktree_path,
+                target.allow_archive_skip,
+            ) {
+                Ok(override_record) => override_record,
+                Err(error) => {
+                    failures.push(BatchDeleteFailure {
+                        worktree_path: target.worktree_path,
+                        error,
+                    });
+                    continue;
+                }
+            };
             let doomed: Vec<String> = db
                 .list_sessions(Some(&target.worktree_path))
                 .unwrap_or_default()
@@ -717,14 +741,18 @@ async fn delete_worktrees_batch(
                 let _ = db.delete_session(id);
             }
             match remove_git_worktree(&target.repo_path, &target.worktree_path, target.force) {
-                Ok(()) => deleted.push(target.worktree_path),
+                Ok(mut outcome) => {
+                    outcome.archive_hook_override = archive_hook_override;
+                    deleted.push(target.worktree_path);
+                    outcomes.push(outcome);
+                }
                 Err(error) => failures.push(BatchDeleteFailure {
                     worktree_path: target.worktree_path,
                     error,
                 }),
             }
         }
-        BatchDeleteResult { deleted, failures }
+        BatchDeleteResult { deleted, failures, outcomes }
     })
     .await
     .map_err(|error| error.to_string())
@@ -761,10 +789,18 @@ async fn delete_worktree(
     repo_path: String,
     worktree_path: String,
     force: Option<bool>,
-) -> Result<(), String> {
+    allow_archive_skip: Option<bool>,
+) -> Result<WorktreeDeleteOutcome, String> {
     let terminal = state.terminal.clone();
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
+        // Archive hook before any stop/delete mutation: a refusal must leave the
+        // checkout, its sessions and its registration untouched.
+        let archive_hook_override = gate_worktree_archive_hook(
+            &repo_path,
+            &worktree_path,
+            allow_archive_skip.unwrap_or(false),
+        )?;
         // Orca parity (executeWorktreeRemoval): sweep PTYs of sessions bound to
         // the doomed worktree BEFORE the directory disappears, then purge their
         // persisted records so no ghost row survives the refetch. list_sessions
@@ -780,11 +816,53 @@ async fn delete_worktree(
             let _ = terminal.close_session(id);
             let _ = db.delete_session(id);
         }
-        remove_git_worktree(&repo_path, &worktree_path, force.unwrap_or(false))
+        let mut outcome =
+            remove_git_worktree(&repo_path, &worktree_path, force.unwrap_or(false))?;
+        outcome.archive_hook_override = archive_hook_override;
+        Ok(outcome)
     })
     .await
     .map_err(|e| e.to_string())?
 }
+
+/// D07: the durable half of the sleep contract. Hydra has no ephemeral VM to
+/// suspend, so a workspace's "suspended" state is this row: its PTYs were
+/// released on purpose and the intent must survive a renderer reload/restart.
+#[tauri::command]
+async fn get_workspace_sleep_states(
+    state: State<'_, AppState>,
+) -> Result<Vec<db::WorkspaceSleepStateRecord>, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.get_workspace_sleep_states())
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn set_workspace_sleep_state(
+    state: State<'_, AppState>,
+    worktree_path: String,
+    payload: Option<String>,
+) -> Result<(), String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        db.set_workspace_sleep_state(&worktree_path, payload.as_deref())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn clear_workspace_sleep_state(
+    state: State<'_, AppState>,
+    worktree_path: String,
+) -> Result<(), String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || db.clear_workspace_sleep_state(&worktree_path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 async fn set_worktree_display_name(
     worktree_path: String,
@@ -1882,6 +1960,9 @@ pub fn run() {
             set_worktree_rename_error,
             set_worktree_status,
             set_worktree_flags,
+            get_workspace_sleep_states,
+            set_workspace_sleep_state,
+            clear_workspace_sleep_state,
             auto_rename_worktree,
             scan_workspace_ports,
             kill_port_process,

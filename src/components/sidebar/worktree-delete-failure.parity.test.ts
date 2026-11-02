@@ -35,6 +35,16 @@ describe("describeWorktreeDeleteFailure (Orca parity)", () => {
     expect(failure.canForce).toBe(false);
   });
 
+  it("offers the archive waiver only for the archive-hook refusal", () => {
+    const failure = describeWorktreeDeleteFailure(
+      "Archive hook failed for worktree: /work/repo — exited 7. Nothing was stopped, deleted or deregistered. archiving failed"
+    );
+    expect(failure.summary).toMatch(/archive hook failed/i);
+    expect(failure.canForce).toBe(false);
+    expect(failure.canWaiveArchiveHook).toBe(true);
+    expect(describeWorktreeDeleteFailure("fatal: locked").canWaiveArchiveHook).toBe(false);
+  });
+
   it("keeps an unknown message verbatim", () => {
     const failure = describeWorktreeDeleteFailure("something unexpected happened");
     expect(failure.summary).toBe("something unexpected happened");
