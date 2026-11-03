@@ -7,6 +7,7 @@ import { WorktreeCardMetaRow } from './worktree-card-meta-row'
 import { WorktreeCardDetailsHover } from './WorktreeCardDetailsHover'
 import { WorktreeCardAgents } from './WorktreeCardAgents'
 import { WorktreeCardStatusLane } from './WorktreeCardStatusLane'
+import { WorktreeLineageChildChip } from './worktree-lineage-child-chip'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
 import { WorktreeCardSecondaryRows } from './worktree-card-secondary-rows'
@@ -37,6 +38,9 @@ export function WorktreeCardParentContent({
     titleRenaming,
     newCardStyle,
     lineageChildren,
+    lineageChildCount = 0,
+    lineageCollapsed = false,
+    onLineageToggle,
     affiliateListMode = false,
     status,
     prDisplay,
@@ -159,6 +163,24 @@ export function WorktreeCardParentContent({
             activeSessionId={activeSessionId}
             className={presentation.hasMetaRow ? 'mt-0' : '-mt-1'}
           />
+        )}
+
+        {/* D11-014 (Orca `worktree-card-secondary-rows.tsx`): the parent card owns the
+            inline child region, so it also owns its count/expand affordance. */}
+        <WorktreeLineageChildChip
+          childCount={lineageChildCount}
+          collapsed={lineageCollapsed}
+          onToggle={onLineageToggle}
+          newCardStyle={newCardStyle}
+        />
+
+        {!newCardStyle && lineageChildren && (
+          <div
+            className="-ml-[1.125rem] mt-1.5 w-[calc(100%+1.125rem)] space-y-1"
+            data-worktree-lineage-children=""
+          >
+            {lineageChildren}
+          </div>
         )}
       </div>
     </div>

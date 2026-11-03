@@ -23,6 +23,7 @@ import { SidebarFooter } from "./SidebarFooter";
 import { WorktreeList } from "./WorktreeList";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import type { RepoHeaderCreateState } from "./SectionHeader";
+import { getRepoHeaderCreateState } from "./repo-header-create-state";
 import { stopRepoHeaderMenuEvent } from "./ProjectHeaderActions";
 import { translate } from "../../i18n/i18n";
 import { effectiveExternalWorktreeVisibility } from "../../lib/worktree-visibility-sources";
@@ -1513,26 +1514,22 @@ export function WorktreeSidebar({
   const createStateByProjectId = useMemo(() => {
     const states = new Map<string, RepoHeaderCreateState>();
     for (const project of projects) {
-      const label = project.displayName || project.name;
-      const connectionId = repoByPath.get(project.path)?.connectionId ?? null;
-      const gated =
-        project.is_git &&
-        Boolean(connectionId) &&
-        !isRuntimeOwnedSshTargetId(connectionId) &&
-        sshConnectionStates.get(connectionId as string)?.status !== "connected";
+      const repo = repoByPath.get(project.path);
+      const connectionId = repo?.connectionId ?? project.connectionId ?? null;
       states.set(
         project.id,
-        gated
-          ? {
-              disabled: true,
-              tooltip: "Reconnect SSH target before creating workspaces",
-              ariaLabel: `Reconnect SSH target before creating workspaces for ${label}`,
-            }
-          : {
-              disabled: false,
-              tooltip: `Create workspace for ${label}`,
-              ariaLabel: `Create workspace for ${label}`,
-            }
+        getRepoHeaderCreateState({
+          // Why the fallback: the sidebar model can paint a project before the store
+          // catalog row lands, and a missing row must stay creatable.
+          repo: {
+            kind: repo?.kind ?? (project.is_git ? "git" : "folder"),
+            connectionId,
+          },
+          label: project.displayName || project.name,
+          sshStatus: connectionId
+            ? (sshConnectionStates.get(connectionId)?.status ?? null)
+            : null,
+        })
       );
     }
     return states;

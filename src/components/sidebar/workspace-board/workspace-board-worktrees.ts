@@ -5,6 +5,7 @@ import { getWorktreeHostIdentity } from '../../../shared/worktree/host-qualified
 import { toWorktreeRow } from '../../../shared/worktree/worktree-row'
 import { workspaceStatusFrom } from '../../../lib/workspace-status-signals'
 import { buildSidebarLiveActivityIndex, isVisibleUnderSidebarMenuFilters } from '../visible-worktree-filters'
+import { buildUnambiguousIdIndex } from '../worktree-unambiguous-id-index'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
@@ -196,17 +197,5 @@ export function buildWorkspaceBoardLaneFullWorktreeIds(
 export function buildWorkspaceBoardUnambiguousWorktreeIdIndex(
   cards: readonly WorkspaceBoardCard[]
 ): Map<string, WorkspaceBoardCard> {
-  const byId = new Map<string, WorkspaceBoardCard>()
-  const ambiguous = new Set<string>()
-  for (const card of cards) {
-    if (byId.has(card.worktreeId)) {
-      ambiguous.add(card.worktreeId)
-      continue
-    }
-    byId.set(card.worktreeId, card)
-  }
-  for (const worktreeId of ambiguous) {
-    byId.delete(worktreeId)
-  }
-  return byId
+  return buildUnambiguousIdIndex(cards, (card) => card.worktreeId)
 }

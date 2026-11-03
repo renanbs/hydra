@@ -28,6 +28,7 @@ import {
   type ActiveVisibilityMutation,
 } from "./worktree-visibility-mutation-fence";
 import { getRepoCustomWorktreeVisibilitySourceIds } from "./worktree-visibility-repo-sources";
+import { useRepoOwnerVisibilityDefaults } from "./use-repo-owner-visibility-defaults";
 import { createWorktreeVisibilitySourceMutation } from "./worktree-visibility-source-mutation";
 import { WorktreeVisibilitySourceAddForm } from "./WorktreeVisibilitySourceAddForm";
 import {
@@ -196,7 +197,7 @@ export function WorktreeVisibilityDialog({
   project,
   hostId,
   hiddenWorktrees,
-  visibilityDefaults = EMPTY_DEFAULTS,
+  visibilityDefaults: visibilityDefaultsProp = EMPTY_DEFAULTS,
   onOpenChange,
   onImported,
   onOpenGlobalSettings,
@@ -241,6 +242,18 @@ export function WorktreeVisibilityDialog({
     [storeRepos, storeSettings, storeDetectedWorktrees, repoId, hostId]
   );
   const currentScopeRef = useRef(mutationScope);
+  // Why: the dialog may target a repo on a non-focused host. The owner-host resolver
+  // reads that host's own defaults instead of the globally focused settings (D11-005).
+  const ownerVisibilityDefaults = useRepoOwnerVisibilityDefaults(
+    targetRepo ??
+      (project
+        ? {
+            connectionId: project.connectionId ?? null,
+            executionHostId: project.executionHostId ?? null,
+          }
+        : null)
+  );
+  const visibilityDefaults = ownerVisibilityDefaults ?? visibilityDefaultsProp;
   useLayoutEffect(() => {
     currentScopeRef.current = mutationScope;
   }, [mutationScope]);
