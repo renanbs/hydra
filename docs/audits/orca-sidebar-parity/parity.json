@@ -953,15 +953,14 @@
    "components/sidebar/SidebarFeedbackDialog.tsx:315-356"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "window.api.gh.viewer() para login/email",
-    "checkbox 'Submit anonymously' e omissão de login/email no payload",
-    "estado de carregamento / instruções de conexão do gh"
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
    ],
-   "notes": "Busca em 5 passos: (1-2) 0 ocorrências no sidebar; (3) nenhum caminho gh viewer no renderer (existe host de review GitHub em src/store/github/**, sem viewer identity exposto ao renderer); (4) BACKEND AUSENTE: sem comando tipo gh_viewer; (5) sem modal de feedback. Contrato Tauri necessário: ver gaps.md."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "gh_viewer feeds the feedback dialog identity prefill.",
+   "note": "gh_viewer feeds the feedback dialog identity prefill."
   },
   "domain": "D01-shell-chrome"
  },
@@ -1679,19 +1678,14 @@
    "components/sidebar/useAddRepoNestedImportFlow.ts:70"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Preserva a ordem dos repositórios conforme a ordem do scan via getSelectedNestedRepoPathsInScanOrder",
-    "Emite telemetria 'add_repo_nested_import_action' com modo de importação ('import_group' ou 'import_separate')",
-    "Executa importNestedRepos com parentPath, groupName, projectPaths e connectionId/runtimeEnvironmentId",
-    "Emite telemetria 'add_repo_nested_import_result' com dados detalhados do resultado",
-    "Executa fetchWorktrees para todos os projetos importados com sucesso",
-    "Exibe toast de aviso caso alguns repositórios tenham falhado na importação ('N failed')",
-    "Conclui o fluxo ativando o primeiro repositório importado via onGitRepoReady"
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
    ],
-   "notes": "useAddRepoNestedImportFlow/importNestedRepos inexistentes (apenas chave i18n); sem import em grupo/lote. Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Atomic import_nested_repos wired in AddRepoDialog.",
+   "note": "Atomic import_nested_repos wired in AddRepoDialog."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -2574,23 +2568,16 @@
    "components/sidebar/use-remote-file-browser-listing.ts:18-57"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:5276-5290"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [
     "window.api.ssh.browseDir (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
    ],
-   "missing_behaviors": [
-    "Carrega listagem de diretório via fetchListing suportando SSH (window.api.ssh.browseDir) e Servidor Runtime (browseRuntimeServerDirectory).",
-    "Mantém cache de listagens em memória (listingCacheRef) por caminho resolvido e solicitado.",
-    "Na primeira listagem de '~', armazena o diretório home remoto resolvido em homePathRef.",
-    "Utiliza genRef para descartar listagens assíncronas obsoletas.",
-    "Armazena resolvedPath, entries e pathFlavor ('posix' | 'win32').",
-    "Ao desmontar o componente (setBrowserRootRef), cancela timers e invalida requisições em voo."
-   ],
-   "notes": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri.",
-   "note": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri."
+   "missing_behaviors": [],
+   "notes": "Remote browser loads/caches/resolves home via ssh_browse_dir.",
+   "note": "Remote browser loads/caches/resolves home via ssh_browse_dir."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
@@ -3079,12 +3066,12 @@
   "hydra": {
    "status": "parity",
    "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+   "notes": "Preserved-branch review deletes through host guards.",
+   "note": "Preserved-branch review deletes through host guards."
   },
   "domain": "D02c-project-groups-scripts"
  },
@@ -3101,12 +3088,12 @@
   "hydra": {
    "status": "parity",
    "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+   "notes": "Batch force-delete reaches the real command.",
+   "note": "Batch force-delete reaches the real command."
   },
   "domain": "D02c-project-groups-scripts"
  },
@@ -3123,12 +3110,12 @@
   "hydra": {
    "status": "parity",
    "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+   "notes": "Single preserved-branch toast deletes via the command.",
+   "note": "Single preserved-branch toast deletes via the command."
   },
   "domain": "D02c-project-groups-scripts"
  },
@@ -3252,23 +3239,14 @@
    "components/sidebar/SetupScriptPromptCard.tsx:288"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/lib/setup-script-prompt.ts:1-32",
-    "src/i18n/locales/en.json:5300-5308"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Inspeciona assincronamente hooks de runtime e candidatos de importação (checkRuntimeHooks, inspectRuntimeSetupScriptImports)",
-    "Suporta edição de setup detectado de package manager antes de salvar",
-    "Botão 'Configure' navega diretamente para as configurações de comandos locais do repositório",
-    "Botão de dispensa persiste a recusa para a identidade de host do repositório no store (dismissSetupScriptPrompt)",
-    "Salva comando detectado via updateRepo (hookSettings) e emite telemetria de ação (setup_script_prompt_action)",
-    "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
-    "Suporta re-tentativa manual de inspeção em caso de erro"
-   ],
-   "notes": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers.",
-   "note": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers."
+   "missing_behaviors": [],
+   "notes": "Hooks + import inspection wired to the setup prompt card.",
+   "note": "Hooks + import inspection wired to the setup prompt card."
   },
   "domain": "D02c-project-groups-scripts"
  },
@@ -7225,18 +7203,14 @@
    "components/sidebar/WorktreeCardMetaBadges.tsx:152"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-metadata-badges.tsx:60-125",
-    "src/components/sidebar/worktree-card-presentation.tsx:92-108",
-    "src/components/sidebar/worktree-card-presentation.tsx:166-176"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Badge de Jira (o card não projeta linked Jira)"
-   ],
-   "notes": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field.",
-   "note": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field."
+   "missing_behaviors": [],
+   "notes": "Jira metadata badge has a persisted producer.",
+   "note": "Jira metadata badge has a persisted producer."
   },
   "par": [
    "PAR-62"
@@ -7637,16 +7611,14 @@
    "components/sidebar/WorktreeCardMeta.tsx:305"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263",
-    "src/store/slices/jira.ts:1"
+    "src-tauri/src/lib.rs"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Seção Jira com View on Jira e título formatado"
-   ],
-   "notes": "Busca: jiraIssueDisplay/JiraIcon no card = 0 hits; o dado existe na store (src/store/slices/jira.ts) e em src/shared/persisted-ui-state-types.ts, sem consumidor no card."
+   "missing_behaviors": [],
+   "notes": "Jira hover section projects the persisted link.",
+   "note": "Jira hover section projects the persisted link."
   },
   "par": [
    "PAR-62"

@@ -915,15 +915,14 @@
     "components/sidebar/SidebarFeedbackDialog.tsx:315-356"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "window.api.gh.viewer() para login/email",
-     "checkbox 'Submit anonymously' e omissão de login/email no payload",
-     "estado de carregamento / instruções de conexão do gh"
+    "status": "parity",
+    "evidence": [
+     "src-tauri/src/lib.rs"
     ],
-    "notes": "Busca em 5 passos: (1-2) 0 ocorrências no sidebar; (3) nenhum caminho gh viewer no renderer (existe host de review GitHub em src/store/github/**, sem viewer identity exposto ao renderer); (4) BACKEND AUSENTE: sem comando tipo gh_viewer; (5) sem modal de feedback. Contrato Tauri necessário: ver gaps.md."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "gh_viewer feeds the feedback dialog identity prefill.",
+    "note": "gh_viewer feeds the feedback dialog identity prefill."
    }
   },
   {

@@ -1759,33 +1759,6 @@
    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
   },
   {
-   "id": "D02c-012",
-   "status": "parity",
-   "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
-   ],
-   "missing_behaviors": [],
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
-  },
-  {
-   "id": "D02c-013",
-   "status": "parity",
-   "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
-   ],
-   "missing_behaviors": [],
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
-  },
-  {
-   "id": "D02c-014",
-   "status": "parity",
-   "evidence": [
-    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
-   ],
-   "missing_behaviors": [],
-   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
-  },
-  {
    "id": "D02c-017",
    "status": "parity",
    "evidence": [
@@ -2360,6 +2333,78 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-024",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Atomic import_nested_repos wired in AddRepoDialog."
+  },
+  {
+   "id": "D02b-022",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Remote browser loads/caches/resolves home via ssh_browse_dir."
+  },
+  {
+   "id": "D02c-012",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Preserved-branch review deletes through host guards."
+  },
+  {
+   "id": "D02c-013",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Batch force-delete reaches the real command."
+  },
+  {
+   "id": "D02c-014",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Single preserved-branch toast deletes via the command."
+  },
+  {
+   "id": "D02c-019",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Hooks + import inspection wired to the setup prompt card."
+  },
+  {
+   "id": "D04a-043",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "Jira hover section projects the persisted link."
+  },
+  {
+   "id": "D01-041",
+   "status": "parity",
+   "evidence": [
+    "src-tauri/src/lib.rs"
+   ],
+   "missing_behaviors": [],
+   "note": "gh_viewer feeds the feedback dialog identity prefill."
   }
  ]
 }

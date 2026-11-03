@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 646 | 84.4% |
-| partial | 56 | 7.3% |
-| missing | 54 | 7.1% |
+| parity | 652 | 85.2% |
+| partial | 55 | 7.2% |
+| missing | 49 | 6.4% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
 
@@ -16,13 +16,13 @@
 
 | domínio | capabilities | parity | partial | missing | not-applicable | out-of-scope |
 |---|---|---|---|---|---|---|
-| D01-shell-chrome | 52 | 38 | 1 | 12 | 1 | 0 |
-| D02a-repo-add-wizard | 42 | 19 | 6 | 10 | 6 | 1 |
-| D02b-hosts-ssh-remote | 30 | 21 | 5 | 4 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 18 | 1 | 7 | 0 | 0 |
+| D01-shell-chrome | 52 | 39 | 1 | 11 | 1 | 0 |
+| D02a-repo-add-wizard | 42 | 20 | 6 | 9 | 6 | 1 |
+| D02b-hosts-ssh-remote | 30 | 22 | 5 | 3 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 19 | 1 | 6 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 47 | 2 | 1 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 70 | 28 | 12 | 1 | 0 |
+| D04a-worktree-card-surface | 111 | 72 | 27 | 11 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 10 | 8 | 5 | 0 | 0 |
 | D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |
