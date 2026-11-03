@@ -1,4 +1,5 @@
-import { Settings, GitCommit, Crosshair, Kanban } from "lucide-react";
+import { Settings, GitCommit, Crosshair, Kanban, MessageSquare } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { translate } from "@/i18n/i18n";
 import { useShortcutKeyDetails } from "@/hooks/useShortcutLabel";
@@ -6,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShortcutKeyCombo } from "../ShortcutKeyCombo";
 import type { GitRepoStatus } from "./types";
+
+// Why lazy: the composer (dialog + attachment reader) is only needed after the
+// user asks for it; Orca warms the chunk from its menu, Hydra loads on click.
+const SidebarFeedbackDialog = lazy(() =>
+  import("./SidebarFeedbackDialog").then((module) => ({
+    default: module.SidebarFeedbackDialog,
+  }))
+);
 
 interface SidebarFooterProps {
   appVersion: string | null;
@@ -26,10 +35,18 @@ interface SidebarFooterProps {
 export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealCurrent, workspaceBoardOpen, onToggleWorkspaceBoard }: SidebarFooterProps) {
   // Subscribe this footer to locale changes before using translate().
   useTranslation();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // Why sticky: the dialog animates itself closed off `open`, so unmounting on
+  // close cuts that short.
+  const [feedbackDialogMounted, setFeedbackDialogMounted] = useState(false);
   const settingsShortcut = useShortcutKeyDetails("app.settings");
   const settingsLabel = translate(
     "auto.components.sidebar.SidebarSettingsHelpMenu.a428c25998",
     "Settings"
+  );
+  const feedbackLabel = translate(
+    "auto.components.sidebar.SidebarSettingsHelpMenu.4cf5b868d7",
+    "Send Feedback"
   );
   const revealLabel = translate(
     "auto.components.sidebar.ScrollToCurrentWorkspaceToolbarButton.23989bb663",
@@ -38,6 +55,7 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
 
   return (
     <div className="h-8 border-t border-worktree-sidebar-border px-3 flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 font-mono bg-worktree-sidebar shrink-0">
+      <div className="flex items-center gap-1">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -62,6 +80,26 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
           ) : null}
         </TooltipContent>
       </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => {
+              setFeedbackDialogMounted(true);
+              setFeedbackOpen(true);
+            }}
+            aria-label={feedbackLabel}
+            data-sidebar-feedback-trigger=""
+            className="inline-flex size-6 items-center justify-center rounded-md text-worktree-sidebar-foreground/60 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/60 transition-all outline-none cursor-pointer focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-worktree-sidebar-foreground/50 transition" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={4}>
+          {feedbackLabel}
+        </TooltipContent>
+      </Tooltip>
+      </div>
       <div className="flex items-center gap-2">
         {onRevealCurrent && (
           <button
@@ -114,6 +152,11 @@ export function SidebarFooter({ appVersion, gitStatus, onOpenSettings, onRevealC
           </span>
         )}
       </div>
+      {feedbackDialogMounted ? (
+        <Suspense fallback={null}>
+          <SidebarFeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

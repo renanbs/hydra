@@ -840,7 +840,12 @@ export function WorktreeVisibilityDialog({
             </ul>
             <button
               type="button"
-              onClick={() => onOpenGlobalSettings?.()}
+              onClick={() => {
+                // Orca closes the visibility modal before opening Global Settings,
+                // so the settings pane is not stacked behind a stale dialog.
+                onOpenGlobalSettings?.();
+                onOpenChange(false);
+              }}
               className="inline-flex items-center gap-1.5 text-[11px] font-medium text-indigo-300 hover:text-indigo-200 transition cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />

@@ -491,15 +491,27 @@ export function worktreeVisibilitySourceRowKey(row: WorktreeVisibilitySourceRow)
   return "other";
 }
 
-/** Counts hidden worktrees per row key (`N found` badges). */
+/** The fields the source counter reads; Orca's detected row carries both. */
+export type WorktreeVisibilityCountRow = {
+  path: string
+  selectedCheckout?: boolean
+  ownership?: string
+}
+
+/**
+ * Counts hidden worktrees per row key (`N found` badges). Orca skips the
+ * checkout the user explicitly selected and anything Orca itself manages:
+ * neither is an external worktree the source setting governs.
+ */
 export function countWorktreesByVisibilitySource(
-  worktrees: readonly { path: string }[],
+  worktrees: readonly WorktreeVisibilityCountRow[],
   repoPath: string | null | undefined,
   customSources: readonly CustomWorktreeVisibilitySource[],
   configuredBasePaths: readonly string[] = []
 ): Map<string, number> {
   const counts = new Map<string, number>();
   for (const worktree of worktrees) {
+    if (worktree.selectedCheckout || worktree.ownership === "orca-managed") continue
     const match = classifyWorktreeVisibilitySource(
       worktree.path,
       repoPath,
