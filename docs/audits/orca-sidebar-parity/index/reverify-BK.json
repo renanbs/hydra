@@ -635,6 +635,226 @@
    ],
    "missing_behaviors": [],
    "note": "Within-group reorders replay through buildManualOrderUpdatesForVisibleGroups; a status-lane release resolves its slot and, only in manual sort mode (or same-lane), commits through buildManualOrderUpdatesForGroupDrop; other modes write status only."
+  },
+  {
+   "id": "D05-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-005",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-011",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-013",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-014",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-015",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-016",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-018",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D05-020",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarAgentsList.tsx",
+    "src/components/sidebar/worktree-agent-rows.ts",
+    "src/components/sidebar/use-worktree-agent-rows.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
   }
  ]
 }

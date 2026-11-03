@@ -65,7 +65,9 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   onClearNotification
 }: CompactAgentRowProps): React.JSX.Element {
   const agentType = agent.agentType ?? agent.displayAgent ?? 'unknown'
-  const activationId = agent.entry.sessionId ?? agent.paneKey
+  // Why: a subagent child has no pane of its own; activation targets its parent pane,
+  // and the shell's reveal handler needs the backing session id. A row without one is inert.
+  const activationId = agent.sessionId ?? agent.activationPaneKey ?? agent.paneKey
   const dotState = getAgentDotState(agent)
   // Why: Hydra has no dashboard conversation-name store; the tab title / prompt is the row's name.
   const conversationName = agent.terminalTitle?.trim() || agent.prompt?.trim() || null

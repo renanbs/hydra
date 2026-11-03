@@ -74,7 +74,7 @@ import type {
   GitWorktreeInfo,
   WorktreeSidebarProps,
   AgentsGroupBy,
-  AgentsStatusFilter,
+  AgentsReadFilter,
   WorkspacePort,
   SidebarBody,
   SidebarShellPrefs,
@@ -92,7 +92,6 @@ import { isDetachedHeadWorkspace } from "./visible-worktree-kinds";
 import { tabHasLivePty } from "@/lib/tab-has-live-pty";
 import type { AgentStateHistoryEntry } from "../../shared/agent-status-types";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
-import { toSharedAgentStatusByPaneKey } from "./visible-worktrees";
 import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
@@ -245,12 +244,14 @@ export function WorktreeSidebar({
   const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(
     () => initialDisplayOptions ?? defaultDisplayOptions
   );
-  const [agentsStatusFilter, setAgentsStatusFilter] = useState<AgentsStatusFilter>(
+  const [agentsReadFilter, setAgentsReadFilter] = useState<AgentsReadFilter>(
     initialAgentsReadFilter ?? "all"
   );
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>(
     initialAgentsGroupBy ?? "state"
   );
+  const [agentsQuery, setAgentsQuery] = useState("");
+  const [agentsOptionsTarget, setAgentsOptionsTarget] = useState<HTMLDivElement | null>(null);
   // D01-009: the one-time Agents-view intro is gated by a persisted preference
   // (the same `ui.sidebar` blob the other shell prefs use), not raw localStorage.
   const [agentsIntroShown, setAgentsIntroShown] = useState<boolean>(
@@ -580,7 +581,7 @@ export function WorktreeSidebar({
       collapsedProjects: patch?.collapsedProjects ?? Array.from(collapsedProjects),
       collapsedGroups: patch?.collapsedGroups ?? Array.from(collapsedGroups),
       displayOptions: patch?.displayOptions ?? displayOptions,
-      agentsReadFilter: patch?.agentsReadFilter ?? agentsStatusFilter,
+      agentsReadFilter: patch?.agentsReadFilter ?? agentsReadFilter,
       agentsGroupBy: patch?.agentsGroupBy ?? agentsGroupBy,
       agentsSidebarIntroShown: patch?.agentsSidebarIntroShown ?? agentsIntroShown,
     });
@@ -590,7 +591,7 @@ export function WorktreeSidebar({
     collapsedProjects,
     collapsedGroups,
     displayOptions,
-    agentsStatusFilter,
+    agentsReadFilter,
     agentsGroupBy,
     agentsIntroShown,
   ]);
@@ -745,9 +746,9 @@ export function WorktreeSidebar({
     notifyPrefs({ agentsSidebarIntroShown: true });
   }, [notifyPrefs]);
 
-  const handleAgentsStatusFilterChange = useCallback((statusFilterValue: AgentsStatusFilter) => {
-    setAgentsStatusFilter(statusFilterValue);
-    notifyPrefs({ agentsReadFilter: statusFilterValue });
+  const handleAgentsReadFilterChange = useCallback((readFilter: AgentsReadFilter) => {
+    setAgentsReadFilter(readFilter);
+    notifyPrefs({ agentsReadFilter: readFilter });
   }, [notifyPrefs]);
 
   // ─── Reveal Action ───────────────────────────────────────────────────────
@@ -1637,10 +1638,10 @@ export function WorktreeSidebar({
   const hookHistoryByWorktreePath = useMemo(() => {
     const byPath = new Map<string, { updatedAt: number; history: readonly AgentStateHistoryEntry[] }>();
     for (const entry of Object.values(storeAgentStatusByPaneKey ?? {})) {
-      if (!entry.worktreePath || !entry.stateHistory || entry.stateHistory.length === 0) continue;
-      const current = byPath.get(entry.worktreePath);
+      if (!entry.worktreeId || !entry.stateHistory || entry.stateHistory.length === 0) continue;
+      const current = byPath.get(entry.worktreeId);
       if (!current || entry.updatedAt > current.updatedAt) {
-        byPath.set(entry.worktreePath, { updatedAt: entry.updatedAt, history: entry.stateHistory });
+        byPath.set(entry.worktreeId, { updatedAt: entry.updatedAt, history: entry.stateHistory });
       }
     }
     return new Map(
@@ -1655,7 +1656,7 @@ export function WorktreeSidebar({
       isSidebarSortColdStart({
         tabsByWorktree: storeTabsByWorktree,
         ptyIdsByTabId: storePtyIdsByTabId,
-        agentStatusByPaneKey: toSharedAgentStatusByPaneKey(storeAgentStatusByPaneKey),
+        agentStatusByPaneKey: storeAgentStatusByPaneKey,
         now: Date.now(),
       }),
     [storeTabsByWorktree, storePtyIdsByTabId, storeAgentStatusByPaneKey]
@@ -1877,6 +1878,7 @@ export function WorktreeSidebar({
         projects={projects}
         activeFilterCount={sidebarFilterChrome.activeFilterCount}
         hasActiveFilters={sidebarFilterChrome.hasActiveFilters}
+        onActivityOptionsTargetChange={setAgentsOptionsTarget}
       />
 
       {/* 3. Main Body */}
@@ -1893,8 +1895,11 @@ export function WorktreeSidebar({
             isModalOpen={isModalOpen}
             groupBy={agentsGroupBy}
             onGroupByChange={handleAgentsGroupByChange}
-            statusFilter={agentsStatusFilter}
-            onStatusFilterChange={handleAgentsStatusFilterChange}
+            readFilter={agentsReadFilter}
+            onReadFilterChange={handleAgentsReadFilterChange}
+            query={agentsQuery}
+            onQueryChange={setAgentsQuery}
+            optionsTarget={agentsOptionsTarget}
             scrollTopRef={agentsScrollTopRef}
           />
         </React.Suspense>

@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 419 | 54.8% |
-| partial | 171 | 22.4% |
-| missing | 166 | 21.7% |
+| parity | 439 | 57.4% |
+| partial | 161 | 21.0% |
+| missing | 156 | 20.4% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
 
@@ -24,7 +24,7 @@
 | D03b-sidebar-list-orchestration | 50 | 16 | 19 | 15 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 27 | 61 | 22 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
-| D05-agents-rows | 23 | 3 | 10 | 10 | 0 | 0 |
+| D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |
 | D07-menus-actions | 45 | 45 | 0 | 0 | 0 | 0 |
 | D08-kanban-board | 45 | 25 | 13 | 7 | 0 | 0 |

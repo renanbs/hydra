@@ -385,11 +385,7 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
   if (projectGroupsByHost) out.projectGroupsByHost = projectGroupsByHost;
   const displayOptions = normalizeDisplayOptionsPref(src.displayOptions);
   if (displayOptions) out.displayOptions = displayOptions;
-  if (
-    src.agentsReadFilter === "all" || src.agentsReadFilter === "blocked" ||
-    src.agentsReadFilter === "waiting" || src.agentsReadFilter === "working" ||
-    src.agentsReadFilter === "done" || src.agentsReadFilter === "idle"
-  ) {
+  if (src.agentsReadFilter === "all" || src.agentsReadFilter === "unread") {
     out.agentsReadFilter = src.agentsReadFilter;
   }
   if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;

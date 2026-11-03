@@ -24,6 +24,8 @@ type SidebarHeaderProps = {
   projects: HydraProject[];
   /** Orca `getSidebarActiveFilterCount`: badge + dynamic label on the options trigger. */
   activeFilterCount: number;
+  /** Orca `activityOptionsTarget`: the sheet slot the Agents options menu portals into. */
+  onActivityOptionsTargetChange?: (target: HTMLDivElement | null) => void;
   /**
    * Orca `sidebarHasActiveFilters`: the comprehensive "is anything filtered" answer,
    * including host scope. It drives the trigger's label, so a host-scope-only filter
@@ -46,6 +48,7 @@ export function SidebarHeader({
   projects,
   hasActiveFilters,
   activeFilterCount,
+  onActivityOptionsTargetChange,
 }: SidebarHeaderProps) {
   // Subscribe this header to locale changes before using translate().
   useTranslation();
@@ -156,7 +159,13 @@ export function SidebarHeader({
           </PopoverContent>
         </Popover>
 
-        {agentsViewActive ? null : (
+        {agentsViewActive ? (
+          <div
+            ref={onActivityOptionsTargetChange}
+            data-agents-options-target=""
+            className="inline-flex shrink-0 items-center"
+          />
+        ) : (
           <>
             {/* Orca SidebarWorkspaceOptionsMenu Trigger com ref */}
             <button

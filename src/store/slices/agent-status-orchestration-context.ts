@@ -1,8 +1,53 @@
-// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: store/slices/agent-status-orchestration-context.ts
+import type { AgentStatusOrchestrationContext } from '../../shared/agent-status-types'
+import { orchestrationFleetAttentionEqual } from '../../shared/orchestration-fleet-attention'
 
-export const AgentStatusEntry: any = null
-export type AgentStatusEntry = any
-export const orchestrationMapsEqual: any = null
-export type orchestrationMapsEqual = any
-export const mergeCurrentOrchestrationContext: any = null
-export type mergeCurrentOrchestrationContext = any
+export function orchestrationContextsEqual(
+  a: AgentStatusOrchestrationContext,
+  b: AgentStatusOrchestrationContext
+): boolean {
+  return (
+    a.taskId === b.taskId &&
+    a.dispatchId === b.dispatchId &&
+    a.dispatchStatus === b.dispatchStatus &&
+    a.taskTitle === b.taskTitle &&
+    a.displayName === b.displayName &&
+    a.parentTerminalHandle === b.parentTerminalHandle &&
+    a.parentPaneKey === b.parentPaneKey &&
+    a.coordinatorHandle === b.coordinatorHandle &&
+    a.orchestrationRunId === b.orchestrationRunId &&
+    orchestrationFleetAttentionEqual(a.attention, b.attention)
+  )
+}
+
+export function orchestrationMapsEqual(
+  a: Record<string, AgentStatusOrchestrationContext>,
+  b: Record<string, AgentStatusOrchestrationContext>
+): boolean {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+  if (aKeys.length !== bKeys.length) {
+    return false
+  }
+  return aKeys.every((key) => b[key] !== undefined && orchestrationContextsEqual(a[key]!, b[key]!))
+}
+
+export function mergeCurrentOrchestrationContext(
+  existing: AgentStatusOrchestrationContext | undefined,
+  current: AgentStatusOrchestrationContext
+): AgentStatusOrchestrationContext {
+  if (!existing) {
+    return current
+  }
+  const sameDispatch =
+    existing.taskId === current.taskId && existing.dispatchId === current.dispatchId
+  if (!sameDispatch) {
+    return current
+  }
+  if (current.dispatchStatus !== undefined) {
+    return orchestrationContextsEqual(existing, current) ? existing : current
+  }
+  const merged = { ...existing, ...current }
+  return orchestrationContextsEqual(existing, merged) ? existing : merged
+}

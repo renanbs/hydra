@@ -197,20 +197,108 @@ export function WorktreeCompactAgentsList({
   className?: string
 }): React.JSX.Element | null {
   const rows = useMemo(() => agents, [agents])
-  const expanded = useAppStore((s) => s.compactRootListExpandedByWorktree[worktreePath] ?? false)
+  const expanded = useAppStore((s: { compactRootListExpandedByWorktree: Record<string, boolean> }) => s.compactRootListExpandedByWorktree[worktreePath] ?? false)
   // Why: one 30s tick per non-empty list (Orca's WorktreeCardAgentsBody owns the same cadence);
   // a zero-agent list pays no timer cost because `enabled` is false.
   const now = useNow(30_000, rows.length > 0)
   // Orca's row actions: a thread can be marked read/unread, and a finished turn's
   // notification cleared, without opening the pane.
-  const clearPaneUnread = useAppStore((s) => s.clearTerminalPaneUnread)
-  const markCompletionUnread = useAppStore((s) => s.markAgentCompletionPaneUnread)
+  const clearPaneUnread = useAppStore((s: { clearTerminalPaneUnread: (paneKey: string) => void }) => s.clearTerminalPaneUnread)
+  const markCompletionUnread = useAppStore((s: { markAgentCompletionPaneUnread: (paneKey: string, reason: string) => void }) => s.markAgentCompletionPaneUnread)
+  // Why: spawned child agents are actionable work, so they show as soon as the parent
+  // appears; the disclosure folds noise, not existence. Default = expanded (Orca).
+  const [collapsedParents, setCollapsedParents] = React.useState<ReadonlySet<string>>(
+    () => new Set()
+  )
+
+  const { rootRows, childrenByParentPaneKey } = useMemo(() => {
+    const children = new Map<string, AgentRow[]>()
+    const roots: AgentRow[] = []
+    for (const row of rows) {
+      const parent = row.lineage?.parentPaneKey
+      if (!parent) {
+        roots.push(row)
+        continue
+      }
+      const bucket = children.get(parent)
+      if (bucket) {
+        bucket.push(row)
+      } else {
+        children.set(parent, [row])
+      }
+    }
+    return { rootRows: roots, childrenByParentPaneKey: children }
+  }, [rows])
+
+  const toggleLineageParent = useCallback((paneKey: string) => {
+    setCollapsedParents((previous: ReadonlySet<string>) => {
+      const next = new Set(previous)
+      if (next.has(paneKey)) {
+        next.delete(paneKey)
+      } else {
+        next.add(paneKey)
+      }
+      return next
+    })
+  }, [])
 
   if (rows.length === 0) return null
 
-  const subjectLabel = summariezCountLabel(rows.length)
+  const subjectLabel = summariezCountLabel(rootRows.length > 0 ? rootRows.length : rows.length)
   // Why: keep leaf rows aligned with parents that own a chevron.
-  const anyRootHasChildren = rows.some((r) => (r.childAgentCount ?? 0) > 0)
+  const anyRootHasChildren = rootRows.some(
+    (r) => (childrenByParentPaneKey.get(r.paneKey)?.length ?? 0) > 0
+  )
+
+  const renderBranch = (
+    agent: AgentRow,
+    ancestorPaneKeys: ReadonlySet<string>
+  ): React.ReactNode => {
+    if (ancestorPaneKeys.has(agent.paneKey)) {
+      // Why: orchestration metadata is external and can be malformed; bail on repeated
+      // ancestors instead of recursing forever.
+      return null
+    }
+    const childAgents = childrenByParentPaneKey.get(agent.paneKey) ?? []
+    const hasChildAgents = childAgents.length > 0
+    const isRootAgent = ancestorPaneKeys.size === 0
+    const isExpanded = !collapsedParents.has(agent.paneKey)
+    const descendantAncestorPaneKeys = new Set(ancestorPaneKeys)
+    descendantAncestorPaneKeys.add(agent.paneKey)
+    const activate = (): void => {
+      // Why inert rows: a closed thread stays listed but its pane is gone, so revealing
+      // it must be a no-op instead of selecting an unrelated session.
+      if (agent.sessionId) {
+        onSelectSession(agent.sessionId)
+      }
+    }
+    return (
+      <React.Fragment key={agent.paneKey}>
+        <CompactAgentRow
+          agent={agent}
+          now={now}
+          onActivate={activate}
+          isFocusedPane={Boolean(agent.sessionId) && agent.sessionId === activeSessionId}
+          childAgentCount={hasChildAgents ? childAgents.length : undefined}
+          childAgentsExpanded={isExpanded}
+          onToggleChildAgents={hasChildAgents ? () => toggleLineageParent(agent.paneKey) : undefined}
+          reserveDisclosureGutter={isRootAgent && anyRootHasChildren && !hasChildAgents}
+          onMarkRead={() => clearPaneUnread(agent.paneKey)}
+          onMarkUnread={() => markCompletionUnread(agent.paneKey, 'agent-completion')}
+          onClearNotification={() => clearPaneUnread(agent.paneKey)}
+        />
+        {hasChildAgents ? (
+          <CompactAgentExpansion expanded={isExpanded}>
+            <div className="worktree-agent-lineage-children flex flex-col gap-0.5">
+              {childAgents.map((childAgent) =>
+                renderBranch(childAgent, descendantAncestorPaneKeys)
+              )}
+            </div>
+          </CompactAgentExpansion>
+        ) : null}
+      </React.Fragment>
+    )
+  }
 
   return (
     // Orca parity (`WorktreeCardAgents.tsx:370-379`): the root is
@@ -221,27 +309,20 @@ export function WorktreeCompactAgentsList({
       data-compact-agent-list="true"
       onClick={(e) => e.stopPropagation()}
       className={`flex flex-col mt-1 gap-0.5 ${className ?? ""}`}
+      role={childrenByParentPaneKey.size > 0 ? "tree" : "group"}
+      aria-label="Agents"
     >
       <div className="compact-agent-summary-panel">
-        <CompactAgentSummaryButton agents={rows} worktreePath={worktreePath} subjectLabel={subjectLabel} />
+        <CompactAgentSummaryButton
+          agents={rootRows.length > 0 ? rootRows : rows}
+          worktreePath={worktreePath}
+          subjectLabel={subjectLabel}
+        />
 
         <CompactAgentExpansion expanded={expanded}>
-          {rows.map((r) => (
-              <CompactAgentRow
-                key={r.paneKey}
-                agent={r}
-                now={now}
-                onActivate={onSelectSession}
-                isFocusedPane={r.entry.sessionId === activeSessionId}
-                childAgentCount={r.childAgentCount}
-                childAgentsExpanded={r.childAgentsExpanded}
-                onToggleChildAgents={r.onToggleChildAgents}
-                reserveDisclosureGutter={anyRootHasChildren && (r.childAgentCount ?? 0) === 0}
-                onMarkRead={() => clearPaneUnread(r.paneKey)}
-                onMarkUnread={() => markCompletionUnread(r.paneKey, 'agent-completion')}
-                onClearNotification={() => clearPaneUnread(r.paneKey)}
-            />
-          ))}
+          {(rootRows.length > 0 ? rootRows : rows).map((r) =>
+            renderBranch(r, new Set())
+          )}
         </CompactAgentExpansion>
       </div>
     </div>

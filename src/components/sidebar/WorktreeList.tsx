@@ -20,6 +20,8 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
+import { selectWorktreeAgentActivitySummary } from "./worktree-agent-activity-summary";
+import { useShallow } from "zustand/react/shallow";
 import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
 import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import type { SidebarFilterState } from "./visible-worktree-kinds";
@@ -893,6 +895,24 @@ export function WorktreeList({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
+  // D05-013: per-worktree status summary (flags + pane ids), cached by agentStatusEpoch.
+  const agentActivityState = useAppStore(
+    useShallow((s) => ({
+      agentStatusEpoch: s.agentStatusEpoch,
+      agentStatusByPaneKey: s.agentStatusByPaneKey,
+      migrationUnsupportedByPtyId: s.migrationUnsupportedByPtyId,
+      retainedAgentsByPaneKey: s.retainedAgentsByPaneKey,
+      runtimeAgentOrchestrationByPaneKey: (
+        s as unknown as {
+          runtimeAgentOrchestrationByPaneKey?: Record<
+            string,
+            import('../../shared/agent-status-types').AgentStatusOrchestrationContext
+          >
+        }
+      ).runtimeAgentOrchestrationByPaneKey,
+      tabsByWorktree: s.tabsByWorktree,
+    }))
+  );
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
   // The persisted host-section tier order feeds the row pipeline, so a host drag
   // repaints the sections it just moved (D03a-020).
@@ -2043,6 +2063,7 @@ export function WorktreeList({
             status={workspaceStatusFrom({
               sessions: wtSessions,
               hasLiveTerminal: livePaths.has(wt.path),
+              agentSummary: selectWorktreeAgentActivitySummary(agentActivityState, wt.path),
             })}
             prDisplay={prByPath?.[wt.path] ?? null}
             review={((): WorktreeReviewStatus | undefined => {
@@ -2468,6 +2489,7 @@ export function WorktreeList({
           status={workspaceStatusFrom({
             sessions: folderSessions,
             hasLiveTerminal: livePaths.has(folderPath),
+            agentSummary: selectWorktreeAgentActivitySummary(agentActivityState, folderPath),
           })}
           pathMissing={missingPaths.has(folderPath)}
           pathStatus={folderPathStatusByPath?.get(folderPath)}

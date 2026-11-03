@@ -3,11 +3,17 @@
 // Inline agent list rendered inside WorktreeCard showing active tools and subagent trees.
 
 import React, { useMemo } from "react";
-import { useAppStore, EMPTY_TABS } from "../../store/index";
-import { detectAgentStatusFromTitle, getAgentLabelFromTitle } from "../../lib/agent-title-detection";
 import { isShellProcess, normalizeAgentId } from "../workbench/tab-agent";
 import { WorktreeCompactAgentsList } from "./worktree-card-compact-agents";
+import { useWorktreeAgentRows } from "./use-worktree-agent-rows";
 import type { AgentRow } from "./worktree-card-agent-summary";
+import type { WorktreeAgentRowWithLineage } from "./worktree-agent-row-types";
+import type {
+  AgentStatusEntry,
+  AgentStatusState,
+  AgentSubagentSnapshot
+} from "../../shared/agent-status-types";
+import type { TerminalTab } from "../../shared/terminal-tab-types";
 import type { WorktreeSession } from "./types";
 
 interface WorktreeCardAgentsProps {
@@ -18,6 +24,145 @@ interface WorktreeCardAgentsProps {
   className?: string;
 }
 
+const IS_TERMINAL_STATE: Record<string, true> = {
+  working: true,
+  blocked: true,
+  waiting: true,
+  done: true
+};
+
+function sessionRowState(state: WorktreeSession["state"]): AgentStatusState | "idle" {
+  return state === "working" || state === "blocked" || state === "waiting" || state === "done"
+    ? state
+    : "idle";
+}
+
+/** Daemon sessions still carry the legacy child-state union (`done` included); the
+ *  canonical snapshot model only knows live child states, so a settled child reads idle. */
+function toSharedSubagents(
+  subagents: WorktreeSession["subagents"]
+): AgentSubagentSnapshot[] | undefined {
+  if (!subagents || subagents.length === 0) {
+    return undefined;
+  }
+  return subagents.map((subagent) => ({
+    id: subagent.id,
+    agentType: subagent.agentType,
+    model: subagent.model,
+    description: subagent.description,
+    state: subagent.state === "done" ? "idle" : subagent.state,
+    startedAt: subagent.startedAt
+  }));
+}
+
+/** A headless daemon session with no workbench tab is still a live agent row.
+ *  Why entry.state is the narrow hook union: the row's `state` carries the richer
+ *  daemon state; the entry only needs to satisfy the status model. */
+function sessionAgentRow(session: WorktreeSession): AgentRow {
+  const startedAt = session.state_started_at ?? session.created_at ?? Date.now();
+  const rowState = sessionRowState(session.state);
+  const subagents = toSharedSubagents(session.subagents);
+  const tab: TerminalTab & { sessionId?: string } = {
+    id: session.id,
+    ptyId: null,
+    worktreeId: session.project_path,
+    title: session.title,
+    customTitle: null,
+    color: null,
+    sortOrder: Number.MAX_SAFE_INTEGER,
+    createdAt: startedAt,
+    sessionId: session.id
+  };
+  const entry: AgentStatusEntry = {
+    paneKey: session.id,
+    state: IS_TERMINAL_STATE[rowState] === true ? (rowState as AgentStatusState) : "done",
+    prompt: session.title,
+    updatedAt: session.updated_at ?? Date.now(),
+    stateStartedAt: startedAt,
+    stateHistory: [],
+    agentType: session.agentName || session.executable,
+    toolName: session.tool_name,
+    toolInput: session.tool_input,
+    lastAssistantMessage: session.last_assistant_message,
+    ...(session.parent_pane_key || session.coordinator_handle
+      ? {
+          orchestration: {
+            taskId: session.id,
+            dispatchId: session.id,
+            parentPaneKey: session.parent_pane_key,
+            coordinatorHandle: session.coordinator_handle
+          }
+        }
+      : {}),
+    ...(subagents ? { subagents } : {})
+  };
+  return {
+    paneKey: session.id,
+    entry,
+    tab,
+    agentType: normalizeAgentId(session.agentName || session.executable),
+    displayAgent: session.agentName || session.executable,
+    rowSource: "live",
+    state: rowState,
+    startedAt,
+    sessionId: session.id,
+    prompt: session.title
+  };
+}
+
+function rowKeySet(rows: readonly AgentRow[]): Set<string> {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    keys.add(row.paneKey);
+    keys.add(row.tab?.id ?? "");
+    if (row.sessionId) {
+      keys.add(row.sessionId);
+    }
+    if (row.tab && (row.tab as TerminalTab & { sessionId?: string }).sessionId) {
+      keys.add((row.tab as TerminalTab & { sessionId?: string }).sessionId as string);
+    }
+  }
+  return keys;
+}
+
+/** Enriches pipeline rows with the UI-only fields the compact list reads:
+ *  session activation, subagent disclosure counts. */
+function toAgentRows(
+  rows: WorktreeAgentRowWithLineage[],
+  sessions: WorktreeSession[]
+): AgentRow[] {
+  const covered = rowKeySet(rows);
+  const childCountByParent = new Map<string, number>();
+  for (const row of rows) {
+    const parent = row.lineage?.parentPaneKey;
+    if (parent) {
+      childCountByParent.set(parent, (childCountByParent.get(parent) ?? 0) + 1);
+    }
+  }
+
+  const pipelineRows: AgentRow[] = rows.map((row) => ({
+    ...row,
+    displayAgent: row.entry.agentType ?? row.agentType,
+    terminalTitle: row.entry.terminalTitle ?? row.tab.title,
+    isDerivedFromTitle:
+      row.entry.observation?.origin === "title" || row.startedAt === 0,
+    childAgentCount: childCountByParent.get(row.paneKey) ?? undefined
+  }));
+
+  const headlessRows = sessions
+    .filter(
+      (session) =>
+        !covered.has(session.id) &&
+        !isShellProcess(session.agentName || session.executable)
+    )
+    .map(sessionAgentRow);
+
+  if (headlessRows.length === 0) {
+    return pipelineRows;
+  }
+  return [...pipelineRows, ...headlessRows];
+}
+
 export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   worktreePath,
   sessions = [],
@@ -25,179 +170,9 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   activeSessionId,
   className,
 }: WorktreeCardAgentsProps) {
-  // Subscribe to live workbench tabs in this worktree from Zustand store
-  const tabsInWorktree = useAppStore((s) => s.tabsByWorktree[worktreePath] ?? EMPTY_TABS);
-  const agentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey);
+  const rows = useWorktreeAgentRows(worktreePath, true);
 
-  // Orca parity: Agent rows are primarily bound 1:1 to the tabs open in THIS worktree!
-  const agentRows: AgentRow[] = useMemo(() => {
-    const list: AgentRow[] = [];
-    const seenTabIds = new Set<string>();
-    const seenSessionIds = new Set<string>();
-
-    // 1. Process active workbench tabs in this worktree
-    for (const tab of tabsInWorktree) {
-      if (seenTabIds.has(tab.id)) continue;
-      seenTabIds.add(tab.id);
-
-      // Match against backing session if exists
-      const backingSession = sessions.find(
-        (s) => (tab.sessionId && s.id === tab.sessionId) || s.id === tab.id
-      );
-
-      if (backingSession) {
-        seenSessionIds.add(backingSession.id);
-      }
-      if (tab.sessionId) {
-        seenSessionIds.add(tab.sessionId);
-      }
-
-      // Check if this tab is an agent (explicit tab agent, backing session agent, or title-derived)
-      const tabAgentName = tab.agentName || tab.agentId;
-      const sessionAgentName = backingSession?.agentName;
-      const titleAgentName = getAgentLabelFromTitle(tab.title);
-
-      const resolvedAgentType =
-        (tabAgentName && !isShellProcess(tabAgentName) ? tabAgentName : null) ||
-        (sessionAgentName && !isShellProcess(sessionAgentName) ? sessionAgentName : null) ||
-        titleAgentName;
-
-      // Plain shell terminals are NOT agents (Orca parity)
-      if (!resolvedAgentType || isShellProcess(resolvedAgentType)) {
-        continue;
-      }
-
-      const canonicalAgent = normalizeAgentId(resolvedAgentType);
-      const liveStatus =
-        agentStatusByPaneKey[tab.id]?.state ||
-        (tab.sessionId ? agentStatusByPaneKey[tab.sessionId]?.state : undefined) ||
-        (backingSession ? backingSession.state : undefined) ||
-        detectAgentStatusFromTitle(tab.title) ||
-        "idle";
-
-      const prompt =
-        (tab.title && tab.title !== resolvedAgentType ? tab.title : backingSession?.title) ||
-        tab.title ||
-        resolvedAgentType;
-
-      const startedAt =
-        backingSession?.state_started_at ?? backingSession?.created_at ?? Date.now();
-
-      const activationId = tab.sessionId || tab.id;
-
-      const row: AgentRow = {
-        paneKey: activationId,
-        agentType: canonicalAgent,
-        displayAgent: resolvedAgentType,
-        status: liveStatus,
-        state: liveStatus,
-        startedAt,
-        prompt,
-        rowSource: backingSession ? "session" : "live",
-        entry: {
-          paneKey: activationId,
-          sessionId: activationId,
-          worktreePath,
-          state: liveStatus,
-          prompt,
-          updatedAt: backingSession?.updated_at ?? Date.now(),
-          stateStartedAt: startedAt,
-          agentType: resolvedAgentType,
-          toolName: backingSession?.tool_name,
-          toolInput: backingSession?.tool_input,
-          lastAssistantMessage: backingSession?.last_assistant_message,
-        },
-      };
-
-      if (backingSession?.subagents && backingSession.subagents.length > 0) {
-        row.childAgentCount = backingSession.subagents.length;
-      }
-
-      list.push(row);
-    }
-
-    // 2. Headless background sessions in this worktree without a UI tab
-    // (Only actively working background agents, never dead historical records)
-    for (const session of sessions) {
-      if (
-        seenSessionIds.has(session.id) ||
-        seenTabIds.has(session.id) ||
-        isShellProcess(session.agentName || session.executable)
-      ) {
-        continue;
-      }
-
-      // Only display unattached sessions if they are actively working
-      if (session.state !== "working" && session.state !== "blocked" && session.state !== "waiting") {
-        continue;
-      }
-
-      const canonicalAgent = normalizeAgentId(session.agentName || session.executable);
-      const startedAt = session.state_started_at ?? session.created_at ?? Date.now();
-      const liveStatus = agentStatusByPaneKey[session.id]?.state ?? session.state;
-
-      list.push({
-        paneKey: session.id,
-        agentType: canonicalAgent,
-        displayAgent: session.agentName || session.executable,
-        status: liveStatus,
-        state: liveStatus,
-        startedAt,
-        prompt: session.title,
-        rowSource: "session",
-        entry: {
-          paneKey: session.id,
-          sessionId: session.id,
-          worktreePath: session.project_path,
-          state: liveStatus,
-          prompt: session.title,
-          updatedAt: session.updated_at ?? Date.now(),
-          stateStartedAt: startedAt,
-          agentType: session.agentName,
-          toolName: session.tool_name,
-          toolInput: session.tool_input,
-          lastAssistantMessage: session.last_assistant_message,
-        },
-      });
-    }
-
-    // Orca parity: Consolidate multiple tabs of the same agent into a single representative row!
-    // Opening multiple tabs of OMP or Claude in the same worktree represents that agent once in the sidebar.
-    const consolidatedByAgent = new Map<string, AgentRow>();
-
-    for (const row of list) {
-      const agentKey = row.agentType || "unknown";
-      const existing = consolidatedByAgent.get(agentKey);
-      if (!existing) {
-        consolidatedByAgent.set(agentKey, row);
-        continue;
-      }
-
-      // Status priority: active work outranks idle
-      const priorityOrder = (st?: string) => {
-        if (st === "blocked" || st === "waiting") return 0;
-        if (st === "working") return 1;
-        if (st === "done") return 2;
-        if (st === "idle") return 3;
-        return 4;
-      };
-
-      const existingPrio = priorityOrder(existing.status);
-      const newPrio = priorityOrder(row.status);
-
-      if (newPrio < existingPrio) {
-        consolidatedByAgent.set(agentKey, row);
-      } else if (newPrio === existingPrio) {
-        const isNewDescriptive = Boolean(row.prompt && row.prompt !== row.agentType && row.prompt !== row.displayAgent);
-        const isExistingGeneric = !existing.prompt || existing.prompt === existing.agentType || existing.prompt === existing.displayAgent;
-        if (isNewDescriptive && isExistingGeneric) {
-          consolidatedByAgent.set(agentKey, row);
-        }
-      }
-    }
-
-    return Array.from(consolidatedByAgent.values());
-  }, [sessions, tabsInWorktree, agentStatusByPaneKey, worktreePath]);
+  const agentRows = useMemo(() => toAgentRows(rows, sessions), [rows, sessions]);
 
   if (agentRows.length === 0) {
     return null;

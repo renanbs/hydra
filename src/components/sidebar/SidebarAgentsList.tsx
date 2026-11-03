@@ -1,45 +1,117 @@
 import { useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { List } from "react-window";
 import { invoke } from "@tauri-apps/api/core";
+import { useShallow } from "zustand/react/shallow";
+
 import { AgentBrandIcon } from "../AgentIcon";
+import { CompactAgentRow } from "./CompactAgentRow";
+import { AgentsThreadOptionsMenu } from "./AgentsThreadOptionsMenu";
 import { WorktreeSession } from "./WorktreeSidebar";
-import type { AgentsGroupBy, AgentsStatusFilter } from "./types";
-import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
-import { IDLE, resolveSessionAttention, type SessionAttention, type SessionAttentionInput } from "../../lib/smart-attention";
-import { isShellProcess } from "../workbench/tab-agent";
+import type { AgentsGroupBy, AgentsReadFilter, HydraProject } from "./types";
+import type { AgentRow } from "./worktree-card-agent-summary";
+import {
+  buildAgentsThreads,
+  filterAgentsThreads,
+  groupAgentsThreads,
+  planClearCompletedThreads,
+  type AgentsThread,
+  type AgentsThreadState,
+} from "./agents-thread-model";
+import { useAppStore } from "../../store";
+import { useNow } from "../../hooks/use-now";
 
-// Session record → smart-attention input, field-for-field parity with the adapter in
-// SidebarShell (hasLivePty: the daemon holds the PTY for the lifetime of the session
-// record, so a listed session is live). Module scope: pure adapter, no closures over
-// component state — the memoized comparator below captures it safely across renders.
-const sessionInput = (s: WorktreeSession): SessionAttentionInput => ({
-  state: s.state,
-  stateStartedAt: s.state_started_at,
-  lastActivityAt: s.updated_at ?? s.created_at ?? undefined,
-  hasLivePty: true,
-});
+const EMPTY_UNREAD_RECORD: Record<string, never> = Object.freeze({})
 
-type SidebarAgentsListProps = {
+type AgentsThreadsStore = AgentsThreadState & {
+  acknowledgedAgentsByPaneKey: Record<string, number>;
+  unreadTerminalPanes: Record<string, unknown>;
+  unreadAgentCompletionPanes: Record<string, unknown>;
+  manuallyUnreadTurnsByPaneKey: Record<string, number>;
+  activityClearedAtByPaneKey: Record<string, number>;
+};
+
+type AgentFlatRow =
+  | { type: "group-header"; label: string; state?: string; count: number }
+  | { type: "thread"; thread: AgentsThread };
+
+export type SidebarAgentsListProps = {
   sessions: WorktreeSession[];
-  projects: any[];
+  projects: HydraProject[];
   onSelectSession: (id: string) => void;
   onDeleteSession: (id: string) => void;
   compactCards?: boolean;
   onSelectNextSession?: (direction: "up" | "down") => void;
   onSelectPrevSession?: (direction: "up" | "down") => void;
   isModalOpen?: boolean;
-  // PR-14: controlled pelo SidebarShell — App persiste no blob "ui.sidebar".
+  /** Shell-owned (App persists in the `ui.sidebar` blob). */
   groupBy: AgentsGroupBy;
   onGroupByChange: (groupBy: AgentsGroupBy) => void;
-  statusFilter: AgentsStatusFilter;
-  onStatusFilterChange: (filter: AgentsStatusFilter) => void;
-  /**
-   * Orca agentsScrollTopRef parity: the shell owns the agents list scroll offset so
-   * switching the sidebar body restores where the user left off instead of resetting
-   * to the top. The list writes on scroll and restores on mount.
-   */
+  readFilter: AgentsReadFilter;
+  onReadFilterChange: (filter: AgentsReadFilter) => void;
+  query: string;
+  onQueryChange: (query: string) => void;
+  /** SidebarHeader slot the options menu portals into (Orca `optionsTarget`). */
+  optionsTarget?: HTMLElement | null;
+  /** D03B contract: omitted => internal state (preserves pre-lift behaviour). */
+  focusedSessionId?: string | null;
+  onFocusedSessionIdChange?: (id: string | null) => void;
+  selectedSessionIds?: ReadonlySet<string>;
+  onSelectedSessionIdsChange?: (ids: ReadonlySet<string>) => void;
   scrollTopRef?: React.MutableRefObject<number>;
 };
+
+function toAgentRow(thread: AgentsThread): AgentRow {
+  return {
+    paneKey: thread.paneKey,
+    entry: thread.entry,
+    agentType: thread.agentType,
+    tab: thread.tab,
+    rowSource: thread.rowSource,
+    state: thread.state,
+    startedAt: thread.startedAt,
+    prompt: thread.title,
+    terminalTitle: thread.entry.terminalTitle ?? thread.tab.title,
+    displayAgent: thread.agentType,
+    sessionId: thread.sessionId,
+  };
+}
+
+function threadStateLabel(state: string): string {
+  switch (state) {
+    case "working":
+      return "Working";
+    case "blocked":
+      return "Blocked";
+    case "waiting":
+      return "Waiting";
+    case "done":
+      return "Done";
+    case "idle":
+      return "Idle";
+    case "unverifiable":
+      return "Unverifiable";
+    default:
+      return "Unknown";
+  }
+}
+
+function threadStateBadgeClass(state: string): string {
+  switch (state) {
+    case "working":
+      return "bg-amber-400 animate-pulse";
+    case "blocked":
+      return "bg-red-400 ring-2 ring-red-500/30";
+    case "waiting":
+      return "bg-orange-400 animate-pulse";
+    case "done":
+      return "bg-blue-400";
+    case "idle":
+      return "bg-emerald-400";
+    default:
+      return "bg-neutral-500";
+  }
+}
 
 export function SidebarAgentsList({
   sessions,
@@ -52,18 +124,83 @@ export function SidebarAgentsList({
   isModalOpen = false,
   groupBy,
   onGroupByChange,
-  statusFilter,
-  onStatusFilterChange,
+  readFilter,
+  onReadFilterChange,
+  query,
+  onQueryChange,
+  optionsTarget,
+  focusedSessionId: controlledFocusedSessionId,
+  onFocusedSessionIdChange,
+  selectedSessionIds: controlledSelectedSessionIds,
+  onSelectedSessionIdsChange,
   scrollTopRef,
 }: SidebarAgentsListProps) {
-  const [filter, setFilter] = useState("");
-  const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
-  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
-  const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
+  const now = useNow(30_000);
+  const threadState = useAppStore(
+    useShallow((s) => {
+      const view = s as unknown as AgentsThreadsStore
+      return {
+      tabsByWorktree: view.tabsByWorktree,
+      agentStatusByPaneKey: view.agentStatusByPaneKey,
+      retainedAgentsByPaneKey: view.retainedAgentsByPaneKey,
+      migrationUnsupportedByPtyId: view.migrationUnsupportedByPtyId,
+      runtimeAgentOrchestrationByPaneKey: view.runtimeAgentOrchestrationByPaneKey,
+      terminalLayoutsByTabId: view.terminalLayoutsByTabId,
+      ptyIdsByTabId: view.ptyIdsByTabId,
+      acknowledgedAgentsByPaneKey: view.acknowledgedAgentsByPaneKey ?? EMPTY_UNREAD_RECORD,
+      unreadTerminalPanes: view.unreadTerminalPanes ?? EMPTY_UNREAD_RECORD,
+      unreadAgentCompletionPanes: view.unreadAgentCompletionPanes ?? EMPTY_UNREAD_RECORD,
+      manuallyUnreadTurnsByPaneKey: view.manuallyUnreadTurnsByPaneKey ?? EMPTY_UNREAD_RECORD,
+      activityClearedAtByPaneKey: view.activityClearedAtByPaneKey ?? EMPTY_UNREAD_RECORD,
+      }
+    })
+  );
 
-  // Scroll offset persistence (Orca agentsScrollTopRef parity): the plain list owns
-  // its scrolling div; the virtualized List owns an outer scroll element reached
-  // through its imperative ref.
+  // Persisted Agents-view prefs: single writer is `uiPrefsBridge` via these setters.
+  // Why the boundary cast: the composed store's UI slice is still an auto-stub (`any`),
+  // so `AppState` does not declare these keys even though the runtime slice owns them.
+  type AgentsPrefsSlice = {
+    agentsCompactMode?: boolean
+    setAgentsCompactMode: (value: boolean) => void
+    agentsShowSearch?: boolean
+    setAgentsShowSearch: (value: boolean) => void
+    agentsShowChildAgents?: boolean
+    setAgentsShowChildAgents: (value: boolean) => void
+    acknowledgeAgents: (paneKeys: string[]) => void
+    clearTerminalPaneUnread: (paneKey: string) => void
+    applyActivityClearedAt: (patch: Record<string, number | null>) => void
+    dismissRetainedAgents: (paneKeys: readonly string[]) => void
+  }
+  const prefs = useAppStore((s) => s as unknown as AgentsPrefsSlice)
+  const compactMode = prefs.agentsCompactMode !== false
+  const setCompactMode = prefs.setAgentsCompactMode
+  const showSearch = prefs.agentsShowSearch !== false
+  const setShowSearch = prefs.setAgentsShowSearch
+  const showChildAgents = prefs.agentsShowChildAgents === true
+  const setShowChildAgents = prefs.setAgentsShowChildAgents
+  const acknowledgeAgents = prefs.acknowledgeAgents
+  const clearPaneUnread = prefs.clearTerminalPaneUnread
+  const applyActivityClearedAt = prefs.applyActivityClearedAt
+  const dismissRetainedAgents = prefs.dismissRetainedAgents
+
+  const [internalFocusedSessionId, setInternalFocusedSessionId] = useState<string | null>(null);
+  const [internalSelectedSessionIds, setInternalSelectedSessionIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
+  const focusedSessionId =
+    controlledFocusedSessionId !== undefined
+      ? controlledFocusedSessionId
+      : internalFocusedSessionId;
+  const setFocusedSessionId = onFocusedSessionIdChange ?? setInternalFocusedSessionId;
+  const selectedSessions =
+    controlledSelectedSessionIds !== undefined
+      ? controlledSelectedSessionIds
+      : internalSelectedSessionIds;
+  const setSelectedSessions = onSelectedSessionIdsChange ?? setInternalSelectedSessionIds;
+
+  const [selectedPaneKey, setSelectedPaneKey] = useState<string | null>(null);
+  const filterInputRef = useRef<HTMLInputElement | null>(null);
+
   const listScrollRef = useRef<HTMLDivElement | null>(null);
   const virtualListRef = useRef<{
     element: HTMLDivElement | null;
@@ -73,6 +210,7 @@ export function SidebarAgentsList({
       index: number;
     }) => void;
   } | null>(null);
+
   const handleListScroll = useCallback(
     (event: React.UIEvent<HTMLDivElement>) => {
       if (scrollTopRef) {
@@ -82,144 +220,128 @@ export function SidebarAgentsList({
     [scrollTopRef]
   );
 
-  // Get project name for a session
-  const getProjectName = useCallback(
-    (projectPath: string) => {
-      const proj = projects.find((p) => projectPath.startsWith(p.path));
-      return proj?.name || "Unknown";
-    },
-    [projects]
+  const threads = useMemo(
+    () => buildAgentsThreads({ state: threadState, sessions, projects, now }),
+    [threadState, sessions, projects, now]
+  );
+  const visibleThreads = useMemo(
+    () => filterAgentsThreads(threads, { query, readFilter, groupBy, showChildAgents }),
+    [threads, query, readFilter, groupBy, showChildAgents]
+  );
+  const groupedThreads = useMemo(
+    () => groupAgentsThreads(visibleThreads, groupBy),
+    [visibleThreads, groupBy]
   );
 
-  // Filter sessions
-  const filteredSessions = useMemo(() => {
-    // Orca parity: pure shells (zsh/bash) never render in the Aggregated Agents view.
-    let result = sessions.filter((s) => !isShellProcess(s.agentName || s.executable));
-    if (filter) {
-      const lowerFilter = filter.toLowerCase();
-      result = result.filter(
-        (s) =>
-          s.title.toLowerCase().includes(lowerFilter) ||
-          s.branch.toLowerCase().includes(lowerFilter) ||
-          s.agentName.toLowerCase().includes(lowerFilter) ||
-          getProjectName(s.project_path).toLowerCase().includes(lowerFilter)
-      );
-    }
-    if (statusFilter !== "all") {
-      result = result.filter((s) => s.state === statusFilter);
-    }
-    return result;
-  }, [sessions, filter, statusFilter, getProjectName]);
+  const hasUnreadThreads = useMemo(() => threads.some((thread) => thread.unread), [threads]);
+  const hasCompletedThreads = useMemo(
+    () => visibleThreads.some((thread) => thread.state === "done" || thread.isRetained),
+    [visibleThreads]
+  );
 
-  // Group sessions
-  const groupedSessions = useMemo(() => {
-    // Orca smart-sort parity (same comparator as SidebarShell.sortSessionsByOption):
-    // attention class ASC (needs-you first), attentionTimestamp DESC, recency DESC.
-    // resolveSessionAttention owns the per-class timestamp chain
-    // (state_started_at ?? updated_at ?? created_at); idle resolves to ts 0 and falls
-    // through to the recency tiebreak. One resolution per session — the sort itself
-    // stays O(n log n) map lookups, no resolver calls inside the comparator.
-    const now = Date.now();
-    const attentionById = new Map<string, SessionAttention>();
-    for (const s of filteredSessions) {
-      attentionById.set(s.id, resolveSessionAttention(sessionInput(s), now));
+  // Orca parity: a selected pane whose row disappeared must not stay a ghost selection.
+  const selectedPaneKeyIsLive = useMemo(
+    () =>
+      selectedPaneKey !== null &&
+      threads.some((thread) => thread.paneKey === selectedPaneKey && thread.isLive),
+    [selectedPaneKey, threads]
+  );
+  useEffect(() => {
+    if (!selectedPaneKeyIsLive) {
+      setSelectedPaneKey(null);
     }
-    const compareByAttention = (a: WorktreeSession, b: WorktreeSession) => {
-      const aa = attentionById.get(a.id) ?? IDLE;
-      const bb = attentionById.get(b.id) ?? IDLE;
-      if (aa.cls !== bb.cls) return aa.cls - bb.cls;
-      if (aa.attentionTimestamp !== bb.attentionTimestamp) return bb.attentionTimestamp - aa.attentionTimestamp;
-      return (b.updated_at ?? b.created_at ?? 0) - (a.updated_at ?? a.created_at ?? 0);
-    };
+  }, [selectedPaneKeyIsLive]);
 
-    if (groupBy === "project") {
-      const groups: Record<string, WorktreeSession[]> = {};
-      for (const session of filteredSessions) {
-        const projectName = getProjectName(session.project_path);
-        if (!groups[projectName]) groups[projectName] = [];
-        groups[projectName].push(session);
+  const handleShowSearchChange = useCallback(
+    (visible: boolean) => {
+      setShowSearch(visible);
+      if (!visible) {
+        onQueryChange("");
+        filterInputRef.current?.blur();
+        return;
       }
-      return Object.entries(groups).map(([projectName, sessions]) => ({
-        label: projectName,
-        state: "project" as const,
-        // Buckets are memo-local — in-place sort never touches filteredSessions.
-        sessions: sessions.sort(compareByAttention),
-      }));
+      // Why not autoFocus: the body mounts in the middle of a navigation click; the
+      // input only exists after this frame, so focus waits for the newly visible node.
+      requestAnimationFrame(() => filterInputRef.current?.focus());
+    },
+    [setShowSearch, onQueryChange]
+  );
+
+  const handleMarkAllThreadsRead = useCallback(() => {
+    const paneKeys = threads.map((thread) => thread.paneKey);
+    acknowledgeAgents(paneKeys);
+    for (const paneKey of paneKeys) {
+      clearPaneUnread(paneKey);
     }
+  }, [threads, acknowledgeAgents, clearPaneUnread]);
 
-    // Group by state, in attention order (Orca smart-sort class order): needs-you first.
-    const stateOrder: Array<"blocked" | "waiting" | "working" | "done" | "idle" | "unknown"> = [
-      "blocked",
-      "waiting",
-      "working",
-      "done",
-      "idle",
-      "unknown",
-    ];
-    const stateGroups: Record<string, WorktreeSession[]> = {
-      blocked: [],
-      waiting: [],
-      working: [],
-      done: [],
-      idle: [],
-      unknown: [],
-    };
-
-    for (const session of filteredSessions) {
-      // Wire safety: a legacy daemon can emit a string outside the six-state union
-      // (App.tsx casts it unchecked). Land it in the neutral `unknown` group instead
-      // of crashing on a missing key.
-      (stateGroups[session.state] ?? stateGroups.unknown).push(session);
+  const handleClearCompleted = useCallback(() => {
+    const plan = planClearCompletedThreads(visibleThreads, threadState, now);
+    if (Object.keys(plan.cutoffs).length > 0) {
+      applyActivityClearedAt(plan.cutoffs);
     }
+    if (plan.retainedPaneKeys.length > 0) {
+      dismissRetainedAgents(plan.retainedPaneKeys);
+    }
+  }, [visibleThreads, threadState, now, applyActivityClearedAt, dismissRetainedAgents]);
 
-    return stateOrder
-      .filter((state) => stateGroups[state].length > 0)
-      .map((state) => ({
-        label:
-          state === "blocked"
-            ? "Blocked"
-            : state === "waiting"
-            ? "Waiting"
-            : state === "working"
-            ? "Working"
-            : state === "done"
-            ? "Done"
-            : state === "idle"
-            ? "Idle"
-            : "Unknown",
-        state: state as "blocked" | "waiting" | "working" | "done" | "idle" | "unknown",
-        // Buckets are memo-local — in-place sort never touches filteredSessions.
-        sessions: stateGroups[state].sort(compareByAttention),
-      }));
-  }, [filteredSessions, groupBy, getProjectName]);
+  const activateThread = useCallback(
+    (thread: AgentsThread) => {
+      // Why inert: a closed thread stays listed; its pane/session is gone, so the
+      // reveal must no-op instead of selecting an unrelated workspace.
+      if (!thread.sessionId) {
+        return;
+      }
+      onSelectSession(thread.sessionId);
+      setSelectedPaneKey(thread.paneKey);
+      setSelectedSessions(new Set());
+    },
+    [onSelectSession, setSelectedSessions]
+  );
 
-  // Virtualization: flatten grouped sessions into rows for react-window (500+ sessions)
-  type AgentFlatRow =
-    | { type: "group-header"; label: string; state: string; count: number }
-    | { type: "session"; session: WorktreeSession };
+  const toggleThreadSelection = useCallback(
+    (thread: AgentsThread) => {
+      if (!thread.sessionId) {
+        return;
+      }
+      const next = new Set(selectedSessions);
+      if (next.has(thread.sessionId)) {
+        next.delete(thread.sessionId);
+      } else {
+        next.add(thread.sessionId);
+      }
+      setSelectedSessions(next);
+    },
+    [selectedSessions, setSelectedSessions]
+  );
 
   const agentFlatRows: AgentFlatRow[] = useMemo(() => {
     const rows: AgentFlatRow[] = [];
-    for (const group of groupedSessions) {
-      rows.push({ type: "group-header", label: group.label, state: group.state, count: group.sessions.length });
-      for (const s of group.sessions) {
-        rows.push({ type: "session", session: s });
+    for (const group of groupedThreads) {
+      rows.push({
+        type: "group-header",
+        label: group.label,
+        state: group.state,
+        count: group.threads.length,
+      });
+      for (const thread of group.threads) {
+        rows.push({ type: "thread", thread });
       }
     }
     return rows;
-  }, [groupedSessions]);
+  }, [groupedThreads]);
 
-  const getAgentRowHeight = useCallback((index: number) => {
-    const row = agentFlatRows[index];
-    if (!row) return 40;
-    if (row.type === "group-header") return 28;
-    return compactCards ? 52 : 68;
-  }, [agentFlatRows, compactCards]);
+  const getAgentRowHeight = useCallback(
+    (index: number) => {
+      const row = agentFlatRows[index];
+      if (!row) return 40;
+      if (row.type === "group-header") return 28;
+      return compactMode ? 26 : 52;
+    },
+    [agentFlatRows, compactMode]
+  );
+  const useAgentVirtualization = agentFlatRows.length > 30 || visibleThreads.length > 50;
 
-  const useAgentVirtualization = agentFlatRows.length > 30 || filteredSessions.length > 50;
-
-  // Restore the persisted offset after the scroll container for the active render
-  // path mounts. Re-runs if the path flips; the ref stays current via onScroll.
   useLayoutEffect(() => {
     if (!scrollTopRef) {
       return;
@@ -230,136 +352,22 @@ export function SidebarAgentsList({
     }
   }, [scrollTopRef, useAgentVirtualization]);
 
-  const AgentVirtualRow = ({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes?: any }) => {
-    const row = agentFlatRows[index];
-    if (!row) return null;
-    const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
-    if (row.type === "group-header") {
-      return (
-        <div style={rowStyle} {...ariaAttributes} className="px-2">
-          <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
-            {row.state !== "project" && (
-              <span
-                className={`inline-flex size-3 shrink-0 items-center justify-center ${
-                  row.state === "blocked"
-                    ? "bg-red-400/20 text-red-400"
-                    : row.state === "waiting"
-                    ? "bg-orange-400/20 text-orange-400"
-                    : row.state === "working"
-                    ? "bg-amber-400/20 text-amber-400"
-                    : row.state === "done"
-                    ? "bg-blue-400/20 text-blue-400"
-                    : row.state === "idle"
-                    ? "bg-emerald-400/20 text-emerald-400"
-                    : "bg-neutral-700 text-neutral-400"
-                } rounded`}
-              />
-            )}
-            <span className="truncate">{row.label}</span>
-            <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
-              {row.count}
-            </span>
-          </div>
-        </div>
-      );
-    }
-    const session = row.session;
-    return (
-      <div style={rowStyle} {...ariaAttributes} className="px-2">
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            const ctrlKey = e.ctrlKey || e.metaKey;
-            if (ctrlKey) {
-              setSelectedSessions((prev) => {
-                const n = new Set(prev);
-                if (n.has(session.id)) n.delete(session.id);
-                else n.add(session.id);
-                return n;
-              });
-              return;
-            }
-            onSelectSession(session.id);
-            setSelectedSessions(new Set());
-          }}
-          className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
-            session.active
-              ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
-              : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
-          } ${focusedSessionId === session.id ? "border-indigo-500/50 ring-indigo-500/20" : ""} ${
-            selectedSessions.has(session.id) ? "bg-indigo-500/20 select-none" : ""
-          }`}
-        >
-          {session.active && <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />}
-          <div className="flex items-center justify-between mb-1 pl-1">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <AgentBrandIcon agentId={session.agentName} size={13} />
-              <span className="font-medium truncate text-[11px]">{session.title}</span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`} title={`Herdr State: ${getStateLabel(session.state)}`} />
-              <button onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }} className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition" aria-label="Delete session">
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 pl-1 font-mono">
-            <span className="flex items-center gap-1 truncate">
-              <svg className="w-2.5 h-2.5 text-worktree-sidebar-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><line x1="18" y1="3" x2="18" y2="15"></line><path d="M4 21h16"></path><path d="M8 3h8"></path></svg>
-              {session.branch}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="text-[9px] bg-worktree-sidebar-border/50 border border-worktree-sidebar-border px-1.5 py-0.2 rounded">{session.agentName}</span>
-              <span className="text-[9px] text-worktree-sidebar-foreground/40">{getProjectName(session.project_path)}</span>
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // State badge colors (waiting/done arrive via the Herdr PR-6 wire contract)
-  const getStateBadge = (state: WorktreeSession["state"]) => {
-    switch (state) {
-      case "working":
-        return "bg-amber-400 animate-pulse";
-      case "blocked":
-        return "bg-red-400 ring-2 ring-red-500/30";
-      case "waiting":
-        return "bg-orange-400 animate-pulse";
-      case "done":
-        return "bg-blue-400";
-      case "idle":
-        return "bg-emerald-400";
-      default:
-        return "bg-neutral-500";
-    }
-  };
-
-  const getStateLabel = (state: WorktreeSession["state"]) => {
-    switch (state) {
-      case "working":
-        return "Working";
-      case "blocked":
-        return "Blocked";
-      case "waiting":
-        return "Waiting";
-      case "done":
-        return "Done";
-      case "idle":
-        return "Idle";
-      default:
-        return "Unknown";
-    }
-  };
+  // Keyboard navigation over the thread rows (Orca arrow/Enter/Escape model).
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isModalOpen) return;
       const target = e.target as HTMLElement;
-      const isInputFocused = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || Boolean(target.isContentEditable);
+      const isInputFocused =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        Boolean(target.isContentEditable);
       if (isInputFocused) return;
 
-      const allSessions = groupedSessions.flatMap((g) => g.sessions);
+      const ordered = visibleThreads.filter((thread) => thread.sessionId);
+      const focusedThread =
+        focusedSessionId !== null
+          ? ordered.find((thread) => thread.sessionId === focusedSessionId)
+          : undefined;
 
       if (e.key === "Escape") {
         e.preventDefault();
@@ -367,202 +375,231 @@ export function SidebarAgentsList({
         setSelectedSessions(new Set());
         return;
       }
-
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        if (focusedSessionId) {
-          onSelectSession(focusedSessionId);
+        if (focusedThread) {
+          activateThread(focusedThread);
         }
         return;
       }
-
       if (e.key === "F2" && focusedSessionId) {
         e.preventDefault();
-        const session = sessions.find((s) => s.id === focusedSessionId);
-        if (session) {
-          setPromptDialog({
-            open: true,
-            title: "Rename Session",
-            initialValue: session.title,
-            onSubmit: (newTitle) => {
-              if (newTitle.trim()) {
-                invoke("save_session_record", {
-                  record: {
-                    id: session.id,
-                    project_path: session.project_path,
-                    title: newTitle.trim(),
-                    branch: session.branch,
-                    agent_name: session.agentName,
-                    executable: session.executable,
-                    created_at: Date.now(),
-                    updated_at: Date.now(),
-                  },
-                }).catch(console.error);
-              }
+        const session = sessions.find((candidate) => candidate.id === focusedSessionId);
+        if (!session) return;
+        const rename = window.prompt("Rename session", session.title);
+        if (rename?.trim()) {
+          invoke("save_session_record", {
+            record: {
+              id: session.id,
+              project_path: session.project_path,
+              title: rename.trim(),
+              branch: session.branch,
+              agent_name: session.agentName,
+              executable: session.executable,
+              created_at: Date.now(),
+              updated_at: Date.now(),
             },
-          });
+          }).catch(console.error);
         }
         return;
       }
-
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
-        const direction = e.key === "ArrowDown" ? "down" : "up";
-        const currentFocused = focusedSessionId;
-        if (!currentFocused) {
-          const first = allSessions[0];
-          if (first) {
-            setFocusedSessionId(first.id);
-            onSelectNextSession?.(direction);
-          }
-          return;
-        }
-        const currentIdx = allSessions.findIndex((s) => s.id === currentFocused);
-        if (currentIdx === -1) return;
-        const nextIdx = direction === "down" ? currentIdx + 1 : currentIdx - 1;
-        if (nextIdx < 0 || nextIdx >= allSessions.length) return;
-        const next = allSessions[nextIdx];
-        setFocusedSessionId(next.id);
-        onSelectNextSession?.(direction);
-        return;
+        const direction = e.key === "ArrowDown" ? 1 : -1;
+        const currentIndex = focusedThread ? ordered.indexOf(focusedThread) : -1;
+        const next =
+          currentIndex === -1
+            ? ordered[0]
+            : ordered[currentIndex + direction];
+        if (!next?.sessionId) return;
+        setFocusedSessionId(next.sessionId);
+        (direction === 1 ? onSelectNextSession : onSelectPrevSession)?.(
+          direction === 1 ? "down" : "up"
+        );
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [sessions, groupedSessions, onSelectNextSession, onSelectPrevSession, onSelectSession, isModalOpen, focusedSessionId]);
+  }, [
+    visibleThreads,
+    focusedSessionId,
+    sessions,
+    isModalOpen,
+    activateThread,
+    setFocusedSessionId,
+    setSelectedSessions,
+    onSelectNextSession,
+    onSelectPrevSession,
+  ]);
 
+  const renderThreadRow = (thread: AgentsThread): React.JSX.Element => {
+    const isInert = thread.sessionId === undefined;
+    const isFocused = thread.sessionId !== undefined && thread.sessionId === focusedSessionId;
+    const isMultiselected =
+      thread.sessionId !== undefined && selectedSessions.has(thread.sessionId);
+    const onClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (e.ctrlKey || e.metaKey) {
+        toggleThreadSelection(thread);
+        return;
+      }
+      activateThread(thread);
+    };
 
-  if (sessions.length === 0) {
-    return (
-      <div className="flex flex-col flex-1 overflow-y-auto p-6 bg-worktree-sidebar">
-        <div className="p-2 shrink-0">
-          <input
-            type="text"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter agents..."
-            className="w-full bg-worktree-sidebar-accent/50 border border-worktree-sidebar-border rounded-md px-2.5 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
+    if (compactMode) {
+      return (
+        <div
+          key={thread.paneKey}
+          className={`px-2 ${isInert ? "opacity-60" : ""}`}
+          aria-current={selectedPaneKey === thread.paneKey ? "true" : undefined}
+          aria-disabled={isInert || undefined}
+          data-inert={isInert ? "true" : undefined}
+        >
+          <CompactAgentRow
+            agent={toAgentRow(thread)}
+            now={now}
+            onActivate={() => activateThread(thread)}
+            isFocusedPane={isFocused}
           />
         </div>
-        <div className="flex-1 flex items-center justify-center text-center">
-          <div className="text-neutral-500 text-xs space-y-3 p-6">
-            <svg
-              className="w-12 h-12 mx-auto text-neutral-700"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      );
+    }
+
+    return (
+      <div key={thread.paneKey} className="px-2">
+        <div
+          onClick={onClick}
+          aria-current={selectedPaneKey === thread.paneKey ? "true" : undefined}
+          aria-disabled={isInert || undefined}
+          data-inert={isInert ? "true" : undefined}
+          className={`group relative rounded-lg text-xs select-none transition-all ${compactCards ? "px-2 py-1.5" : "p-2.5"} ${
+            isInert
+              ? "cursor-default opacity-60"
+              : "cursor-pointer worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
+          } ${
+            isFocused ? "border border-indigo-500/50 ring-1 ring-indigo-500/20" : ""
+          } ${isMultiselected ? "bg-indigo-500/20" : ""}`}
+        >
+          <div className="mb-1 flex items-center justify-between gap-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <AgentBrandIcon agentId={thread.agentType} size={13} />
+              <span className="truncate text-[11px] font-medium">{thread.title}</span>
+              {thread.unread && (
+                <span className="size-1.5 shrink-0 rounded-full bg-sky-400" aria-label="Unread" />
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <span
+                className={`size-2 shrink-0 rounded-full ${threadStateBadgeClass(thread.state)}`}
+                title={threadStateLabel(thread.state)}
               />
-            </svg>
-            <p className="font-medium">No agent sessions</p>
-            <p className="text-[11px]">Start an agent from a worktree to see it here.</p>
+              {thread.sessionId && (
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDeleteSession(thread.sessionId as string);
+                  }}
+                  className="rounded p-0.5 text-neutral-500 opacity-0 transition hover:bg-neutral-800 hover:text-red-400 group-hover:opacity-100"
+                  aria-label="Delete session"
+                >
+                  <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-1 pl-1 font-mono text-[10px] text-worktree-sidebar-foreground/50">
+            <span className="truncate">{thread.branch || thread.worktreePath}</span>
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="rounded border border-worktree-sidebar-border bg-worktree-sidebar-border/50 px-1.5 py-0.5 text-[9px]">
+                {thread.agentType}
+              </span>
+              <span className="text-[9px] text-worktree-sidebar-foreground/40">
+                {thread.projectName}
+              </span>
+            </span>
           </div>
         </div>
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="flex flex-col flex-1 overflow-hidden bg-worktree-sidebar">
-      {/* Search Bar */}
-      <div className="p-2 shrink-0">
-        <input
-          type="text"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter agents..."
-          className="w-full bg-worktree-sidebar-accent/50 border border-worktree-sidebar-border rounded-md px-2.5 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
-        />
-      </div>
-
-      {/* Toolbar: Status Filter Pills + Group By Toggle */}
-      <div className="px-2 pb-1.5 shrink-0 flex flex-col gap-1.5">
-        {/* Status Filter Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-0.5" role="group" aria-label="Filter by state">
-          {(
-            [
-              { value: "all", label: "All" },
-              { value: "blocked", label: "Blocked" },
-              { value: "waiting", label: "Waiting" },
-              { value: "working", label: "Working" },
-              { value: "done", label: "Done" },
-              { value: "idle", label: "Idle" },
-            ] as const
-          ).map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => onStatusFilterChange(value)}
-              className={`flex shrink-0 items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition ${
-                statusFilter === value
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-worktree-sidebar-foreground/50 hover:text-worktree-sidebar-foreground hover:bg-worktree-sidebar-accent/50"
-              }`}
-              aria-pressed={statusFilter === value}
-            >
-              {value !== "all" && (
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    value === "working"
-                      ? "bg-amber-400"
-                      : value === "blocked"
-                      ? "bg-red-400"
-                      : value === "waiting"
-                      ? "bg-orange-400"
-                      : value === "done"
-                      ? "bg-blue-400"
-                      : "bg-emerald-400"
-                  }`}
-                />
-              )}
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Group By Toggle */}
-        <div className="flex items-center gap-1.5 text-[10px] text-worktree-sidebar-foreground/50">
-          <span className="shrink-0">Group by:</span>
-          <div className="flex items-center gap-0.5 bg-worktree-sidebar-accent/50 rounded-md p-0.5">
-            <button
-              onClick={() => onGroupByChange("state")}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
-                groupBy === "state"
-                  ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"
-                  : "text-worktree-sidebar-foreground/50 hover:text-worktree-sidebar-foreground"
-              }`}
-              aria-pressed={groupBy === "state"}
-            >
-              State
-            </button>
-            <button
-              onClick={() => onGroupByChange("project")}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
-                groupBy === "project"
-                  ? "bg-worktree-sidebar text-worktree-sidebar-foreground shadow-xs"
-                  : "text-worktree-sidebar-foreground/50 hover:text-worktree-sidebar-foreground"
-              }`}
-              aria-pressed={groupBy === "project"}
-            >
-              Project
-            </button>
+  const AgentVirtualRow = ({
+    index,
+    style,
+    ariaAttributes,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+    ariaAttributes?: Record<string, unknown>;
+  }) => {
+    const row = agentFlatRows[index];
+    if (!row) return null;
+    const rowStyle: React.CSSProperties = { ...style, left: 0, right: 0, width: "100%" };
+    if (row.type === "group-header") {
+      return (
+        <div style={rowStyle} {...ariaAttributes} className="px-2">
+          <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
+            {row.state !== undefined && (
+              <span className={`inline-flex size-3 shrink-0 items-center justify-center ${threadStateGroupClass(row.state)} rounded`} />
+            )}
+            <span className="truncate">{row.label}</span>
+            <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
+              {row.count}
+            </span>
           </div>
         </div>
+      );
+    }
+    return (
+      <div style={rowStyle} {...ariaAttributes}>
+        {renderThreadRow(row.thread)}
       </div>
+    );
+  };
 
-      {/* Session List — virtualized when >30 rows (500+ sessions) */}
-      {useAgentVirtualization ? (
-        <div className="flex-1 min-h-0 overflow-hidden">
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-worktree-sidebar">
+      {showSearch ? (
+        <div className="shrink-0 p-2">
+          <input
+            ref={filterInputRef}
+            type="text"
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                handleShowSearchChange(false);
+              }
+            }}
+            placeholder="Filter agents..."
+            aria-label="Search agents"
+            className="w-full rounded-md border border-worktree-sidebar-border bg-worktree-sidebar-accent/50 px-2.5 py-1 text-[11px] text-worktree-sidebar-foreground placeholder:text-worktree-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring"
+          />
+        </div>
+      ) : null}
+
+      {visibleThreads.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center text-center">
+          <div className="space-y-3 p-6 text-xs text-neutral-500">
+            <svg className="mx-auto size-12 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p className="font-medium">No agent threads</p>
+            <p className="text-[11px]">Start an agent from a worktree to see it here.</p>
+          </div>
+        </div>
+      ) : useAgentVirtualization ? (
+        <div className="min-h-0 flex-1 overflow-hidden">
           <List
             listRef={virtualListRef}
             rowCount={agentFlatRows.length}
             rowHeight={getAgentRowHeight}
             rowComponent={AgentVirtualRow}
-            // @ts-ignore
+            // @ts-ignore react-window rowProps typing is wider than this row shape
             rowProps={{}}
             style={{ height: "100%", width: "100%" }}
             className="py-2"
@@ -574,136 +611,32 @@ export function SidebarAgentsList({
         <div
           ref={listScrollRef}
           onScroll={handleListScroll}
-          className="flex-1 overflow-y-auto px-2 pb-2 space-y-2"
+          className="flex-1 space-y-2 overflow-y-auto px-2 pb-2"
         >
-          {groupedSessions.map((group) => (
-            <div key={group.label} className="space-y-1">
-              {/* Group Header */}
+          {groupedThreads.map((group) => (
+            <div key={group.key} className="space-y-1">
               <div className="flex items-center gap-2 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-worktree-sidebar-foreground/50">
-                {group.state !== "project" && (
-                  <span
-                    className={`inline-flex size-3 shrink-0 items-center justify-center ${
-                      group.state === "blocked"
-                        ? "bg-red-400/20 text-red-400"
-                        : group.state === "waiting"
-                        ? "bg-orange-400/20 text-orange-400"
-                        : group.state === "working"
-                        ? "bg-amber-400/20 text-amber-400"
-                        : group.state === "done"
-                        ? "bg-blue-400/20 text-blue-400"
-                        : group.state === "idle"
-                        ? "bg-emerald-400/20 text-emerald-400"
-                        : "bg-neutral-700 text-neutral-400"
-                    } rounded`}
-                  />
+                {group.state !== undefined && (
+                  <span className={`inline-flex size-3 shrink-0 items-center justify-center ${threadStateGroupClass(group.state)} rounded`} />
                 )}
                 <span className="truncate">{group.label}</span>
-                <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 py-0.25 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
-                  {group.sessions.length}
+                <span className="ml-auto rounded-full border border-worktree-sidebar-border/80 bg-worktree-sidebar-accent/50 px-1.5 text-[9px] font-mono tabular-nums text-worktree-sidebar-foreground/70">
+                  {group.threads.length}
                 </span>
               </div>
-
-              {/* Session Cards */}
-              {group.sessions.map((session) => (
-                <div
-                  key={session.id}
-                  onClick={(e) => {
-                  e.stopPropagation();
-                  const ctrlKey = e.ctrlKey || e.metaKey;
-                  
-                  if (ctrlKey) {
-                    setSelectedSessions(prev => {
-                      const n = new Set(prev);
-                      if (n.has(session.id)) n.delete(session.id);
-                      else n.add(session.id);
-                      return n;
-                    });
-                    return;
-                  }
-                  
-                  onSelectSession(session.id);
-                  setSelectedSessions(new Set());
-                }}
-                  className={`group relative ${compactCards ? "py-1.5 px-2" : "p-2.5"} rounded-lg text-xs cursor-pointer select-none transition-all ${
-                    session.active
-                      ? "bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground border border-worktree-sidebar-border shadow-xs"
-                      : "worktree-sidebar-card-hover text-worktree-sidebar-foreground/70 hover:text-worktree-sidebar-foreground"
-                  } ${
-                    focusedSessionId === session.id
-                      ? "border-indigo-500/50 ring-indigo-500/20"
-                      : ""
-                  } ${
-                    selectedSessions.has(session.id)
-                      ? "bg-indigo-500/20 select-none"
-                      : ""
-                  }`}
-                >
-                  {session.active && (
-                    <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-emerald-500 rounded-r" />
-                  )}
-
-                  <div className="flex items-center justify-between mb-1 pl-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <AgentBrandIcon agentId={session.agentName} size={13} />
-                      <span className="font-medium truncate text-[11px]">
-                        {session.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${getStateBadge(session.state)}`}
-                        title={`Herdr State: ${getStateLabel(session.state)}`}
-                      />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteSession(session.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition"
-                        aria-label="Delete session"
-                      >
-                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-worktree-sidebar-foreground/50 pl-1 font-mono">
-                    <span className="flex items-center gap-1 truncate">
-                      <svg className="w-2.5 h-2.5 text-worktree-sidebar-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="6" y1="3" x2="6" y2="15"></line>
-                        <line x1="18" y1="3" x2="18" y2="15"></line>
-                        <path d="M4 21h16"></path>
-                        <path d="M8 3h8"></path>
-                      </svg>
-                      {session.branch}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-[9px] bg-worktree-sidebar-border/50 border border-worktree-sidebar-border px-1.5 py-0.2 rounded">
-                        {session.agentName}
-                      </span>
-                      <span className="text-[9px] text-worktree-sidebar-foreground/40">
-                        {getProjectName(session.project_path)}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              ))}
+              {group.threads.map((thread) => renderThreadRow(thread))}
             </div>
           ))}
         </div>
       )}
 
-      {/* Footer with batch delete — only for explicit multi-select */}
       {selectedSessions.size > 1 && (
-        <div className="border-t border-red-500/20 bg-red-500/5 px-3 py-2 flex items-center justify-between text-[11px] shrink-0">
-          <span className="text-red-300 font-medium">{selectedSessions.size} selected</span>
+        <div className="flex shrink-0 items-center justify-between border-t border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px]">
+          <span className="font-medium text-red-300">{selectedSessions.size} selected</span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setSelectedSessions(new Set())}
-              className="px-2 py-1 rounded text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-foreground transition cursor-pointer"
+              className="cursor-pointer rounded px-2 py-1 text-worktree-sidebar-foreground/60 transition hover:bg-worktree-sidebar-accent hover:text-worktree-sidebar-foreground"
             >
               Clear
             </button>
@@ -712,35 +645,55 @@ export function SidebarAgentsList({
                 selectedSessions.forEach((id) => onDeleteSession(id));
                 setSelectedSessions(new Set());
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 transition cursor-pointer"
+              className="flex cursor-pointer items-center gap-1.5 rounded border border-red-500/20 bg-red-500/15 px-2.5 py-1 text-red-400 transition hover:bg-red-500/25"
             >
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-              <span>Delete</span>
+              Delete
             </button>
           </div>
         </div>
       )}
-      {promptDialog && (
-        <PromptDialog
-          open={promptDialog.open}
-          title={promptDialog.title}
-          description={promptDialog.description}
-          initialValue={promptDialog.initialValue}
-          placeholder={promptDialog.placeholder}
-          confirmLabel={promptDialog.confirmLabel}
-          onOpenChange={(open) => {
-            if (!open) setPromptDialog(null);
-          }}
-          onSubmit={async (val) => {
-            await promptDialog.onSubmit(val);
-            setPromptDialog(null);
-          }}
-        />
-      )}
+
+      {optionsTarget
+        ? createPortal(
+            <AgentsThreadOptionsMenu
+              groupBy={groupBy}
+              onGroupByChange={onGroupByChange}
+              compactMode={compactMode}
+              onCompactModeChange={setCompactMode}
+              showChildAgents={showChildAgents}
+              onShowChildAgentsChange={setShowChildAgents}
+              showSearch={showSearch}
+              onShowSearchChange={handleShowSearchChange}
+              unreadOnly={readFilter === "unread"}
+              onUnreadOnlyChange={(unreadOnly) =>
+                onReadFilterChange(unreadOnly ? "unread" : "all")
+              }
+              hasUnreadThreads={hasUnreadThreads}
+              hasCompletedThreads={hasCompletedThreads}
+              onMarkAllThreadsRead={handleMarkAllThreadsRead}
+              onClearCompleted={handleClearCompleted}
+            />,
+            optionsTarget
+          )
+        : null}
     </div>
   );
-
 }
+
+function threadStateGroupClass(state?: string): string {
+  switch (state) {
+    case "blocked":
+      return "bg-red-400/20 text-red-400";
+    case "waiting":
+      return "bg-orange-400/20 text-orange-400";
+    case "working":
+      return "bg-amber-400/20 text-amber-400";
+    case "done":
+      return "bg-blue-400/20 text-blue-400";
+    case "idle":
+      return "bg-emerald-400/20 text-emerald-400";
+    default:
+      return "bg-neutral-700 text-neutral-400";
+  }
+}
+

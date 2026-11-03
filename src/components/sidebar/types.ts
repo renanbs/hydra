@@ -21,6 +21,7 @@ import type {
   WorkspaceHostScope,
 } from "../../shared/ui-chrome-types";
 import type { FolderWorkspacePathStatus } from "../../shared/folder-workspace-path-status";
+import type { ThreadReadFilter } from "../../shared/agents-view-thread-filters";
 
 export type { ProjectGroup };
 
@@ -28,7 +29,8 @@ export type { ProjectGroup };
 // O blob merged é um JSON plano; todos os campos são opcionais para que um blob
 // parcial hidrate campo a campo com fallback para os defaults atuais.
 export type SidebarBody = "workspaces" | "agents";
-export type AgentsStatusFilter = "all" | "blocked" | "waiting" | "working" | "done" | "idle";
+/** Orca `ThreadReadFilter`: the Agents view filters by read state, never by agent status. */
+export type AgentsReadFilter = ThreadReadFilter;
 export type AgentsGroupBy = "state" | "project";
 
 export interface SidebarPrefsSnapshot {
@@ -48,7 +50,7 @@ export interface SidebarPrefsSnapshot {
   /** Host-qualified project → group map; a mutation only touches its own bucket. */
   projectGroupMapByHost?: ProjectGroupMapByHost;
   displayOptions?: WorkspaceDisplayOptions;
-  agentsReadFilter?: AgentsStatusFilter;
+  agentsReadFilter?: AgentsReadFilter;
   agentsGroupBy?: AgentsGroupBy;
   /** Set once the one-time Agents-view intro popover has been acknowledged (D01-009). */
   agentsSidebarIntroShown?: boolean;
@@ -64,7 +66,7 @@ export interface SidebarShellPrefs {
   collapsedProjects: string[];
   collapsedGroups: string[];
   displayOptions: WorkspaceDisplayOptions;
-  agentsReadFilter: AgentsStatusFilter;
+  agentsReadFilter: AgentsReadFilter;
   agentsGroupBy: AgentsGroupBy;
   agentsSidebarIntroShown: boolean;
 }
@@ -347,7 +349,7 @@ export interface WorktreeSidebarProps {
   initialCollapsedProjects?: string[];
   initialCollapsedGroups?: string[];
   initialDisplayOptions?: WorkspaceDisplayOptions;
-  initialAgentsReadFilter?: AgentsStatusFilter;
+  initialAgentsReadFilter?: AgentsReadFilter;
   initialAgentsGroupBy?: AgentsGroupBy;
   initialAgentsIntroShown?: boolean;
   onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;

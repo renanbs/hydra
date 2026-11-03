@@ -50,30 +50,6 @@ import {
 import { isDefaultBranchWorkspace } from './default-branch-workspace'
 import { getLineageAncestorIndex, getSortedWorktreeRankIndex } from './visible-worktree-indexes'
 import { getWorktreeHostIdentity } from '../../shared/worktree/host-qualified-identity'
-import type { AgentStatusEntry as SidebarAgentStatusEntry } from './agent-status-types'
-import type { AgentStatusEntry as SharedAgentStatusEntry } from '../../shared/agent-status-types'
-
-/** Orca freshness only knows working/blocked/waiting/done. Hydra sidebar rows also use idle/unknown. */
-export function toSharedAgentStatusByPaneKey(
-  entries: Record<string, SidebarAgentStatusEntry> | null | undefined
-): Record<string, SharedAgentStatusEntry> {
-  const out: Record<string, SharedAgentStatusEntry> = {}
-  if (!entries) return out
-  for (const [key, entry] of Object.entries(entries)) {
-    if (entry.state === 'idle' || entry.state === 'unknown') continue
-    out[key] = {
-      paneKey: entry.paneKey,
-      state: entry.state,
-      prompt: entry.prompt,
-      updatedAt: entry.updatedAt,
-      stateStartedAt: entry.stateStartedAt,
-      stateHistory: [],
-      ...(entry.workingMode ? { workingMode: entry.workingMode } : {}),
-      ...(entry.model ? { model: entry.model } : {})
-    }
-  }
-  return out
-}
 
 /**
  * Whether the "Hide sleeping" sweep must keep this row (#8873).
@@ -329,7 +305,7 @@ export function buildVisibleWorktreeOptionsFromState(
     ptyIdsByTabId: state.ptyIdsByTabId,
     browserTabsByWorktree: state.browserTabsByWorktree,
     worktreeIdsWithLiveAgent: getWorktreeIdsWithLiveAgent(
-      toSharedAgentStatusByPaneKey(state.agentStatusByPaneKey),
+      state.agentStatusByPaneKey,
       state.tabsByWorktree,
       Date.now()
     ),
@@ -373,7 +349,7 @@ export function getVisibleWorktreeIds(): string[] {
       allWorktrees,
       state.tabsByWorktree,
       repoMap,
-      toSharedAgentStatusByPaneKey(state.agentStatusByPaneKey),
+      state.agentStatusByPaneKey,
       state.runtimePaneTitlesByTabId,
       state.ptyIdsByTabId,
       state.migrationUnsupportedByPtyId,
