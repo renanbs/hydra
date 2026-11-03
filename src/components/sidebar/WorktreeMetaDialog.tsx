@@ -4,12 +4,26 @@
 // free-form notes persisted in `worktree_metadata`. The dialog edits a draft and only
 // the Save handler writes, so Cancel never touches the store.
 import { useEffect, useRef, useState } from "react";
+import type { ExecutionHostId } from "../../shared/execution-host";
+import {
+  getIssueLinkProviderFromUrl,
+  parseIssueLinkInput,
+} from "../../shared/issue-link-input";
+import { useWorktreeMetaWorkspace } from "./use-worktree-meta-workspace";
 import type { WorktreeMetadataDraft } from "./worktree-metadata-types";
 
 export interface WorktreeMetaDialogProps {
   open: boolean;
   worktreeName: string;
   initial: WorktreeMetadataDraft;
+  /**
+   * When the opening row knows its workspace identity, the dialog resolves the
+   * live store row (owner repo, multi-host owner index, folder workspaces)
+   * instead of trusting the props snapshot.
+   */
+  worktreeId?: string;
+  ownerRepoId?: string | null;
+  executionHostId?: ExecutionHostId;
   onOpenChange: (open: boolean) => void;
   onSave: (draft: WorktreeMetadataDraft) => void;
 }
@@ -25,9 +39,20 @@ export function WorktreeMetaDialog({
   open,
   worktreeName,
   initial,
+  worktreeId,
+  ownerRepoId,
+  executionHostId,
   onOpenChange,
   onSave,
 }: WorktreeMetaDialogProps): React.JSX.Element | null {
+  // Identity resolution reads the live store: the owner repo wins over the
+  // ambiguity-preserving owner index, and folder workspaces (absent from
+  // `worktreesByRepo`) project from their catalog record.
+  const resolved = useWorktreeMetaWorkspace({
+    worktreeId: worktreeId ?? "",
+    ownerRepoId,
+    executionHostId,
+  });
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [linkedIssue, setLinkedIssue] = useState(
     initial.linkedIssue == null ? "" : String(initial.linkedIssue)
@@ -41,10 +66,22 @@ export function WorktreeMetaDialog({
   // would wipe the draft mid-typing. Seed only when the dialog opens.
   const initialRef = useRef(initial);
   initialRef.current = initial;
+  const resolvedRef = useRef(resolved);
+  resolvedRef.current = resolved;
 
   useEffect(() => {
     if (!open) return;
-    const seed = initialRef.current;
+    const fromProps = initialRef.current;
+    const live = resolvedRef.current.worktree;
+    const seed: WorktreeMetadataDraft = live
+      ? {
+          displayName: live.displayName || fromProps.displayName,
+          comment: live.comment ?? fromProps.comment,
+          linkedIssue: live.linkedIssue ?? null,
+          linkedPR: live.linkedPR ?? null,
+          linkedLinearIssue: live.linkedLinearIssue ?? null,
+        }
+      : fromProps;
     setDisplayName(seed.displayName);
     setLinkedIssue(seed.linkedIssue == null ? "" : String(seed.linkedIssue));
     setLinkedPR(seed.linkedPR == null ? "" : String(seed.linkedPR));
@@ -69,19 +106,47 @@ export function WorktreeMetaDialog({
   if (!open) return null;
 
   const submit = () => {
-    const issue = parsePositiveInteger(linkedIssue);
     const pullRequest = parsePositiveInteger(linkedPR);
-    if (issue === undefined || pullRequest === undefined) {
+    if (pullRequest === undefined) {
       setError("Issue and review must be positive numbers.");
       return;
     }
-    const linear = linkedLinearIssue.trim();
+
+    // Provider resolution: a pasted GitHub issue URL (or `#123`) stays GitHub; a
+    // Linear URL in the issue field moves to the Linear slot. The typed Linear
+    // identifier is normalized to uppercase so `sta-335` and `STA-335` persist
+    // as one link.
+    let issue: number | null = null;
+    let linear: string | null = null;
+    const issueInput = linkedIssue.trim();
+    if (issueInput) {
+      const provider = getIssueLinkProviderFromUrl(issueInput) ?? "github";
+      const parsed = parseIssueLinkInput(issueInput, provider);
+      if (!parsed) {
+        setError("Issue and review must be positive numbers.");
+        return;
+      }
+      if (parsed.provider === "linear") {
+        linear = parsed.identifier;
+      } else {
+        issue = parsed.number;
+      }
+    }
+    const linearInput = linkedLinearIssue.trim();
+    if (linearInput) {
+      const parsed = parseIssueLinkInput(linearInput, "linear");
+      if (!parsed || parsed.provider !== "linear") {
+        setError("Linear issue must look like ENG-123.");
+        return;
+      }
+      linear = parsed.identifier;
+    }
     onSave({
       displayName: displayName.trim() || worktreeName,
       comment,
       linkedIssue: issue,
       linkedPR: pullRequest,
-      linkedLinearIssue: linear || null,
+      linkedLinearIssue: linear,
     });
   };
 

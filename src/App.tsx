@@ -148,9 +148,11 @@ import { destroyWorkspaceWebviews } from "./store/slices/browser-webview-cleanup
 import { forgetWorktreeSleepIntent } from "./lib/worktree-sleep-intent";
 import {
   CLOSE_ALL_CONTEXT_MENUS_EVENT,
+  getWorktreeParentPickerAnchor,
   getWorktreeParentPickerLabel,
   isContextWorktreeDeletable,
   isWorktreeParentPickerDisabled,
+  PARENT_PICKER_EXIT_ANIMATION_MS,
   preserveDeleteSiblingPosition,
   shouldUseNativeContextMenu,
   shouldRevealWorktreeDeveloperMenu,
@@ -789,8 +791,12 @@ export default function App() {
   const [parentPickerState, setParentPickerState] = useState<ParentPickerState | null>(null);
   // Orca `useWorktreeParentPickerTransition`: the picker opens only after the menu's
   // close cycle, so the Radix menu unmount cannot race the popover's first measurement.
+  // `parentPickerOpen` is separate from the retained state so the popover survives its
+  // exit animation instead of vanishing on the first frame of the close.
+  const [parentPickerOpen, setParentPickerOpen] = useState(false);
   const pendingParentPickerRef = useRef<ParentPickerState | null>(null);
   const parentPickerFallbackTimerRef = useRef<number | null>(null);
+  const parentPickerUnmountTimerRef = useRef<number | null>(null);
 
   const clearParentPickerTimer = useCallback(() => {
     if (parentPickerFallbackTimerRef.current != null) {
@@ -799,13 +805,35 @@ export default function App() {
     }
   }, []);
 
+  const clearParentPickerUnmountTimer = useCallback(() => {
+    if (parentPickerUnmountTimerRef.current != null) {
+      window.clearTimeout(parentPickerUnmountTimerRef.current);
+      parentPickerUnmountTimerRef.current = null;
+    }
+  }, []);
+
   const openPendingParentPicker = useCallback(() => {
     const pending = pendingParentPickerRef.current;
     if (!pending) return;
     pendingParentPickerRef.current = null;
     clearParentPickerTimer();
+    clearParentPickerUnmountTimer();
     setParentPickerState(pending);
-  }, [clearParentPickerTimer]);
+    setParentPickerOpen(true);
+  }, [clearParentPickerTimer, clearParentPickerUnmountTimer]);
+
+  /**
+   * Orca `handleParentPickerOpenChange(false)`: close immediately, unmount only after
+   * the exit animation so the popover can play it. A fresh open cancels the timer.
+   */
+  const closeParentPicker = useCallback(() => {
+    setParentPickerOpen(false);
+    clearParentPickerUnmountTimer();
+    parentPickerUnmountTimerRef.current = window.setTimeout(() => {
+      parentPickerUnmountTimerRef.current = null;
+      setParentPickerState(null);
+    }, PARENT_PICKER_EXIT_ANIMATION_MS);
+  }, [clearParentPickerUnmountTimer]);
 
   const scheduleParentPickerOpen = useCallback(
     (request: ParentPickerState) => {
@@ -817,12 +845,31 @@ export default function App() {
     [clearParentPickerTimer, openPendingParentPicker]
   );
 
+  /**
+   * Orca anchors the picker to the workspace row that opened the menu; `getWorktreeParentPickerAnchor`
+   * resolves the drag row for a worktree id and falls back to the card scope. Project and
+   * session menus have no single card scope, so their contextmenu point is the fallback.
+   */
+  const getParentPickerAnchorRect = useCallback(
+    (event: React.MouseEvent, worktreeId: string): WorktreeParentPickerAnchorRect => {
+      const target = event.target instanceof Element ? event.target : null;
+      const scope = target?.closest<HTMLElement>("[data-worktree-drag-id]") ?? null;
+      const anchorElement = getWorktreeParentPickerAnchor(scope, worktreeId) ?? scope;
+      const rect = anchorElement?.getBoundingClientRect();
+      return rect
+        ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+        : { left: event.clientX, top: event.clientY, width: 1, height: 1 };
+    },
+    []
+  );
+
   useEffect(
     () => () => {
       clearParentPickerTimer();
+      clearParentPickerUnmountTimer();
       pendingParentPickerRef.current = null;
     },
-    [clearParentPickerTimer]
+    [clearParentPickerTimer, clearParentPickerUnmountTimer]
   );
 
 
@@ -4895,9 +4942,13 @@ export default function App() {
           onClick: () => {
             const child = parentPickerCandidateByPath.get(proj.path);
             if (!child || eligibleParents.length === 0) return;
-            setParentPickerState({
+            // Orca `handleOpenParentPicker`: dismiss the menu first and open the anchored
+            // picker after the close cycle.
+            window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+            setContextMenu(null);
+            scheduleParentPickerOpen({
               child,
-              anchorRect: { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              anchorRect: getParentPickerAnchorRect(e, proj.path),
               focusRestoreElement:
                 document.activeElement instanceof HTMLElement ? document.activeElement : null,
               selectParent: (selectedPath) => setWorktreeLineageParents([proj.path], selectedPath),
@@ -5258,26 +5309,13 @@ export default function App() {
           onClick: () => {
             const child = parentPickerCandidateByPath.get(wt.path);
             if (!child || eligibleParents.length === 0 || isContextDeleting) return;
-            // Orca anchors the picker to the right-clicked card; D06 measures the
-            // anchor itself, so the captured rect is the row's viewport rectangle.
-            const anchorElement =
-              (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-worktree-drag-id]") ??
-              (e.currentTarget as HTMLElement | null);
-            const anchorRect = anchorElement?.getBoundingClientRect() ?? null;
-            // Orca `handleOpenParentPicker`: dismiss the menu first and open the
-            // anchored picker after the close cycle.
+            // Orca anchors the picker to the right-clicked card: the card scope's own
+            // rectangle, or the contextmenu point when the row is not a drag card.
             window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
             setContextMenu(null);
             scheduleParentPickerOpen({
               child,
-              anchorRect: anchorRect
-                ? {
-                    left: anchorRect.left,
-                    top: anchorRect.top,
-                    width: anchorRect.width,
-                    height: anchorRect.height,
-                  }
-                : { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              anchorRect: getParentPickerAnchorRect(e, wt.id ?? wt.path),
               focusRestoreElement:
                 document.activeElement instanceof HTMLElement ? document.activeElement : null,
               // Orca removes/assigns the relation for every workspace in the
@@ -5452,9 +5490,11 @@ export default function App() {
           onClick: () => {
             const child = parentPickerCandidateByPath.get(session.project_path);
             if (!child || eligibleParents.length === 0) return;
-            setParentPickerState({
+            window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+            setContextMenu(null);
+            scheduleParentPickerOpen({
               child,
-              anchorRect: { left: e.clientX, top: e.clientY, width: 1, height: 1 },
+              anchorRect: getParentPickerAnchorRect(e, session.id),
               focusRestoreElement:
                 document.activeElement instanceof HTMLElement ? document.activeElement : null,
               // A fleet session records its lineage under both the workspace path and its own
@@ -5860,13 +5900,14 @@ export default function App() {
       {/* Anchored parent picker (Orca `WorktreeParentPickerPopover`) */}
       {parentPickerState && (
         <WorktreeParentPickerPopover
-          open
+          open={parentPickerOpen}
           child={parentPickerState.child}
           candidates={getEligibleParentCandidates(parentPickerState.child.path)}
           getAnchorRect={() => parentPickerState.anchorRect}
           focusRestoreElement={parentPickerState.focusRestoreElement}
           onOpenChange={(open) => {
-            if (!open) setParentPickerState(null);
+            // Why delayed: the component stays mounted through its exit animation.
+            if (!open) closeParentPicker();
           }}
           // One path for every rejection: close, then report a translated toast if the
           // lineage write fails (`selectWorktreeParent`).
@@ -5875,7 +5916,7 @@ export default function App() {
               childPath: parentPickerState.child.path,
               parentPath: candidate.path,
               assignWorktreeParent: parentPickerState.selectParent,
-              close: () => setParentPickerState(null),
+              close: closeParentPicker,
             })
           }
           onRemoveParent={
@@ -6185,6 +6226,20 @@ export default function App() {
 
       <WorktreeMetaDialog
         open={worktreeMetaDialog != null}
+        worktreeId={
+          worktreeMetaDialog
+            ? (worktreeMetaDialog.wt.id ?? worktreeMetaDialog.wt.path)
+            : undefined
+        }
+        ownerRepoId={
+          worktreeMetaDialog
+            ? (projects.find(
+                (project) =>
+                  project.path === worktreeMetaDialog.wt.path ||
+                  worktreeMetaDialog.wt.path.startsWith(project.path + "/")
+              )?.id ?? null)
+            : null
+        }
         worktreeName={
           worktreeMetaDialog?.wt.display_name ||
           worktreeMetaDialog?.wt.branch ||

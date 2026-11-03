@@ -32,6 +32,7 @@ import { resolveWorkspaceBoardFullLaneDropIndex } from './workspace-board-filter
 import { registerWorkspaceBoardSidebarDropGroups } from './workspace-board-sidebar-drop'
 import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync'
 import { shouldWriteManualOrderForGroupDrop, buildManualOrderUpdatesForGroupDrop } from '../worktree-manual-order'
+import { commitWorkspaceStatusDocumentDrop } from './commit-workspace-status-drop'
 
 export type WorkspaceBoardDrawerProps = {
   /** Whether the user has the board open (the sheet's own `open` state). */
@@ -194,13 +195,21 @@ function WorkspaceBoardDrawerContent({
   const pinWorktrees = useCallback(
     (worktreeIds: readonly string[]) => {
       let wrote = false
-      for (const worktreeId of worktreeIds) {
-        const card = worktreeById.get(worktreeId)
-        if (card) {
-          wrote = true
-          void onPinWorktree(card.worktree.path)
-        }
-      }
+      // One dispatcher for every drop surface: batch writers win when present, else
+      // the helper falls back to one pin write per dragged workspace.
+      commitWorkspaceStatusDocumentDrop({
+        worktreeIds,
+        status: null,
+        isPinDrop: true,
+        onMoveWorktreeToStatus: () => {},
+        onPinWorktree: (worktreeId) => {
+          const card = worktreeById.get(worktreeId)
+          if (card) {
+            wrote = true
+            void onPinWorktree(card.worktree.path)
+          }
+        },
+      })
       if (wrote) {
         void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
       }

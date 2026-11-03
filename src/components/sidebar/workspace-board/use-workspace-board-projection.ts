@@ -13,6 +13,7 @@ import {
   type WorkspaceBoardCard,
   type WorkspaceBoardLane,
 } from './workspace-board-worktrees'
+import { useVisibleWorkspaceKanbanWorktreeIds } from './use-visible-workspace-kanban-worktree-ids'
 
 /** Stable empty set: a fresh one per render would thrash the lane memo. */
 const EMPTY_PATHS: ReadonlySet<string> = new Set<string>()
@@ -70,6 +71,7 @@ export function useWorkspaceBoardProjection(args: {
   const columnWidth = useAppStore((state) => state.workspaceBoardColumnWidth)
   const storeRepos = useAppStore((state) => state.repos)
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos), [storeRepos])
+  const visibleWorktreeIdentities = useVisibleWorkspaceKanbanWorktreeIds()
   const livePaths = liveWorkspacePaths ?? EMPTY_PATHS
   const pinnedPaths = pinnedWorktreePaths ?? EMPTY_PATHS
   const unreadPaths = unreadWorktreePaths ?? EMPTY_PATHS
@@ -90,6 +92,7 @@ export function useWorkspaceBoardProjection(args: {
         sortBy,
         portsByWorktree,
         prByPath,
+        visibleWorktreeIdentities,
       }),
     [
       activeWorktreePath,
@@ -104,6 +107,7 @@ export function useWorkspaceBoardProjection(args: {
       sessions,
       sortBy,
       unreadPaths,
+      visibleWorktreeIdentities,
       workspaceStatuses,
     ]
   )

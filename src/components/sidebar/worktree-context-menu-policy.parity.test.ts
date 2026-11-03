@@ -5,6 +5,7 @@ import {
   dedupeDeleteIntentTargets,
 } from "./worktree-context-menu-delete-intent";
 import {
+  getWorktreeParentPickerAnchor,
   isContextWorktreeDeletable,
   isWorktreeParentPickerDisabled,
   selectMenuScopedMap,
@@ -121,5 +122,17 @@ describe("worktree context-menu delete intent (Orca parity)", () => {
         isDeleting: (target) => target.id === "busy",
       }).map((target) => `${target.hostId}|${target.id}`)
     ).toEqual(["local|a", "ssh:box|a"]);
+  });
+
+  it("anchors the parent picker to the row being dragged, else the card scope", () => {
+    const row = document.createElement("div");
+    row.dataset.worktreeDragId = "wt-a";
+    const inner = document.createElement("span");
+    row.appendChild(inner);
+
+    expect(getWorktreeParentPickerAnchor(inner, "wt-a")).toBe(row);
+    // A drag row that is not the target falls back to the card scope itself.
+    expect(getWorktreeParentPickerAnchor(inner, "wt-b")).toBe(inner);
+    expect(getWorktreeParentPickerAnchor(row, "wt-a")).toBe(row);
   });
 });
