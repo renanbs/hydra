@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useAppStore } from '@/store'
 import { buildHostIdByRepoId } from '../repo-execution-host-index'
+import { useVisibleWorkspaceKanbanWorktreeIds } from './use-visible-workspace-kanban-worktree-ids'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
@@ -13,7 +14,6 @@ import {
   type WorkspaceBoardCard,
   type WorkspaceBoardLane,
 } from './workspace-board-worktrees'
-import { useVisibleWorkspaceKanbanWorktreeIds } from './use-visible-workspace-kanban-worktree-ids'
 
 /** Stable empty set: a fresh one per render would thrash the lane memo. */
 const EMPTY_PATHS: ReadonlySet<string> = new Set<string>()
@@ -72,6 +72,7 @@ export function useWorkspaceBoardProjection(args: {
   const storeRepos = useAppStore((state) => state.repos)
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos), [storeRepos])
   const visibleWorktreeIdentities = useVisibleWorkspaceKanbanWorktreeIds()
+
   const livePaths = liveWorkspacePaths ?? EMPTY_PATHS
   const pinnedPaths = pinnedWorktreePaths ?? EMPTY_PATHS
   const unreadPaths = unreadWorktreePaths ?? EMPTY_PATHS
@@ -93,6 +94,7 @@ export function useWorkspaceBoardProjection(args: {
         portsByWorktree,
         prByPath,
         visibleWorktreeIdentities,
+
       }),
     [
       activeWorktreePath,
@@ -108,6 +110,7 @@ export function useWorkspaceBoardProjection(args: {
       sortBy,
       unreadPaths,
       visibleWorktreeIdentities,
+
       workspaceStatuses,
     ]
   )

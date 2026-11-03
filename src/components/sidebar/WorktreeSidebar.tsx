@@ -106,6 +106,7 @@ import {
 import { isDefaultBranchWorkspace } from "./default-branch-workspace";
 import { isDetachedHeadWorkspace } from "./visible-worktree-kinds";
 import { tabHasLivePty } from "@/lib/tab-has-live-pty";
+import { isRepoHeaderActionTarget } from "./project-header-drag-contract";
 import type { AgentStateHistoryEntry } from "../../shared/agent-status-types";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
 import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
@@ -1442,6 +1443,12 @@ export function WorktreeSidebar({
   }, [draggedWorktreePath]);
 
   const handleProjectDragStart = useCallback((e: React.DragEvent, id: string) => {
+    // Why: the repo header also hosts the .../+ /chevron overlay; a drag that
+    // starts on an action must not reorder the project (D15a-009).
+    if (isRepoHeaderActionTarget(e.target, e.currentTarget as HTMLElement)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedProjectId(id);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("application/x-hydra-project-drag", id);

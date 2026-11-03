@@ -81,6 +81,7 @@ export function buildWorkspaceBoardLanes(args: {
    * epoch-keyed set once the store has a worktree projection.
    */
   visibleWorktreeIdentities?: ReadonlySet<string> | null
+
 }): WorkspaceBoardLane[] {
   const {
     projects,
@@ -97,6 +98,7 @@ export function buildWorkspaceBoardLanes(args: {
     portsByWorktree,
     prByPath,
     visibleWorktreeIdentities,
+
   } = args
   const liveActivity = buildSidebarLiveActivityIndex(sessions, liveWorkspacePaths)
   const cardsByStatus = new Map<WorkspaceStatus, WorkspaceBoardCard[]>(
@@ -120,6 +122,9 @@ export function buildWorkspaceBoardLanes(args: {
         isPinned: pinnedWorktreePaths.has(worktree.path),
         isUnread: unreadWorktreePaths.has(worktree.path),
       })
+      // Why host scope here: `getProjectWorktrees` already applies the sidebar's
+      // menu filters, but host scope lives in the row pipeline. `null` means no
+      // narrowing; a set (even empty) is authoritative.
       if (!isVisibleUnderSidebarMenuFilters({ worktree: projected, displayOptions, liveActivity })) {
         continue
       }

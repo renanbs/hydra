@@ -147,6 +147,7 @@ import {
 } from "./lib/worktree-sleep-state-persistence";
 import { destroyWorkspaceWebviews } from "./store/slices/browser-webview-cleanup";
 import { forgetWorktreeSleepIntent } from "./lib/worktree-sleep-intent";
+import { wakeEphemeralVmForSleptWorktree } from "./lib/sidebar-worktree-activation";
 import {
   CLOSE_ALL_CONTEXT_MENUS_EVENT,
   getWorktreeParentPickerAnchor,
@@ -2426,6 +2427,10 @@ export default function App() {
 
     // 2. Set active worktree
     setActiveWorktreePath(wt.path);
+    // Why after selection: a failed provider resume keeps the workspace selected;
+    // the wake never rolls activation back (D15a-011). Local/SSH hosts have no
+    // `ephemeralVm` bridge, so this is a no-op there.
+    void wakeEphemeralVmForSleptWorktree(wt.path);
     prevProjectPathRef.current = wt.path;
 
     // 3. Update active session if one exists for this worktree

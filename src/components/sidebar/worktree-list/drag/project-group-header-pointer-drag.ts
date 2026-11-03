@@ -19,7 +19,10 @@ import {
   swallowNextClickOnDragHandle,
   type HeaderDragTimeoutHandle,
 } from "./header-pointer-session";
-import { isRepoHeaderActionTarget } from "./repo-header-pointer-drag";
+import {
+  isProjectGroupHeaderActionTarget,
+  isProjectGroupHeaderDragHandleTarget
+} from "../../project-group-header-drag-contract";
 import type { Row } from "../grouping/row-types";
 
 export type ProjectGroupHeaderDragBucketKey = string;
@@ -37,8 +40,6 @@ export type ProjectGroupHeaderDragRect = {
 export type ProjectGroupTabOrderUpdate = { groupId: string; tabOrder: number };
 
 const ROOT_PROJECT_GROUP_HEADER_BUCKET = "root";
-const GROUP_HEADER_DRAG_HANDLE_SELECTOR = "[data-project-group-header-drag-handle]";
-
 type SidebarProjectGroupHeader = ProjectGroup | { id: null } | undefined;
 
 function isConcreteProjectGroup(
@@ -203,15 +204,6 @@ export function computeProjectGroupHeaderDropPreview(args: {
   });
 }
 
-export function isProjectGroupHeaderDragHandleTarget(
-  target: EventTarget | null,
-  currentTarget: HTMLElement
-): boolean {
-  if (!(target instanceof Element)) return false;
-  const handle = target.closest(GROUP_HEADER_DRAG_HANDLE_SELECTOR);
-  return handle !== null && currentTarget.contains(handle);
-}
-
 export type ProjectGroupHeaderDragSession = {
   groupId: string;
   bucketKey: ProjectGroupHeaderDragBucketKey;
@@ -240,7 +232,7 @@ export function createProjectGroupHeaderDragSession(args: {
     return null;
   }
   // The group header reuses ProjectHeaderActions markup, so the same action selector applies.
-  if (isRepoHeaderActionTarget(args.event.target, args.event.currentTarget)) {
+  if (isProjectGroupHeaderActionTarget(args.event.target, args.event.currentTarget)) {
     return null;
   }
   const group = args.projectGroupById.get(args.groupId);

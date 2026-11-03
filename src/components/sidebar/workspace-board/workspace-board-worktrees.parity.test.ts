@@ -58,6 +58,7 @@ function build(args: {
   activeWorktreePath?: string | null
   hostIdByRepoId?: ReadonlyMap<string, never>
   sortBy?: string
+  visibleIdentitySet?: ReadonlySet<string> | null
 }) {
   return buildWorkspaceBoardLanes({
     projects: [PROJECT],
@@ -71,6 +72,7 @@ function build(args: {
     activeWorktreePath: args.activeWorktreePath ?? null,
     hostIdByRepoId: args.hostIdByRepoId ?? new Map(),
     sortBy: args.sortBy,
+    visibleIdentitySet: args.visibleIdentitySet,
   })
 }
 
@@ -293,5 +295,37 @@ describe('workspace board manual sort and drag groups (D08-029)', () => {
     const index = buildWorkspaceBoardUnambiguousWorktreeIdIndex([card, sameIdOtherHost, unique])
     expect(index.has('wt-a')).toBe(false)
     expect(index.get('wt-unique')?.identity).toBe('|wt-unique')
+  })
+})
+
+// D15a-012: the board reads the sidebar's visible host-qualified identities, so a
+// host scoped out of the sidebar must not reappear as a board card.
+describe('workspace board host scope (D15a-012)', () => {
+  it('drops every card when the visible identity set is empty', () => {
+    const lanes = build({
+      worktrees: [worktree('wt-a', { status: 'todo' })],
+      visibleIdentitySet: new Set<string>(),
+    })
+
+    expect(cardIds(lanes, 'todo')).toEqual([])
+  })
+
+  it('keeps the cards whose host-qualified identity is visible', () => {
+    const visible = worktree('wt-a', { status: 'todo' })
+    const lanes = build({
+      worktrees: [visible, worktree('wt-b', { status: 'todo' })],
+      visibleIdentitySet: new Set(['|' + (visible.id ?? visible.path)]),
+    })
+
+    expect(cardIds(lanes, 'todo')).toEqual(['wt-a'])
+  })
+
+  it('keeps the pre-existing membership when there is no host narrowing', () => {
+    const lanes = build({
+      worktrees: [worktree('wt-a', { status: 'todo' })],
+      visibleIdentitySet: null,
+    })
+
+    expect(cardIds(lanes, 'todo')).toEqual(['wt-a'])
   })
 })
