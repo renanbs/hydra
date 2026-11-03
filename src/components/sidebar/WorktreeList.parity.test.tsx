@@ -400,9 +400,11 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(
       screen.getByRole("button", { name: "Host actions for Build server" })
     ).toBeInTheDocument();
-    // The local host has no registry row to rename or remove, so it offers no menu at all.
+    // The local host has no registry row, so its menu offers rename/manage but no removal.
     const localHeader = container.querySelector('[data-host-header-id="local"]');
-    expect(localHeader?.querySelector("button")).toBeNull();
+    expect(
+      localHeader?.querySelector('button[aria-label^="Host actions for"]')
+    ).not.toBeNull();
   });
 
   it("applies the menu's Hide sleeping filter on the painted rows", () => {

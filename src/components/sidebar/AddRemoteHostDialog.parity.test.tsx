@@ -33,6 +33,33 @@ vi.mock('sonner', () => ({
 
 import { AddRemoteHostDialog } from './AddRemoteHostDialog'
 
+// Radix surfaces observe their anchor on mount; jsdom has no ResizeObserver. The shim is
+// installed per test file and removed in afterAll — vitest workers share `globalThis` across
+// files, and a lingering shim changes Radix's measuring path in unrelated suites.
+class ResizeObserverNoop {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+const previousResizeObserver = Reflect.get(globalThis, 'ResizeObserver')
+Object.defineProperty(globalThis, 'ResizeObserver', {
+  configurable: true,
+  writable: true,
+  value: ResizeObserverNoop
+})
+afterAll(() => {
+  if (previousResizeObserver === undefined) {
+    Reflect.deleteProperty(globalThis, 'ResizeObserver')
+  } else {
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      configurable: true,
+      writable: true,
+      value: previousResizeObserver
+    })
+  }
+})
+
+
 type RegistryRow = { id: string; label: string; generation: number } & Partial<SshTargetCreateInput>
 
 let registry: RegistryRow[] = []
@@ -145,7 +172,7 @@ describe('AddRemoteHostDialog manual form (Orca parity)', () => {
     await act(async () => {})
 
     expect(invokeMock).not.toHaveBeenCalledWith('ssh_add_target', expect.anything())
-    expect(toastError).toHaveBeenCalledWith('Host or SSH config alias is required.')
+    expect(toastError).toHaveBeenCalledWith('Host or SSH config alias is required')
   })
 
   it('saves the form fields as the target, hydrates the registry and opens the Hosts gate', async () => {
@@ -169,7 +196,8 @@ describe('AddRemoteHostDialog manual form (Orca parity)', () => {
         host: 'server',
         port: 2222,
         username: 'deploy',
-        identityFile: '~/.ssh/id_ed25519'
+        identityFile: '~/.ssh/id_ed25519',
+        relayGracePeriodSeconds: 0
       }
     })
     expect(onOpenChange).toHaveBeenCalledWith(null)
@@ -196,7 +224,7 @@ describe('AddRemoteHostDialog manual form (Orca parity)', () => {
     await act(async () => {})
 
     expect(invokeMock).not.toHaveBeenCalledWith('ssh_add_target', expect.anything())
-    expect(toastError).toHaveBeenCalledWith('Port must be between 1 and 65535.')
+    expect(toastError).toHaveBeenCalledWith('Port must be between 1 and 65535')
   })
 })
 
@@ -338,5 +366,178 @@ describe('AddRemoteHostDialog config picker (Orca parity)', () => {
     })
     expect(invokeMock).not.toHaveBeenCalledWith('ssh_list_targets')
     expect(toastInfo).toHaveBeenCalledWith('~/.ssh/config already in sync.')
+  })
+})
+
+function pairingLink(offer: Record<string, unknown>): string {
+  return `orca://pair?code=${Buffer.from(JSON.stringify(offer)).toString('base64url')}`
+}
+
+describe('AddRemoteHostDialog server mode (Orca parity)', () => {
+  function renderServerDialog() {
+    const onOpenChange = vi.fn()
+    render(<AddRemoteHostDialog mode="server" onOpenChange={onOpenChange} />)
+    return { onOpenChange }
+  }
+
+  it('validates the access link live and blocks a loopback destination until the tunnel override', () => {
+    renderServerDialog()
+
+    expect(screen.getByText('Add remote server')).toBeInTheDocument()
+    const save = screen.getByRole('button', { name: 'Save' })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Name in Orca'), { target: { value: 'Dev box' } })
+    fireEvent.change(screen.getByLabelText('Access link'), {
+      target: { value: 'not-a-link' }
+    })
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Enter an Orca access link or bare pairing code.'
+    )
+    expect(save).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Access link'), {
+      target: {
+        value: pairingLink({ v: 2, endpoint: 'wss://127.0.0.1:6767', deviceToken: 'token' })
+      }
+    })
+
+    expect(screen.getByText('Loopback')).toBeInTheDocument()
+    expect(screen.getByText('127.0.0.1:6767')).toBeInTheDocument()
+    expect(save).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Enable the SSH tunnel override or create a new link'
+    )
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /I am using an SSH tunnel/i }))
+
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+  })
+
+  it('drops the tunnel override when the pasted link changes', () => {
+    renderServerDialog()
+
+    fireEvent.change(screen.getByLabelText('Access link'), {
+      target: {
+        value: pairingLink({ v: 2, endpoint: 'wss://127.0.0.1:6767', deviceToken: 'token' })
+      }
+    })
+    fireEvent.change(screen.getByLabelText('Name in Orca'), { target: { value: 'Dev box' } })
+    fireEvent.click(screen.getByRole('checkbox', { name: /I am using an SSH tunnel/i }))
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+
+    fireEvent.change(screen.getByLabelText('Access link'), {
+      target: {
+        value: pairingLink({ v: 2, endpoint: 'wss://100.64.0.2:6767', deviceToken: 'token' })
+      }
+    })
+
+    expect(screen.getByText('Tailscale address')).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).toBeNull()
+  })
+
+  it('keeps Save disabled and never reaches the pairing backend without a name and link', async () => {
+    renderServerDialog()
+
+    const save = screen.getByRole('button', { name: 'Save' })
+    expect(save).toBeDisabled()
+    fireEvent.click(save)
+    await act(async () => {})
+
+    // Enter inside the form still submits, so the required-fields guard reports itself.
+    fireEvent.submit(document.querySelector('form')!)
+
+    expect(toastError).toHaveBeenCalledWith('Server name and pairing code are required.')
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      'runtime_verify_and_add_from_pairing_code',
+      expect.anything()
+    )
+  })
+
+  it('reports the missing pairing backend instead of pretending the server was saved', async () => {
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === 'runtime_verify_and_add_from_pairing_code'
+        ? Promise.reject(new Error('Command runtime_verify_and_add_from_pairing_code not found'))
+        : Promise.reject(new Error(`unexpected command: ${cmd}`))
+    )
+    const { onOpenChange } = renderServerDialog()
+
+    fireEvent.change(screen.getByLabelText('Name in Orca'), { target: { value: 'Dev box' } })
+    fireEvent.change(screen.getByLabelText('Access link'), {
+      target: {
+        value: pairingLink({ v: 2, endpoint: 'wss://100.64.0.2:6767', deviceToken: 'token' })
+      }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    expect(invokeMock).toHaveBeenCalledWith('runtime_verify_and_add_from_pairing_code', {
+      name: 'Dev box',
+      pairingCode: expect.stringContaining('orca://pair?code='),
+      allowLoopback: false
+    })
+    expect(toastError).toHaveBeenCalledWith(
+      'Orca server pairing is unavailable in this build.'
+    )
+    expect(onOpenChange).not.toHaveBeenCalled()
+  })
+})
+
+describe('AddRemoteHostDialog advanced fields (Orca parity)', () => {
+  it('expands the disclosure when a config pick resolves proxy or jump values', async () => {
+    listResult = listOf([configHost('bastioned')])
+    resolveResult = {
+      alias: 'bastioned',
+      hostname: 'bastioned.internal',
+      port: 22,
+      username: 'deploy',
+      identityFiles: [],
+      identitiesOnly: false,
+      forwardAgent: false,
+      proxyUseFdpass: false,
+      jumpHost: 'bastion.example.com'
+    }
+    renderDialog()
+    await openPicker()
+
+    fireEvent.click(screen.getByRole('button', { name: /bastioned/ }))
+    await act(async () => {})
+
+    expect(screen.getByLabelText('Jump Host')).toHaveValue('bastion.example.com')
+    expect(screen.getByLabelText('Jump Host')).toBeVisible()
+  })
+
+  it('refuses a terminal timeout outside 60s..7d', async () => {
+    renderDialog()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced' }))
+    fireEvent.change(screen.getByLabelText('Host or alias'), { target: { value: 'server' } })
+    fireEvent.click(screen.getByRole('switch', { name: 'Keep terminals alive until reset' }))
+    // Turning keep-alive off makes the bounded field editable again.
+    fireEvent.change(screen.getByLabelText('Timeout after disconnect (seconds)'), {
+      target: { value: '10' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    expect(invokeMock).not.toHaveBeenCalledWith('ssh_add_target', expect.anything())
+    expect(toastError).toHaveBeenCalledWith(
+      'Terminal timeout must be between 60 and 604800 seconds.'
+    )
+  })
+
+  it('refuses a host the registry already holds', async () => {
+    registry = [
+      { id: 'existing', label: 'Existing', generation: 1, host: 'server', username: 'deploy' }
+    ]
+    renderDialog()
+
+    fireEvent.change(screen.getByLabelText('Host or alias'), { target: { value: 'deploy@server' } })
+    fireEvent.blur(screen.getByLabelText('Host or alias'))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    expect(invokeMock).not.toHaveBeenCalledWith('ssh_add_target', expect.anything())
+    expect(toastError).toHaveBeenCalledWith('That SSH host is already in Orca.')
   })
 })

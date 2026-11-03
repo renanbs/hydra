@@ -8,12 +8,20 @@ export type SshWorkspaceForgetResolution =
   | { kind: 'ghost'; targetId: string }
 
 export function resolveSshWorkspaceForget(args: {
-  repo: { connectionId?: string | null } | null | undefined
+  repo:
+    | { connectionId?: string | null; executionHostId?: string | null }
+    | null
+    | undefined
   sshConnectionStates: ReadonlyMap<string, { status?: string } | undefined>
   /** Keys are configured SSH target ids (targets that still exist in settings). */
   sshTargetLabels: ReadonlyMap<string, string>
 }): SshWorkspaceForgetResolution {
   const connectionId = args.repo?.connectionId?.trim()
+  // Why: runtime-VM workspaces are not SSH even when they carry a connection id; the
+  // runtime owns their lifecycle, so the SSH reconnect/forget path would be wrong.
+  if (args.repo?.executionHostId?.trim().startsWith('runtime:')) {
+    return { kind: 'not-ssh' }
+  }
   if (!connectionId || connectionId.startsWith('runtime:')) {
     return { kind: 'not-ssh' }
   }

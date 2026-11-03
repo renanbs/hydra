@@ -1,3 +1,12 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/ssh-host-remove-resolution.ts
+//
+// Classifies what removing an SSH target means for the workspaces still on it, so the
+// host-removal dialog can offer the right choice:
+//  - connected   → delete host AND its remote worktrees (real git removal)
+//  - disconnected → target still configured but not connected; only local cleanup is safe
+//  - ghost        → target no longer in the registry; only local cleanup is possible
+import type { SshConnectionState } from '../../shared/ssh-types'
 import {
   getRepoExecutionHostId,
   getWorktreeExecutionHostId,
@@ -8,11 +17,12 @@ import type { Worktree } from '../../shared/worktree/types'
 
 export type SshHostRemoveResolution = {
   targetId: string
-  /**
-   * Workspaces that live on this host: every non-main worktree under one of its repos,
-   * plus one for each repo root (the root workspace is a workspace too).
-   */
+  /** Non-main worktrees on this host that a remote delete would remove. */
+  workspaceWorktreeIds: string[]
+  /** Repo ids whose main/root workspace lives on this host. */
+  hostRepoIds: string[]
   workspaceCount: number
+  isConnected: boolean
 }
 
 /**
@@ -27,17 +37,18 @@ export function resolveSshHostRemoval(args: {
   targetId: string
   repos: readonly Pick<Repo, 'id' | 'connectionId' | 'executionHostId'>[]
   worktrees: readonly Pick<Worktree, 'id' | 'repoId' | 'isMainWorktree' | 'hostId'>[]
+  sshConnectionStates?: ReadonlyMap<string, Pick<SshConnectionState, 'status'> | undefined>
 }): SshHostRemoveResolution {
   const hostId = toSshExecutionHostId(args.targetId)
   const repoById = new Map(args.repos.map((repo) => [repo.id, repo]))
+  // Why dedupe by id: the store can transiently hold duplicate rows mid host merge, and a
+  // doubled row must not inflate the count the user is warned with or delete twice.
   const hostRepoIds = new Set<string>()
   for (const repo of args.repos) {
     if (getRepoExecutionHostId(repo) === hostId) {
       hostRepoIds.add(repo.id)
     }
   }
-  // Why dedupe by id: the store can transiently hold duplicate rows mid host merge, and a
-  // doubled row must not inflate the count the user is warned with.
   const worktreeIds = new Set<string>()
   for (const worktree of args.worktrees) {
     if (worktree.isMainWorktree) {
@@ -48,5 +59,12 @@ export function resolveSshHostRemoval(args: {
     }
     worktreeIds.add(worktree.id)
   }
-  return { targetId: args.targetId, workspaceCount: worktreeIds.size + hostRepoIds.size }
+  return {
+    targetId: args.targetId,
+    workspaceWorktreeIds: [...worktreeIds],
+    hostRepoIds: [...hostRepoIds],
+    // A repo's main/root workspace counts too — removing the host drops it.
+    workspaceCount: worktreeIds.size + hostRepoIds.size,
+    isConnected: args.sshConnectionStates?.get(args.targetId)?.status === 'connected'
+  }
 }

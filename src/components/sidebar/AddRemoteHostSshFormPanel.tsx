@@ -1,8 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/AddRemoteHostSshFormPanel.tsx
-// Parity with Orca `components/sidebar/AddRemoteHostSshFormPanel.tsx`: the SSH dialog's
-// header, the manual fields, and the footer whose link swaps to the `~/.ssh/config`
-// picker while Save runs the form's validation and submit.
+// The SSH dialog's header, the manual fields (Advanced disclosure included), and the footer
+// whose link swaps to the `~/.ssh/config` picker while Save runs the form's validation.
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
@@ -12,6 +11,7 @@ import { SshHostFields } from './AddRemoteHostFields'
 export function AddRemoteHostSshFormPanel({
   form,
   disabled,
+  preferAdvancedOpen = false,
   configIdentityAlias,
   onFormChange,
   onSubmit,
@@ -20,6 +20,7 @@ export function AddRemoteHostSshFormPanel({
 }: {
   form: EditingTarget
   disabled: boolean
+  preferAdvancedOpen?: boolean
   configIdentityAlias: string | null
   onFormChange: (updater: (prev: EditingTarget) => EditingTarget) => void
   onSubmit: () => void
@@ -43,6 +44,7 @@ export function AddRemoteHostSshFormPanel({
       <SshHostFields
         form={form}
         disabled={disabled}
+        preferAdvancedOpen={preferAdvancedOpen}
         configIdentityAlias={configIdentityAlias}
         onFormChange={onFormChange}
         onSubmit={onSubmit}
