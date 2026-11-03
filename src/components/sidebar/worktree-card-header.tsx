@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/worktree-card-header.tsx
 import React from 'react'
-import { AlertCircle, Server, ServerOff, Star, Trash2 } from 'lucide-react'
+import { AlertCircle, Moon, Server, ServerOff, Star, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -14,6 +14,7 @@ import { formatSparseDirectoryPreview, shouldBeginWorktreeRename } from './workt
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
+import { useWorktreeSleeping } from './use-worktree-sleeping'
 
 // Why: pinned repo icon and compact inline badge share this chip shell so both repo cues read as the same affordance.
 function RepoIdentityChip({
@@ -110,6 +111,7 @@ export function WorktreeCardHeader({
         : null
 
   const isMain = Boolean(worktree.isMainWorktree || worktree.is_main)
+  const isSleeping = useWorktreeSleeping(worktree.id ?? worktree.path)
   const isSparse = Boolean(worktree.isSparse || worktree.is_sparse)
   const sparseDirs = worktree.sparseDirectories || worktree.sparse_directories
   const showRuntimeHostGlyph = resolveRepoHostKind(repo) === 'runtime'
@@ -264,6 +266,22 @@ export function WorktreeCardHeader({
             </TooltipContent>
           </Tooltip>
         )}
+
+        {isSleeping ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex size-4 shrink-0 items-center justify-center rounded border border-worktree-sidebar-border bg-worktree-sidebar-accent/45 text-muted-foreground"
+                aria-label="Sleeping workspace"
+              >
+                <Moon className="size-2.5" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              Sleeping workspace. Open it to wake its terminals.
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
 
         {showTitleRowIndicators && titleRowIndicators}
       </div>

@@ -798,7 +798,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                   </div>
 
                   {/* Open In Apps — moved from General */}
-                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                  <div id="general-open-in-apps" className="rounded-xl border bg-card p-6 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-[13px] font-medium">Open In Apps</div>

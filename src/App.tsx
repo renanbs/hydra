@@ -122,7 +122,6 @@ import {
 } from "./lib/visible-worktree-index-jump";
 import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-worktrees";
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
-import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { PendingWorktreeCreationPanel } from "./components/worktree-creation/PendingWorktreeCreationPanel";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
@@ -207,7 +206,31 @@ import {
 import type { Repo } from "./shared/repo-types";
 import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
-import { WorktreeParentPickerPopover } from "./components/sidebar/WorktreeParentPickerPopover";
+import { WorktreeContextMenuView } from "./components/sidebar/WorktreeContextMenuView";
+import { WorktreeContextMenuOverlays } from "./components/sidebar/WorktreeContextMenuOverlays";
+import {
+  getWorktreeDeleteMenuState,
+  getWorktreeRemoteWebUrls,
+  hasAnyContextLineageParent,
+  shouldShowSingleContextWorktreeItems,
+  shouldShowWorktreeUpdateItem,
+} from "./components/sidebar/worktree-context-menu-model";
+import {
+  getOpenInEntryAvailability,
+  getWorktreeOpenInEntries,
+  openOpenInAppsSettings,
+} from "./components/sidebar/worktree-open-in-menu";
+import {
+  getLocalFileManagerLabel,
+  openWorktreePath,
+} from "./lib/open-in-path-guard";
+import {
+  MANUAL_TERMINAL_WORKTREE_PARK_EVENT,
+  requestManualTerminalWorktreePark,
+  takePendingManualTerminalWorktreePark,
+  takeAllPendingManualTerminalWorktreeParks,
+} from "./lib/manual-terminal-worktree-parking";
+import { useOptionalShortcutLabel } from "./hooks/useShortcutLabel";
 import { selectWorktreeParent } from "./components/sidebar/worktree-parent-picker-actions";
 import type { WorktreeParentPickerAnchorRect } from "./components/sidebar/worktree-parent-picker-placement";
 import { buildWorktreeParentPickerCandidates } from "./components/sidebar/worktree-parent-picker-candidates";
@@ -246,6 +269,9 @@ import {
   MoreHorizontal,
   Hash,
   Terminal,
+  CodeXml,
+  SquareParking,
+  GitPullRequest,
 } from "lucide-react";
 import { RightSidebar } from "./components/right-sidebar/RightSidebar";
 import "./App.css";
@@ -676,6 +702,20 @@ export default function App() {
     /** Item 4: "terminal-tab" mantém CustomContextMenu; sidebar usa Radix. */
     source: "sidebar" | "terminal-tab";
   } | null>(null);
+  /**
+   * ProjectGroupNameDialog opened from a card menu. Seeded with the repo name (the
+   * same seed Orca uses) so the user only confirms; the dialog is rendered by the
+   * context-menu overlays beside the menu, never inside the virtualized row.
+   */
+  const [contextMenuGroupDialog, setContextMenuGroupDialog] = useState<{
+    projectId: string;
+    initialName: string;
+    hostId?: ExecutionHostId;
+  } | null>(null);
+  /** Terminal renderers the Developer menu parked; PTYs stay alive in Rust. */
+  const [parkedTerminalWorktreePaths, setParkedTerminalWorktreePaths] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
 
   // Orca parity: dedicated DeleteWorktreeDialog state (openModal('delete-worktree')).
   // STA-4343: the modal carries the confirmed IDENTITY (id + host), not just the
@@ -731,6 +771,9 @@ export default function App() {
   // Orca parity (D01-052): the global shortcut path reads the keybinding registry
   // (definitions + user overrides) instead of hardcoded chords.
   const keybindings = useAppStore((s) => s.keybindings);
+  // Orca `WorktreeContextMenuView`: the delete row advertises the registry binding,
+  // not a hardcoded chord.
+  const deleteWorkspaceShortcut = useOptionalShortcutLabel("workspace.delete");
   /** Live workspace rows the delete confirmation revalidates its targets against. */
   const deleteLiveTargets = useMemo<WorktreeDeleteLiveTarget[]>(() => {
     const rows: WorktreeDeleteLiveTarget[] = [];
@@ -1041,6 +1084,48 @@ export default function App() {
   const workbenchCheckedRef = useRef(false);
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
+  // Orca `useManualTerminalWorktreeParking`: the Developer row asks the workbench
+  // to unmount this workspace's terminal renderers. PTYs keep running in Rust; a
+  // later activation (or the placeholder's wake button) remounts them.
+  const parkTerminalWorktree = useCallback((worktreeId: string) => {
+    const hasTerminal = tabsRef.current.some(
+      (tab) =>
+        tab.type === "terminal" &&
+        Boolean(tab.cwd) &&
+        (tab.cwd === worktreeId || tab.cwd?.startsWith(`${worktreeId}/`))
+    );
+    if (!hasTerminal) {
+      toast.warning("No open terminal to park in this workspace");
+      return;
+    }
+    setParkedTerminalWorktreePaths((prev) => {
+      if (prev.has(worktreeId)) return prev;
+      const next = new Set(prev);
+      next.add(worktreeId);
+      return next;
+    });
+  }, []);
+  const wakeParkedTerminalWorktree = useCallback((worktreeId: string) => {
+    setParkedTerminalWorktreePaths((prev) => {
+      if (!prev.has(worktreeId)) return prev;
+      const next = new Set(prev);
+      next.delete(worktreeId);
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    const handleParkRequest = (event: Event): void => {
+      const worktreeId = (event as CustomEvent<{ worktreeId?: string }>).detail?.worktreeId;
+      if (!worktreeId) return;
+      takePendingManualTerminalWorktreePark(worktreeId);
+      parkTerminalWorktree(worktreeId);
+    };
+    window.addEventListener(MANUAL_TERMINAL_WORKTREE_PARK_EVENT, handleParkRequest);
+    for (const worktreeId of takeAllPendingManualTerminalWorktreeParks()) {
+      parkTerminalWorktree(worktreeId);
+    }
+    return () => window.removeEventListener(MANUAL_TERMINAL_WORKTREE_PARK_EVENT, handleParkRequest);
+  }, [parkTerminalWorktree]);
   // Orca sleep keeps the persisted tab layout so a wake re-attaches; the teardown
   // clears the visible tabs, and this one-shot flag keeps that clear from being
   // written back as the workspace's saved state.
@@ -1956,9 +2041,10 @@ export default function App() {
     // setIsSettingsOpen directly; this is the same event bus sibling deep links use, and
     // the modal still opens through App's single settings state.
     const handleOpenSettingsPane = (e: Event) => {
-      const detail = (e as CustomEvent<{ section?: HydraNavId }>).detail;
+      const detail = (e as CustomEvent<{ section?: HydraNavId; sectionId?: string }>).detail;
       if (!detail?.section) return;
       setSettingsSectionRequested(detail.section);
+      setSettingsTargetSectionId(detail.sectionId?.trim() ? detail.sectionId : null);
       setIsSettingsOpen(true);
     };
     window.addEventListener("hydra:open-settings", handleOpenSettingsPane);
@@ -2395,6 +2481,25 @@ export default function App() {
               setSessions([]);
             }
           }
+          // Orca `PAR-86`: removal is reversible while the directory exists, so the
+          // success toast offers Re-add instead of making the user re-run Add Repo.
+          toast.success(`Removed ${proj.displayName || proj.name}`, {
+            action: {
+              label: "Re-add",
+              onClick: () => {
+                invoke("register_existing_project", { path: proj.path })
+                  .then(() => {
+                    window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                    toast.success("Project re-added");
+                  })
+                  .catch((error) => {
+                    toast.error("Could not re-add project", {
+                      description: String(error),
+                    });
+                  });
+              },
+            },
+          });
         });
       })
       .catch(console.error);
@@ -2433,6 +2538,9 @@ export default function App() {
 
     // 2. Set active worktree
     setActiveWorktreePath(wt.path);
+    // Selecting a parked workspace is the wake signal: the terminal renderers
+    // remount against the still-live PTYs.
+    wakeParkedTerminalWorktree(wt.path);
     // Why after selection: a failed provider resume keeps the workspace selected;
     // the wake never rolls activation back (D15a-011). Local/SSH hosts have no
     // `ephemeralVm` bridge, so this is a no-op there.
@@ -4640,23 +4748,51 @@ export default function App() {
 
 
   // Helpers for Orca parity: Open In submenu, file-manager label, etc.
-  const getOpenInItems = (path: string): ContextMenuItem[] => {
-    const apps = hydraSettings.open_in_applications ?? [];
-    const items: ContextMenuItem[] = apps.map((app) => ({
-      label: app.label || app.command,
-      icon: <ExternalLink className="w-3.5 h-3.5" />,
-      onClick: () => invoke("open_in_external_editor", { path, command: app.command }).catch(console.error),
-    }));
-    items.push({
-      label: "Reveal in File Manager",
-      icon: <FolderOpen className="w-3.5 h-3.5" />,
-      onClick: () => invoke("open_in_file_manager", { path }).catch(console.error),
+  /**
+   * Orca `WorktreeOpenInMenuItems`: every entry carries its availability (and the
+   * Local only / Remote SSH hint) before the click, and the click is preflighted by
+   * `openWorktreePath` so a remote path never reaches the local OS opener.
+   */
+  const getOpenInItems = (
+    path: string,
+    connectionId: string | null = null,
+    disabled = false
+  ): ContextMenuItem[] => {
+    const apps = hydraSettings.open_in_applications ?? DEFAULT_OPEN_IN_APPLICATIONS;
+    const entries = getWorktreeOpenInEntries(apps, getLocalFileManagerLabel());
+    const items: ContextMenuItem[] = entries.map((entry) => {
+      const availability = getOpenInEntryAvailability(entry, hydraSettings, connectionId);
+      return {
+        label: entry.label,
+        icon:
+          entry.target === "file-manager" ? (
+            <FolderOpen className="w-3.5 h-3.5" />
+          ) : (
+            <ExternalLink className="w-3.5 h-3.5" />
+          ),
+        disabled: disabled || availability.disabled,
+        ...(availability.metadata ? { metadata: availability.metadata } : {}),
+        // Why: the submenu is portaled; without the stop the click would reach the
+        // workspace row under it and activate the card.
+        stopPropagation: true,
+        onClick: () => {
+          void openWorktreePath({
+            target: entry.target,
+            worktreePath: path,
+            connectionId,
+            command: entry.command,
+            settings: hydraSettings,
+          });
+        },
+      };
     });
     items.push({
       label: "Customize apps...",
       icon: <Sliders className="w-3.5 h-3.5" />,
       separator: true,
-      onClick: () => setIsSettingsOpen(true),
+      disabled,
+      stopPropagation: true,
+      onClick: () => openOpenInAppsSettings(),
     });
     return items;
   };
@@ -5065,8 +5201,9 @@ export default function App() {
           onClick: () => copyToClipboard(folder.folderPath),
         },
         {
-          label: "Remove Workspace...",
+          label: "Remove Workspace",
           icon: <Trash2 className="w-3.5 h-3.5" />,
+          shortcut: deleteWorkspaceShortcut ?? undefined,
           danger: true,
           separator: true,
           onClick: () => {
@@ -5115,7 +5252,6 @@ export default function App() {
       isMultiContext,
     });
 
-    const openInChildren = getOpenInItems(wt.path);
     const contextRows = contextPaths
       .map((path) => lineageWorktreeRows.find((row) => row.path === path))
       .filter((row): row is NonNullable<typeof row> => Boolean(row));
@@ -5158,35 +5294,56 @@ export default function App() {
     const isContextDeleting = contextIdentities.some((identity) =>
       Boolean(deleteStateByWorktreeId[getDeleteStateKeyForWorktreeHost(identity)]?.isDeleting)
     );
+    const openInChildren = getOpenInItems(wt.path, proj.connectionId ?? null, isContextDeleting);
     const singleRepoResolved = resolveWorktreeRepoPath(wt.path) !== null;
-    const deleteAllowed = isMultiContext
-      ? contextIdentities.length > 0 && !isContextDeleting
+    const baseDeletable = isMultiContext
+      ? contextIdentities.length > 0
       : isContextWorktreeDeletable(
           { isMainWorktree: isMain },
           singleRepoResolved ? { id: proj.id } : null
-        ) && !isContextDeleting;
+        );
+    const deleteAllowed = baseDeletable && !isContextDeleting;
+    const deleteMenu = getWorktreeDeleteMenuState(
+      {
+        isMultiContext,
+        isDeleting: isContextDeleting,
+        isMainWorktree: isMain,
+        // The primary checkout removes the project entry instead of running git.
+        removesProject: isMain,
+        repoResolved: singleRepoResolved,
+        deleteTargetCount: contextIdentities.length,
+      },
+      { lineageDescendantCount: sleepLineage.descendants.length }
+    );
+    const hasAnyContextLineage = hasAnyContextLineageParent(contextPaths, worktreeLineage);
+    const repoRecord = storeRepos.find((repo) => repo.path === proj.path) ?? null;
+    const remoteWebUrls = getWorktreeRemoteWebUrls({
+      canonicalKey: repoRecord?.gitRemoteIdentity?.canonicalKey,
+      branch: wt.branch,
+      prNumber: prByPath[wt.path]?.number ?? null,
+    });
+    const singleContextItems = shouldShowSingleContextWorktreeItems(isMultiContext);
     const groupId = projectGroupMap[proj.id];
     const hostIdForGroups = getExecutionHostIdForRepoPath(storeRepos, proj.path);
     const groupSubmenuItems: ContextMenuItem[] = [
       {
         label: "New group from project",
         icon: <FolderPlus className="w-3.5 h-3.5" />,
+        disabled: isContextDeleting,
         onClick: () => {
-          window.dispatchEvent(
-            new CustomEvent("hydra:open-new-group-dialog", {
-              detail: {
-                projectId: proj.id,
-                defaultName: proj.displayName || proj.name,
-                ...(hostIdForGroups ? { hostId: hostIdForGroups } : {}),
-              },
-            })
-          );
+          // Orca seeds the dialog with "<repo> group" and keeps it as an overlay
+          // beside the menu (the virtualized row cannot host a modal).
+          setContextMenuGroupDialog({
+            projectId: proj.id,
+            initialName: `${proj.displayName || proj.name} group`,
+            ...(hostIdForGroups ? { hostId: hostIdForGroups } : {}),
+          });
         },
       },
       ...projectGroups.map((group) => ({
         label: `Move to ${group.name}`,
         icon: <FolderInput className="w-3.5 h-3.5" />,
-        disabled: group.id === groupId,
+        disabled: group.id === groupId || isContextDeleting,
         onClick: () => {
           window.dispatchEvent(
             new CustomEvent("hydra:move-project-to-group", {
@@ -5231,92 +5388,68 @@ export default function App() {
       y: e.clientY,
       items: [
         { label: "Workspace", isLabel: true, onClick: () => {} },
-        {
-          label: "Rename Worktree Display Name...",
-          icon: <Pencil className="w-3.5 h-3.5" />,
-          onClick: () => {
-            setPromptDialog({
-              open: true,
-              title: "Rename Worktree",
-              description: "Custom display title stored in SQLite",
-              initialValue: wt.display_name || wt.branch,
-              confirmLabel: "Save",
-              onSubmit: async (newTitle) => {
-                const trimmed = newTitle.trim();
-                if (!trimmed) return;
-                try {
-                  await invoke("set_worktree_display_name", {
-                    worktreePath: wt.path,
-                    displayName: trimmed,
-                  });
-                  setGitWorktrees((prev) =>
-                    prev.map((w) => (w.path === wt.path ? { ...w, display_name: trimmed } : w))
-                  );
-                  setWorktreesByProject((prev) => {
-                    const next = { ...prev };
-                    for (const k of Object.keys(next)) {
-                      next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, display_name: trimmed } : w));
-                    }
-                    return next;
-                  });
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                } catch (e) {
-                  console.error("Failed to rename worktree display name:", e);
-                }
+        // Orca `WorktreeContextMenuView`: Update only speaks to a single workspace,
+        // opens the card's inline editor and is inert while a removal is running.
+        ...(shouldShowWorktreeUpdateItem(isMultiContext)
+          ? [{
+              label: "Update",
+              icon: <Pencil className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => {
+                window.dispatchEvent(
+                  new CustomEvent("hydra:begin-rename-worktree", { detail: { path: wt.path } })
+                );
               },
-            });
-          },
-        },
-        {
-          label: "Edit Workspace Metadata...",
-          icon: <Pencil className="w-3.5 h-3.5" />,
-          onClick: () => {
-            setWorktreeMetaDialog({ wt });
-          },
-        },
-        {
-          label: "Rename Branch in Git...",
-          icon: <GitBranch className="w-3.5 h-3.5" />,
-          onClick: () => {
-            setPromptDialog({
-              open: true,
-              title: "Rename Branch in Git",
-              description: `Rename branch '${wt.branch}' using git branch -m`,
-              initialValue: wt.branch,
-              confirmLabel: "Rename",
-              onSubmit: async (newBranch) => {
-                const trimmed = newBranch.trim();
-                if (!trimmed || trimmed === wt.branch) return;
-                try {
-                  await invoke("git_rename_branch_cmd", {
-                    repoPath: wt.path,
-                    oldName: wt.branch,
-                    newName: trimmed,
-                  });
-                  setGitWorktrees((prev) =>
-                    prev.map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w))
-                  );
-                  setWorktreesByProject((prev) => {
-                    const next = { ...prev };
-                    for (const k of Object.keys(next)) {
-                      next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w));
-                    }
-                    return next;
-                  });
-                  window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                } catch (e) {
-                  console.error("Failed to rename git branch:", e);
-                }
+            } as ContextMenuItem]
+          : []),
+        ...(singleContextItems
+          ? [{
+              label: "Edit Workspace Metadata...",
+              icon: <Pencil className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => {
+                setWorktreeMetaDialog({ wt });
               },
-            });
-          },
-        },
-        { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
-        { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.path) },
-        { label: `Copy Branch: ${wt.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.branch) },
-        { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.head_commit) },
-        { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
-        { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
+            } as ContextMenuItem,
+            {
+              label: "Rename Branch in Git...",
+              icon: <GitBranch className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => {
+                setPromptDialog({
+                  open: true,
+                  title: "Rename Branch in Git",
+                  description: `Rename branch '${wt.branch}' using git branch -m`,
+                  initialValue: wt.branch,
+                  confirmLabel: "Rename",
+                  onSubmit: async (newBranch) => {
+                    const trimmed = newBranch.trim();
+                    if (!trimmed || trimmed === wt.branch) return;
+                    try {
+                      await invoke("git_rename_branch_cmd", {
+                        repoPath: wt.path,
+                        oldName: wt.branch,
+                        newName: trimmed,
+                      });
+                      setGitWorktrees((prev) =>
+                        prev.map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w))
+                      );
+                      setWorktreesByProject((prev) => {
+                        const next = { ...prev };
+                        for (const k of Object.keys(next)) {
+                          next[k] = next[k].map((w) => (w.path === wt.path ? { ...w, branch: trimmed } : w));
+                        }
+                        return next;
+                      });
+                      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+                    } catch (e) {
+                      console.error("Failed to rename git branch:", e);
+                    }
+                  },
+                });
+              },
+            } as ContextMenuItem]
+          : []),
         buildWorktreeStatusMenuItems({
           workspaceStatuses,
           currentStatus: wt.status ?? null,
@@ -5328,6 +5461,81 @@ export default function App() {
             deleteStateByWorktreeId[wt.id ?? `${proj.path}::${wt.path}`]?.isDeleting
           ),
         }),
+        {
+          label: "Open in",
+          icon: <FolderOpen className="w-3.5 h-3.5" />,
+          children: openInChildren,
+          disabled: isContextDeleting,
+          separator: true,
+          onClick: () => {},
+        },
+        ...(singleContextItems
+          ? [{
+              label: "Copy Path",
+              icon: <Copy className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => copyToClipboard(wt.path),
+            } as ContextMenuItem,
+            {
+              label: `Copy Branch: ${wt.branch}`,
+              icon: <GitBranch className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => copyToClipboard(wt.branch),
+            } as ContextMenuItem,
+            {
+              label: "Copy Commit",
+              icon: <Copy className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => copyToClipboard(wt.head_commit),
+            } as ContextMenuItem,
+            ...(remoteWebUrls
+              ? [{
+                  label: "Open on GitHub",
+                  icon: <ExternalLink className="w-3.5 h-3.5" />,
+                  disabled: isContextDeleting,
+                  onClick: () => {
+                    void invoke("open_external_url_cmd", {
+                      url: remoteWebUrls.openBranchUrl,
+                    }).catch(console.error);
+                  },
+                } as ContextMenuItem,
+                {
+                  label: remoteWebUrls.pullRequestUrl
+                    ? `Open Pull Request #${prByPath[wt.path]?.number}`
+                    : "Create Pull Request",
+                  icon: <GitPullRequest className="w-3.5 h-3.5" />,
+                  disabled: isContextDeleting,
+                  onClick: () => {
+                    void invoke("open_external_url_cmd", {
+                      url: remoteWebUrls.pullRequestUrl ?? remoteWebUrls.createPullRequestUrl,
+                    }).catch(console.error);
+                  },
+                } as ContextMenuItem]
+              : [])]
+          : []),
+        ...(singleContextItems
+          ? [{
+              label: isPinned ? "Unpin" : "Pin",
+              icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />,
+              separator: true,
+              disabled: isContextDeleting,
+              onClick: () => togglePinWorktree(wt.path),
+            } as ContextMenuItem,
+            {
+              label: isUnread ? "Mark Read" : "Mark Unread",
+              icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => toggleUnreadWorktree(wt.path),
+            } as ContextMenuItem,
+            // Orca `ProjectGroup` submenu on the CARD context: create/move/remove in one place.
+            {
+              label: "Project Group",
+              icon: <FolderTree className="w-3.5 h-3.5" />,
+              children: groupSubmenuItems,
+              disabled: isContextDeleting,
+              onClick: () => {},
+            } as ContextMenuItem]
+          : []),
         {
           label: getWorktreeParentPickerLabel(lineageParent ?? null),
           icon: <FolderTree className="w-3.5 h-3.5" />,
@@ -5363,19 +5571,50 @@ export default function App() {
             });
           },
         },
-        ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
-              const parentProj = projects.find((p) => p.path === lineageParent) || null;
-              if (parentProj) handleSelectProject(parentProj);
-              else {
-                const wtParent = gitWorktrees.find((w) => w.path === lineageParent);
-                if (wtParent) handleSelectGitWorktree(wtParent);
-                else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
-              }
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths(contextPaths) } as ContextMenuItem] : []),
-        // Orca `ProjectGroup` submenu on the CARD context: create/move/remove in one place.
-        { label: "Project Group", icon: <FolderTree className="w-3.5 h-3.5" />, children: groupSubmenuItems, onClick: () => {}, disabled: isMultiContext },
-        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.head_commit) } as ContextMenuItem] : []),
-
+        ...(lineageParent
+          ? [{
+              label: "Open Parent Worktree",
+              icon: <Workflow className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => {
+                const parentProj = projects.find((p) => p.path === lineageParent) || null;
+                if (parentProj) handleSelectProject(parentProj);
+                else {
+                  const wtParent = gitWorktrees.find((w) => w.path === lineageParent);
+                  if (wtParent) handleSelectGitWorktree(wtParent);
+                  else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
+                }
+              },
+            } as ContextMenuItem,
+            {
+              label: "Remove from Parent",
+              icon: <Unlink className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => unnestWorktreePaths(contextPaths),
+            } as ContextMenuItem]
+          : []),
+        ...(isMultiContext && !lineageParent && hasAnyContextLineage
+          ? [{
+              label: "Remove from Parent",
+              icon: <Unlink className="w-3.5 h-3.5" />,
+              disabled: isContextDeleting,
+              onClick: () => unnestWorktreePaths(contextPaths),
+            } as ContextMenuItem]
+          : []),
+        ...(developerRevealed
+          ? [{
+              label: "Developer",
+              icon: <CodeXml className="w-3.5 h-3.5" />,
+              separator: true,
+              disabled: isContextDeleting,
+              onClick: () => {},
+              children: [{
+                label: "Park terminal",
+                icon: <SquareParking className="w-3.5 h-3.5" />,
+                onClick: () => requestManualTerminalWorktreePark(wt.id ?? wt.path),
+              } as ContextMenuItem],
+            } as ContextMenuItem]
+          : []),
         {
           label: sleepMenu.sleepLabel,
           icon: <Moon className="w-3.5 h-3.5" />,
@@ -5413,23 +5652,35 @@ export default function App() {
             } as ContextMenuItem]
           : []),
         ...(isMain
-          ? [{ label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", separator: true, onClick: () => {} } as ContextMenuItem,
-             { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) } as ContextMenuItem]
+          ? [{
+              label: "Delete Worktree",
+              icon: <Trash2 className="w-3.5 h-3.5" />,
+              danger: true,
+              disabled: true,
+              title: singleRepoResolved
+                ? "Primary worktree — can't be deleted. Remove the project instead."
+                : "The project could not be found",
+              separator: true,
+              onClick: () => {},
+            } as ContextMenuItem,
+            {
+              label: "Remove Project from Hydra",
+              icon: <Trash2 className="w-3.5 h-3.5" />,
+              danger: true,
+              disabled: isContextDeleting,
+              onClick: () => handleRemoveProject(proj),
+            } as ContextMenuItem]
           : [{
-              label: isMultiContext
-                ? `Delete ${contextIdentities.length} Workspace${contextIdentities.length === 1 ? "" : "s"}`
-                : sleepLineage.descendants.length > 0
-                  ? "Delete with Descendants…"
-                  : "Delete Worktree",
+              label: deleteMenu.label,
               icon: <Trash2 className="w-3.5 h-3.5" />,
               danger: true,
               separator: true,
-              disabled: !deleteAllowed,
-              title: !deleteAllowed
-                ? isContextDeleting
-                  ? "A selected workspace is already being deleted"
-                  : "This workspace is not attached to a resolvable repository"
-                : undefined,
+              disabled: deleteMenu.disabled,
+              ...(deleteMenu.title ? { title: deleteMenu.title } : {}),
+              // Orca advertises the registry binding on the single-row delete row.
+              ...(!isMultiContext && deleteWorkspaceShortcut
+                ? { shortcut: deleteWorkspaceShortcut }
+                : {}),
               onClick: () => {
                 if (!deleteAllowed) return;
                 // Orca `handleDelete`: capture sibling position, record the scroll
@@ -5452,6 +5703,7 @@ export default function App() {
                 setContextMenu(null);
               },
             } as ContextMenuItem]),
+
       ]
     });
   };
@@ -5779,12 +6031,36 @@ export default function App() {
                     const direction = getSplitDirectionForTab(t);
                     const isSplit = panes.length > 1;
                     const sIdSingle = t.sessionId || (t.id.startsWith("tab_") ? t.id.replace("tab_", "") : t.id);
+                    const parkedWorktreePath = t.cwd || activeWorktreePath || "";
+                    const isParked =
+                      Boolean(parkedWorktreePath) &&
+                      parkedTerminalWorktreePaths.has(parkedWorktreePath);
                     return (
                       <div
                         key={t.id}
                         className={`absolute inset-0 w-full h-full ${isActive ? "block" : "hidden pointer-events-none"}`}
                       >
-                        {isSplit ? (
+                        {isParked ? (
+                          <div
+                            className="flex h-full items-center justify-center bg-[var(--app-bg)]"
+                            data-terminal-parked=""
+                          >
+                            <div className="flex max-w-sm flex-col items-center gap-2 rounded-lg border border-border/60 bg-background/70 px-4 py-3 text-center">
+                              <SquareParking className="size-5 text-muted-foreground" />
+                              <div className="text-[12px] font-medium">Terminal parked</div>
+                              <div className="text-[11px] text-muted-foreground">
+                                The processes keep running. Wake the workspace to reattach this terminal.
+                              </div>
+                              <button
+                                type="button"
+                                className="mt-1 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted"
+                                onClick={() => wakeParkedTerminalWorktree(parkedWorktreePath)}
+                              >
+                                Wake terminal
+                              </button>
+                            </div>
+                          </div>
+                        ) : isSplit ? (
                           <SplitTerminalGrid
                             panes={panes}
                             direction={direction}
@@ -5906,13 +6182,85 @@ export default function App() {
       <StatusBar floatingTerminalOpen={false} />
       {/* Item 4: sidebar em Radix (submenu hover, portal); aba do terminal em CustomContextMenu. */}
       {contextMenu && contextMenu.source === "sidebar" && (
-        <RadixContextMenu
+        <WorktreeContextMenuView
           x={contextMenu.x}
           y={contextMenu.y}
           items={contextMenu.items}
           onClose={() => setContextMenu(null)}
         />
       )}
+      <WorktreeContextMenuOverlays
+        groupDialog={
+          contextMenuGroupDialog
+            ? {
+                open: true,
+                title: "New Project Group",
+                description: "Create a group and move this project into it.",
+                initialName: contextMenuGroupDialog.initialName,
+                confirmLabel: "Create",
+                onOpenChange: (open) => {
+                  if (!open) setContextMenuGroupDialog(null);
+                },
+                onSubmit: (name) => {
+                  const target = contextMenuGroupDialog;
+                  setContextMenuGroupDialog(null);
+                  if (!target) return;
+                  let acknowledged = false;
+                  const acknowledge = () => {
+                    acknowledged = true;
+                  };
+                  window.addEventListener("hydra:refresh-projects", acknowledge);
+                  try {
+                    window.dispatchEvent(
+                      new CustomEvent("hydra:create-project-group", {
+                        detail: {
+                          name,
+                          projectId: target.projectId,
+                          ...(target.hostId ? { hostId: target.hostId } : {}),
+                        },
+                      })
+                    );
+                  } finally {
+                    window.removeEventListener("hydra:refresh-projects", acknowledge);
+                  }
+                  if (!acknowledged) {
+                    toast.error("Failed to create group", {
+                      description:
+                        "Hydra could not create the group. Check the sidebar after reconnecting.",
+                    });
+                  }
+                },
+              }
+            : null
+        }
+        parentPicker={
+          parentPickerState
+            ? {
+                open: parentPickerOpen,
+                child: parentPickerState.child,
+                candidates: getEligibleParentCandidates(parentPickerState.child.path),
+                getAnchorRect: () => parentPickerState.anchorRect,
+                focusRestoreElement: parentPickerState.focusRestoreElement,
+                onOpenChange: (open) => {
+                  // Why delayed: the component stays mounted through its exit animation.
+                  if (!open) closeParentPicker();
+                },
+                // One path for every rejection: close, then report a translated toast if the
+                // lineage write fails (`selectWorktreeParent`).
+                onSelect: (candidate) =>
+                  selectWorktreeParent({
+                    childPath: parentPickerState.child.path,
+                    parentPath: candidate.path,
+                    assignWorktreeParent: parentPickerState.selectParent,
+                    close: closeParentPicker,
+                  }),
+                onRemoveParent: parentPickerState.removeParent
+                  ? () => parentPickerState.removeParent?.()
+                  : undefined,
+              }
+            : null
+        }
+      />
       {contextMenu && contextMenu.source === "terminal-tab" && (
         <CustomContextMenu
           x={contextMenu.x}
@@ -5937,36 +6285,6 @@ export default function App() {
             await promptDialog.onSubmit(val);
             setPromptDialog(null);
           }}
-        />
-      )}
-
-      {/* Anchored parent picker (Orca `WorktreeParentPickerPopover`) */}
-      {parentPickerState && (
-        <WorktreeParentPickerPopover
-          open={parentPickerOpen}
-          child={parentPickerState.child}
-          candidates={getEligibleParentCandidates(parentPickerState.child.path)}
-          getAnchorRect={() => parentPickerState.anchorRect}
-          focusRestoreElement={parentPickerState.focusRestoreElement}
-          onOpenChange={(open) => {
-            // Why delayed: the component stays mounted through its exit animation.
-            if (!open) closeParentPicker();
-          }}
-          // One path for every rejection: close, then report a translated toast if the
-          // lineage write fails (`selectWorktreeParent`).
-          onSelect={(candidate) =>
-            selectWorktreeParent({
-              childPath: parentPickerState.child.path,
-              parentPath: candidate.path,
-              assignWorktreeParent: parentPickerState.selectParent,
-              close: closeParentPicker,
-            })
-          }
-          onRemoveParent={
-            parentPickerState.removeParent
-              ? () => parentPickerState.removeParent?.()
-              : undefined
-          }
         />
       )}
 
@@ -6281,6 +6599,29 @@ export default function App() {
             }
           ).deleteFolderWorkspace(folderWorkspaceId);
           window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+          if (deleted === true && folderDeleteTarget) {
+            const removed = folderDeleteTarget;
+            toast.success(`Removed ${removed.name}`, {
+              action: {
+                label: "Re-add",
+                onClick: () => {
+                  invoke("catalog_add_folder_workspace", {
+                    parentPath: removed.path,
+                    projectGroupId: null,
+                    name: removed.name,
+                    connectionId: null,
+                    executionHostId: null,
+                  })
+                    .then(() => window.dispatchEvent(new CustomEvent("hydra:refresh-projects")))
+                    .catch((error) => {
+                      toast.error("Could not re-add workspace", {
+                        description: String(error),
+                      });
+                    });
+                },
+              },
+            });
+          }
           return deleted === true;
         }}
       />

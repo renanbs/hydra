@@ -11,6 +11,10 @@ export interface ContextMenuItem {
   label: string;
   icon?: React.ReactNode;
   shortcut?: string;
+  /** Right-aligned hint (Orca's "Local only" / "Remote SSH"). */
+  metadata?: string;
+  /** Keep the click from reaching the row/surface under a portaled submenu. */
+  stopPropagation?: boolean;
   /** Marks the item as the current choice (radio semantics, like the Radix menus). */
   checked?: boolean;
   danger?: boolean;

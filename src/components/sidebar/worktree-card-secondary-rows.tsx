@@ -8,6 +8,7 @@ import React from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 import { translate } from '@/i18n/i18n'
+import { LinearAgentSkillSetupPrompt } from './LinearAgentSkillSetupPrompt'
 import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
 
 export function WorktreeCardSecondaryRows({
@@ -15,12 +16,23 @@ export function WorktreeCardSecondaryRows({
 }: {
   card: WorktreeCardWithExtras
 }): React.JSX.Element | null {
-  const { remoteBranchConflict } = card
+  const { remoteBranchConflict, isActive, metadata, repo, project } = card
+  const activeRepo = repo ?? project
+
+  // Why: a linked Linear ticket only pays off after the agent skill is installed,
+  // so the prompt is scoped to the active card — not every card with a link.
+  const linearPrompt =
+    isActive && metadata?.linkedLinearIssue ? (
+      <LinearAgentSkillSetupPrompt
+        linked
+        remote={Boolean(activeRepo?.connectionId || activeRepo?.executionHostId)}
+      />
+    ) : null
 
   // Why: a checkout whose branch already exists on the remote cannot be pushed
   // without a decision, so the card states the collision instead of failing later.
   if (!remoteBranchConflict) {
-    return null
+    return linearPrompt
   }
 
   // Why: a boolean-only producer cannot name the remote/branch, so say what is known.
@@ -40,10 +52,13 @@ export function WorktreeCardSecondaryRows({
         )
 
   return (
-    <div className="mt-0.5 flex items-start gap-1.5 rounded border border-amber-500/25 bg-amber-500/5 px-1.5 py-1 text-[10.5px] leading-snug text-amber-700 dark:text-amber-300">
-      <AlertTriangle className="mt-[1px] size-3 shrink-0" />
-      <span className="min-w-0 flex-1">{conflict}</span>
-    </div>
+    <>
+      {linearPrompt}
+      <div className="mt-0.5 flex items-start gap-1.5 rounded border border-amber-500/25 bg-amber-500/5 px-1.5 py-1 text-[10.5px] leading-snug text-amber-700 dark:text-amber-300">
+        <AlertTriangle className="mt-[1px] size-3 shrink-0" />
+        <span className="min-w-0 flex-1">{conflict}</span>
+      </div>
+    </>
   )
 }
 
