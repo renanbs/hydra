@@ -21,26 +21,45 @@ function formatTimeAgo(ts: number, now: number): string {
 
 type Props = {
   agent: DashboardAgentRowData;
+  /** Navigate to this agent's tab; the card closes over its worktree. */
   onActivate: (sessionId: string) => void;
+  /** Clears the row's agent status and retained snapshot. */
+  onDismiss?: (paneKey: string) => void;
   now: number;
+  /** Bold the prompt until the user visits its tab (Orca `isUnvisited`). */
+  isUnvisited?: boolean;
+  /** Inline card rows pass 'sm' so the dot reads apart from the agent icon. */
+  stateDotSize?: "sm" | "md";
+  /** Inline rows jump straight to the agent, so the expand chevron is redundant. */
+  hideExpand?: boolean;
   isFocusedPane?: boolean;
   childAgentCount?: number;
   childAgentsExpanded?: boolean;
   onToggleChildAgents?: () => void;
   reserveDisclosureGutter?: boolean;
   hideLineageConnectors?: boolean;
+  sendTargetStatus?: "eligible" | "disabled" | "sending";
+  sendTargetDisabledReason?: string;
+  onSendTargetClick?: (paneKey: string) => void;
 };
 
 export const DashboardAgentRow = React.memo(function DashboardAgentRow({
   agent,
   onActivate,
+  onDismiss,
   now,
+  isUnvisited = false,
+  stateDotSize = "md",
+  hideExpand = false,
   isFocusedPane = false,
   childAgentCount,
   childAgentsExpanded = false,
   onToggleChildAgents,
   reserveDisclosureGutter = false,
   hideLineageConnectors = false,
+  sendTargetStatus,
+  sendTargetDisabledReason,
+  onSendTargetClick,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -50,6 +69,36 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
       onActivate(agent.entry.sessionId);
     },
     [onActivate, agent.entry.sessionId]
+  );
+
+  // Why: in send-target mode a row click picks the agent instead of navigating.
+  const handleSendTargetClickCapture = useCallback(
+    (e: React.MouseEvent) => {
+      if (!sendTargetStatus) {
+        return;
+      }
+      const target = e.target;
+      if (
+        target instanceof Element &&
+        target.closest('button, a, input, textarea, select, [role="button"]')
+      ) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (sendTargetStatus === "eligible") {
+        onSendTargetClick?.(agent.paneKey);
+      }
+    },
+    [agent.paneKey, onSendTargetClick, sendTargetStatus]
+  );
+
+  const handleDismiss = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDismiss?.(agent.paneKey);
+    },
+    [agent.paneKey, onDismiss]
   );
 
   const handleToggleExpanded = useCallback((e: React.MouseEvent) => {
@@ -89,6 +138,7 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
   return (
     <div
       onClick={handleActivate}
+      onClickCapture={handleSendTargetClickCapture}
       className={cn(
         "group/agent-row relative flex flex-col py-1 transition-colors rounded-sm cursor-pointer select-none",
         isLineageChild ? "pl-5 pr-1.5" : "px-1.5",
@@ -98,6 +148,7 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
       )}
       role={participatesInLineage ? "treeitem" : undefined}
       aria-level={participatesInLineage ? (lineage?.depth ?? 0) + 1 : undefined}
+      title={sendTargetDisabledReason}
     >
       {/* Connector lines for tree hierarchy */}
       {lineageChildCount > 0 && !hideLineageConnectors ? (
@@ -134,7 +185,7 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
           reserveDisclosureGutter={reserveDisclosureGutter}
         />
 
-        <AgentStateDot state={dotState} size="sm" />
+        <AgentStateDot state={dotState} size={stateDotSize} />
 
         {agent.rowSource !== "subagent" && (
           <span className="inline-flex shrink-0">
@@ -143,7 +194,14 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
         )}
 
         <span
-          className="block min-w-0 flex-1 overflow-hidden truncate text-[11px] leading-snug text-neutral-300 font-normal"
+          className={cn(
+            "block min-w-0 flex-1 overflow-hidden truncate text-[11px] leading-snug",
+            isUnvisited
+              ? "font-semibold text-neutral-100"
+              : isFocusedPane
+                ? "font-normal text-neutral-200"
+                : "font-normal text-neutral-300"
+          )}
           title={displayLabel}
         >
           {displayLabel}
@@ -156,11 +214,25 @@ export const DashboardAgentRow = React.memo(function DashboardAgentRow({
           </span>
         )}
 
+        {onDismiss && agent.rowSource !== "subagent" && (
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss agent"
+            className="shrink-0 rounded p-0.5 text-neutral-500 opacity-0 transition-opacity hover:text-neutral-200 focus-visible:opacity-100 group-hover/agent-row:opacity-100"
+          >
+            <span aria-hidden>×</span>
+          </button>
+        )}
+
         {timeAgo && (
           <span
-            className="shrink-0 text-[10px] text-neutral-500 font-mono cursor-pointer hover:text-neutral-300 transition-colors"
-            onClick={handleToggleExpanded}
-            title={expanded ? "Collapse details" : "Expand details"}
+            className={cn(
+              "shrink-0 text-[10px] text-neutral-500 font-mono transition-colors",
+              hideExpand ? "" : "cursor-pointer hover:text-neutral-300"
+            )}
+            onClick={hideExpand ? undefined : handleToggleExpanded}
+            title={hideExpand ? undefined : expanded ? "Collapse details" : "Expand details"}
           >
             {timeAgo}
           </span>

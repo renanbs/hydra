@@ -13,6 +13,7 @@ import { resolveEffectiveTerminalAppearance } from "../lib/terminal-theme";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, type HydraSettings } from "../shared/settings-types";
 import { normalizeTerminalCustomThemes } from "../shared/terminal-custom-themes";
 import { GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID } from "../lib/settings-navigation-types";
+import { KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID } from "./sidebar/local-base-ref-suggestion-toast";
 import { AppearancePane } from "./settings/AppearancePane";
 import { SshPane } from "./settings/SshPane";
 
@@ -773,6 +774,28 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                   {/* Git defaults */}
                   <div className="rounded-xl border bg-card p-6 space-y-4">
                     <h4 className="text-[13px] font-semibold">Git Defaults</h4>
+                    {/* D04b-003: the toast's "Settings › Keep local … up to date" link
+                        lands here through `initialSectionId`. */}
+                    <div
+                      id={KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID}
+                      data-settings-section={KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID}
+                      className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-3 py-2"
+                    >
+                      <div className="pr-4">
+                        <div className="text-[13px] font-medium">Keep Local Default Branch Up To Date</div>
+                        <div className="text-[12px] text-muted-foreground">Fast-forward the base branch before creating a workspace, so diffs compare against current history.</div>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={settings.refresh_local_base_ref_on_worktree_create === true}
+                        aria-label="Keep local default branch up to date"
+                        onClick={() => setSettingsLive({ ...settings, refresh_local_base_ref_on_worktree_create: settings.refresh_local_base_ref_on_worktree_create !== true })}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors ${settings.refresh_local_base_ref_on_worktree_create === true ? "bg-foreground border-foreground" : "bg-input border-transparent"}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-background shadow transition-transform ${settings.refresh_local_base_ref_on_worktree_create === true ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
                     <div><label className="block text-[12px] font-medium mb-1.5">Auto-generated Branch Prefix</label><input value={settings.default_branch_prefix} onChange={(e)=>setSettingsLive({ ...settings, default_branch_prefix: e.target.value })} className="w-full bg-background border rounded-md px-3 py-2 font-mono text-[13px]" /><span className="text-[11px] text-muted-foreground">Prefix for parallel git branches (e.g. feat/, task/).</span></div>
                   </div>
 
@@ -798,7 +821,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                   </div>
 
                   {/* Open In Apps — moved from General */}
-                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                  <div id="general-open-in-apps" className="rounded-xl border bg-card p-6 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-[13px] font-medium">Open In Apps</div>

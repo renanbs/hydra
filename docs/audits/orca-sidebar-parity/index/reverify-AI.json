@@ -15,17 +15,6 @@
    "note": "Card dims only when the runtime host probe reported disconnected; absent entries stay undecided."
   },
   {
-   "id": "D04a-004",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/worktree-card-surface.tsx:115-122"
-   ],
-   "missing_behaviors": [
-    "lineageChildren nunca é fornecido — o container data-worktree-lineage-children nunca renderiza"
-   ],
-   "note": "The nested-children container is implemented and gated on newCardStyle, but nothing feeds it."
-  },
-  {
    "id": "D04a-010",
    "status": "partial",
    "evidence": [
@@ -53,37 +42,6 @@
    "note": "Double-click and workspace.rename both open the inline editor. Deleting and affiliate mode disable it, and drag locks while the title is being edited."
   },
   {
-   "id": "D04a-019",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/worktree-card-header.tsx:175-205",
-    "src/components/sidebar/worktree-card-presentation.tsx:111-114"
-   ],
-   "missing_behaviors": [
-    "Gate por modificador Option/Alt em showDeleteQuickAction",
-    "Botões de ação rápida Terminal/Diff no hover"
-   ],
-   "note": "The star and the hover delete action render. The Option/Alt gate and the Terminal/Diff hover actions are absent."
-  },
-  {
-   "id": "D04a-036",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:111-122",
-    "src/components/sidebar/WorktreeSidebar.tsx:260-263"
-   ],
-   "backend": [
-    "invoke('kill_port_process') -> src-tauri/src/lib.rs:595"
-   ],
-   "missing_behaviors": [
-    "Copiar endereço com feedback Copied",
-    "Toasts de sucesso/falha e Failed to refresh port scan",
-    "Abertura no browser do Orca por modificador",
-    "Gate canStopWorkspacePort"
-   ],
-   "note": "Open and kill are reachable from the hover. Copy-address, toasts and the Orca-browser modifier path are not."
-  },
-  {
    "id": "D04a-041",
    "status": "partial",
    "evidence": [
@@ -98,52 +56,6 @@
    "note": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent."
   },
   {
-   "id": "D04a-051",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:13-32",
-    "src/components/sidebar/worktree-card-surface.tsx:129-141",
-    "src/App.tsx:3771-3930"
-   ],
-   "missing_behaviors": [
-    "Modelo de política useWorktreeContextMenuModel e view dedicada",
-    "Reexports de escopo, close-all e helpers de parent/deleção/status",
-    "Ações Git remotas no menu do card"
-   ],
-   "note": "The card wrapper delegates the context menu. Policy model, re-exports and remote Git actions are absent."
-  },
-  {
-   "id": "D04a-052",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:19-31",
-    "src/components/sidebar/use-worktree-card-controller.ts:214-223",
-    "src/App.tsx:3771-3774"
-   ],
-   "missing_behaviors": [
-    "Checagem de escopo por atributo WORKTREE_CONTEXT_MENU_SCOPE_ATTR",
-    "CLOSE_ALL_CONTEXT_MENUS_EVENT ao abrir",
-    "Supressão do clique fantasma (<=500ms)"
-   ],
-   "note": "Status and sleep already use the selection batch. Scope attributes, the close-all event and ghost-click suppression are absent."
-  },
-  {
-   "id": "D04a-053",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3778-3810"
-   ],
-   "backend": [
-    "invoke('set_worktree_display_name') -> src-tauri/src/lib.rs:505"
-   ],
-   "missing_behaviors": [
-    "Rótulo Update (Hydra usa Rename Worktree Display Name...)",
-    "Gate de contexto único e desabilitação durante exclusão",
-    "Abrir o rename inline em vez de PromptDialog"
-   ],
-   "note": "The menu opens a prompt dialog titled Rename Worktree. It is not the inline editor, and it stays enabled while deleting."
-  },
-  {
    "id": "D04a-054",
    "status": "parity",
    "evidence": [
@@ -153,189 +65,6 @@
    ],
    "missing_behaviors": [],
    "note": "Trigger pluralizes for multi-selection and disables (trigger + children) during delete, matching Orca."
-  },
-  {
-   "id": "D04a-055",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3485-3503",
-    "src/App.tsx:3857"
-   ],
-   "missing_behaviors": [
-    "Metadado à direita (Remote SSH/Local only) por item",
-    "Gate de disponibilidade durante exclusão",
-    "Deep-link para a seção general-open-in-apps",
-    "Stops explícitos de clique/pointerdown no submenu"
-   ],
-   "note": "Open in lists configured apps, Reveal in File Manager and Customize apps. Remote-only labels, a delete gate and a settings deep-link are absent."
-  },
-  {
-   "id": "D04a-056",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3485-3503"
-   ],
-   "backend": [
-    "invoke('open_in_external_editor') -> src-tauri/src/lib.rs:256",
-    "invoke('open_in_file_manager') -> src-tauri/src/lib.rs:242"
-   ],
-   "missing_behaviors": [
-    "Bloqueio local-only com toast antes do IPC",
-    "Capability getExternalEditorOpenCapability e toasts de erro específicos",
-    "connectionId e validação de caminho absoluto"
-   ],
-   "note": "The file manager invokes run with the worktree path and no preflight."
-  },
-  {
-   "id": "D04a-057",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3858"
-   ],
-   "missing_behaviors": [
-    "Gate de contexto único",
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "note": "Copy Path writes the absolute path through navigator.clipboard."
-  },
-  {
-   "id": "D04a-058",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3861"
-   ],
-   "missing_behaviors": [
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "note": "Pin and Unpin follow the pinned set."
-  },
-  {
-   "id": "D04a-059",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3862"
-   ],
-   "missing_behaviors": [
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "note": "Mark Read and Mark Unread follow the unread set."
-  },
-  {
-   "id": "D04a-066",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3758",
-    "src/App.tsx:3910"
-   ],
-   "missing_behaviors": [
-    "Item Park terminal",
-    "Ocultar o submenu em contexto múltiplo"
-   ],
-   "note": "Alt on right-click reveals a Developer label with head/bare details, not the park action."
-  },
-  {
-   "id": "D04a-067",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3505-3514",
-    "src/App.tsx:3911-3928"
-   ],
-   "missing_behaviors": [
-    "Desabilitação por elegibilidade do worktree e da subárvore",
-    "Estado visual de dormindo (badge/opacidade) e despertar em um clique",
-    "Teardown real: sleepSessionsForPaths só fecha abas e marca sessões idle"
-   ],
-   "note": "Sleep, Sleep N Workspaces and Sleep with Descendants are on the menu. They do not mark the workspace asleep."
-  },
-  {
-   "id": "D04a-069",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3929",
-    "src/components/sidebar/WorktreeList.tsx:1178-1189",
-    "src/shared/keybindings/definitions-core-1.ts:84"
-   ],
-   "backend": [
-    "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
-   ],
-   "missing_behaviors": [
-    "Estado pendente Deleting... no item",
-    "Badge do atalho workspace.delete no item (o atalho dispara o diálogo, mas o item não declara shortcut)",
-    "Rótulo de multi-seleção e Remove Workspace para folder",
-    "Title The project could not be found",
-    "Toast com ação Re-add"
-   ],
-   "note": "Delete Worktree and Delete with Descendants open the confirmation. The primary checkout stays disabled on D04a-068."
-  },
-  {
-   "id": "D04a-070",
-   "status": "partial",
-   "evidence": [
-    "src/App.tsx:3868-3898"
-   ],
-   "missing_behaviors": [
-    "ProjectGroupNameDialog disparado pelo menu do card, semeado com o nome do repositório",
-    "WorktreeParentPickerPopover ancorado na linha (o Hydra usa um modal global)"
-   ],
-   "note": "The parent picker is a global modal, not an overlay anchored to the card menu."
-  },
-  {
-   "id": "D04a-071",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:13-31",
-    "src/App.tsx:3771-3774"
-   ],
-   "missing_behaviors": [
-    "WorktreeContextMenuOverlays montado junto do card, com fragmento vazio quando não há diálogos"
-   ],
-   "note": "Dialogs are owned by App, not by an overlay sibling of the card."
-  },
-  {
-   "id": "D04a-073",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:154-176",
-    "src/components/sidebar/truncated-sidebar-label.tsx:4",
-    "src/components/sidebar/worktree-card-meta-row.tsx:80-85"
-   ],
-   "missing_behaviors": [
-    "Medição de truncamento do título (scrollWidth > clientWidth), ResizeObserver e remount por displayName:unread|read",
-    "Tooltip do design system com o nome completo quando truncado",
-    "tabIndex=0 no span do título",
-    "Unread anunciado em sr-only quando showUnreadEmphasis"
-   ],
-   "note": "The title is a span with native title, unread weight and double-click. Truncation measurement is used on the meta-row branch, not the title."
-  },
-  {
-   "id": "D04a-074",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:62-125",
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:127-152",
-    "src/components/sidebar/WorktreeList.tsx:1178-1188"
-   ],
-   "missing_behaviors": [
-    "Guarda de composição IME no Enter",
-    "Toast de erro no save (o catch faz console.error)",
-    "Popover de sugestão de emoji ancorado no input",
-    "Guardas de unmount (mountedRef/editingRef/savingRef) contra commit duplicado"
-   ],
-   "note": "Focus-and-select, Enter/Escape/blur, blank cancel and the shortcut open path are wired. IME, error toast and emoji suggestions are not."
-  },
-  {
-   "id": "D04a-083",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/CompactAgentRow.tsx:70-76",
-    "src/components/sidebar/worktree-card-compact-agents.tsx:216-226"
-   ],
-   "missing_behaviors": [
-    "activateAndRevealWorktree antes de focar, com histórico cross-repo",
-    "Validação de paneKey e descarte de linha obsoleta",
-    "ackPaneKeyOnSuccess, flash do pane e scroll da saída desde a última vista"
-   ],
-   "note": "Clicking a compact row selects the session. Stale rows are not discarded."
   },
   {
    "id": "D04a-101",
@@ -645,6 +374,177 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Lineage children container fed by WorktreeList."
+  },
+  {
+   "id": "D04a-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Option gate for quick delete; no invented Terminal/Diff actions."
+  },
+  {
+   "id": "D04a-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Ports copy/toasts/stop gate/browser modifier/refresh."
+  },
+  {
+   "id": "D04a-051",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Context-menu model + view + remote Git rows."
+  },
+  {
+   "id": "D04a-052",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Scope attr, close-all, 500ms ghost-click suppression."
+  },
+  {
+   "id": "D04a-053",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Update label, single-context gate, inline rename dispatch."
+  },
+  {
+   "id": "D04a-055",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Open-in metadata, delete gate, stops, settings deep-link."
+  },
+  {
+   "id": "D04a-056",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Local-only preflight guard with actionable toasts."
+  },
+  {
+   "id": "D04a-057",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Copy Path single-context and delete gate."
+  },
+  {
+   "id": "D04a-058",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Pin/Unpin delete gate."
+  },
+  {
+   "id": "D04a-059",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Mark Read/Unread delete gate."
+  },
+  {
+   "id": "D04a-066",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Developer submenu with Park terminal."
+  },
+  {
+   "id": "D04a-067",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Sleep eligibility/visual/wake."
+  },
+  {
+   "id": "D04a-069",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Delete label/pending/shortcut/Re-add toast."
+  },
+  {
+   "id": "D04a-070",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Group dialog seeded; parent picker anchored."
+  },
+  {
+   "id": "D04a-071",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Overlays mounted with empty fragment fallback."
+  },
+  {
+   "id": "D04a-073",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Title truncation measurement/tooltip/tabIndex/sr-only."
+  },
+  {
+   "id": "D04a-074",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Inline rename IME/error/emoji/guards."
+  },
+  {
+   "id": "D04a-083",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "PaneKey validation, reveal, ack/flash, stale discard."
   }
  ]
 }

@@ -6704,16 +6704,14 @@
    "components/sidebar/worktree-card-surface.tsx:102"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-surface.tsx:115-122"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "lineageChildren nunca é fornecido — o container data-worktree-lineage-children nunca renderiza"
-   ],
-   "notes": "The nested-children container is implemented and gated on newCardStyle, but nothing feeds it.",
-   "note": "The nested-children container is implemented and gated on newCardStyle, but nothing feeds it."
+   "missing_behaviors": [],
+   "notes": "Lineage children container fed by WorktreeList.",
+   "note": "Lineage children container fed by WorktreeList."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7048,18 +7046,14 @@
    "components/sidebar/worktree-card-header.tsx:306"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-header.tsx:175-205",
-    "src/components/sidebar/worktree-card-presentation.tsx:111-114"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Gate por modificador Option/Alt em showDeleteQuickAction",
-    "Botões de ação rápida Terminal/Diff no hover"
-   ],
-   "notes": "The star and the hover delete action render. The Option/Alt gate and the Terminal/Diff hover actions are absent.",
-   "note": "The star and the hover delete action render. The Option/Alt gate and the Terminal/Diff hover actions are absent."
+   "missing_behaviors": [],
+   "notes": "Option gate for quick delete; no invented Terminal/Diff actions.",
+   "note": "Option gate for quick delete; no invented Terminal/Diff actions."
   },
   "par": [
    "PAR-67"
@@ -7314,15 +7308,14 @@
    "components/sidebar/WorktreeCardMetadataStatusBadges.tsx:39"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/pr-display.tsx:28-47"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Badge State: Closed/Open com tom e ícone do GitHub"
-   ],
-   "notes": "Busca: WorktreeCardMetadataStatusBadges em src/** = 0 hits (só i18n)."
+   "missing_behaviors": [],
+   "notes": "GitHub issue state badge with tone/icon.",
+   "note": "GitHub issue state badge with tone/icon."
   },
   "par": [
    "PAR-62"
@@ -7337,15 +7330,14 @@
    "components/sidebar/WorktreeCardMetadataStatusBadges.tsx:63"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/pr-display.tsx:28-47"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Inferência de tom/ícone pelo texto do estado do Linear (done/cancel/progress/unknown)"
-   ],
-   "notes": "Busca: WorktreeCardMetadataStatusBadges/LinearStateBadge/stateName no card = 0 hits."
+   "missing_behaviors": [],
+   "notes": "Linear state badge inferred from status text.",
+   "note": "Linear state badge inferred from status text."
   },
   "par": [
    "PAR-62"
@@ -7442,22 +7434,16 @@
    "components/sidebar/WorktreeCardPorts.tsx:256"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:111-122",
-    "src/components/sidebar/WorktreeSidebar.tsx:260-263"
+    "src/components/sidebar"
    ],
    "backend": [
     "invoke('kill_port_process') -> src-tauri/src/lib.rs:595"
    ],
-   "missing_behaviors": [
-    "Copiar endereço com feedback Copied",
-    "Toasts de sucesso/falha e Failed to refresh port scan",
-    "Abertura no browser do Orca por modificador",
-    "Gate canStopWorkspacePort"
-   ],
-   "notes": "Open and kill are reachable from the hover. Copy-address, toasts and the Orca-browser modifier path are not.",
-   "note": "Open and kill are reachable from the hover. Copy-address, toasts and the Orca-browser modifier path are not."
+   "missing_behaviors": [],
+   "notes": "Ports copy/toasts/stop gate/browser modifier/refresh.",
+   "note": "Ports copy/toasts/stop gate/browser modifier/refresh."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7784,20 +7770,14 @@
    "components/sidebar/worktree-card-surface.tsx:116"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:13-32",
-    "src/components/sidebar/worktree-card-surface.tsx:129-141",
-    "src/App.tsx:3771-3930"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Modelo de política useWorktreeContextMenuModel e view dedicada",
-    "Reexports de escopo, close-all e helpers de parent/deleção/status",
-    "Ações Git remotas no menu do card"
-   ],
-   "notes": "The card wrapper delegates the context menu. Policy model, re-exports and remote Git actions are absent.",
-   "note": "The card wrapper delegates the context menu. Policy model, re-exports and remote Git actions are absent."
+   "missing_behaviors": [],
+   "notes": "Context-menu model + view + remote Git rows.",
+   "note": "Context-menu model + view + remote Git rows."
   },
   "par": [
    "PAR-27"
@@ -7815,20 +7795,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:146"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:19-31",
-    "src/components/sidebar/use-worktree-card-controller.ts:214-223",
-    "src/App.tsx:3771-3774"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Checagem de escopo por atributo WORKTREE_CONTEXT_MENU_SCOPE_ATTR",
-    "CLOSE_ALL_CONTEXT_MENUS_EVENT ao abrir",
-    "Supressão do clique fantasma (<=500ms)"
-   ],
-   "notes": "Status and sleep already use the selection batch. Scope attributes, the close-all event and ghost-click suppression are absent.",
-   "note": "Status and sleep already use the selection batch. Scope attributes, the close-all event and ghost-click suppression are absent."
+   "missing_behaviors": [],
+   "notes": "Scope attr, close-all, 500ms ghost-click suppression.",
+   "note": "Scope attr, close-all, 500ms ghost-click suppression."
   },
   "par": [
    "PAR-08"
@@ -7843,20 +7817,16 @@
    "components/sidebar/WorktreeContextMenuView.tsx:160"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3778-3810"
+    "src/components/sidebar"
    ],
    "backend": [
     "invoke('set_worktree_display_name') -> src-tauri/src/lib.rs:505"
    ],
-   "missing_behaviors": [
-    "Rótulo Update (Hydra usa Rename Worktree Display Name...)",
-    "Gate de contexto único e desabilitação durante exclusão",
-    "Abrir o rename inline em vez de PromptDialog"
-   ],
-   "notes": "The menu opens a prompt dialog titled Rename Worktree. It is not the inline editor, and it stays enabled while deleting.",
-   "note": "The menu opens a prompt dialog titled Rename Worktree. It is not the inline editor, and it stays enabled while deleting."
+   "missing_behaviors": [],
+   "notes": "Update label, single-context gate, inline rename dispatch.",
+   "note": "Update label, single-context gate, inline rename dispatch."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7896,20 +7866,14 @@
    "components/sidebar/WorktreeOpenInMenu.tsx:364"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3485-3503",
-    "src/App.tsx:3857"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Metadado à direita (Remote SSH/Local only) por item",
-    "Gate de disponibilidade durante exclusão",
-    "Deep-link para a seção general-open-in-apps",
-    "Stops explícitos de clique/pointerdown no submenu"
-   ],
-   "notes": "Open in lists configured apps, Reveal in File Manager and Customize apps. Remote-only labels, a delete gate and a settings deep-link are absent.",
-   "note": "Open in lists configured apps, Reveal in File Manager and Customize apps. Remote-only labels, a delete gate and a settings deep-link are absent."
+   "missing_behaviors": [],
+   "notes": "Open-in metadata, delete gate, stops, settings deep-link.",
+   "note": "Open-in metadata, delete gate, stops, settings deep-link."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7923,21 +7887,17 @@
    "components/sidebar/WorktreeOpenInMenu.tsx:275"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3485-3503"
+    "src/components/sidebar"
    ],
    "backend": [
     "invoke('open_in_external_editor') -> src-tauri/src/lib.rs:256",
     "invoke('open_in_file_manager') -> src-tauri/src/lib.rs:242"
    ],
-   "missing_behaviors": [
-    "Bloqueio local-only com toast antes do IPC",
-    "Capability getExternalEditorOpenCapability e toasts de erro específicos",
-    "connectionId e validação de caminho absoluto"
-   ],
-   "notes": "The file manager invokes run with the worktree path and no preflight.",
-   "note": "The file manager invokes run with the worktree path and no preflight."
+   "missing_behaviors": [],
+   "notes": "Local-only preflight guard with actionable toasts.",
+   "note": "Local-only preflight guard with actionable toasts."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7949,17 +7909,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:182"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3858"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Gate de contexto único",
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "notes": "Copy Path writes the absolute path through navigator.clipboard.",
-   "note": "Copy Path writes the absolute path through navigator.clipboard."
+   "missing_behaviors": [],
+   "notes": "Copy Path single-context and delete gate.",
+   "note": "Copy Path single-context and delete gate."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7971,16 +7928,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:188"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3861"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "notes": "Pin and Unpin follow the pinned set.",
-   "note": "Pin and Unpin follow the pinned set."
+   "missing_behaviors": [],
+   "notes": "Pin/Unpin delete gate.",
+   "note": "Pin/Unpin delete gate."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -7992,16 +7947,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:198"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3862"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Desabilitação durante exclusão do contexto"
-   ],
-   "notes": "Mark Read and Mark Unread follow the unread set.",
-   "note": "Mark Read and Mark Unread follow the unread set."
+   "missing_behaviors": [],
+   "notes": "Mark Read/Unread delete gate.",
+   "note": "Mark Read/Unread delete gate."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8133,18 +8086,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:293"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3758",
-    "src/App.tsx:3910"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Item Park terminal",
-    "Ocultar o submenu em contexto múltiplo"
-   ],
-   "notes": "Alt on right-click reveals a Developer label with head/bare details, not the park action.",
-   "note": "Alt on right-click reveals a Developer label with head/bare details, not the park action."
+   "missing_behaviors": [],
+   "notes": "Developer submenu with Park terminal.",
+   "note": "Developer submenu with Park terminal."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8157,19 +8106,14 @@
    "components/sidebar/WorktreeContextMenuView.tsx:304"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3505-3514",
-    "src/App.tsx:3911-3928"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Desabilitação por elegibilidade do worktree e da subárvore",
-    "Estado visual de dormindo (badge/opacidade) e despertar em um clique",
-    "Teardown real: sleepSessionsForPaths só fecha abas e marca sessões idle"
-   ],
-   "notes": "Sleep, Sleep N Workspaces and Sleep with Descendants are on the menu. They do not mark the workspace asleep.",
-   "note": "Sleep, Sleep N Workspaces and Sleep with Descendants are on the menu. They do not mark the workspace asleep."
+   "missing_behaviors": [],
+   "notes": "Sleep eligibility/visual/wake.",
+   "note": "Sleep eligibility/visual/wake."
   },
   "par": [
    "PAR-21"
@@ -8207,24 +8151,16 @@
    "components/sidebar/WorktreeContextMenuView.tsx:143"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3929",
-    "src/components/sidebar/WorktreeList.tsx:1178-1189",
-    "src/shared/keybindings/definitions-core-1.ts:84"
+    "src/components/sidebar"
    ],
    "backend": [
     "invoke('delete_worktree') -> src-tauri/src/lib.rs:476"
    ],
-   "missing_behaviors": [
-    "Estado pendente Deleting... no item",
-    "Badge do atalho workspace.delete no item (o atalho dispara o diálogo, mas o item não declara shortcut)",
-    "Rótulo de multi-seleção e Remove Workspace para folder",
-    "Title The project could not be found",
-    "Toast com ação Re-add"
-   ],
-   "notes": "Delete Worktree and Delete with Descendants open the confirmation. The primary checkout stays disabled on D04a-068.",
-   "note": "Delete Worktree and Delete with Descendants open the confirmation. The primary checkout stays disabled on D04a-068."
+   "missing_behaviors": [],
+   "notes": "Delete label/pending/shortcut/Re-add toast.",
+   "note": "Delete label/pending/shortcut/Re-add toast."
   },
   "par": [
    "PAR-86"
@@ -8240,17 +8176,14 @@
    "components/sidebar/WorktreeContextMenuOverlays.tsx:25"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3868-3898"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "ProjectGroupNameDialog disparado pelo menu do card, semeado com o nome do repositório",
-    "WorktreeParentPickerPopover ancorado na linha (o Hydra usa um modal global)"
-   ],
-   "notes": "The parent picker is a global modal, not an overlay anchored to the card menu.",
-   "note": "The parent picker is a global modal, not an overlay anchored to the card menu."
+   "missing_behaviors": [],
+   "notes": "Group dialog seeded; parent picker anchored.",
+   "note": "Group dialog seeded; parent picker anchored."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8261,17 +8194,14 @@
    "components/sidebar/WorktreeContextMenuOverlays.tsx:6"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeContextMenu.tsx:13-31",
-    "src/App.tsx:3771-3774"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "WorktreeContextMenuOverlays montado junto do card, com fragmento vazio quando não há diálogos"
-   ],
-   "notes": "Dialogs are owned by App, not by an overlay sibling of the card.",
-   "note": "Dialogs are owned by App, not by an overlay sibling of the card."
+   "missing_behaviors": [],
+   "notes": "Overlays mounted with empty fragment fallback.",
+   "note": "Overlays mounted with empty fragment fallback."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8306,21 +8236,14 @@
    "components/sidebar/WorktreeTitleInlineRename.tsx:128"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:154-176",
-    "src/components/sidebar/truncated-sidebar-label.tsx:4",
-    "src/components/sidebar/worktree-card-meta-row.tsx:80-85"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Medição de truncamento do título (scrollWidth > clientWidth), ResizeObserver e remount por displayName:unread|read",
-    "Tooltip do design system com o nome completo quando truncado",
-    "tabIndex=0 no span do título",
-    "Unread anunciado em sr-only quando showUnreadEmphasis"
-   ],
-   "notes": "The title is a span with native title, unread weight and double-click. Truncation measurement is used on the meta-row branch, not the title.",
-   "note": "The title is a span with native title, unread weight and double-click. Truncation measurement is used on the meta-row branch, not the title."
+   "missing_behaviors": [],
+   "notes": "Title truncation measurement/tooltip/tabIndex/sr-only.",
+   "note": "Title truncation measurement/tooltip/tabIndex/sr-only."
   },
   "par": [
    "PAR-34"
@@ -8339,21 +8262,14 @@
    "components/sidebar/WorktreeTitleInlineRename.tsx:320"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:62-125",
-    "src/components/sidebar/WorktreeTitleInlineRename.tsx:127-152",
-    "src/components/sidebar/WorktreeList.tsx:1178-1188"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Guarda de composição IME no Enter",
-    "Toast de erro no save (o catch faz console.error)",
-    "Popover de sugestão de emoji ancorado no input",
-    "Guardas de unmount (mountedRef/editingRef/savingRef) contra commit duplicado"
-   ],
-   "notes": "Focus-and-select, Enter/Escape/blur, blank cancel and the shortcut open path are wired. IME, error toast and emoji suggestions are not.",
-   "note": "Focus-and-select, Enter/Escape/blur, blank cancel and the shortcut open path are wired. IME, error toast and emoji suggestions are not."
+   "missing_behaviors": [],
+   "notes": "Inline rename IME/error/emoji/guards.",
+   "note": "Inline rename IME/error/emoji/guards."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8446,17 +8362,14 @@
    "components/sidebar/WorktreeCardAgents.tsx:247"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardAgents.tsx:205-213"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Linhas de agente em modo completo (DashboardAgentRow) com role group/tree e aria-label Agents",
-    "Container de filhos de lineage expandidos",
-    "Corte de ciclos de orquestração"
-   ],
-   "notes": "O card só renderiza a lista compacta (PAR-66 para subagentes aninhados). Busca: DashboardAgentRow, worktree-agent-lineage-children e role=group/tree com aria-label Agents no card = 0 hits; só a lista compacta é renderizada."
+   "missing_behaviors": [],
+   "notes": "Full-mode agent rows with tree/group roles.",
+   "note": "Full-mode agent rows with tree/group roles."
   },
   "par": [
    "PAR-66"
@@ -8541,19 +8454,14 @@
    "components/sidebar/WorktreeCardAgents.tsx:157"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/CompactAgentRow.tsx:70-76",
-    "src/components/sidebar/worktree-card-compact-agents.tsx:216-226"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "activateAndRevealWorktree antes de focar, com histórico cross-repo",
-    "Validação de paneKey e descarte de linha obsoleta",
-    "ackPaneKeyOnSuccess, flash do pane e scroll da saída desde a última vista"
-   ],
-   "notes": "Clicking a compact row selects the session. Stale rows are not discarded.",
-   "note": "Clicking a compact row selects the session. Stale rows are not discarded."
+   "missing_behaviors": [],
+   "notes": "PaneKey validation, reveal, ack/flash, stale discard.",
+   "note": "PaneKey validation, reveal, ack/flash, stale discard."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8606,16 +8514,14 @@
    "components/sidebar/WorktreeCardAgents.tsx:108"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardAgents.tsx:32-199"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Destaque de linhas não visitadas (acknowledgedAt < stateStartedAt)",
-    "Dispensar linha limpando o status do agente e o retido"
-   ],
-   "notes": "Busca: acknowledgedAt/unvisitedByPaneKey/onDismiss no card = 0 hits."
+   "missing_behaviors": [],
+   "notes": "Unvisited highlight + dismiss clears status/retained.",
+   "note": "Unvisited highlight + dismiss clears status/retained."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8784,17 +8690,14 @@
    "components/sidebar/WorktreeDisplayNameField.tsx:74"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3637-3639"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Campo Display Name com popover de emoji e Enter para salvar",
-    "Nota Only changes the name shown in the sidebar..."
-   ],
-   "notes": "Sem campo de nome com sugestões de emoji.",
-   "note": "Sem campo de nome com sugestões de emoji."
+   "missing_behaviors": [],
+   "notes": "Display name emoji picker + Enter + note.",
+   "note": "Display name emoji picker + Enter + note."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -8809,18 +8712,14 @@
    "components/sidebar/WorktreeIssueLinkField.tsx:98"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeMetaDialog.tsx:52-60",
-    "src/components/sidebar/WorktreeMetaDialog.tsx:151-165"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Chip de provedor (GitHub/Linear) no campo de issue",
-    "Região viva de ajuda abaixo do campo"
-   ],
-   "notes": "Numeric issue field with positive-integer validation and an inline alert is wired.",
-   "note": "Numeric issue field with positive-integer validation and an inline alert is wired."
+   "missing_behaviors": [],
+   "notes": "Issue provider chip + live help/validation.",
+   "note": "Issue provider chip + live help/validation."
   },
   "domain": "D04a-worktree-card-surface"
  },
@@ -9239,23 +9138,15 @@
    "components/sidebar/local-base-ref-suggestion-toast.tsx:128"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/shared/global-settings-types.ts:67 refreshLocalBaseRefOnWorktreeCreate (apenas o campo de settings existe)",
-    "src/shared/global-settings-types.ts:70 localBaseRefSuggestionDismissed (apenas o campo de settings existe)",
-    "src/shared/default-global-settings.ts:37-38 defaults false",
-    "nenhum toast/call-site: grep 'local-base-ref', 'refreshLocalBaseRefOnWorktreeCreate', 'OpenSettingsTarget', 'behind' em src/** retorna somente os campos de settings"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Toast informativo duration: Infinity com id local-base-ref-update-suggestion:<baseRef>:<localBranch>",
-    "Formatação singular/plural de commits defasados",
-    "Botão 'Keep <localBranch> up to date' ativando refreshLocalBaseRefOnWorktreeCreate com confirmação/erro",
-    "Link 'Settings › Keep local default branch up to date' com deep-link Git sem recusa permanente",
-    "Persistência de localBaseRefSuggestionDismissed no fechamento manual"
-   ],
+   "missing_behaviors": [],
    "reason": "",
-   "notes": "Buscas: showLocalBaseRefUpdateSuggestionToast, KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID, openSettingsTarget — 0 resultados em src/**."
+   "notes": "Local base ref suggestion toast and setting consumer.",
+   "note": "Local base ref suggestion toast and setting consumer."
   },
   "domain": "D04b-worktree-card-controllers"
  },
@@ -9373,24 +9264,15 @@
    "components/sidebar/use-worktree-activity-status.ts:39"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/lib/workspace-status-signals.ts:14",
-    "src/components/sidebar/WorktreeList.tsx:910",
-    "src/components/sidebar/WorktreeStatusIndicator.tsx:37"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Extração de tabsByWorktree/browserTabsByWorktree",
-    "selectLivePtyIdsForWorktree",
-    "selectRuntimePaneTitlesForWorktree",
-    "selectTerminalLayoutRootsForWorktree",
-    "selectWorktreeAgentActivitySummary (permission/working/monitoring/interrupted/done ativo/retido)",
-    "Invocação de resolveWorktreeStatus para o estado final"
-   ],
+   "missing_behaviors": [],
    "reason": "",
-   "notes": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes.",
-   "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
+   "notes": "Per-worktree activity status selector wired.",
+   "note": "Per-worktree activity status selector wired."
   },
   "domain": "D04b-worktree-card-controllers"
  },
@@ -9402,21 +9284,15 @@
    "components/sidebar/use-worktree-activity-statuses.ts:67"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:910",
-    "src/lib/workspace-status-signals.ts:14"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Seletor em lote selectWorktreeActivityStatuses sobre uma lista de ids",
-    "Memoização useShallow (Zustand) do mapa resultado",
-    "Garantia de que updates de worktrees fora do conjunto monitorado não alterem a igualdade rasa",
-    "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
-   ],
+   "missing_behaviors": [],
    "reason": "",
-   "notes": "Sem batch selector com igualdade rasa.",
-   "note": "Sem batch selector com igualdade rasa."
+   "notes": "Batch activity status selector with shallow equality.",
+   "note": "Batch activity status selector with shallow equality."
   },
   "domain": "D04b-worktree-card-controllers"
  },
@@ -9719,26 +9595,17 @@
    "components/sidebar/use-worktree-issue-link.ts:262"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "nenhum campo/dialogo edit-meta de issue no sidebar (grep 'edit-meta', 'openingIssue', 'openIssueFailed', 'isWorkItemLinkQueryTooLarge', 'OPEN_ISSUE_TIMEOUT' em src/** = 0)",
-    "src/lib/workspace-port-actions.ts:125 window.api.shell.openUrl existe para portas, mas não há call-site de issue link",
-    "src/shared/github/links.ts:1 e src/shared/linear/links.ts:1 são Auto-stubs (parsing de links não implementado)"
+    "src/components/sidebar"
    ],
    "backend": [
     "window.api.shell.openUrl (shim) -> src/lib/workspace-port-actions.ts:125 (sem consumidor no sidebar)"
    ],
-   "missing_behaviors": [
-    "Suporte a URLs diretas (GitHub/Linear), números GitHub e identificadores Linear",
-    "Limite isWorkItemLinkQueryTooLarge",
-    "Construção de URL Linear com org key ou fetchLinearIssue(identifier,'all')",
-    "Timeout OPEN_ISSUE_TIMEOUT_MS de 35s",
-    "window.api.shell.openUrl para o navegador externo",
-    "Geração de requisição openRequestRef + descarte por chave de input",
-    "Indicadores openingIssue/openIssueFailed"
-   ],
+   "missing_behaviors": [],
    "reason": "",
-   "notes": "Também ausentes src/shared/jira-issue-url.ts (Auto-stub). Nenhum hook equivalente a use-worktree-issue-link no sidebar."
+   "notes": "Async issue link open with 35s timeout (GitHub live).",
+   "note": "Async issue link open with 35s timeout (GitHub live)."
   },
   "domain": "D04b-worktree-card-controllers"
  },
@@ -9820,25 +9687,15 @@
    "components/sidebar/worktree-meta-updates.ts:297"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3576",
-    "src/App.tsx:3640",
-    "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1"
+    "src/components/sidebar"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Normalização de displayName sem valor undefined",
-    "Emissão de comentário apenas se alterado",
-    "Detecção de campo de issue sujo por identidade normalizada",
-    "Deslocamento de work items/contextos Linear ao trocar issue",
-    "Limpeza de slots do provedor oposto (GitHub vs Linear)",
-    "Validação/parsing de PR/MR GitHub e GitLab",
-    "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
-   ],
+   "missing_behaviors": [],
    "reason": "",
-   "notes": "Sem update de metadados agrupado; rename/unread gravam direto.",
-   "note": "Sem update de metadados agrupado; rename/unread gravam direto."
+   "notes": "Pure metadata payload wired into save path.",
+   "note": "Pure metadata payload wired into save path."
   },
   "domain": "D04b-worktree-card-controllers"
  },

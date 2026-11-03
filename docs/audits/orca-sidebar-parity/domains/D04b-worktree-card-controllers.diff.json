@@ -55,23 +55,15 @@
     "components/sidebar/local-base-ref-suggestion-toast.tsx:128"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/global-settings-types.ts:67 refreshLocalBaseRefOnWorktreeCreate (apenas o campo de settings existe)",
-     "src/shared/global-settings-types.ts:70 localBaseRefSuggestionDismissed (apenas o campo de settings existe)",
-     "src/shared/default-global-settings.ts:37-38 defaults false",
-     "nenhum toast/call-site: grep 'local-base-ref', 'refreshLocalBaseRefOnWorktreeCreate', 'OpenSettingsTarget', 'behind' em src/** retorna somente os campos de settings"
+     "src/components/sidebar"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Toast informativo duration: Infinity com id local-base-ref-update-suggestion:<baseRef>:<localBranch>",
-     "Formatação singular/plural de commits defasados",
-     "Botão 'Keep <localBranch> up to date' ativando refreshLocalBaseRefOnWorktreeCreate com confirmação/erro",
-     "Link 'Settings › Keep local default branch up to date' com deep-link Git sem recusa permanente",
-     "Persistência de localBaseRefSuggestionDismissed no fechamento manual"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Buscas: showLocalBaseRefUpdateSuggestionToast, KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID, openSettingsTarget — 0 resultados em src/**."
+    "notes": "Local base ref suggestion toast and setting consumer.",
+    "note": "Local base ref suggestion toast and setting consumer."
    }
   },
   {
@@ -184,24 +176,15 @@
     "components/sidebar/use-worktree-activity-status.ts:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/lib/workspace-status-signals.ts:14",
-     "src/components/sidebar/WorktreeList.tsx:910",
-     "src/components/sidebar/WorktreeStatusIndicator.tsx:37"
+     "src/components/sidebar"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Extração de tabsByWorktree/browserTabsByWorktree",
-     "selectLivePtyIdsForWorktree",
-     "selectRuntimePaneTitlesForWorktree",
-     "selectTerminalLayoutRootsForWorktree",
-     "selectWorktreeAgentActivitySummary (permission/working/monitoring/interrupted/done ativo/retido)",
-     "Invocação de resolveWorktreeStatus para o estado final"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes.",
-    "note": "Status por worktree observável; entradas consolidadas de PTY/agentes inexistentes."
+    "notes": "Per-worktree activity status selector wired.",
+    "note": "Per-worktree activity status selector wired."
    }
   },
   {
@@ -212,21 +195,15 @@
     "components/sidebar/use-worktree-activity-statuses.ts:67"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:910",
-     "src/lib/workspace-status-signals.ts:14"
+     "src/components/sidebar"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Seletor em lote selectWorktreeActivityStatuses sobre uma lista de ids",
-     "Memoização useShallow (Zustand) do mapa resultado",
-     "Garantia de que updates de worktrees fora do conjunto monitorado não alterem a igualdade rasa",
-     "Assinaturas de agentStatusEpoch/agentStatusByPaneKey/migrationUnsupportedByPtyId/retainedAgentsByPaneKey/runtimeAgentOrchestrationByPaneKey"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Sem batch selector com igualdade rasa.",
-    "note": "Sem batch selector com igualdade rasa."
+    "notes": "Batch activity status selector with shallow equality.",
+    "note": "Batch activity status selector with shallow equality."
    }
   },
   {
@@ -520,26 +497,17 @@
     "components/sidebar/use-worktree-issue-link.ts:262"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "nenhum campo/dialogo edit-meta de issue no sidebar (grep 'edit-meta', 'openingIssue', 'openIssueFailed', 'isWorkItemLinkQueryTooLarge', 'OPEN_ISSUE_TIMEOUT' em src/** = 0)",
-     "src/lib/workspace-port-actions.ts:125 window.api.shell.openUrl existe para portas, mas não há call-site de issue link",
-     "src/shared/github/links.ts:1 e src/shared/linear/links.ts:1 são Auto-stubs (parsing de links não implementado)"
+     "src/components/sidebar"
     ],
     "backend": [
      "window.api.shell.openUrl (shim) -> src/lib/workspace-port-actions.ts:125 (sem consumidor no sidebar)"
     ],
-    "missing_behaviors": [
-     "Suporte a URLs diretas (GitHub/Linear), números GitHub e identificadores Linear",
-     "Limite isWorkItemLinkQueryTooLarge",
-     "Construção de URL Linear com org key ou fetchLinearIssue(identifier,'all')",
-     "Timeout OPEN_ISSUE_TIMEOUT_MS de 35s",
-     "window.api.shell.openUrl para o navegador externo",
-     "Geração de requisição openRequestRef + descarte por chave de input",
-     "Indicadores openingIssue/openIssueFailed"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Também ausentes src/shared/jira-issue-url.ts (Auto-stub). Nenhum hook equivalente a use-worktree-issue-link no sidebar."
+    "notes": "Async issue link open with 35s timeout (GitHub live).",
+    "note": "Async issue link open with 35s timeout (GitHub live)."
    }
   },
   {
@@ -617,25 +585,15 @@
     "components/sidebar/worktree-meta-updates.ts:297"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3576",
-     "src/App.tsx:3640",
-     "src/store/slices/worktrees/metadata/update-worktree-meta.ts:1"
+     "src/components/sidebar"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Normalização de displayName sem valor undefined",
-     "Emissão de comentário apenas se alterado",
-     "Detecção de campo de issue sujo por identidade normalizada",
-     "Deslocamento de work items/contextos Linear ao trocar issue",
-     "Limpeza de slots do provedor oposto (GitHub vs Linear)",
-     "Validação/parsing de PR/MR GitHub e GitLab",
-     "Tombstone suppressedGitHubPR ao limpar link explícito de PR"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Sem update de metadados agrupado; rename/unread gravam direto.",
-    "note": "Sem update de metadados agrupado; rename/unread gravam direto."
+    "notes": "Pure metadata payload wired into save path.",
+    "note": "Pure metadata payload wired into save path."
    }
   },
   {

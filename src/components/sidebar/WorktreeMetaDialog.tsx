@@ -14,6 +14,7 @@ import { WorktreeIssueLinkField, type WorktreeIssueProvider } from './WorktreeIs
 import { WorktreeReviewLinkField } from './WorktreeReviewLinkField'
 import { getDisplacedLinkLabels } from './worktree-issue-displacement'
 import type { WorktreeMetadataDraft } from './worktree-metadata-types'
+import { useWorktreeIssueLink } from './use-worktree-issue-link'
 import { useWorktreeMetaWorkspace } from './use-worktree-meta-workspace'
 
 
@@ -78,12 +79,23 @@ export function WorktreeMetaDialog({
   const [linkedJiraIssue, setLinkedJiraIssue] = useState<string | null>(
     initial.linkedJiraIssue ?? null
   );
-  const [error, setError] = useState<string | null>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const issueInputRef = useRef<HTMLInputElement>(null);
-  const reviewInputRef = useRef<HTMLInputElement>(null);
-  const commentRef = useRef<HTMLTextAreaElement>(null);
-  const nameFieldId = useId();
+  const [error, setError] = useState<string | null>(null)
+  const [dialogElement, setDialogElement] = useState<HTMLElement | null>(null)
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const issueInputRef = useRef<HTMLInputElement>(null)
+  const reviewInputRef = useRef<HTMLInputElement>(null)
+  const commentRef = useRef<HTMLTextAreaElement>(null)
+  const nameFieldId = useId()
+  const { canOpenIssue, openingIssue, openIssueFailed, handleOpenIssue, resetOpeningIssue } =
+    useWorktreeIssueLink({
+      worktreeId: worktreeId ?? '',
+      ownerRepoId,
+      issueInput,
+      issueProvider,
+      linearOrganizationUrlKey: resolved.worktree?.linkedLinearIssueOrganizationUrlKey ?? null,
+      linkedLinearIssue: resolved.worktree?.linkedLinearIssue ?? null,
+      linearSourceContext: resolved.worktree?.linkedTaskSourceContext ?? null
+    })
   // Why a ref: the caller rebuilds `initial` every render; seeding on that identity
   // would wipe the draft mid-typing. Seed only when the dialog opens.
   const initialRef = useRef(initial);
@@ -118,8 +130,9 @@ export function WorktreeMetaDialog({
     setComment(seed.comment);
     setLinkedJiraIssue(seed.linkedJiraIssue ?? null);
     setError(null);
+    resetOpeningIssue();
     requestAnimationFrame(() => nameInputRef.current?.focus());
-  }, [open]);
+  }, [open, resetOpeningIssue]);
 
   // Why: the notes grow with their content instead of scrolling inside a fixed
   // three-row box, so a long handoff stays readable while editing.
@@ -240,6 +253,7 @@ export function WorktreeMetaDialog({
       onClick={() => onOpenChange(false)}
     >
       <div
+        ref={setDialogElement}
         onClick={(event) => event.stopPropagation()}
         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-popover p-5 text-xs text-popover-foreground shadow-2xl"
         role="dialog"
@@ -258,6 +272,7 @@ export function WorktreeMetaDialog({
             value={displayName}
             onValueChange={setDisplayName}
             onEnter={submit}
+            portalContainer={dialogElement}
           />
 
           <div className="grid grid-cols-2 gap-2">
@@ -267,6 +282,11 @@ export function WorktreeMetaDialog({
               provider={issueProvider}
               isInvalid={isIssueInvalid}
               displacedLinkLabels={displacedLinkLabels}
+              isReadOnly={resolved.isFolderWorkspace}
+              canOpenIssue={canOpenIssue}
+              openingIssue={openingIssue}
+              openIssueFailed={openIssueFailed}
+              onOpenIssue={handleOpenIssue}
               onValueChange={setIssueInput}
               onProviderChange={(next) => {
                 setIssueProvider(next);

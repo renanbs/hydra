@@ -19,6 +19,12 @@ import { BROWSER_SCREENCAST_RUNTIME_CAPABILITY } from '../shared/protocol-versio
 import { RUNTIME_BROWSER_UNAVAILABLE_MESSAGE } from './client-creation-action-policy'
 
 export { addressForPort } from './workspace-port-urls'
+export {
+  getPortOpenBrowserTooltipLabel,
+  getPortSystemBrowserHint,
+  resolvePortOpenInOrcaBrowser,
+  shouldOpenWorkspacePortInOrcaBrowser
+} from './workspace-port-open-policy'
 
 const WORKSPACE_PORT_STOP_SETTLE_MS = 500
 const WORKSPACE_PORT_TARGET_UNAVAILABLE_REASON =
@@ -51,43 +57,6 @@ export type WorkspacePortScanPublisher = {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
-}
-
-export function shouldOpenWorkspacePortInOrcaBrowser(
-  settings: { openLinksInApp?: boolean } | null | undefined
-): boolean {
-  return settings?.openLinksInApp === true
-}
-
-function isMacShortcutPlatform(): boolean {
-  return typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac')
-}
-
-export function getPortSystemBrowserHint(isMac: boolean = isMacShortcutPlatform()): string {
-  return isMac ? '⇧⌘+click for system browser' : 'Shift+Ctrl+click for system browser'
-}
-
-export function getPortOpenBrowserTooltipLabel(openLabel: string, isMac?: boolean): string {
-  return `${openLabel}. ${getPortSystemBrowserHint(isMac)}`
-}
-
-type PortOpenClickEvent = Pick<MouseEvent, 'metaKey' | 'ctrlKey' | 'shiftKey'>
-
-export function resolvePortOpenInOrcaBrowser({
-  settings,
-  event,
-  isMac
-}: {
-  settings: { openLinksInApp?: boolean } | null | undefined
-  event?: PortOpenClickEvent | null
-  isMac: boolean
-}): boolean {
-  // Why: Shift+Cmd/Ctrl is the external-browser escape hatch; no pointer
-  // event means context-menu and keyboard opens should keep the saved setting.
-  if (event?.shiftKey && (isMac ? event.metaKey : event.ctrlKey)) {
-    return false
-  }
-  return shouldOpenWorkspacePortInOrcaBrowser(settings)
 }
 
 export function workspacePortOwnerWorktreeId(port: WorkspacePort): string | null {

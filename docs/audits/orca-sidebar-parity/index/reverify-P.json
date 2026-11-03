@@ -15,19 +15,6 @@
    "note": "Context menu opens the dialog seeded from persisted metadata; Save writes name + notes + linked items and updates the live map; Cancel/Escape never write."
   },
   {
-   "id": "D04a-095",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeMetaDialog.tsx:52-60",
-    "src/components/sidebar/WorktreeMetaDialog.tsx:151-165"
-   ],
-   "missing_behaviors": [
-    "Chip de provedor (GitHub/Linear) no campo de issue",
-    "Região viva de ajuda abaixo do campo"
-   ],
-   "note": "Numeric issue field with positive-integer validation and an inline alert is wired."
-  },
-  {
    "id": "D04a-098",
    "status": "partial",
    "evidence": [
@@ -104,6 +91,15 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-095",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Issue provider chip + live help/validation."
   }
  ]
 }

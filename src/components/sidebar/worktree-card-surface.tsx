@@ -10,6 +10,7 @@ import { WorktreeCardParentContent } from './worktree-card-parent-content'
 import { buildWorktreeCardPresentation } from './worktree-card-presentation'
 import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
 import { useWorkspaceDeleteModifierPressed } from './workspace-delete-quick-action'
+import { useWorktreeSleeping } from './use-worktree-sleeping'
 
 export interface WorktreeCardSurfaceProps {
   card: WorktreeCardWithExtras
@@ -52,6 +53,9 @@ export function WorktreeCardSurface({ card }: WorktreeCardSurfaceProps): React.J
     isDragged
   } = card
   const { titleOnlyCard, cardStyle } = presentation
+  // Orca's slept workspace keeps its row; the card states that its terminals were
+  // released and a click re-attaches the persisted layout.
+  const isSleeping = useWorktreeSleeping(worktree.id ?? worktree.path)
 
   const parentCardContent = <WorktreeCardParentContent card={card} presentation={presentation} />
 
@@ -82,9 +86,11 @@ export function WorktreeCardSurface({ card }: WorktreeCardSurfaceProps): React.J
         // Why: no SSH dim — the inline host control now states the disconnected state
         // explicitly, and a subtree opacity would composite its destructive tint and spinner
         // down to an illegible alpha (a descendant cannot escape an ancestor's opacity).
-        isRuntimeDisconnected && !isDeleting && 'opacity-60'
+        isRuntimeDisconnected && !isDeleting && 'opacity-60',
+        isSleeping && !isDeleting && 'opacity-70'
       )}
       data-worktree-card-surface="true"
+      data-worktree-sleeping={isSleeping || undefined}
       data-worktree-card-active={
         isActiveSurface && !isLineageDropTarget ? activeSurfaceVariant : undefined
       }

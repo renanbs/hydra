@@ -1,34 +1,17 @@
-import { invoke } from "@tauri-apps/api/core";
-import type { OpenInApplication } from "../../shared/settings-types";
+// Thin bridge for the right sidebar: the entry model and preflight live beside the
+// workspace card menu (one source for both surfaces).
+import {
+  openWorktreePath as openWorktreePathWithGuard,
+  type OpenInTarget
+} from '../../lib/open-in-path-guard'
 
-export type OpenInMenuEntry = {
-  id: string;
-  label: string;
-  target: "external-editor" | "file-manager";
-  command?: string;
-};
+export type { OpenInMenuEntry } from '../sidebar/worktree-open-in-menu'
+export { getWorktreeOpenInEntries } from '../sidebar/worktree-open-in-menu'
 
-export function getWorktreeOpenInEntries(openInApplications: readonly OpenInApplication[], fileManagerLabel = "File Manager"): OpenInMenuEntry[] {
-  return [
-    ...openInApplications.map(app => ({
-      id: app.id,
-      label: app.label,
-      target: "external-editor" as const,
-      command: app.command,
-    })),
-    { id: "file-manager", label: fileManagerLabel, target: "file-manager" as const },
-  ];
-}
-
-export async function openWorktreePath(args: { target: "file-manager" | "external-editor"; worktreePath: string; command?: string }) {
-  try {
-    if (args.target === "file-manager") {
-      await invoke("open_in_file_manager", { path: args.worktreePath });
-    } else {
-      if (!args.command) return;
-      await invoke("open_in_external_editor", { path: args.worktreePath, command: args.command });
-    }
-  } catch (e) {
-    alert(String(e));
-  }
+export async function openWorktreePath(args: {
+  target: OpenInTarget
+  worktreePath: string
+  command?: string
+}) {
+  await openWorktreePathWithGuard(args)
 }

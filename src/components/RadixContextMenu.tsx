@@ -44,13 +44,18 @@ export function RadixContextMenuItems({ items, onClose }: { items: ContextMenuIt
                       disabled={child.disabled}
                       variant={child.danger ? "destructive" : "default"}
                       title={child.title}
+                      onClickCapture={child.stopPropagation ? (event) => event.stopPropagation() : undefined}
+                      onPointerDownCapture={child.stopPropagation ? (event) => event.stopPropagation() : undefined}
                       onSelect={() => {
                         child.onClick();
                         onClose();
                       }}
                     >
                       {child.icon}
-                      <span>{child.label}</span>
+                      <span className="min-w-0 truncate">{child.label}</span>
+                      {child.metadata && (
+                        <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{child.metadata}</span>
+                      )}
                       {child.shortcut && <span className="ml-auto text-xs opacity-60">{child.shortcut}</span>}
                     </DropdownMenuItem>
                   );
@@ -65,13 +70,18 @@ export function RadixContextMenuItems({ items, onClose }: { items: ContextMenuIt
             disabled={item.disabled}
             variant={item.danger ? "destructive" : "default"}
             title={item.title}
+            onClickCapture={item.stopPropagation ? (event) => event.stopPropagation() : undefined}
+            onPointerDownCapture={item.stopPropagation ? (event) => event.stopPropagation() : undefined}
             onSelect={() => {
               item.onClick();
               onClose();
             }}
           >
             {item.icon}
-            <span>{item.label}</span>
+            <span className="min-w-0 truncate">{item.label}</span>
+            {item.metadata && (
+              <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{item.metadata}</span>
+            )}
             {item.shortcut && <span className="ml-auto text-xs opacity-60">{item.shortcut}</span>}
           </DropdownMenuItem>
         );

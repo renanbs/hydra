@@ -13,6 +13,27 @@
 const sleepingWorktreeIds = new Set<string>()
 const tearingDownWorktreeIds = new Set<string>()
 const wakeListenersByWorktreeId = new Map<string, Set<() => void>>()
+// Why: cards paint a sleeping state, so every transition needs a subscription apart
+// from the per-worktree wake listeners (which only fire when a marker clears).
+const sleepStateListeners = new Set<() => void>()
+
+function notifySleepState(): void {
+  for (const listener of sleepStateListeners) {
+    try {
+      listener()
+    } catch (error) {
+      // A broken card subscription must not abort the sleep/wake transition.
+      console.error('[sleep-intent] sleep-state listener failed', { error })
+    }
+  }
+}
+
+export function subscribeWorktreeSleepIntent(listener: () => void): () => void {
+  sleepStateListeners.add(listener)
+  return () => {
+    sleepStateListeners.delete(listener)
+  }
+}
 
 /**
  * Durable projection of the sleep intent. Injected once at app boot so this
@@ -46,6 +67,7 @@ export function markWorktreeSleepIntent(worktreeId: string, payload?: string): v
   if (intentSink) {
     runSink(() => intentSink!.persist(worktreeId, payload), 'persist sleep intent', worktreeId)
   }
+  notifySleepState()
 }
 
 /**
@@ -55,6 +77,7 @@ export function markWorktreeSleepIntent(worktreeId: string, payload?: string): v
  */
 export function restoreWorktreeSleepIntent(worktreeId: string): void {
   sleepingWorktreeIds.add(worktreeId)
+  notifySleepState()
 }
 
 /**
@@ -81,6 +104,7 @@ export function clearWorktreeSleepIntent(worktreeId: string | null): void {
   if (!sleepingWorktreeIds.delete(worktreeId)) {
     return
   }
+  notifySleepState()
   if (intentSink) {
     runSink(() => intentSink!.clear(worktreeId), 'clear sleep intent', worktreeId)
   }
@@ -102,6 +126,9 @@ export function forgetWorktreeSleepIntent(worktreeId: string): void {
   const hadMarker = sleepingWorktreeIds.delete(worktreeId)
   tearingDownWorktreeIds.delete(worktreeId)
   wakeListenersByWorktreeId.delete(worktreeId)
+  if (hadMarker) {
+    notifySleepState()
+  }
   if (hadMarker && intentSink) {
     runSink(() => intentSink!.clear(worktreeId), 'forget sleep intent', worktreeId)
   }

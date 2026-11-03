@@ -57,4 +57,18 @@ export function WorktreeContextMenu({
   )
 }
 
+// Orca re-exports the scope/close-all/parent/delete policy from the wrapper so a
+// card surface imports one module for both the entry point and its gates.
+export {
+  CLOSE_ALL_CONTEXT_MENUS_EVENT,
+  WORKTREE_CONTEXT_MENU_SCOPE_ATTR,
+  WORKTREE_NATIVE_CONTEXT_MENU_ATTR,
+  getWorktreeParentPickerLabel,
+  isContextWorktreeDeletable,
+  isWorktreeParentPickerDisabled,
+  shouldIgnoreNestedWorktreeContextMenuScope,
+  shouldRevealWorktreeDeveloperMenu,
+  shouldUseNativeContextMenu,
+} from './worktree-context-menu-policy'
+
 export default WorktreeContextMenu

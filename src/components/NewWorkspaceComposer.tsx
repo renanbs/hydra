@@ -43,7 +43,16 @@ interface NewWorkspaceComposerProps {
   onOpenAddRepoDialog?: () => void;
   onOpenSettings?: () => void;
   onClose: () => void;
-  onCreated: (worktreePath: string, branchName: string, agentName: string, executable: string) => void;
+  /** D04b-003: the toast's settings toggle; the create path honors it before
+   *  branching so the new workspace is based on current history. */
+  refreshLocalBaseRefOnWorktreeCreate?: boolean;
+  onCreated: (
+    worktreePath: string,
+    branchName: string,
+    agentName: string,
+    executable: string,
+    repoPath: string
+  ) => void;
 }
 
 export function NewWorkspaceComposer({
@@ -58,6 +67,7 @@ export function NewWorkspaceComposer({
   onOpenSettings,
   onClose,
   onCreated,
+  refreshLocalBaseRefOnWorktreeCreate = false,
 }: NewWorkspaceComposerProps) {
   const [name, setName] = useState("");
   const [customBranch, setCustomBranch] = useState("");
@@ -206,11 +216,22 @@ export function NewWorkspaceComposer({
       setNote("");
     }
 
-    invoke<string>("create_worktree", {
-      repoPath: proj.path,
-      branchName: branchToUse,
-      newBranch: true,
-    })
+    // D04b-003 (Orca `refreshLocalBaseRefOnWorktreeCreate`): fast-forward the
+    // local base branch first, best effort — a dirty checkout or a diverged
+    // branch must not block the create the user just asked for.
+    const baseRefresh = refreshLocalBaseRefOnWorktreeCreate
+      ? invoke("git_pull_cmd", { repoPath: proj.path }).catch((err) => {
+          console.error("Base branch refresh skipped:", err);
+        })
+      : Promise.resolve();
+    baseRefresh
+      .then(() =>
+        invoke<string>("create_worktree", {
+          repoPath: proj.path,
+          branchName: branchToUse,
+          newBranch: true,
+        })
+      )
       .then(async (createdPath) => {
         // D08-030: create from a lane's `+` seeds the status here, so the new worktree is
         // born in that lane. The write is the app's single status writer; a failed write
@@ -223,7 +244,13 @@ export function NewWorkspaceComposer({
           }
         }
         useAppStore.getState().removePendingWorktreeCreation(creationId, { cleanupVm: false });
-        onCreated(createdPath, branchToUse, chosenAgent.name, chosenAgent.executable);
+        onCreated(
+          createdPath,
+          branchToUse,
+          chosenAgent.name,
+          chosenAgent.executable,
+          proj.path
+        );
       })
       .catch((err) => {
         // Why the row stays: the failure belongs to the user until they dismiss it, and
