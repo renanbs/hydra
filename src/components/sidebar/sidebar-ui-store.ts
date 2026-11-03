@@ -29,6 +29,9 @@ export type SidebarUiState = {
   setupGuideBrowserMilestoneMigrated: boolean
   setupGuideBrowserMilestoneLegacyComplete: boolean
   markSetupGuideBrowserMilestoneMigrated: (legacyComplete: boolean) => void
+  /** Whether the in-window Agent Dashboard companion drawer is open. */
+  agentDashboardDrawerOpen: boolean
+  setAgentDashboardDrawerOpen: (open: boolean) => void
   openTaskPage: (data?: Record<string, unknown>) => void
   openAutomationsPage: () => void
   openMobilePage: () => void
