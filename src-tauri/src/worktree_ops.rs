@@ -1388,20 +1388,33 @@ fn archive_hook_repo_root(repo_path: &str, worktree_path: &str) -> Option<PathBu
     None
 }
 
-/// Reads `scripts.archive` from the repository's committed `orca.yaml`, the
-/// same source Orca's archive gate uses. An unreadable or absent file is "no
-/// hook", never a refusal: blocking deletes on a parse failure would refuse every
-/// repo that does not use hooks.
-fn read_archive_hook_script(repo_root: &Path) -> Option<String> {
-    let content = std::fs::read_to_string(repo_root.join("orca.yaml")).ok()?;
-    let yaml: serde_yaml::Value = serde_yaml::from_str(&content).ok()?;
-    let script = yaml
-        .get("scripts")
-        .and_then(|scripts| scripts.get("archive"))
-        .and_then(|archive| archive.as_str())
+/// Parses the repository's committed `orca.yaml`. An unreadable or absent file
+/// is "no hooks", never a refusal: blocking deletes on a parse failure would
+/// refuse every repo that does not use hooks.
+pub(crate) fn read_orca_yaml(repo_root: &Path) -> Option<serde_yaml::Value> {
+    parse_orca_yaml(&std::fs::read_to_string(repo_root.join("orca.yaml")).ok()?)
+}
+
+pub(crate) fn parse_orca_yaml(content: &str) -> Option<serde_yaml::Value> {
+    serde_yaml::from_str(content).ok()
+}
+
+/// Reads one `scripts.<key>` command from a parsed `orca.yaml`, trimmed and
+/// non-empty. Shared with the read-only hook inspection so both the archive gate
+/// and the sidebar prompt resolve the exact same command text.
+pub(crate) fn orca_yaml_script(yaml: &serde_yaml::Value, key: &str) -> Option<String> {
+    yaml.get("scripts")
+        .and_then(|scripts| scripts.get(key))
+        .and_then(|script| script.as_str())
         .map(str::trim)
-        .filter(|script| !script.is_empty())?;
-    Some(script.to_string())
+        .filter(|script| !script.is_empty())
+        .map(str::to_string)
+}
+
+/// Reads `scripts.archive` from the repository's committed `orca.yaml`, the
+/// same source Orca's archive gate uses.
+fn read_archive_hook_script(repo_root: &Path) -> Option<String> {
+    orca_yaml_script(&read_orca_yaml(repo_root)?, "archive")
 }
 
 struct ArchiveHookRunResult {

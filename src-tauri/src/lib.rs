@@ -23,6 +23,7 @@ pub mod preflight;
 pub mod theme_import;
 pub mod port_scanner;
 pub mod hooks;
+pub mod runtime_inspection;
 pub mod ssh_hosts;
 pub mod ssh_remote;
 pub mod proc_runner;
@@ -2191,6 +2192,10 @@ pub fn run() {
             check_github_starred_cmd,
             star_github_repo_cmd,
             open_external_url_cmd,
+            runtime_inspection::check_runtime_hooks,
+            runtime_inspection::inspect_runtime_setup_script_imports,
+            runtime_inspection::cli_install_status,
+            runtime_inspection::gh_viewer,
             ssh_hosts::ssh_list_targets,
             ssh_hosts::ssh_list_removed_target_labels,
             ssh_hosts::ssh_list_suppressed_aliases,

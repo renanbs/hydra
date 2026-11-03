@@ -19,9 +19,11 @@ import {
   normalizeVisibleTaskProviders,
   restoreAvailableDefaultTaskProvider,
   resolveVisibleTaskProvider,
-  type TaskProvider
+  type TaskProvider,
+  type TaskProviderAvailability
 } from '@/shared/task-providers'
 import type { HydraSettings } from '@/shared/settings-types'
+import { useLinearProviderConnected } from '@/hooks/useLinearProviderConnected'
 import { useSidebarUiStore } from './sidebar-ui-store'
 
 function HideTaskSidebarMenu({ onHide }: { onHide: () => void }): React.JSX.Element {
@@ -59,26 +61,27 @@ function TaskProviderShortcut({
 /**
  * Task provider availability Hydra can prove today.
  *
- * BLOCKED surface: the only preflight command (`check_preflight_tools_cmd`)
- * reports git/gh, not `glab` or a Linear connection, so GitLab/Linear stay
- * unavailable until that command exposes those fields. `restoreAvailableDefaultTaskProvider`
- * still keeps the user's configured providers ahead of this filter.
+ * `gitlabInstalled` stays false: no command reports `glab`. Linear comes from
+ * the live provider connection so the shortcut appears only when the Tasks
+ * surface can actually query it. GitHub is always available (see
+ * `task-providers.ts`), so it needs no probe here.
  */
-export function resolveSidebarTaskProviderAvailability(): {
-  gitlabInstalled: boolean
-  linearConnected: boolean
-} {
-  return { gitlabInstalled: false, linearConnected: false }
+export function resolveSidebarTaskProviderAvailability(overrides?: {
+  linearConnected?: boolean
+}): TaskProviderAvailability {
+  return { gitlabInstalled: false, linearConnected: overrides?.linearConnected === true }
 }
 
-export function resolveVisibleSidebarTaskProviders(settings: HydraSettings | null): {
+export function resolveVisibleSidebarTaskProviders(
+  settings: HydraSettings | null,
+  availability: TaskProviderAvailability = resolveSidebarTaskProviderAvailability()
+): {
   visibleTaskProviders: TaskProvider[]
   resolvedDefaultTaskSource: TaskProvider
 } {
   const preferredVisibleTaskProviders = normalizeVisibleTaskProviders(
     settings?.visibleTaskProviders
   )
-  const availability = resolveSidebarTaskProviderAvailability()
   const visibleTaskProviders = restoreAvailableDefaultTaskProvider(
     preferredVisibleTaskProviders,
     availability,
@@ -107,9 +110,11 @@ export function SidebarTaskNavButton({
   const activeRepoId = useSidebarUiStore((state) => state.activeRepoId)
   const prefetchWorkItems = useSidebarUiStore((state) => state.prefetchWorkItems)
   const activeView = useSidebarUiStore((state) => state.activeView)
+  const linearConnected = useLinearProviderConnected()
   const showTasksButton = settings?.showTasksButton !== false
   const { visibleTaskProviders, resolvedDefaultTaskSource } = resolveVisibleSidebarTaskProviders(
-    settings
+    settings,
+    resolveSidebarTaskProviderAvailability({ linearConnected })
   )
 
   const handlePrefetch = React.useCallback(() => {
