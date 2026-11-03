@@ -4,6 +4,7 @@ import type {
   SshConnectionState,
   PortForwardEntry,
   EnrichedDetectedPort,
+  SshRepoReadoption,
   SshTargetSummary
 } from '../../shared/ssh-types'
 import {
@@ -74,6 +75,13 @@ export type SshSlice = {
   setSshTargetLabels: (labels: Map<string, string>) => void
   setRemovedSshTargetLabels: (labels: Record<string, string>) => void
   setSshTargetsMetadata: (targets: SshTargetSummary[]) => void
+  /**
+   * Readoptions already applied to the catalog (old target → re-adopting target).
+   * The live store composes no repo ring, so the catalog is where ownership is
+   * rewritten; this list is the renderer-side record of what moved.
+   */
+  sshRepoReadoptions: SshRepoReadoption[]
+  recordSshRepoReadoptions: (readoptions: readonly SshRepoReadoption[]) => void
   clearRemovedSshTargetState: (targetId: string) => void
   markRemoteWorkspaceHydrated: (targetId: string) => void
   clearRemoteWorkspaceHydrated: (targetId: string) => void
@@ -153,6 +161,21 @@ export const createSshSlice: StateCreator<AppState, [], [], SshSlice> = (set) =>
         sshTargetGenerations,
         sshTargetsHydrated: true
       }
+    }),
+  sshRepoReadoptions: [],
+  recordSshRepoReadoptions: (readoptions) =>
+    set((s) => {
+      if (readoptions.length === 0) {
+        return s
+      }
+      // Why key by (old, new): a re-adoption is idempotent, so replaying the same
+      // readoption must not grow the list; a later re-adoption of the same old id
+      // onto another target replaces the stale mapping.
+      const next = s.sshRepoReadoptions.filter(
+        (existing) =>
+          !readoptions.some((incoming) => incoming.oldTargetId === existing.oldTargetId)
+      )
+      return { sshRepoReadoptions: [...next, ...readoptions] }
     }),
   clearRemovedSshTargetState: (targetId) =>
     set((s) => buildRemovedSshTargetCleanupPatch(s, targetId) ?? s),

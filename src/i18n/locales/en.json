@@ -6059,6 +6059,7 @@
           "8d1e2f3a4b": "Rename…",
           "63f36455cc": "Reconnect",
           "59b553e2aa": "Disconnect",
+          "4a1b2c3d5e": "Disconnected from {{value0}}",
           "2d3e4f5a6b": "Check connection",
           "3c4d5e6f7a": "Manage host…",
           "6e7f8a9b0c": "Remove host…"

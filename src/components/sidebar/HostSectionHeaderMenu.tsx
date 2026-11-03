@@ -10,6 +10,7 @@ import {
   Loader2,
   Pencil,
   Plug,
+  PlugZap,
   Settings2,
   Trash2
 } from 'lucide-react'
@@ -26,7 +27,7 @@ import {
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
-import { reconnectSshTarget } from '@/store/ssh-bridge'
+import { disconnectSshTarget, reconnectSshTarget } from '@/store/ssh-bridge'
 import { sshConnectVerb } from '@/ssh/ssh-connect-verb'
 import {
   getSshTargetIdForExecutionHost,
@@ -134,6 +135,46 @@ export function HostSectionHeaderMenu({ row }: { row: HostHeaderRow }): React.JS
     }
   }, [mountedRef, row.hostId, row.label])
 
+  const handleDisconnect = useCallback(async () => {
+    const parsed = parseExecutionHostId(row.hostId)
+    if (parsed?.kind !== 'ssh') {
+      return
+    }
+    setBusy(true)
+    try {
+      await disconnectSshTarget(parsed.targetId)
+      // Why: the renderer owns live connection state; dropping it to disconnected
+      // is the visible half of the action (main persists the durable record).
+      const latest = useAppStore.getState()
+      latest.setSshConnectionState(parsed.targetId, {
+        ...(latest.sshConnectionStates.get(parsed.targetId) ?? {
+          targetId: parsed.targetId,
+          reconnectAttempt: 0,
+          error: null
+        }),
+        targetId: parsed.targetId,
+        status: 'disconnected',
+        error: null
+      })
+      toast.success(
+        translate(
+          'auto.components.sidebar.HostSectionHeaderMenu.4a1b2c3d5e',
+          'Disconnected from {{value0}}',
+          { value0: row.label }
+        )
+      )
+    } catch (error) {
+      toast.error(
+        translate('auto.components.sidebar.HostSectionHeaderMenu.bf07aee59e', 'Disconnect failed'),
+        { description: error instanceof Error ? error.message : undefined }
+      )
+    } finally {
+      if (mountedRef.current) {
+        setBusy(false)
+      }
+    }
+  }, [mountedRef, row.hostId, row.label])
+
   // A blocked host with no lifecycle action still needs the warning and its deep link.
   if (model.actions.length === 0 && model.blocked === null) {
     return null
@@ -197,6 +238,12 @@ export function HostSectionHeaderMenu({ row }: { row: HostHeaderRow }): React.JS
           <DropdownMenuItem onSelect={() => void handleReconnect()}>
             <Plug className="size-3.5" />
             {sshConnectVerb(sshStatus)}
+          </DropdownMenuItem>
+        ) : null}
+        {model.actions.includes('ssh-disconnect') ? (
+          <DropdownMenuItem onSelect={() => void handleDisconnect()}>
+            <PlugZap className="size-3.5" />
+            {translate('auto.components.sidebar.HostSectionHeaderMenu.59b553e2aa', 'Disconnect')}
           </DropdownMenuItem>
         ) : null}
         {model.actions.includes('manage') ? (

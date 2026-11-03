@@ -2,6 +2,8 @@
 // through `ssh_remote_delete_worktree` (force, because the user opted in) and then
 // drops the local records; a failed workspace keeps the host. Offline hosts only
 // forget. The same absolute path on another host must survive the catalog write.
+// Catalog-backed rows (what the live store cannot name) are cleared after the store
+// rows and abort the target removal on failure.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SshHostRemoveResolution } from './ssh-host-remove-resolution'
 
@@ -21,6 +23,7 @@ const RESOLUTION: SshHostRemoveResolution = {
   targetId: 'srv',
   workspaceWorktreeIds: ['wt-1'],
   hostRepoIds: ['repo-1'],
+  catalogRows: [],
   workspaceCount: 1,
   isConnected: true
 }
@@ -97,6 +100,53 @@ describe('clearSshHostWorkspaces (D02b-018)', () => {
     expect(deleteSshWorktreeMock).not.toHaveBeenCalled()
     expect(result.failedIds).toEqual(['wt-1'])
     expect(result.error).toContain('no owning repository')
+  })
+
+  it('clears catalog-backed repo roots and folder workspaces on the same host', async () => {
+    const result = await clearSshHostWorkspaces({
+      resolution: {
+        targetId: 'srv',
+        workspaceWorktreeIds: [],
+        hostRepoIds: [],
+        catalogRows: [
+          { id: 'cat-repo', path: '/srv/apps/widgets', kind: 'repo' },
+          { id: 'cat-folder', path: '/srv/docs', kind: 'folder' }
+        ],
+        workspaceCount: 2,
+        isConnected: false
+      },
+      worktrees: [],
+      repos: [],
+      mode: 'forget-local'
+    })
+
+    expect(removeCatalogRepoMock).toHaveBeenCalledWith('/srv/apps/widgets', 'srv')
+    expect(invokeMock).toHaveBeenCalledWith('ssh_forget_workspace', {
+      connectionId: 'srv',
+      worktreePath: '/srv/docs'
+    })
+    expect(result.failedIds).toEqual([])
+  })
+
+  it('reports the failing catalog row and keeps the host', async () => {
+    removeCatalogRepoMock.mockRejectedValue(new Error('catalog locked'))
+
+    const result = await clearSshHostWorkspaces({
+      resolution: {
+        targetId: 'srv',
+        workspaceWorktreeIds: [],
+        hostRepoIds: [],
+        catalogRows: [{ id: 'cat-repo', path: '/srv/apps/widgets', kind: 'repo' }],
+        workspaceCount: 1,
+        isConnected: false
+      },
+      worktrees: [],
+      repos: [],
+      mode: 'forget-local'
+    })
+
+    expect(result.failedIds).toEqual(['cat-repo'])
+    expect(result.error).toBe('catalog locked')
   })
 
   it('forgets offline workspaces locally without touching the host', async () => {
