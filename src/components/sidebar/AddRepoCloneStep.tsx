@@ -21,6 +21,7 @@ export function AddRepoCloneStep({
   onUrlChange,
   onDestinationChange,
   onPickDestination,
+  onCancelClone,
   onClone
 }: {
   cloneUrl: string
@@ -34,6 +35,8 @@ export function AddRepoCloneStep({
   onUrlChange: (value: string) => void
   onDestinationChange: (value: string) => void
   onPickDestination: () => void
+  /** Cancels the running local clone; absent when the host clone has no abort surface. */
+  onCancelClone?: (() => void) | undefined
   onClone: () => void
 }): React.JSX.Element {
   const canSubmit =
@@ -94,16 +97,12 @@ export function AddRepoCloneStep({
           <button
             type="button"
             onClick={onPickDestination}
-            disabled={isCloning || destinationIsRemote}
+            disabled={isCloning}
             title={
-              destinationIsRemote
-                ? 'Enter a host path for the clone destination.'
-                : 'Choose destination folder'
+              destinationIsRemote ? 'Pick a folder on the host' : 'Choose destination folder'
             }
             aria-label={
-              destinationIsRemote
-                ? 'Host destination must be typed'
-                : 'Choose destination folder'
+              destinationIsRemote ? 'Pick a host folder' : 'Choose destination folder'
             }
             className="inline-flex size-8 shrink-0 items-center justify-center rounded border border-[#2a2b30] text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-default disabled:opacity-40 cursor-pointer"
           >
@@ -112,7 +111,8 @@ export function AddRepoCloneStep({
         </div>
         {destinationIsRemote ? (
           <p className="mt-1 text-[11px] text-neutral-500">
-            Enter a path on the selected host; the native picker only sees this computer.
+            Pick the folder on the host, or type its path; the native picker only sees this
+            computer.
           </p>
         ) : null}
       </div>
@@ -144,6 +144,15 @@ export function AddRepoCloneStep({
       ) : null}
 
       <div className="pt-2 flex justify-end gap-2">
+        {isCloning && onCancelClone ? (
+          <button
+            type="button"
+            onClick={onCancelClone}
+            className="px-4 py-1.5 rounded border border-[#2a2b30] text-neutral-300 transition hover:bg-neutral-800 cursor-pointer"
+          >
+            Cancel clone
+          </button>
+        ) : null}
         <button
           type="submit"
           disabled={!canSubmit}

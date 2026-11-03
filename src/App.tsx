@@ -2375,7 +2375,12 @@ export default function App() {
   );
 
   const handleRemoveProject = (proj: HydraProject) => {
-    invoke("catalog_remove_repo", { path: proj.path })
+    invoke("catalog_remove_repo", {
+      path: proj.path,
+      // Why: two hosts can hold the same absolute path, so a host-owned row must
+      // be removed with its connection scope.
+      connectionId: proj.connectionId ?? null
+    })
       .then(() => {
         invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
           const model = catalogToSidebarModel(envelope);
@@ -3371,6 +3376,9 @@ export default function App() {
   const handleActivateProject = useCallback(
     (proj: HydraProject) => {
       handleSelectProject(proj);
+      // Why host-gated: a checkout on an SSH host has no local cwd, so seeding a
+      // PTY with its path would spawn a shell in a missing directory.
+      if (proj.connectionId || proj.executionHostId) return;
       ensureWorkspaceTerminal(proj.path);
     },
     [handleSelectProject, ensureWorkspaceTerminal]
@@ -6048,7 +6056,10 @@ export default function App() {
             if (addedProject || model.projects.length > 0) {
               const selected = addedProject ?? model.projects[0];
               handleSelectProject(selected);
-              if (tabsRef.current.length === 0) {
+              // Why host-gated: a checkout on an SSH host has no local directory, so
+              // seeding a PTY with its path would spawn a shell in a missing cwd.
+              const isLocalCheckout = !selected.connectionId && !selected.executionHostId;
+              if (tabsRef.current.length === 0 && isLocalCheckout) {
                 const tabId = `tab_${Date.now().toString().slice(-4)}`;
                 const initialTab: TabItem = {
                   id: tabId,

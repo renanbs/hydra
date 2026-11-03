@@ -2,9 +2,10 @@
 // Source: components/sidebar/RemoteFileBrowser.tsx
 //
 // The folder picker for a remote host: breadcrumbs, a filter/path input, typed entry rows,
-// and confirmation. The listing transport is `src/store/remote-browse-bridge.ts`, which is
-// BLOCKED on `ssh_browse_dir` / `runtime_browse_server_directory` in this build; a missing
-// command renders as the picker's error state and Save stays disabled.
+// and confirmation. The listing transport is `src/store/remote-browse-bridge.ts`: SSH is
+// backed by `ssh_browse_dir`; a paired runtime server still has no browse RPC, and that
+// missing transport renders as the picker's error state so Save stays disabled instead of
+// selecting a path it never listed.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LoaderCircle, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'

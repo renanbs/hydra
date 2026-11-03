@@ -1,13 +1,13 @@
-// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: components/sidebar/ssh-host-remove-workspaces.ts
-//
 // Clears the workspaces on an SSH host that is being removed, before the target itself.
 //
-// `forget-local` is fully backed by `ssh_forget_workspace`: Orca's records go, remote files
-// stay. `delete-remote` needs a connected host and a remote worktree deletion path, which
-// Hydra has no backend for (`delete_worktree` is local-only and no SSH execution command
-// exists) — it fails loudly so the dialog keeps the host instead of reporting a half-removal.
+// `forget-local` is fully backed by `ssh_forget_workspace`: Hydra's records go,
+// remote files stay. `delete-remote` runs `ssh_remote_delete_worktree` on the
+// host (git worktree remove + prune, force-only directory deletion) for every
+// workspace, then drops the local rows. A workspace that fails keeps the host:
+// a partially deleted remote host is worse than a kept one.
 import { invoke } from '@tauri-apps/api/core'
+import { deleteSshWorktree } from '@/store/ssh-remote-bridge'
+import { removeCatalogRepo } from '@/lib/catalog-client'
 import type { SshHostRemoveResolution } from './ssh-host-remove-resolution'
 
 export type ClearSshHostWorkspacesResult = {
@@ -15,13 +15,8 @@ export type ClearSshHostWorkspacesResult = {
   failedIds: string[]
   /** First failure message, for the dialog to explain why the host was kept. */
   error: string | null
-}
-
-export class SshRemoteDeletionUnavailableError extends Error {
-  constructor() {
-    super('Remote worktree deletion needs an SSH execution backend that this build does not have.')
-    this.name = 'SshRemoteDeletionUnavailableError'
-  }
+  /** Branches the host kept because a worktree removal never deletes them. */
+  preservedBranches: string[]
 }
 
 type WorkspaceRow = { id: string; path: string; repoPath: string }
@@ -33,9 +28,11 @@ export async function clearSshHostWorkspaces(args: {
   mode: 'delete-remote' | 'forget-local'
 }): Promise<ClearSshHostWorkspacesResult> {
   const failedIds: string[] = []
+  const preservedBranches: string[] = []
   let error: string | null = null
   const worktreesById = new Map(args.worktrees.map((row) => [row.id, row]))
   const reposById = new Map(args.repos.map((row) => [row.id, row]))
+  const connectionId = args.resolution.targetId
 
   for (const worktreeId of args.resolution.workspaceWorktreeIds) {
     const row = worktreesById.get(worktreeId)
@@ -45,20 +42,42 @@ export async function clearSshHostWorkspaces(args: {
       continue
     }
     try {
-      if (args.mode === 'forget-local') {
+      if (args.mode === 'delete-remote') {
+        if (!row.repoPath) {
+          throw new Error(`Workspace ${worktreeId} has no owning repository on the host.`)
+        }
+        // Why force: the user opted into "Also delete these workspaces", and the
+        // local delete path treats that as the Force Delete confirmation.
+        const outcome = await deleteSshWorktree({
+          connectionId,
+          repoPath: row.repoPath,
+          worktreePath: row.path,
+          force: true
+        })
+        for (const branch of outcome.preservedBranches) {
+          preservedBranches.push(branch.branchName)
+        }
         await invoke('ssh_forget_workspace', {
-          connectionId: args.resolution.targetId,
+          connectionId,
           worktreePath: row.path
         })
       } else {
-        // Why: fail before mutating anything — a partially deleted remote host is worse
-        // than a kept one, and this build has no remote git backend.
-        throw new SshRemoteDeletionUnavailableError()
+        await invoke('ssh_forget_workspace', {
+          connectionId,
+          worktreePath: row.path
+        })
       }
     } catch (err) {
       failedIds.push(worktreeId)
       error ??= err instanceof Error ? err.message : String(err)
     }
+  }
+
+  // Why abort before the catalog writes: the dialog keeps the host whenever a
+  // workspace failed, so dropping repo rows now would leave the kept host with
+  // no rows to retry from.
+  if (failedIds.length > 0) {
+    return { failedIds, error, preservedBranches }
   }
 
   for (const repoId of args.resolution.hostRepoIds) {
@@ -69,14 +88,14 @@ export async function clearSshHostWorkspaces(args: {
       continue
     }
     try {
-      // Why: catalog removal only drops Orca's registration; the checkout (local or
-      // remote) is untouched, which is exactly what a host removal promises.
-      await invoke('catalog_remove_repo', { path: repo.path })
+      // Why: catalog removal only drops Hydra's registration; the checkout (local
+      // or remote) is untouched by the row deletion itself.
+      await removeCatalogRepo(repo.path, connectionId)
     } catch (err) {
       failedIds.push(repoId)
       error ??= err instanceof Error ? err.message : String(err)
     }
   }
 
-  return { failedIds, error }
+  return { failedIds, error, preservedBranches }
 }

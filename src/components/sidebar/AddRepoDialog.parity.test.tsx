@@ -143,10 +143,15 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clone Project" }));
 
     await waitFor(() =>
-      expect(invokeMock).toHaveBeenCalledWith("clone_project", {
-        url: "https://github.com/acme/widgets.git",
-        parentDir: "/work"
-      })
+      expect(invokeMock).toHaveBeenCalledWith(
+        "clone_project",
+        expect.objectContaining({
+          url: "https://github.com/acme/widgets.git",
+          parentDir: "/work",
+          // The cancel handle is generated per attempt (D02a-001).
+          cloneId: expect.stringMatching(/^clone-\d+-/)
+        })
+      )
     );
     await waitFor(() =>
       expect(onProjectAdded).toHaveBeenCalledWith("/work/widgets", "project")
@@ -257,5 +262,180 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
       )
     );
     await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/a", "project"));
+  });
+});
+
+describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
+  function useSshHost(): void {
+    useAppStore.setState({
+      settings: { ...DEFAULT_HYDRA_SETTINGS, workspace_dir: "/work/workspaces" },
+      sshTargetLabels: new Map([["srv", "build-box"]]),
+      sshConnectionStates: new Map([["srv", { status: "connected" }]]),
+      runtimeEnvironments: [],
+      runtimeStatusByEnvironmentId: new Map()
+    });
+  }
+
+  async function selectSshHost(): Promise<void> {
+    fireEvent.click(screen.getByRole("button", { name: /local linux/i }));
+    fireEvent.click(await screen.findByRole("option", { name: /build-box/i }));
+  }
+
+  it("clones on the host and registers the remote project row with its host stamps", async () => {
+    useSshHost();
+    invokeMock.mockImplementation((command: string) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "ssh_remote_clone") {
+        return Promise.resolve({ path: "/srv/code/widgets" });
+      }
+      if (command === "catalog_add_remote_repo") {
+        return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] });
+      }
+      return Promise.resolve(undefined);
+    });
+    const { onProjectAdded } = openDialog();
+    await selectSshHost();
+    fireEvent.click(screen.getByText("Clone from URL"));
+    fireEvent.change(screen.getByPlaceholderText(/https:\/\/github.com/), {
+      target: { value: "https://github.com/acme/widgets.git" }
+    });
+    fireEvent.change(screen.getByLabelText("Destination Directory"), {
+      target: { value: "/srv/code" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Clone Project" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("ssh_remote_clone", {
+        connectionId: "srv",
+        url: "https://github.com/acme/widgets.git",
+        destination: "/srv/code",
+        name: null
+      })
+    );
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("catalog_add_remote_repo", {
+        path: "/srv/code/widgets",
+        connectionId: "srv",
+        executionHostId: "ssh:srv",
+        kind: "git",
+        displayName: null
+      })
+    );
+    await waitFor(() =>
+      expect(onProjectAdded).toHaveBeenCalledWith("/srv/code/widgets", "project")
+    );
+  });
+
+  it("browses the host to fill the clone destination (D02b-022)", async () => {
+    useSshHost();
+    invokeMock.mockImplementation((command: string) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "ssh_browse_dir") {
+        return Promise.resolve({
+          resolvedPath: "/srv",
+          entries: [{ name: "code", path: "/srv/code", kind: "dir" }]
+        });
+      }
+      return Promise.resolve(undefined);
+    });
+    openDialog();
+    await selectSshHost();
+    fireEvent.click(screen.getByText("Clone from URL"));
+    fireEvent.click(screen.getByRole("button", { name: "Pick a host folder" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("ssh_browse_dir", {
+        connectionId: "srv",
+        path: "~"
+      })
+    );
+    expect(await screen.findByText(/Clone destination on build-box/)).toBeInTheDocument();
+    // Double-click opens + selects the folder in one gesture (Orca behavior).
+    fireEvent.doubleClick(await screen.findByRole("button", { name: /code/ }));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Destination Directory")).toHaveValue("/srv/code")
+    );
+  });
+
+  it("creates the project on the host and registers it", async () => {
+    useSshHost();
+    invokeMock.mockImplementation((command: string) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "ssh_remote_create_project") {
+        return Promise.resolve({ path: "/srv/projects/demo" });
+      }
+      if (command === "catalog_add_remote_repo") {
+        return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] });
+      }
+      return Promise.resolve(undefined);
+    });
+    const { onProjectAdded } = openDialog();
+    await selectSshHost();
+    fireEvent.click(screen.getByText("Create new project"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "demo" } });
+    fireEvent.change(screen.getByLabelText("Host parent folder"), {
+      target: { value: "/srv/projects" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create Project" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("ssh_remote_create_project", {
+        connectionId: "srv",
+        path: "/srv/projects",
+        name: "demo",
+        initGit: true
+      })
+    );
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith(
+        "catalog_add_remote_repo",
+        expect.objectContaining({ path: "/srv/projects/demo", connectionId: "srv" })
+      )
+    );
+    await waitFor(() =>
+      expect(onProjectAdded).toHaveBeenCalledWith("/srv/projects/demo", "project")
+    );
+  });
+
+  it("cancels a running local clone through clone_abort (D02a-001)", async () => {
+    invokeMock.mockImplementation((command: string) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "clone_project") {
+        // Never settles: the cancel path must not wait for the clone promise.
+        return new Promise(() => {});
+      }
+      if (command === "clone_abort") {
+        return Promise.resolve({ cloneId: "x", found: true, cancelled: true });
+      }
+      return Promise.resolve(undefined);
+    });
+    openDialog();
+    await waitFor(() => expect(invokeMock).toHaveBeenCalledWith("check_preflight_tools_cmd"));
+    fireEvent.click(screen.getByText("Clone from URL"));
+    fireEvent.change(screen.getByPlaceholderText(/https:\/\/github.com/), {
+      target: { value: "https://github.com/acme/widgets.git" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Clone Project" }));
+
+    const cloneCall = await waitFor(() => {
+      const call = invokeMock.mock.calls.find(([command]) => command === "clone_project");
+      expect(call).toBeTruthy();
+      return call as [string, { cloneId: string }];
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel clone" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("clone_abort", {
+        cloneId: cloneCall[1].cloneId
+      })
+    );
   });
 });

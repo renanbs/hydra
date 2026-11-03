@@ -1,11 +1,13 @@
 // Remote directory listings for the folder picker.
 //
-// BLOCKED on the backend: `src-tauri/src` exposes no `ssh_browse_dir` (or runtime directory
-// browse) command, so both transports reject with an explicit typed error. The picker already
-// renders that as its error state, which keeps Save disabled instead of selecting a path it
-// never listed. When the command lands, only this module changes.
+// SSH is backed by `ssh_browse_dir` (`src-tauri/src/ssh_remote.rs`), which lists
+// one level through the host's OpenSSH client and resolves `~`. A paired runtime
+// server has no directory RPC yet, so that transport still rejects with an
+// explicit typed error: the picker renders it as its error state and Save stays
+// disabled instead of selecting a path it never listed.
 import { invoke } from '@tauri-apps/api/core'
 import type { FilesystemPathFlavor } from '../shared/filesystem-entry-types'
+import { browseSshDirectory as browseRemoteSshDirectory } from './ssh-remote-bridge'
 
 export type RemoteBrowseEntry = {
   name: string
@@ -25,39 +27,32 @@ export class RemoteBrowseUnavailableError extends Error {
   }
 }
 
-const SSH_BROWSE_UNAVAILABLE =
-  'Browsing a remote folder needs `ssh_browse_dir`, which this build does not provide.'
+const RUNTIME_BROWSE_UNAVAILABLE =
+  'Browsing a paired server folder needs `runtime_browse_server_directory`, which this build does not provide.'
+
+type RawRuntimeEntry = { name?: unknown; isDirectory?: unknown }
+type RawRuntimeBrowse = { resolvedPath?: unknown; entries?: unknown }
 
 function normalizeEntry(value: unknown): RemoteBrowseEntry | null {
-  if (!value || typeof value !== 'object') {
-    return null
-  }
-  if (!('name' in value) || typeof value.name !== 'string' || value.name === '') {
-    return null
-  }
-  if (!('isDirectory' in value) || typeof value.isDirectory !== 'boolean') {
-    return null
-  }
-  return { name: value.name, isDirectory: value.isDirectory }
+  const entry = value as RawRuntimeEntry | null | undefined
+  if (!entry || typeof entry !== 'object') return null
+  if (typeof entry.name !== 'string' || entry.name === '') return null
+  if (typeof entry.isDirectory !== 'boolean') return null
+  return { name: entry.name, isDirectory: entry.isDirectory }
 }
 
 /** IPC payloads are external data: validate the listing before the picker indexes it. */
-function normalizeBrowseResult(value: unknown): RemoteBrowseResult {
-  if (!value || typeof value !== 'object') {
+function normalizeRuntimeBrowseResult(value: unknown): RemoteBrowseResult {
+  const raw = value as RawRuntimeBrowse | null
+  if (!raw || typeof raw.resolvedPath !== 'string' || !Array.isArray(raw.entries)) {
     throw new Error('Remote directory listing returned no data.')
   }
-  const resolvedPath = 'resolvedPath' in value ? value.resolvedPath : undefined
-  const entries = 'entries' in value ? value.entries : undefined
-  const pathFlavor = 'pathFlavor' in value ? value.pathFlavor : undefined
-  if (typeof resolvedPath !== 'string' || !Array.isArray(entries)) {
-    throw new Error('Remote directory listing is malformed.')
-  }
   return {
-    resolvedPath,
-    entries: entries
+    resolvedPath: raw.resolvedPath,
+    entries: raw.entries
       .map(normalizeEntry)
       .filter((entry): entry is RemoteBrowseEntry => entry !== null),
-    pathFlavor: pathFlavor === 'win32' ? 'win32' : 'posix'
+    pathFlavor: 'posix'
   }
 }
 
@@ -71,32 +66,31 @@ export async function browseSshDirectory(
   targetId: string,
   dirPath: string
 ): Promise<RemoteBrowseResult> {
-  try {
-    return normalizeBrowseResult(
-      await invoke('ssh_browse_dir', { targetId, dirPath })
-    )
-  } catch (error) {
-    if (isUnknownCommandError(error)) {
-      throw new RemoteBrowseUnavailableError(SSH_BROWSE_UNAVAILABLE)
-    }
-    throw error
+  const listing = await browseRemoteSshDirectory(targetId, dirPath)
+  return {
+    resolvedPath: listing.resolvedPath,
+    entries: listing.entries.map((entry) => ({
+      name: entry.name,
+      isDirectory: entry.kind === 'dir'
+    })),
+    // The remote listing runs through a POSIX `sh` script, so separators and
+    // breadcrumbs use POSIX semantics even when the host is Windows + OpenSSH.
+    pathFlavor: 'posix'
   }
 }
 
-/** Listed children of `dirPath` on a paired runtime host. Same missing-backend guard. */
+/** Listed children of `dirPath` on a paired runtime host. */
 export async function browseRuntimeServerDirectory(
   runtimeEnvironmentId: string,
   dirPath: string
 ): Promise<RemoteBrowseResult> {
   try {
-    return normalizeBrowseResult(
+    return normalizeRuntimeBrowseResult(
       await invoke('runtime_browse_server_directory', { runtimeEnvironmentId, dirPath })
     )
   } catch (error) {
     if (isUnknownCommandError(error)) {
-      throw new RemoteBrowseUnavailableError(
-        'Browsing a paired server folder needs `runtime_browse_server_directory`, which this build does not provide.'
-      )
+      throw new RemoteBrowseUnavailableError(RUNTIME_BROWSE_UNAVAILABLE)
     }
     throw error
   }
