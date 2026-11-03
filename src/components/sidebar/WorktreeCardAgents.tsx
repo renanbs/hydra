@@ -3,9 +3,13 @@
 // Inline agent list rendered inside WorktreeCard showing active tools and subagent trees.
 
 import React, { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { isShellProcess, normalizeAgentId } from "../workbench/tab-agent";
 import { WorktreeCompactAgentsList } from "./worktree-card-compact-agents";
 import { useWorktreeAgentRows } from "./use-worktree-agent-rows";
+import { useAppStore } from "../../store";
+import { selectAcknowledgedAgentTimes } from "./worktree-card-agent-ack-inputs";
+import { useFocusedAgentPaneKey } from "./focused-agent-row-highlight";
 import type { AgentRow } from "./worktree-card-agent-summary";
 import type { WorktreeAgentRowWithLineage } from "./worktree-agent-row-types";
 import type {
@@ -173,6 +177,20 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   const rows = useWorktreeAgentRows(worktreePath, true);
 
   const agentRows = useMemo(() => toAgentRows(rows, sessions), [rows, sessions]);
+  const focusedAgentPaneKey = useFocusedAgentPaneKey(worktreePath);
+  // Why: acknowledgement writes are app-global; project only this card's rows so
+  // unrelated worktree activity does not rerender every agent body.
+  const acknowledgedAgentTimes = useAppStore(
+    useShallow((s) => selectAcknowledgedAgentTimes(s, agentRows))
+  );
+  const unvisitedByPaneKey = useMemo(() => {
+    const out: Record<string, boolean> = {};
+    for (const [index, agent] of agentRows.entries()) {
+      const ackAt = acknowledgedAgentTimes[index] ?? 0;
+      out[agent.paneKey] = ackAt < agent.entry.stateStartedAt;
+    }
+    return out;
+  }, [agentRows, acknowledgedAgentTimes]);
 
   if (agentRows.length === 0) {
     return null;
@@ -184,6 +202,8 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
       agents={agentRows}
       onSelectSession={onSelectSession}
       activeSessionId={activeSessionId}
+      focusedAgentPaneKey={focusedAgentPaneKey}
+      unvisitedByPaneKey={unvisitedByPaneKey}
       className={className}
     />
   );

@@ -126,7 +126,7 @@ import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
 import { PendingWorktreeCreationPanel } from "./components/worktree-creation/PendingWorktreeCreationPanel";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
-import { canHydrateDeleteTargetLocally } from "./components/sidebar/worktree-delete-dispatch";
+import { useDeleteWorktreeStatusHydration } from "./components/sidebar/use-delete-worktree-status-hydration";
 import { installOrcaApiShim } from "./lib/orca-api-shim";
 import { selectDeletableWorktrees } from "./components/sidebar/worktree-delete-selection";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
@@ -177,7 +177,6 @@ import {
 } from "./components/sidebar/worktree-delete-toasts";
 import {
   getDeleteWorktreeDirtyChangeCounts,
-  orderDeleteWorktreeStatusHydrationTargets,
 } from "./components/sidebar/delete-worktree-dirty-change-counts";
 import { prepareActiveWorktreeFocusAfterDelete } from "./components/sidebar/active-worktree-focus-after-delete";
 import { resolveSshWorkspaceForget, type SshWorkspaceForgetResolution } from "./components/sidebar/ssh-workspace-forget-resolution";
@@ -715,7 +714,6 @@ export default function App() {
       path: folder.folderPath ?? folder.path ?? "",
     });
   }, []);
-  const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
   // Orca parity: the store's host-aware catalog is the one source that can name a
   // repo's execution host on the render path (`WorktreeList` reads the same slice).
   const storeRepos = useAppStore((s) => s.repos);
@@ -743,6 +741,23 @@ export default function App() {
     }
     return rows;
   }, [storeRepos, worktreesByProject]);
+  // Orca parity (useDeleteWorktreeStatusHydration): the confirmation dialog's
+  // dirty-change counts hydrate in dependency order while it is open. The hook
+  // owns the lifetime, so a cancelled probe cannot write onto the next dialog.
+  const deleteHydrationTargets = useMemo(() => {
+    const identities = deleteWorktreeModal?.deleteTargets ?? [];
+    return (deleteWorktreeModal?.worktrees ?? []).map((wt, index) => ({
+      id: identities[index]?.id ?? wt.path,
+      path: wt.path,
+      hostId: identities[index]?.hostId ?? undefined,
+    }));
+  }, [deleteWorktreeModal]);
+  const dirtyChangeCountsByWorktreeId = useDeleteWorktreeStatusHydration({
+    isOpen: deleteWorktreeModal != null,
+    deleteTargets: deleteHydrationTargets,
+    visibleTargets: deleteLiveTargets,
+    activeWorktreeId: activeWorktreePathRef.current,
+  });
   // Orca `showWorkspaceListChangedToast`: the confirmed row changed or vanished
   // between opening and confirming, so the delete stops instead of guessing.
   const showStaleDeleteNotice = useCallback(() => {
@@ -2556,16 +2571,37 @@ export default function App() {
       );
       const failureByPath = new Map<string, string>();
       const dirtyByPath = dirtyChangeCountsByWorktreeId;
+      // Why: Hydra keeps `activeWorktreePath` until the next explicit selection,
+      // so a successful delete must clear it before the successor hand-off runs.
+      // `onDeleted` fires before the runner commits focus, which makes this set
+      // the authoritative "the viewed row is gone" signal.
+      const deletedPaths = new Set<string>();
       const commitFocus = prepareActiveWorktreeFocusAfterDelete({
         targetPath: activeWorktreePathRef.current ?? "",
         activeWorktreePath: activeWorktreePathRef.current,
-        getActiveWorktreePath: () => activeWorktreePathRef.current,
+        getActiveWorktreePath: () => {
+          const current = activeWorktreePathRef.current;
+          if (!current) return null;
+          return deletedPaths.has(current) ? null : current;
+        },
         pickNextPath: (deletedPath) => {
           for (const proj of projectsRef.current) {
-            const rows = worktreesByProject[proj.path] ?? [];
-            if (!rows.some((row) => row.path === deletedPath)) continue;
-            const sibling = rows.find((row) => row.path !== deletedPath);
-            return sibling?.path ?? (proj.path !== deletedPath ? proj.path : null);
+            const rows = (worktreesByProject[proj.path] ?? []).filter(
+              (row) => row.path !== deletedPath && !deletedPaths.has(row.path)
+            );
+            if (rows.length === 0) {
+              if (proj.path !== deletedPath) return proj.path;
+              continue;
+            }
+            // Orca preference: another non-primary workspace, most recently
+            // visited first; the project's primary checkout is the fallback.
+            const isMainRow = (row: (typeof rows)[number]): boolean =>
+              Boolean(row.is_main ?? row.isMainWorktree ?? (row.path === proj.path))
+            const others = rows.filter((row) => !isMainRow(row))
+            if (others.length > 0) {
+              return others[0].path;
+            }
+            return rows.find((row) => isMainRow(row))?.path ?? rows[0].path;
           }
           return null;
         },
@@ -2670,6 +2706,7 @@ export default function App() {
         },
         onDeleted: (rows) => {
           const repoPaths = rows.map((row) => row.repoPath).filter(Boolean);
+          for (const row of rows) deletedPaths.add(row.path);
           // A deleted workspace must not leave a durable sleep marker behind: a
           // later workspace reusing the path would boot asleep.
           for (const row of rows) forgetWorktreeSleepIntent(row.path);
@@ -3042,50 +3079,6 @@ export default function App() {
     worktreesByProject,
   ]);
 
-  // Orca parity (useDeleteWorktreeStatusHydration): hydrate dirty-change counts
-  // for the dialog targets when it opens, active row first, then visible rows,
-  // then off-screen descendants.
-  useEffect(() => {
-    if (!deleteWorktreeModal) return;
-    // Why cancelled: a new modal (or dismissal) must not let a stale probe write a
-    // count onto the next dialog's targets.
-    let cancelled = false;
-    const identities = deleteWorktreeModal.deleteTargets ?? [];
-    const hydrationTargets = deleteWorktreeModal.worktrees.map((wt, index) => ({
-      id: identities[index]?.id ?? wt.path,
-      path: wt.path,
-      hostId: identities[index]?.hostId,
-    }));
-    const orderedTargets = orderDeleteWorktreeStatusHydrationTargets({
-      targets: hydrationTargets,
-      visibleTargets: deleteLiveTargets,
-      activeWorktreeId: activeWorktreePathRef.current,
-    });
-    for (const target of orderedTargets) {
-      // Only the local owner can be probed from this process; a remote target shows
-      // an unknown count instead of a wrong local one.
-      if (!canHydrateDeleteTargetLocally(target.hostId)) {
-        setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [target.path]: null }));
-        continue;
-      }
-      invoke<{ unstaged_count: number; untracked_count: number; staged_count: number }>(
-        "get_detailed_git_status_cmd",
-        { repoPath: target.path }
-      )
-        .then((res) => {
-          if (cancelled) return;
-          const dirty = (res?.unstaged_count ?? 0) + (res?.untracked_count ?? 0) + (res?.staged_count ?? 0);
-          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [target.path]: dirty }));
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [target.path]: null }));
-        });
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [deleteLiveTargets, deleteWorktreeModal]);
 
   const deleteDialogDirtyCounts = useMemo(() => {
     if (!deleteWorktreeModal) return {};

@@ -24,6 +24,8 @@ export interface CompactAgentRowProps {
   now: number
   onActivate?: (id: string) => void
   isFocusedPane?: boolean
+  /** Bold the row until the user visits its tab (Orca `isUnvisited`). */
+  isUnvisited?: boolean
   childAgentCount?: number
   childAgentsExpanded?: boolean
   onToggleChildAgents?: () => void
@@ -55,6 +57,7 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   now,
   onActivate,
   isFocusedPane = false,
+  isUnvisited = false,
   childAgentCount = 0,
   childAgentsExpanded = false,
   onToggleChildAgents,
@@ -139,6 +142,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
           ? 'bg-worktree-sidebar-accent text-worktree-sidebar-foreground'
           : 'text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/40 hover:text-worktree-sidebar-foreground'
       )}
+      data-focused-agent-pane={isFocusedPane ? 'true' : undefined}
+      data-unvisited-agent-row={isUnvisited ? 'true' : undefined}
     >
       {hasChildDisclosure ? (
         <button
@@ -169,7 +174,14 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
       <span className="min-w-0 flex-1 truncate" title={rowTitle}>
         {/* Why: the selected-row fill is strong enough to wash out the dimmed
             prompt/secondary text, so lift both toward full foreground when focused. */}
-        <span className={isFocusedPane ? 'text-foreground' : 'text-muted-foreground/90'}>
+        <span
+          className={cn(
+            isFocusedPane ? 'text-foreground' : 'text-muted-foreground/90',
+            // Why bold: a fresh completion is the signal the user has not read yet;
+            // visiting the tab auto-acks and mutes the row.
+            isUnvisited && !isFocusedPane && 'font-semibold text-foreground/90'
+          )}
+        >
           {leadingText}
         </span>
         {trailingText && (

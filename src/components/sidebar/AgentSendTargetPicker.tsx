@@ -3,23 +3,46 @@
 // explain why; sending/error states stay inside this popover.
 import React, { useMemo } from "react";
 import { Send, X } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useAppStore } from "@/store";
 import { deriveRunningAgentSendTargets } from "@/lib/running-agent-targets";
 import { formatAgentTypeLabel } from "@/lib/agent-status";
+import {
+  EMPTY_SEND_TARGET_CONTROL_INPUTS,
+  EMPTY_SEND_TARGET_INPUTS,
+  selectSendTargetControlInputs,
+  selectSendTargetInputs,
+} from "./worktree-card-send-target-inputs";
 
 export function AgentSendTargetPicker(): React.JSX.Element | null {
   const mode = useAppStore((s) => s.agentSendPopoverTargetMode);
   const closeMode = useAppStore((s) => s.closeAgentSendPopoverTargetMode);
   const sendToTarget = useAppStore((s) => s.sendPromptToSidebarAgentTarget);
-  const state = useAppStore.getState;
+  const targetWorktreeId = mode?.worktreeId ?? null;
+
+  // Why the narrow selector: an inactive picker must not re-render on every
+  // pane-title / agent-status write app-wide, and the active one needs those
+  // maps to stay live while it is open.
+  const sendTargetInputs = useAppStore(
+    useShallow((s) =>
+      targetWorktreeId ? selectSendTargetInputs(s, targetWorktreeId) : EMPTY_SEND_TARGET_INPUTS
+    )
+  );
+  const { agentStatusEpoch } = useAppStore(
+    useShallow((s) =>
+      targetWorktreeId
+        ? selectSendTargetControlInputs(s, targetWorktreeId)
+        : EMPTY_SEND_TARGET_CONTROL_INPUTS
+    )
+  );
 
   const targets = useMemo(() => {
-    if (!mode) return [];
+    void agentStatusEpoch;
+    if (!targetWorktreeId) return [];
     // Re-derive instead of trusting a snapshot: eligibility can drop while the
     // popover is open (the pane exits, the agent dies).
-    return deriveRunningAgentSendTargets(state(), mode.worktreeId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode?.instanceId, mode?.worktreeId, state]);
+    return deriveRunningAgentSendTargets(sendTargetInputs, targetWorktreeId);
+  }, [agentStatusEpoch, sendTargetInputs, targetWorktreeId]);
 
   if (!mode) return null;
 

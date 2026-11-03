@@ -188,12 +188,18 @@ export function WorktreeCompactAgentsList({
   agents,
   onSelectSession,
   activeSessionId,
+  focusedAgentPaneKey = null,
+  unvisitedByPaneKey,
   className,
 }: {
   worktreePath: string
   agents: AgentRow[]
   onSelectSession: (id: string) => void
   activeSessionId?: string | null
+  /** Pane key of the terminal pane focused inside this worktree (Orca `useFocusedAgentPaneKey`). */
+  focusedAgentPaneKey?: string | null
+  /** Per-row unvisited flags (Orca `unvisitedByPaneKey`), projected from ack timestamps. */
+  unvisitedByPaneKey?: Readonly<Record<string, boolean>>
   className?: string
 }): React.JSX.Element | null {
   const rows = useMemo(() => agents, [agents])
@@ -278,7 +284,11 @@ export function WorktreeCompactAgentsList({
           agent={agent}
           now={now}
           onActivate={activate}
-          isFocusedPane={Boolean(agent.sessionId) && agent.sessionId === activeSessionId}
+          isFocusedPane={
+            agent.paneKey === focusedAgentPaneKey ||
+            (Boolean(agent.sessionId) && agent.sessionId === activeSessionId)
+          }
+          isUnvisited={unvisitedByPaneKey?.[agent.paneKey] ?? false}
           childAgentCount={hasChildAgents ? childAgents.length : undefined}
           childAgentsExpanded={isExpanded}
           onToggleChildAgents={hasChildAgents ? () => toggleLineageParent(agent.paneKey) : undefined}

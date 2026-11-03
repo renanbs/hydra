@@ -16,6 +16,11 @@ import { persistWorktreeStatus } from "@/lib/worktree-status-persistence";
 import type { WorkspaceStatus } from "../shared/worktree/types";
 import type { PendingWorktreeCreation } from "@/lib/pending-worktree-creation";
 import { useAppStore } from "@/store";
+import {
+  getSuggestedCreatureName,
+  shouldApplySuggestedName,
+} from "./sidebar/worktree-name-suggestions";
+import { useRetiredWorktreeNames } from "@/hooks/useRetiredWorktreeNames";
 
 interface NewWorkspaceComposerProps {
   isOpen: boolean;
@@ -91,6 +96,31 @@ export function NewWorkspaceComposer({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   });
+
+  const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
+  const effectiveProjectForSuggestion =
+    activeProject || (projects.length > 0 ? projects[0] : null);
+  const retiredNames = useRetiredWorktreeNames(
+    effectiveProjectForSuggestion?.id,
+    storeWorktreesByRepo
+  );
+  // Why the previous suggestion is a ref, not state: the effect must overwrite
+  // the field only while it still holds the suggester's own value; a typed name
+  // is the user's and survives project switches.
+  const previousSuggestionRef = useRef("");
+  const worktreesRef = useRef(storeWorktreesByRepo);
+  worktreesRef.current = storeWorktreesByRepo;
+  useEffect(() => {
+    if (!isOpen || !effectiveProjectForSuggestion) return;
+    const next = getSuggestedCreatureName(worktreesRef.current, undefined, retiredNames);
+    setName((current) => {
+      if (!shouldApplySuggestedName(current, previousSuggestionRef.current)) {
+        return current;
+      }
+      previousSuggestionRef.current = next;
+      return next;
+    });
+  }, [isOpen, effectiveProjectForSuggestion?.id, retiredNames]);
 
   if (!isOpen) return null;
 
