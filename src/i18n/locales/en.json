@@ -6421,6 +6421,7 @@
         "guide": {
           "SetupGuideModal": {
             "3598a3ca0c": "Finish the core workflows that make Orca useful for parallel agent work.",
+            "6bb8a6c0c8": "Setup checklist",
             "48a9e5ef2d": "Getting started",
             "28cf59fcb4": "This will hide the checklist from the sidebar",
             "f3b5ffb2a6": "Hide checklist from sidebar"

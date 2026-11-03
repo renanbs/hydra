@@ -1,6 +1,7 @@
 import type { HydraSettings } from '../../shared/settings-types'
 import type { FeatureInteractionState } from '../../shared/feature-interactions'
 import type { Repo } from '../../shared/repo-types'
+import type { Worktree } from '../../shared/worktree/types'
 import { useAppStore } from '../../store'
 
 /**
@@ -16,10 +17,21 @@ export type SidebarUiState = {
   settings: HydraSettings | null
   repos: Repo[]
   activeRepoId: string | null
+  worktreesByRepo: Record<string, Worktree[]>
   persistedUIReady: boolean
+  activeModal: string
+  modalData: Record<string, unknown>
+  openModal: (modal: string, data?: Record<string, unknown>) => void
+  closeModal: () => void
   featureInteractions: FeatureInteractionState
   setupGuideSidebarDismissed: boolean
   setSetupGuideSidebarDismissed: (dismissed: boolean) => void
+  setupGuideBrowserMilestoneMigrated: boolean
+  setupGuideBrowserMilestoneLegacyComplete: boolean
+  markSetupGuideBrowserMilestoneMigrated: (legacyComplete: boolean) => void
+  /** Whether the in-window Agent Dashboard companion drawer is open. */
+  agentDashboardDrawerOpen: boolean
+  setAgentDashboardDrawerOpen: (open: boolean) => void
   openTaskPage: (data?: Record<string, unknown>) => void
   openAutomationsPage: () => void
   openMobilePage: () => void

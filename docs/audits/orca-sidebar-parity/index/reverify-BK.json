@@ -2495,6 +2495,86 @@
    ],
    "missing_behaviors": [],
    "note": "Pure metadata payload wired into save path."
+  },
+  {
+   "id": "D01-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Startup-gated scan with repo-count policy and runtime-oscillation guard."
+  },
+  {
+   "id": "D01-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Primary shortcut label + tour target + composer handoff."
+  },
+  {
+   "id": "D01-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Setup guide progress, ring, sidebar entry and modal."
+  },
+  {
+   "id": "D01-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Help menu Milestones/Onboarding wired to setup guide."
+  },
+  {
+   "id": "D01-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Agent dashboard bucket counts and sidebar entry."
+  },
+  {
+   "id": "D01-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Dashboard drawer + Tauri popout route with fallback."
+  },
+  {
+   "id": "D01-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Dashboard host visibility and board exclusivity."
+  },
+  {
+   "id": "D01-039",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Real restart_app command + menu toast/error/disable."
   }
  ]
 }

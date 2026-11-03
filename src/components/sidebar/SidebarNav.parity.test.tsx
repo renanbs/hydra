@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppStore } from "@/store";
 import { formatShortcutKeyComboDetails } from "@/hooks/useShortcutLabel";
@@ -84,6 +85,29 @@ describe("SidebarNav view entries (D01-018/D01-021..D01-025)", () => {
     expect(screen.getByRole("button", { name: /Orca Mobile/ })).toBeInTheDocument();
   });
 
+  it("hides the Mobile entry when showMobileButton is off", () => {
+    renderNav({ showMobileButton: false });
+
+    expect(screen.queryByRole("button", { name: /Orca Mobile/ })).toBeNull();
+  });
+
+  it("hides Mobile through its context menu writer", async () => {
+    const { onUpdateSettings } = renderNav({ showMobileButton: true });
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: /Orca Mobile/ }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Hide from sidebar" }));
+
+    expect(onUpdateSettings).toHaveBeenCalledWith({ showMobileButton: false });
+  });
+
+  it("does not render the paired-device inline hide until a device list exists", () => {
+    renderNav({ showMobileButton: true });
+
+    // No device-listing IPC in Hydra, so the inline EyeOff stays absent; only
+    // the context-menu hide affordance is honest today.
+    expect(screen.queryByRole("button", { name: "Hide from sidebar" })).toBeNull();
+  });
+
   it("opens each configured page and marks it current", () => {
     renderNav({
       showArtifactsButton: true,
@@ -126,5 +150,56 @@ describe("SidebarNav view entries (D01-018/D01-021..D01-025)", () => {
 
     expect(onUpdateSettings).toHaveBeenCalledWith({ showAutomationsButton: false });
     expect(hideItem).toHaveTextContent("Hide from sidebar");
+  });
+});
+
+describe("SidebarNav onboarding checklist entry (D01-017)", () => {
+  function renderNavWithSettings(overrides: Partial<HydraSettings> = {}) {
+    return render(
+      <TooltipProvider>
+        <SidebarNav settings={settings(overrides)} onUpdateSettings={vi.fn()} />
+      </TooltipProvider>
+    );
+  }
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    act(() => {
+      useAppStore.setState({
+        persistedUIReady: false,
+        activeModal: "none",
+        modalData: {},
+        featureInteractions: {},
+        repos: [],
+        worktreesByRepo: {},
+        setupGuideSidebarDismissed: false,
+      });
+    });
+  });
+
+  afterEach(() => {
+    act(() => {
+      useAppStore.setState({
+        persistedUIReady: false,
+        activeModal: "none",
+        modalData: {},
+        setupGuideSidebarDismissed: false,
+      });
+    });
+  });
+
+  it("shows the entry only after hydration, before completion, and before an explicit hide", () => {
+    renderNavWithSettings();
+    expect(screen.queryByRole("button", { name: /Onboarding checklist/ })).toBeNull();
+
+    act(() => {
+      useAppStore.setState({ persistedUIReady: true });
+    });
+    expect(screen.getByRole("button", { name: /Onboarding checklist/ })).toBeInTheDocument();
+
+    act(() => {
+      useAppStore.setState({ setupGuideSidebarDismissed: true });
+    });
+    expect(screen.queryByRole("button", { name: /Onboarding checklist/ })).toBeNull();
   });
 });

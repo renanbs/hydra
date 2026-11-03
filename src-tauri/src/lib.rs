@@ -83,6 +83,17 @@ fn get_system_status() -> String {
 fn get_app_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
+
+/// Restarts the app through Tauri's supported restart path.
+///
+/// `request_restart` only flags the runtime and asks it to exit; the actual
+/// relaunch happens in the event loop, so this async handler returns to the
+/// renderer instead of blocking a worker until the process is replaced.
+#[tauri::command]
+async fn restart_app(app: AppHandle) {
+    app.request_restart();
+}
+
 /// Rosetta spike: receives the Orca sidebar's API ledger from the probe window.
 #[tauri::command]
 async fn rosetta_spike_log(entries: Vec<String>) {
@@ -93,11 +104,9 @@ async fn rosetta_spike_log(entries: Vec<String>) {
 
 #[tauri::command]
 async fn check_preflight_tools_cmd() -> PreflightStatus {
-    tokio::task::spawn_blocking(check_preflight_tools).await.unwrap_or(PreflightStatus {
-        git_installed: false,
-        gh_installed: false,
-        gh_authenticated: false,
-    })
+    tokio::task::spawn_blocking(check_preflight_tools)
+        .await
+        .unwrap_or_default()
 }
 
 #[tauri::command]
@@ -2060,6 +2069,7 @@ pub fn run() {
             rosetta_spike_log,
             get_system_status,
             get_app_version,
+            restart_app,
             get_repo_git_status,
             get_repo_git_status_for_path,
             get_detailed_git_status_cmd,

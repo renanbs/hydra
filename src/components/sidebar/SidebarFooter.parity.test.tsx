@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
+import { DEFAULT_HYDRA_SETTINGS, type HydraSettings } from "@/shared/settings-types";
 import { SidebarFooter } from "./SidebarFooter";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn().mockResolvedValue("1.2.3") }));
@@ -152,5 +153,109 @@ describe("SidebarFooter help menu (D01-035/D01-036)", () => {
     fireEvent.click(await screen.findByRole("menuitem", { name: "Send Feedback" }));
 
     expect(await screen.findByRole("dialog", { name: "Send Feedback" })).toBeInTheDocument();
+  });
+});
+
+type HelpMenuStoreProbe = {
+  activeModal: string;
+  modalData: Record<string, unknown>;
+};
+
+function readHelpMenuStore(): HelpMenuStoreProbe {
+  // Why the cast: the composed UI slice is typed `any` on this branch, so AppState
+  // does not name the modal fields at compile time.
+  return useAppStore.getState() as unknown as HelpMenuStoreProbe;
+}
+
+function helpMenuSettings(overrides: Partial<HydraSettings> = {}): HydraSettings {
+  return { ...DEFAULT_HYDRA_SETTINGS, ...overrides };
+}
+
+function resetHelpMenuStore(): void {
+  act(() => {
+    useAppStore.setState({
+      persistedUIReady: true,
+      activeModal: "none",
+      modalData: {},
+      featureInteractions: {},
+      repos: [],
+      worktreesByRepo: {},
+      setupGuideSidebarDismissed: false,
+    });
+  });
+}
+
+describe("SidebarFooter Help menu internals (D01-036)", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    resetHelpMenuStore();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+    resetHelpMenuStore();
+  });
+
+  it("keeps every help destination and adds Milestones with live progress", async () => {
+    renderFooter({ settings: helpMenuSettings({ notification_on_blocked: false }) });
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Help" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Keyboard Shortcuts" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Send Feedback" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /Milestones/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("0 of 8 setup steps complete")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Docs" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Changelog" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "GitHub" })).toBeInTheDocument();
+  });
+
+  it("hides Milestones once every core milestone is complete", async () => {
+    window.localStorage.setItem("orca.orchestration.enabled", "1");
+    act(() => {
+      useAppStore.setState({
+        featureInteractions: {
+          browser: { firstInteractedAt: 1, interactionCount: 1 },
+          "github-tasks": { firstInteractedAt: 2, interactionCount: 1 },
+        } as never,
+        repos: [
+          { id: "repo-1", kind: "git", hookSettings: { scripts: { setup: "pnpm install" } } },
+          { id: "repo-2", kind: "git" },
+        ] as never,
+        worktreesByRepo: {
+          "repo-1": [
+            { id: "repo-1::/repo", path: "/repo", isMainWorktree: true },
+            { id: "repo-1::/repo/feature", path: "/repo/feature", isMainWorktree: false },
+          ],
+        } as never,
+      });
+    });
+    renderFooter({
+      settings: helpMenuSettings({ default_tui_agent: "claude", notification_on_blocked: true }),
+    });
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Help" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Onboarding" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Milestones" })).toBeNull();
+  });
+
+  it("opens the shared setup-guide modal from Milestones and Onboarding", async () => {
+    renderFooter({ settings: helpMenuSettings() });
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Help" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /Milestones/ }));
+
+    expect(readHelpMenuStore().activeModal).toBe("setup-guide");
+    expect(readHelpMenuStore().modalData.telemetrySource).toBe("help_menu");
+
+    act(() => {
+      useAppStore.setState({ activeModal: "none", modalData: {} });
+    });
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Help" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Onboarding" }));
+
+    expect(readHelpMenuStore().activeModal).toBe("setup-guide");
+    expect(readHelpMenuStore().modalData.telemetrySource).toBe("help_menu");
   });
 });

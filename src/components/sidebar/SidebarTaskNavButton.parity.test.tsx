@@ -3,8 +3,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppStore } from "@/store";
 import { DEFAULT_HYDRA_SETTINGS, type HydraSettings } from "@/shared/settings-types";
 import type { Repo } from "@/shared/repo-types";
-import { SidebarTaskNavButton } from "./SidebarTaskNavButton";
+import type { PreflightToolsStatus } from "@/shared/preflight-tools-status";
+import {
+  resolveSidebarTaskProviderAvailability,
+  resolveVisibleSidebarTaskProviders,
+  SidebarTaskNavButton,
+} from "./SidebarTaskNavButton";
 import { getProviderRuntimeContextKey } from "@/lib/provider-runtime-context";
+
+const preflightStatusRef = vi.hoisted(() => ({
+  current: null as PreflightToolsStatus | null,
+}));
+
+vi.mock("@/hooks/usePreflightToolsStatus", () => ({
+  usePreflightToolsStatus: () => ({ status: preflightStatusRef.current, loading: false }),
+}));
+
+function preflightStatus(overrides: Partial<PreflightToolsStatus> = {}): PreflightToolsStatus {
+  return {
+    git_installed: true,
+    gh_installed: true,
+    gh_authenticated: true,
+    glab_installed: false,
+    glab_authenticated: false,
+    ...overrides,
+  };
+}
 
 const GIT_REPO = {
   id: "repo_a",
@@ -36,8 +60,9 @@ function renderButton(overrides: Partial<HydraSettings> = {}) {
   return { onUpdateSettings, ...utils };
 }
 
-describe("SidebarTaskNavButton (D01-018/D01-019)", () => {
+describe("SidebarTaskNavButton (D01-018/D01-019/D01-020)", () => {
   beforeEach(() => {
+    preflightStatusRef.current = null;
     useAppStore.setState({
       activeView: "terminal",
       repos: [FOLDER_REPO, GIT_REPO],
@@ -84,12 +109,41 @@ describe("SidebarTaskNavButton (D01-018/D01-019)", () => {
 
     expect(screen.getByRole("button", { name: "Open GitHub tasks" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Open Jira tasks" })).toBeInTheDocument();
-    // GitLab/Linear stay hidden: no preflight surface proves them available.
+    // GitLab/Linear stay hidden while no probe/connection proves them available.
     expect(screen.queryByRole("button", { name: "Open GitLab tasks" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Open Linear tasks" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Open Jira tasks" }));
     expect(useAppStore.getState().openTaskPage).toHaveBeenCalledWith({ taskSource: "jira" });
+  });
+
+  it("shows the GitLab shortcut only when the glab preflight probe reports it installed", () => {
+    renderButton();
+    expect(screen.queryByRole("button", { name: "Open GitLab tasks" })).toBeNull();
+
+    preflightStatusRef.current = preflightStatus({ glab_installed: true });
+    render(<SidebarTaskNavButton settings={settings()} />);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Open GitLab tasks" })[0]);
+    expect(useAppStore.getState().openTaskPage).toHaveBeenCalledWith({ taskSource: "gitlab" });
+  });
+
+  it("restores a GitLab default only after the glab probe confirms availability", () => {
+    const value = settings({ defaultTaskSource: "gitlab" });
+
+    expect(
+      resolveVisibleSidebarTaskProviders(
+        value,
+        resolveSidebarTaskProviderAvailability({ gitlabInstalled: false })
+      ).resolvedDefaultTaskSource
+    ).toBe("github");
+
+    const available = resolveVisibleSidebarTaskProviders(
+      value,
+      resolveSidebarTaskProviderAvailability({ gitlabInstalled: true })
+    );
+    expect(available.visibleTaskProviders).toContain("gitlab");
+    expect(available.resolvedDefaultTaskSource).toBe("gitlab");
   });
 
   it("shows the Linear shortcut only for the connected runtime context", () => {

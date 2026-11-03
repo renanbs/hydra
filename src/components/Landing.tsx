@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { ShortcutKeyCombo } from "./ShortcutKeyCombo";
+import type { PreflightToolsStatus } from "../shared/preflight-tools-status";
 import hydraLogo from "../assets/hydra-logo.svg";
 
 const HYDRA_GITHUB_URL = "https://github.com/renanbs/hydra";
@@ -22,12 +23,6 @@ interface PreflightIssue {
   fixLabel: string;
   fixUrl: string;
   dismissible?: boolean;
-}
-
-interface PreflightStatusResult {
-  git_installed: boolean;
-  gh_installed: boolean;
-  gh_authenticated: boolean;
 }
 
 function PreflightBanner({ issues }: { issues: PreflightIssue[] }) {
@@ -233,7 +228,7 @@ export function Landing({
 
   useEffect(() => {
     let cancelled = false;
-    invoke<PreflightStatusResult>("check_preflight_tools_cmd")
+    invoke<PreflightToolsStatus>("check_preflight_tools_cmd")
       .then((status) => {
         if (cancelled) return;
         const issues: PreflightIssue[] = [];
