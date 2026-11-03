@@ -8,6 +8,8 @@ import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
 import { ShortcutKeyCombo } from '../ShortcutKeyCombo'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import type { HydraSettings } from '@/shared/settings-types'
+import type { HydraProject, WorktreeSession } from './types'
+import { AgentDashboardSidebarEntry } from './AgentDashboardSidebarEntry'
 import { HideSidebarMenu } from './sidebar-nav-controls'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
 import { useMobileSidebarOnboardingBadge } from './mobile-sidebar-onboarding-badge'
@@ -35,16 +37,27 @@ export function shouldShowSkillsButton(
   return settings?.showSkillsButton === true
 }
 
+export function shouldShowAgentDashboardButton(
+  settings: Partial<HydraSettings> | null | undefined
+): boolean {
+  return settings?.experimentalAgentDashboardPopout === true
+}
+
 type SidebarNavProps = {
   onOpenWorktreePalette?: () => void
   settings: HydraSettings | null
   onUpdateSettings?: (patch: Partial<HydraSettings>) => void
+  /** Agent Dashboard entry data; the shell threads its live sessions/projects here. */
+  sessions?: readonly WorktreeSession[]
+  projects?: readonly HydraProject[]
 }
 
 export function SidebarNav({
   onOpenWorktreePalette,
   settings,
-  onUpdateSettings
+  onUpdateSettings,
+  sessions = [],
+  projects = []
 }: SidebarNavProps) {
   // Subscribe this nav to locale changes before using translate().
   useTranslation()
@@ -58,6 +71,7 @@ export function SidebarNav({
   const showMobileButton = shouldShowMobileButton(settings)
   const showArtifactsButton = shouldShowArtifactsButton(settings)
   const showSkillsButton = shouldShowSkillsButton(settings)
+  const showAgentDashboardButton = shouldShowAgentDashboardButton(settings)
   const automationsActive = activeView === 'automations'
   const mobileActive = activeView === 'mobile'
   const artifactsActive = activeView === 'artifacts'
@@ -101,6 +115,9 @@ export function SidebarNav({
         settings={settings}
         onUpdateSettings={onUpdateSettings}
       />
+      {showAgentDashboardButton ? (
+        <AgentDashboardSidebarEntry sessions={sessions} projects={projects} settings={settings} />
+      ) : null}
       {showArtifactsButton ? (
         <ContextMenu>
           <ContextMenuTrigger asChild>

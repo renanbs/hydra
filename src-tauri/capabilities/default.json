@@ -1,13 +1,17 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for the main window and the renderer-created Agent Dashboard pop-out",
   "windows": [
     "main",
-    "rosetta"
+    "rosetta",
+    "agent-dashboard"
   ],
   "permissions": [
     "core:default",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-set-focus",
+    "core:window:allow-close",
     "opener:default",
     "dialog:default"
   ],

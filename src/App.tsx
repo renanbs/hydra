@@ -7,6 +7,7 @@ import { useSidebarResize, clampSidebarResizeWidth } from "./hooks/useSidebarRes
 import { TerminalDrawer, type TerminalContextActions } from "./components/TerminalDrawer";
 import { Landing } from "./components/Landing";
 import { WindowTitlebar } from "./components/WindowTitlebar";
+import { AgentDashboardSnapshotPublisher } from "./components/dashboard/AgentDashboardSnapshotPublisher";
 import { CodeDiffViewer } from "./components/CodeDiffViewer";
 import { FileEditor } from "./components/workbench/FileEditor";
 import { 
@@ -5952,6 +5953,13 @@ export default function App() {
   return (
     <TooltipProvider delayDuration={400}>
     <div className="flex flex-col h-screen w-screen font-sans antialiased select-none overflow-hidden" style={{ background: "var(--app-bg)", color: "var(--app-fg)" }}>
+      {/* Agent Dashboard pop-out feed: inert until the pop-out window asks for it. */}
+      <AgentDashboardSnapshotPublisher
+        sessions={sessions}
+        projects={projects}
+        onRevealSession={handleSelectSession}
+      />
+
       {/* Custom Window Titlebar */}
       <WindowTitlebar 
         title={status} 

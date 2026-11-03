@@ -20,6 +20,9 @@ export type SidebarUiState = {
   featureInteractions: FeatureInteractionState
   setupGuideSidebarDismissed: boolean
   setSetupGuideSidebarDismissed: (dismissed: boolean) => void
+  /** Whether the in-window Agent Dashboard companion drawer is open. */
+  agentDashboardDrawerOpen: boolean
+  setAgentDashboardDrawerOpen: (open: boolean) => void
   openTaskPage: (data?: Record<string, unknown>) => void
   openAutomationsPage: () => void
   openMobilePage: () => void

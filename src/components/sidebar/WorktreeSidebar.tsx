@@ -42,6 +42,7 @@ const SidebarAgentsList = lazyWithRetry(() =>
 );
 import WorkspaceBoardDrawer from "./workspace-board/WorkspaceBoardDrawer";
 import { useWorkspaceBoardPanel } from "./workspace-board/use-workspace-board-panel";
+import { AgentDashboardSidebarHost } from "./AgentDashboardSidebarHost";
 import { mergeExternalWorktreeInboxPaths } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import { WorkspaceOptionsMenu, countActiveWorkspaceFilters, type WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { planSidebarClearFilters } from "./sidebar-filter-actions";
@@ -462,6 +463,7 @@ export function WorktreeSidebar({
     workspaceBoardRenderedOpen,
     workspaceBoardDragPreviewOpen,
     workspaceBoardMenuOpen,
+    closeWorkspaceBoard,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
     setWorkspaceBoardMenuOpen,
@@ -1969,6 +1971,8 @@ export function WorktreeSidebar({
       <SidebarNav
         settings={settings ?? null}
         onUpdateSettings={onUpdateSettings}
+        sessions={sessions}
+        projects={projects}
         onOpenWorktreePalette={() => {
           window.dispatchEvent(new CustomEvent("hydra:open-jump-palette"));
         }}
@@ -2405,6 +2409,21 @@ export function WorktreeSidebar({
         onSelectSession={onSelectSession}
         onWorktreeContextMenu={onWorktreeContextMenu}
       />
+
+      {/* 5c. Agent Dashboard drawer — companion panel for the same sidebar. The host
+          keeps it exclusive with the board and closes it with the sidebar. */}
+      {settings?.experimentalAgentDashboardPopout === true ? (
+        <AgentDashboardSidebarHost
+          sidebarOpen
+          workspaceBoardOpen={workspaceBoardOpen}
+          closeWorkspaceBoard={closeWorkspaceBoard}
+          sessions={sessions}
+          projects={projects}
+          sidebarRef={sidebarRootRef}
+          onSelectSession={onSelectSession}
+          settings={settings}
+        />
+      ) : null}
 
       {/* 6. Context Menus */}
       {activeProjectMenu && (
