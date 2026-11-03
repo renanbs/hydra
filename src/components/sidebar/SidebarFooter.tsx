@@ -13,6 +13,7 @@ import { hasFeatureInteraction } from "@/shared/feature-interactions";
 import { SidebarSettingsHelpMenu } from "./SidebarSettingsHelpMenu";
 import { useSidebarUiStore } from "./sidebar-ui-store";
 import type { GitRepoStatus } from "./types";
+import type { HydraSettings } from "@/shared/settings-types";
 
 // Why lazy: the composer (dialog + attachment reader) is only needed after the
 // user asks for it; Orca warms the chunk from its menu, Hydra loads on click.
@@ -40,6 +41,8 @@ interface SidebarFooterProps {
   workspaceBoardOpen: boolean;
   /** A card drag is hovering the board trigger (Orca `data-workspace-board-preview`). */
   workspaceBoardDragPreviewOpen?: boolean;
+  /** Settings snapshot driving the Help menu's Milestones progress. */
+  settings?: HydraSettings | null;
   /** Orca SidebarToolbar parity: the board's only entry point, in the sidebar footer. */
   onToggleWorkspaceBoard: () => void;
 }
@@ -52,6 +55,7 @@ export function SidebarFooter({
   onRevealCurrent,
   workspaceBoardOpen,
   workspaceBoardDragPreviewOpen = false,
+  settings = null,
   onToggleWorkspaceBoard,
 }: SidebarFooterProps) {
   // Subscribe this footer to locale changes before using translate().
@@ -177,7 +181,10 @@ export function SidebarFooter({
           {feedbackLabel}
         </TooltipContent>
       </Tooltip>
-        <SidebarSettingsHelpMenu onOpenSettingsSection={onOpenSettingsSection} />
+        <SidebarSettingsHelpMenu
+          onOpenSettingsSection={onOpenSettingsSection}
+          settings={settings}
+        />
       </div>
       <div className="flex items-center gap-2">
         {onRevealCurrent && (

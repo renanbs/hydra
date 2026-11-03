@@ -2380,6 +2380,7 @@ export function WorktreeSidebar({
         onRevealCurrent={sidebarBody === "workspaces" ? () => handleRevealCurrent() : undefined}
         workspaceBoardOpen={workspaceBoardOpen}
         workspaceBoardDragPreviewOpen={workspaceBoardDragPreviewOpen}
+        settings={settings ?? null}
         onToggleWorkspaceBoard={toggleWorkspaceBoard}
       />
 
