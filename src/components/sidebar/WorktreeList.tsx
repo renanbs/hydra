@@ -23,6 +23,11 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
+import type { TerminalPaneLayoutNode } from "../../shared/terminal-tab-types";
+import {
+  selectWorktreeActivityStatus,
+  type WorktreeActivityState,
+} from "./use-worktree-activity-status";
 import { selectWorktreeAgentActivitySummary } from "./worktree-agent-activity-summary";
 import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
 import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
@@ -943,6 +948,43 @@ export function WorktreeList({
   const storeSidebarBrowserTabsByWorktree = useAppStore((s) => s.browserTabsByWorktree);
   const storeSidebarPtyIdsByTabId = useAppStore(
     (s) => s.ptyIdsByTabId as Record<string, string[]>
+  );
+  // D04b-008: the Orca status derivation needs the pane-title/layout records the
+  // terminal slice writes. They are read here, once, so every painted card's dot
+  // comes from the same snapshot instead of one subscription per card.
+  const storeRuntimePaneTitlesByTabId = useAppStore(
+    (s) => s.runtimePaneTitlesByTabId as Record<string, Record<number, string>>
+  );
+  const storeTerminalLayoutsByTabId = useAppStore(
+    (s) =>
+      s.terminalLayoutsByTabId as Record<
+        string,
+        { root: TerminalPaneLayoutNode | null } | undefined
+      >
+  );
+  const activityState = useMemo<WorktreeActivityState>(
+    () => ({
+      tabsByWorktree:
+        agentActivityState.tabsByWorktree as unknown as WorktreeActivityState["tabsByWorktree"],
+      browserTabsByWorktree:
+        storeSidebarBrowserTabsByWorktree as unknown as WorktreeActivityState["browserTabsByWorktree"],
+      runtimePaneTitlesByTabId: storeRuntimePaneTitlesByTabId ?? {},
+      ptyIdsByTabId: storeSidebarPtyIdsByTabId ?? {},
+      terminalLayoutsByTabId: storeTerminalLayoutsByTabId ?? {},
+      agentStatusEpoch: agentActivityState.agentStatusEpoch,
+      agentStatusByPaneKey: agentActivityState.agentStatusByPaneKey,
+      migrationUnsupportedByPtyId: agentActivityState.migrationUnsupportedByPtyId,
+      retainedAgentsByPaneKey: agentActivityState.retainedAgentsByPaneKey,
+      runtimeAgentOrchestrationByPaneKey:
+        agentActivityState.runtimeAgentOrchestrationByPaneKey,
+    }),
+    [
+      agentActivityState,
+      storeSidebarBrowserTabsByWorktree,
+      storeRuntimePaneTitlesByTabId,
+      storeSidebarPtyIdsByTabId,
+      storeTerminalLayoutsByTabId,
+    ]
   );
   // Why two memos: the projection returns the SAME record when only tab metadata changed,
   // so the merge below keeps its identity and the row pipeline skips the recompute.
@@ -2237,10 +2279,12 @@ export function WorktreeList({
         >
           <WorktreeCard
             worktree={wt}
-            status={workspaceStatusFrom({
+            // D04b-008: one derivation for the card dot — live PTYs/pane titles and
+            // explicit agent rows first, Hydra's session reading for what those
+            // records cannot express.
+            status={selectWorktreeActivityStatus(activityState, wt.path, {
               sessions: wtSessions,
               hasLiveTerminal: livePaths.has(wt.path),
-              agentSummary: selectWorktreeAgentActivitySummary(agentActivityState, wt.path),
             })}
             prDisplay={prByPath?.[wt.path] ?? null}
             review={((): WorktreeReviewStatus | undefined => {
@@ -2359,6 +2403,7 @@ export function WorktreeList({
       rowModel,
       sessions,
       livePaths,
+      activityState,
       activeWorktreePath,
       primaryActiveRowKey,
       highlightedRevealPath,

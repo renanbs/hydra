@@ -233,7 +233,27 @@ import {
 import { useOptionalShortcutLabel } from "./hooks/useShortcutLabel";
 import { selectWorktreeParent } from "./components/sidebar/worktree-parent-picker-actions";
 import type { WorktreeParentPickerAnchorRect } from "./components/sidebar/worktree-parent-picker-placement";
-import { buildWorktreeParentPickerCandidates } from "./components/sidebar/worktree-parent-picker-candidates";
+import {
+  buildWorktreeParentPickerCandidates,
+  collectWorktreeParentPickerActivityFallbacks,
+} from "./components/sidebar/worktree-parent-picker-candidates";
+import {
+  buildLocalBaseRefUpdateSuggestion,
+  localBaseBranchFromBaseRef,
+} from "./components/sidebar/local-base-ref-suggestion";
+import {
+  KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID,
+  showLocalBaseRefUpdateSuggestionToast,
+} from "./components/sidebar/local-base-ref-suggestion-toast";
+import { buildWorktreeMetaUpdates } from "./components/sidebar/worktree-meta-updates";
+import {
+  getWorktreeUpstreamStatus,
+} from "./lib/worktree-upstream-status";
+import type { GlobalSettings } from "./shared/global-settings-types";
+import {
+  useWorktreeActivityStatuses,
+  type WorktreeActivityFallback,
+} from "./components/sidebar/use-worktree-activity-status";
 import {
   getEligibleWorktreeParents,
   type WorktreeParentPickerCandidate,
@@ -637,6 +657,10 @@ export default function App() {
   const prLookupRef = useRef<Set<string>>(new Set());
   const [hiddenWorktreesByProject, setHiddenWorktreesByProject] = useState<Record<string, GitWorktreeInfo[]>>({});
   const [hydraSettings, setHydraSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
+  // Live mirror for async callbacks (the toast reads/writes settings after an
+  // awaited IPC): a render-lagged copy would persist a stale blob.
+  const hydraSettingsRef = useRef(hydraSettings);
+  hydraSettingsRef.current = hydraSettings;
   const [systemDefaultShell, setSystemDefaultShell] = useState<string>("zsh");
   const systemDefaultShellRef = useRef<string>("zsh");
   systemDefaultShellRef.current = systemDefaultShell;
@@ -3293,7 +3317,88 @@ export default function App() {
     );
   }, [deleteStateByWorktreeId, deleteWorktreeModal, dirtyChangeCountsByWorktreeId]);
 
-  const handleCreatedWorkspace = (worktreePath: string, branchName: string, agentName: string, executable: string) => {
+  /**
+   * D04b-003 deps: the toast lives outside the store because these two settings are
+   * the App's authority (`get_settings`/`save_settings`), and its deep link is the
+   * App's settings modal. The camelCase bridge is the Orca shape the toast speaks.
+   */
+  const updateSettingsFromSuggestion = useCallback(async (updates: Partial<GlobalSettings>) => {
+    const patch: Partial<HydraSettings> = {};
+    if (updates.refreshLocalBaseRefOnWorktreeCreate !== undefined) {
+      patch.refresh_local_base_ref_on_worktree_create = updates.refreshLocalBaseRefOnWorktreeCreate;
+    }
+    if (updates.localBaseRefSuggestionDismissed !== undefined) {
+      patch.local_base_ref_suggestion_dismissed = updates.localBaseRefSuggestionDismissed;
+    }
+    if (Object.keys(patch).length === 0) return;
+    const next = normalizeHydraSettings({ ...hydraSettingsRef.current, ...patch });
+    setHydraSettings(next);
+    await invoke("save_settings", { settings: next });
+  }, []);
+  const openSettingsSuggestionTarget = useCallback(
+    (target: { pane?: string; sectionId?: string }) => {
+      setIsSettingsOpen(true);
+      setSettingsSectionRequested((target.pane ?? "git") as HydraNavId);
+      setSettingsTargetSectionId(target.sectionId ?? KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID);
+    },
+    []
+  );
+  /**
+   * D04b-003: after a create, the renderer measures the repo's own base branch
+   * against its upstream and offers the one-time opt-in when it trails. The host
+   * command reports `0/0` + `upstream: null` for a branch without an upstream, so
+   * no suggestion ever promises a refresh that has nothing to fast-forward.
+   */
+  const suggestLocalBaseRefRefresh = useCallback(
+    (repoPath: string) => {
+      const current = hydraSettingsRef.current;
+      if (current.refresh_local_base_ref_on_worktree_create === true) return;
+      if (current.local_base_ref_suggestion_dismissed === true) return;
+      void getWorktreeUpstreamStatus(repoPath, repoPath)
+        .then((status) => {
+          const localBranch = localBaseBranchFromBaseRef(
+            status.upstream ?? "",
+            projectsRef.current.find((project) => project.path === repoPath)?.current_branch ?? ""
+          );
+          showLocalBaseRefUpdateSuggestionToast(
+            buildLocalBaseRefUpdateSuggestion(
+              { localBranch, upstream: status.upstream, behind: status.behind },
+              {
+                refreshLocalBaseRefOnWorktreeCreate:
+                  hydraSettingsRef.current.refresh_local_base_ref_on_worktree_create === true,
+                localBaseRefSuggestionDismissed:
+                  hydraSettingsRef.current.local_base_ref_suggestion_dismissed === true,
+              }
+            ),
+            {
+              updateSettings: updateSettingsFromSuggestion,
+              getSettings: () =>
+                ({
+                  refreshLocalBaseRefOnWorktreeCreate:
+                    hydraSettingsRef.current.refresh_local_base_ref_on_worktree_create === true,
+                }) as GlobalSettings,
+              openSettingsPage: () => {
+                setIsSettingsOpen(true);
+              },
+              openSettingsTarget: openSettingsSuggestionTarget as never,
+            }
+          );
+        })
+        .catch(() => {
+          // A repo whose checkout is gone (or a host that cannot answer) has no
+          // drift to offer; the nudge simply never appears.
+        });
+    },
+    [openSettingsSuggestionTarget, updateSettingsFromSuggestion]
+  );
+
+  const handleCreatedWorkspace = (
+    worktreePath: string,
+    branchName: string,
+    agentName: string,
+    executable: string,
+    repoPath?: string
+  ) => {
     // The lane's create path persisted the status through `set_worktree_status`; refresh
     // re-reads it from the host so the new worktree paints in the lane it was created from.
     if (activeProject) refreshGitWorktrees(activeProject.path);
@@ -3330,6 +3435,7 @@ export default function App() {
     const tabId = `tab_${id}`;
     setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal", sessionId: id, executable, cwd: worktreePath }]);
     setActiveTabId(tabId);
+    if (repoPath) suggestLocalBaseRefRefresh(repoPath);
   };
 
   /**
@@ -3635,6 +3741,22 @@ export default function App() {
   // cross-repo or already-parented choice could be made and then silently dropped by the
   // sidebar projection. The universe below is the same one the sidebar paints: each project's
   // main row plus its scanned worktrees, with the host/repo chrome the picker row shows.
+  // D04b-009: the picker's dots come from one batched selector over the whole
+  // candidate universe, so a terminal update outside it cannot repaint the list.
+  const parentPickerActivityFallbacks = useMemo<Map<string, WorktreeActivityFallback>>(
+    () =>
+      collectWorktreeParentPickerActivityFallbacks({
+        projects,
+        worktreesByProject,
+        sessions,
+        liveWorkspacePaths,
+      }),
+    [projects, worktreesByProject, sessions, liveWorkspacePaths]
+  );
+  const parentPickerActivityStatuses = useWorktreeActivityStatuses(
+    useMemo(() => [...parentPickerActivityFallbacks.keys()], [parentPickerActivityFallbacks]),
+    parentPickerActivityFallbacks
+  );
   const parentPickerCandidates = useMemo(
     () =>
       buildWorktreeParentPickerCandidates({
@@ -3644,8 +3766,17 @@ export default function App() {
         sessions,
         liveWorkspacePaths,
         activeWorktreePath,
+        activityStatuses: parentPickerActivityStatuses,
       }),
-    [projects, worktreesByProject, storeRepos, sessions, liveWorkspacePaths, activeWorktreePath]
+    [
+      projects,
+      worktreesByProject,
+      storeRepos,
+      sessions,
+      liveWorkspacePaths,
+      activeWorktreePath,
+      parentPickerActivityStatuses,
+    ]
   );
   const parentPickerCandidateByPath = useMemo(
     () => new Map(parentPickerCandidates.map((candidate) => [candidate.path, candidate])),
@@ -6401,6 +6532,9 @@ export default function App() {
         projects={projects}
         availableAgents={availableAgents}
         initialWorkspaceStatus={newWorkspaceInitialStatus}
+        refreshLocalBaseRefOnWorktreeCreate={
+          hydraSettings.refresh_local_base_ref_on_worktree_create === true
+        }
         onSelectProject={handleSelectProject}
         onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -6670,31 +6804,81 @@ export default function App() {
         onSave={(draft: WorktreeMetadataDraft) => {
           const target = worktreeMetaDialog?.wt;
           if (!target) return;
+          // D04b-022: the persisted payload is the pure builder's decision, not a
+          // raw spread of the dialog fields — unchanged fields emit nothing, an
+          // issue-link change displaces the opposite provider slot, and blanking a
+          // field clears it with `null` instead of `undefined`.
+          const liveMeta = worktreeMetadataByPath[target.path] ?? null;
+          const metaDraft = {
+            displayNameInput: draft.displayName,
+            issueInput:
+              draft.linkedLinearIssue ??
+              (draft.linkedIssue == null ? "" : String(draft.linkedIssue)),
+            issueProvider: (draft.linkedLinearIssue ? "linear" : "github") as
+              | "linear"
+              | "github",
+            reviewInput: draft.linkedPR == null ? "" : String(draft.linkedPR),
+            commentInput: draft.comment,
+          };
+          const metaSnapshot = {
+            displayName: target.display_name || target.branch || target.path || "",
+            comment: liveMeta?.comment ?? "",
+            issueInput:
+              liveMeta?.linked_linear_issue ??
+              (liveMeta?.linked_issue == null ? "" : String(liveMeta.linked_issue)),
+            issueProvider: (liveMeta?.linked_linear_issue ? "linear" : "github") as
+              | "linear"
+              | "github",
+            prInput: liveMeta?.linked_pr == null ? "" : String(liveMeta.linked_pr),
+            linkedLinearIssueOrganizationUrlKey: null,
+          };
+          const metaUpdates = buildWorktreeMetaUpdates(metaDraft, metaSnapshot, {
+            linkedPR: liveMeta?.linked_pr ?? null,
+            linkedIssue: liveMeta?.linked_issue ?? null,
+            linkedLinearIssue: liveMeta?.linked_linear_issue ?? null,
+            linkedWorkItemProvider: null,
+            linkedWorkItemType: null,
+          });
+          // Why: `save_worktree_metadata` owns the five persisted slots only; the
+          // builder's provider-only keys (suppressedGitHubPR, linkedGitLabMR) have
+          // no column on this backend yet, so they are dropped rather than faked.
+          const savedComment = metaUpdates.comment ?? metaSnapshot.comment;
+          const savedIssue =
+            "linkedIssue" in metaUpdates
+              ? (metaUpdates.linkedIssue ?? null)
+              : (liveMeta?.linked_issue ?? null);
+          const savedPR =
+            "linkedPR" in metaUpdates ? (metaUpdates.linkedPR ?? null) : (liveMeta?.linked_pr ?? null);
+          const savedLinearIssue =
+            "linkedLinearIssue" in metaUpdates
+              ? (metaUpdates.linkedLinearIssue ?? null)
+              : (liveMeta?.linked_linear_issue ?? null);
          (async () => {
             try {
               await invoke("save_worktree_metadata", {
                 worktreePath: target.path,
-                comment: draft.comment.trim() ? draft.comment : null,
-                linkedIssue: draft.linkedIssue,
-                linkedPr: draft.linkedPR,
-                linkedLinearIssue: draft.linkedLinearIssue,
+                comment: savedComment.trim() ? savedComment : null,
+                linkedIssue: savedIssue,
+                linkedPr: savedPR,
+                linkedLinearIssue: savedLinearIssue,
                 linkedJiraIssue: draft.linkedJiraIssue,
               });
-              if (draft.displayName && draft.displayName !== target.display_name) {
+              const nextDisplayName = metaUpdates.displayName ?? metaSnapshot.displayName;
+              if (nextDisplayName !== (target.display_name ?? "")) {
                 await invoke("set_worktree_display_name", {
                   worktreePath: target.path,
-                  displayName: draft.displayName,
+                  displayName: nextDisplayName,
                 });
                 setGitWorktrees((prev) =>
                   prev.map((row) =>
-                    row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                    row.path === target.path ? { ...row, display_name: nextDisplayName } : row
                   )
                 );
                 setWorktreesByProject((prev) => {
                   const next = { ...prev };
                   for (const key of Object.keys(next)) {
                     next[key] = next[key].map((row) =>
-                      row.path === target.path ? { ...row, display_name: draft.displayName } : row
+                      row.path === target.path ? { ...row, display_name: nextDisplayName } : row
                     );
                   }
                   return next;
@@ -6721,10 +6905,10 @@ export default function App() {
                     comment: null,
                     updated_at: now,
                   }),
-                  comment: draft.comment.trim() ? draft.comment : null,
-                  linked_issue: draft.linkedIssue,
-                  linked_pr: draft.linkedPR,
-                  linked_linear_issue: draft.linkedLinearIssue,
+                  comment: savedComment.trim() ? savedComment : null,
+                  linked_issue: savedIssue,
+                  linked_pr: savedPR,
+                  linked_linear_issue: savedLinearIssue,
                   linked_jira_issue: draft.linkedJiraIssue,
                   updated_at: now,
                 },

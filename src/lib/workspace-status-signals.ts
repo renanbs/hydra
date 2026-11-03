@@ -44,3 +44,25 @@ export function workspaceStatusFrom(args: {
   if (args.hasLiveTerminal) return "active";
   return "inactive";
 }
+
+/**
+ * Precedence between two readings of the same workspace (D04b-008). The explicit
+ * agent signal wins over the passive tab/PTY state; on a tie the first reading
+ * keeps its voice, so callers can layer sources without losing their reason.
+ */
+const ACTIVITY_STATUS_RANK: Record<WorktreeStatus, number> = {
+  permission: 6,
+  interrupted: 5,
+  working: 4,
+  monitoring: 3,
+  done: 2,
+  active: 1,
+  inactive: 0
+}
+
+export function pickDominantWorktreeStatus(
+  first: WorktreeStatus,
+  second: WorktreeStatus
+): WorktreeStatus {
+  return ACTIVITY_STATUS_RANK[second] > ACTIVITY_STATUS_RANK[first] ? second : first
+}

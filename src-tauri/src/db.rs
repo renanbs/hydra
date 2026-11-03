@@ -520,6 +520,13 @@ pub struct HydraSettings {
     pub ui_zoom: f32,
     #[serde(default = "default_false", alias = "compactWorktreeCards")]
     pub compact_worktree_cards: bool,
+    /// Orca `refreshLocalBaseRefOnWorktreeCreate`: fast-forward the local base
+    /// branch (best effort, `--ff-only`) before creating a workspace.
+    #[serde(default = "default_false", alias = "refreshLocalBaseRefOnWorktreeCreate")]
+    pub refresh_local_base_ref_on_worktree_create: bool,
+    /// Orca `localBaseRefSuggestionDismissed`: the one-time upsell was declined.
+    #[serde(default = "default_false", alias = "localBaseRefSuggestionDismissed")]
+    pub local_base_ref_suggestion_dismissed: bool,
     #[serde(default = "default_left_sidebar_appearance_mode", alias = "leftSidebarAppearanceMode")]
     pub left_sidebar_appearance_mode: String,
     #[serde(default = "default_left_sidebar_tint_color", alias = "leftSidebarTintColor")]
@@ -635,6 +642,8 @@ impl Default for HydraSettings {
             open_in_applications: default_open_in_applications(),
             ui_zoom: default_ui_zoom(),
             compact_worktree_cards: false,
+            refresh_local_base_ref_on_worktree_create: false,
+            local_base_ref_suggestion_dismissed: false,
             left_sidebar_appearance_mode: default_left_sidebar_appearance_mode(),
             left_sidebar_tint_color: default_left_sidebar_tint_color(),
             left_sidebar_tint_opacity: default_left_sidebar_tint_opacity(),

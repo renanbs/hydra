@@ -11,6 +11,8 @@ import { workspaceStatusFrom } from '../../lib/workspace-status-signals'
 import { buildHostIdByRepoId } from './repo-execution-host-index'
 import type { WorktreeParentPickerCandidate } from './worktree-parent-eligibility'
 import type { GitWorktreeInfo, HydraProject, WorktreeSession } from './types'
+import type { WorktreeActivityFallback } from './use-worktree-activity-status'
+import type { WorktreeStatus } from '../../lib/worktree-status'
 
 /**
  * The parent picker's candidate universe, in sidebar order (projects, then their worktrees).
@@ -26,6 +28,9 @@ export function buildWorktreeParentPickerCandidates(args: {
   liveWorkspacePaths?: ReadonlySet<string>
   activeWorktreePath?: string | null
   archivedWorkspacePaths?: ReadonlySet<string>
+  /** D04b-009: statuses computed in one batch by `useWorktreeActivityStatuses`.
+   *  A path outside the batch keeps the session-derived reading below. */
+  activityStatuses?: ReadonlyMap<string, WorktreeStatus>
 }): WorktreeParentPickerCandidate[] {
   const hostIdByRepoId = buildHostIdByRepoId(args.repos ?? [])
   const repoById = new Map((args.repos ?? []).map((repo) => [repo.id, repo]))
@@ -33,6 +38,7 @@ export function buildWorktreeParentPickerCandidates(args: {
   const liveWorkspacePaths = args.liveWorkspacePaths ?? new Set<string>()
   const archivedWorkspacePaths = args.archivedWorkspacePaths ?? new Set<string>()
   const activeWorktreePath = args.activeWorktreePath ?? null
+  const activityStatuses = args.activityStatuses
 
   const candidates: WorktreeParentPickerCandidate[] = []
   const seen = new Set<string>()
@@ -68,10 +74,12 @@ export function buildWorktreeParentPickerCandidates(args: {
       repoLabel: repo?.displayName ?? project.displayName ?? project.name,
       ...(repo?.badgeColor ? { repoBadgeColor: repo.badgeColor } : {}),
       ...(repo?.connectionId ? { connectionId: repo.connectionId } : {}),
-      status: workspaceStatusFrom({
-        sessions: worktreeSessions,
-        hasLiveTerminal: liveWorkspacePaths.has(worktree.path)
-      }),
+      status:
+        activityStatuses?.get(worktree.path) ??
+        workspaceStatusFrom({
+          sessions: worktreeSessions,
+          hasLiveTerminal: liveWorkspacePaths.has(worktree.path)
+        }),
       isActive: activeWorktreePath === worktree.path
     })
   }
@@ -107,4 +115,42 @@ export function buildWorktreeParentPickerCandidates(args: {
     }
   }
   return candidates
+}
+
+/**
+ * D04b-009: the candidate universe before the rows exist, so the caller can hand
+ * the batch status selector every path it will paint. The session rule matches
+ * `buildWorktreeParentPickerCandidates` exactly (main row also owns repo-path
+ * sessions), so both readings describe the same workspace.
+ */
+export function collectWorktreeParentPickerActivityFallbacks(args: {
+  projects: readonly HydraProject[]
+  worktreesByProject: Readonly<Record<string, readonly GitWorktreeInfo[]>>
+  sessions?: readonly WorktreeSession[]
+  liveWorkspacePaths?: ReadonlySet<string>
+}): Map<string, WorktreeActivityFallback> {
+  const sessions = args.sessions ?? []
+  const liveWorkspacePaths = args.liveWorkspacePaths ?? new Set<string>()
+  const fallbacks = new Map<string, WorktreeActivityFallback>()
+  for (const project of args.projects) {
+    const projectWorktrees = args.worktreesByProject[project.path] ?? []
+    const mainWorktree =
+      projectWorktrees.find((worktree) => worktree.is_main ?? worktree.isMainWorktree) ?? null
+    const paths = [mainWorktree?.path ?? project.path, ...projectWorktrees.map((w) => w.path)]
+    for (const path of paths) {
+      if (fallbacks.has(path)) {
+        continue
+      }
+      const isProjectMainRow = path === (mainWorktree?.path ?? project.path)
+      fallbacks.set(path, {
+        sessions: sessions.filter(
+          (session) =>
+            session.project_path === path ||
+            (isProjectMainRow && session.project_path === project.path)
+        ),
+        hasLiveTerminal: liveWorkspacePaths.has(path)
+      })
+    }
+  }
+  return fallbacks
 }
