@@ -1887,7 +1887,14 @@ export default function App() {
           if (!workbenchLoaded) {
             loadAllSessions();
           }
-          refreshAllWorktrees(sorted);
+          // D01-006: this is the first authoritative all-repo scan; the sidebar's
+          // repo-count refresh stays gated until the attempt settles.
+          void refreshAllWorktrees(sorted).finally(() => {
+            useAppStore.getState().markStartupWorktreeRefreshCompleted();
+          });
+        } else {
+          // No repos to scan: nothing can race the sidebar, so release the gate.
+          useAppStore.getState().markStartupWorktreeRefreshCompleted();
         }
       })
       .catch(console.error);

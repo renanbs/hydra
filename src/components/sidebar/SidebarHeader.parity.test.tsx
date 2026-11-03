@@ -3,8 +3,11 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/i18n";
+import { formatOptionalPrimaryShortcutLabel } from "@/hooks/useShortcutLabel";
+import { useAppStore } from "@/store";
 import { SidebarHeader } from "./SidebarHeader";
 import type { GroupByMode } from "./WorkspaceOptionsMenu";
+import type { HydraProject } from "./types";
 
 function renderHeader(
   groupBy: GroupByMode,
@@ -166,6 +169,51 @@ describe("SidebarHeader action cluster (D01-011 / D01-012)", () => {
   it("labels New workspace with the registry shortcut rather than a hardcoded chord", () => {
     renderHeader("repo");
     expect(screen.getByRole("button", { name: /^New workspace \(.+\)$/ })).toBeInTheDocument();
+  });
+
+  it("shows only the primary workspace.create binding, not every alias", () => {
+    renderHeader("repo");
+    const primary = formatOptionalPrimaryShortcutLabel(
+      "workspace.create",
+      useAppStore.getState().keybindings
+    );
+    const button = screen.getByRole("button", { name: /^New workspace/ });
+
+    expect(primary).not.toBeNull();
+    expect(button.getAttribute("aria-label")).toBe(`New workspace (${primary})`);
+    expect(button.getAttribute("aria-label")).not.toContain(",");
+  });
+
+  it("opens the composer through the tour-handoff handler with the first project", () => {
+    const onOpenNewWorkspaceModal = vi.fn();
+    const project: HydraProject = {
+      id: "repo_a",
+      name: "hydra",
+      path: "/repo/hydra",
+      is_git: true,
+      current_branch: "main",
+    };
+    render(
+      <SidebarHeader
+        sidebarBody="workspaces"
+        setSidebarBody={vi.fn()}
+        introShown
+        onAcknowledgeIntro={vi.fn()}
+        groupBy="repo"
+        onOpenAddRepoDialog={vi.fn()}
+        onOpenNewWorkspaceModal={onOpenNewWorkspaceModal}
+        optionsButtonRef={React.createRef<HTMLButtonElement>()}
+        optionsMenuOpen={false}
+        setOptionsMenuOpen={vi.fn()}
+        projects={[project]}
+        activeFilterCount={0}
+        hasActiveFilters={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^New workspace/ }));
+
+    expect(onOpenNewWorkspaceModal).toHaveBeenCalledWith(project);
   });
 });
 

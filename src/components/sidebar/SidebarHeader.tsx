@@ -1,9 +1,10 @@
-import { useId } from "react";
+import { useCallback, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Bell, FolderPlus, ListFilter, Plus, Sparkles } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { translate } from "@/i18n/i18n";
-import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
+import { useOptionalPrimaryShortcutLabel } from "../../hooks/useShortcutLabel";
+import { openWorkspaceCreationComposerWithTourHandoff } from "../contextual-tours/workspace-creation-tour-handoff";
 import { Popover, PopoverAnchor, PopoverArrow, PopoverContent } from "../ui/popover";
 import type { GroupByMode } from "./WorkspaceOptionsMenu";
 import type { HydraProject } from "./types";
@@ -59,9 +60,10 @@ export function SidebarHeader({
   // preference the shell writes, and dismisses through the popover's own close path
   // (outside click / Escape / "Got it") — not a raw localStorage flag.
   const introOpen = agentsViewActive && !introShown;
-  // D01-012 (Orca `sidebar-header-actions.tsx`): the shortcut shown is the registry's,
-  // so a remap is reflected instead of a hardcoded "Mod+N".
-  const newWorkspaceShortcut = useOptionalShortcutLabel("workspace.create");
+  // D01-012 (Orca `sidebar-header-actions.tsx`): the shortcut shown is the
+  // registry's primary binding, so a remap is reflected instead of a hardcoded
+  // "Mod+N" and aliases (Mod+Shift+N) do not crowd the one-line tooltip.
+  const newWorkspaceShortcut = useOptionalPrimaryShortcutLabel("workspace.create");
   const newWorkspaceLabel = translate(
     "auto.components.sidebar.SidebarHeader.92154beb7e",
     "New workspace"
@@ -69,6 +71,15 @@ export function SidebarHeader({
   const newWorkspaceTitle = newWorkspaceShortcut
     ? `${newWorkspaceLabel} (${newWorkspaceShortcut})`
     : newWorkspaceLabel;
+
+  // D01-012: the control performs the action (not a menu), and the tour that
+  // highlights it hands off to the workspace-creation tour when the composer opens.
+  const handleOpenNewWorkspace = useCallback(() => {
+    openWorkspaceCreationComposerWithTourHandoff(
+      () => onOpenNewWorkspaceModal(projects[0]),
+      { hasProjects: projects.length > 0 }
+    );
+  }, [onOpenNewWorkspaceModal, projects]);
 
   const sidebarTitle =
     groupBy === "repo"
@@ -230,13 +241,7 @@ export function SidebarHeader({
 
         <button
           type="button"
-          onClick={() => {
-            if (projects.length > 0) {
-              onOpenNewWorkspaceModal(projects[0]);
-            } else {
-              onOpenNewWorkspaceModal();
-            }
-          }}
+          onClick={handleOpenNewWorkspace}
           title={newWorkspaceTitle}
           aria-label={newWorkspaceTitle}
           data-contextual-tour-target="workspace-create-control"
