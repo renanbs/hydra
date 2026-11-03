@@ -1,5 +1,8 @@
 // D02a-003: host picker shows health, hides unselectable hosts and probes SSH
 // hosts from the popover.
+// D02b-021: SSH entries are the wizard's SshTargetRow (dot + label + inline Connect), so
+// the SSH row is only an interactive row once connected; its Connect button is the sole
+// affordance while offline.
 import { describe, expect, it, vi } from 'vitest'
 import "@testing-library/jest-dom/vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
@@ -18,7 +21,7 @@ const LOCAL: SidebarHostOption = {
 const SSH: SidebarHostOption = {
   id: 'ssh:host-1',
   label: 'build-box',
-  detail: 'acme@build-box',
+  detail: 'SSH',
   kind: 'ssh',
   health: 'disconnected',
   presence: 'configured',
@@ -60,7 +63,7 @@ describe('AddRepoHostSelector (D02a-003)', () => {
     const AVAILABLE: SidebarHostOption = {
       id: 'ssh:host-2',
       label: 'ci-box',
-      detail: 'acme@ci-box',
+      detail: 'SSH',
       kind: 'ssh',
       health: 'available',
       presence: 'configured',
@@ -77,7 +80,7 @@ describe('AddRepoHostSelector (D02a-003)', () => {
     )
     expect(screen.getByRole('button', { name: /local linux/i })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /local linux/i }))
-    fireEvent.click(screen.getByRole('option', { name: /ci-box/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'ci-box' }))
     expect(onSelect).toHaveBeenCalledWith('ssh:host-2')
   })
 
@@ -93,8 +96,9 @@ describe('AddRepoHostSelector (D02a-003)', () => {
       />
     )
     fireEvent.click(screen.getByRole('button', { name: /local linux/i }))
-    expect(screen.getByRole('option', { name: /build-box/i })).toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: /connect build-box/i }))
+    // The row itself is not an affordance while offline; only Connect is.
+    expect(screen.queryByRole('button', { name: 'build-box' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Connect' }))
     expect(onConnect).toHaveBeenCalledWith('host-1')
   })
 
@@ -110,7 +114,7 @@ describe('AddRepoHostSelector (D02a-003)', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /local linux/i }))
     expect(screen.getByText(/Update the host: it must speak protocol 3/i)).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: /remote-vm/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /remote-vm/i })).toBeDisabled()
   })
 
   it('spins the connect action while a probe is running', () => {
@@ -125,5 +129,30 @@ describe('AddRepoHostSelector (D02a-003)', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /local linux/i }))
     expect(container.querySelector('.animate-spin')).not.toBeNull()
+    expect(screen.getByRole('button', { name: /connecting…/i })).toBeDisabled()
+  })
+
+  it('falls back to username@host for a target without a label', () => {
+    const UNLABELED: SidebarHostOption = {
+      ...SSH,
+      id: 'ssh:host-3',
+      label: '',
+      connectionStatus: 'connected',
+      health: 'available'
+    }
+    render(
+      <AddRepoHostSelector
+        hostOptions={[LOCAL, UNLABELED]}
+        selectedHostId="local"
+        connectingTargetIds={new Set()}
+        sshTargetsById={
+          new Map([['host-3', { username: 'deploy', host: '10.0.0.9' }]])
+        }
+        onSelect={vi.fn()}
+        onConnect={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /local linux/i }))
+    expect(screen.getByText('deploy@10.0.0.9')).toBeInTheDocument()
   })
 })

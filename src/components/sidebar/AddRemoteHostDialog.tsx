@@ -14,6 +14,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { translate } from '@/i18n/i18n'
 import {
   addSshTarget,
+  applySshRepoReadoptions,
   hydrateSshTargets,
   importSshConfig,
   listSshConfigHosts,
@@ -169,11 +170,14 @@ export function AddRemoteHostDialog({
         )
         return
       }
-      await addSshTarget(payload.payload.target)
+      const added = await addSshTarget(payload.payload.target)
       // Why: one re-read of the registry, so the new host shows up in the sidebar's Hosts
-      // subtree without a reload. Repo readoption (`SshRepoReadoption` → repo rows) needs
-      // the repo catalog slice, which the live store does not compose yet.
+      // subtree without a reload.
       await hydrateSshTargets()
+      // Readoption: the backend reports the catalog rows still pinned to a
+      // removed target of the same alias; this re-points them at the new host.
+      // Empty in the common case, so it costs one no-op.
+      await applySshRepoReadoptions(added.repoReadoptions)
       useAppStore.getState().recordFeatureInteraction?.('ssh')
       toast.success(
         translate('auto.components.sidebar.AddRemoteHostDialog.sshSaved', 'SSH host added.')
@@ -361,6 +365,7 @@ export function AddRemoteHostDialog({
         return
       }
       await hydrateSshTargets()
+      await applySshRepoReadoptions(result.repoReadoptions)
       useAppStore.getState().recordFeatureInteraction?.('ssh')
       toast.success(
         translate(

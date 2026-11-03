@@ -18,6 +18,7 @@ import type {
   SshTargetCreateInput
 } from '../../shared/ssh-types'
 import { useAppStore } from '@/store'
+import { PROJECTS_REFRESH_EVENT } from '@/lib/refresh-projects-awaitable'
 import { buildSidebarHostOptions, shouldShowHostScopeControls } from './sidebar-host-options'
 
 const { invokeMock, toastError, toastSuccess, toastInfo } = vi.hoisted(() => ({
@@ -213,6 +214,71 @@ describe('AddRemoteHostDialog manual form (Orca parity)', () => {
       settings: null
     })
     expect(shouldShowHostScopeControls(hosts)).toBe(true)
+  })
+
+  it('labels a bare host with user@host instead of an empty string', async () => {
+    renderDialog()
+
+    fireEvent.change(screen.getByLabelText('Host or alias'), { target: { value: 'deploy@server' } })
+    fireEvent.blur(screen.getByLabelText('Host or alias'))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    expect(invokeMock).toHaveBeenCalledWith('ssh_add_target', {
+      target: expect.objectContaining({ label: 'deploy@server', host: 'server' })
+    })
+    expect(toastSuccess).toHaveBeenCalledWith('SSH host added.')
+  })
+
+  it('applies the readoptions the backend reports and refreshes the sidebar', async () => {
+    invokeMock.mockImplementation((cmd: string, args?: { id?: string }) => {
+      switch (cmd) {
+        case 'ssh_add_target': {
+          const created: RegistryRow = {
+            id: 'ssh-new',
+            generation: 2,
+            label: 'Dev box',
+            configHost: 'server',
+            host: 'server',
+            port: 22,
+            username: 'deploy',
+            relayGracePeriodSeconds: 0
+          }
+          registry = [created]
+          return Promise.resolve({
+            target: created,
+            repoReadoptions: [
+              { oldTargetId: 'ssh-old', newTargetId: 'ssh-new', repoIds: ['cat-app'] }
+            ]
+          })
+        }
+        case 'ssh_list_targets':
+          return Promise.resolve(registry)
+        case 'ssh_list_removed_target_labels':
+          return Promise.resolve({})
+        case 'catalog_reassign_ssh_targets':
+          return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] })
+        default:
+          return Promise.reject(new Error(`unexpected command: ${cmd}`))
+      }
+    })
+    const refresh = vi.fn()
+    window.addEventListener(PROJECTS_REFRESH_EVENT, refresh)
+    renderDialog()
+
+    fireEvent.change(screen.getByLabelText('Label'), { target: { value: 'Dev box' } })
+    fireEvent.change(screen.getByLabelText('Host or alias'), { target: { value: 'server' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    expect(invokeMock).toHaveBeenCalledWith('catalog_reassign_ssh_targets', {
+      readoptions: [{ oldTargetId: 'ssh-old', newTargetId: 'ssh-new', repoIds: ['cat-app'] }]
+    })
+    expect(useAppStore.getState().sshRepoReadoptions).toEqual([
+      { oldTargetId: 'ssh-old', newTargetId: 'ssh-new', repoIds: ['cat-app'] }
+    ])
+    expect(refresh).toHaveBeenCalled()
+    window.removeEventListener(PROJECTS_REFRESH_EVENT, refresh)
   })
 
   it('rejects a port outside 1-65535 instead of sending it', async () => {

@@ -9,12 +9,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { toast } from 'sonner'
 import { useAppStore } from '../../store'
+import { hydrateSshTargets } from '../../store/ssh-bridge'
 import {
   LOCAL_EXECUTION_HOST_ID,
   parseExecutionHostId,
   type ParsedExecutionHost
 } from '../../shared/execution-host'
-import type { SshReconnectResult } from '../../shared/ssh-types'
+import type { SshReconnectResult, SshTarget } from '../../shared/ssh-types'
 import type { PublicKnownRuntimeEnvironment } from '../../shared/runtime-environments'
 import type { RuntimeEnvironmentStatus } from '../../shared/runtime-host-status'
 import { isEphemeralVmRuntimeEnvironment } from '../../shared/runtime-environments'
@@ -39,6 +40,8 @@ export type AddRepoHostSelection = {
   selectedHostOption: SidebarHostOption | null
   selectedParsedHost: ParsedExecutionHost | null
   selectedSshTargetId: string | null
+  /** Registry rows by target id, so a row can show `username@host` when unlabeled. */
+  sshTargetsById: ReadonlyMap<string, SshTarget>
   connectingTargetIds: ReadonlySet<string>
   setSelectedHostId: (hostId: string) => void
   connectTarget: (targetId: string) => Promise<boolean>
@@ -68,6 +71,12 @@ export function useAddRepoHostSelection({
   const [selectedHostId, setSelectedHostId] = useState<string>(LOCAL_EXECUTION_HOST_ID)
   const [connectingTargetIds, setConnectingTargetIds] = useState<ReadonlySet<string>>(
     () => new Set()
+  )
+  // Why a registry read: the store keeps only labels/generations, while the wizard row
+  // needs the endpoint for the `username@host` fallback. One read per open, and the same
+  // call refreshes the labels the option list is built from.
+  const [sshTargetsById, setSshTargetsById] = useState<ReadonlyMap<string, SshTarget>>(
+    () => new Map()
   )
 
   const ephemeralRuntimeIds = useMemo(
@@ -108,6 +117,23 @@ export function useAddRepoHostSelection({
     if (!isOpen) return
     setSelectedHostId(LOCAL_EXECUTION_HOST_ID)
     setConnectingTargetIds(new Set())
+    let cancelled = false
+    hydrateSshTargets()
+      .then((targets) => {
+        if (!cancelled) {
+          setSshTargetsById(new Map(targets.map((target) => [target.id, target])))
+        }
+      })
+      // Why not fatal: the picker still shows the registry's labels from the store; a
+      // failed read only costs the fallback endpoint, not the ability to add.
+      .catch(() => {
+        if (!cancelled) {
+          setSshTargetsById(new Map())
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, [isOpen])
 
   const selectHostId = useCallback(
@@ -183,6 +209,7 @@ export function useAddRepoHostSelection({
     selectedHostOption,
     selectedParsedHost,
     selectedSshTargetId,
+    sshTargetsById,
     connectingTargetIds,
     setSelectedHostId: selectHostId,
     connectTarget

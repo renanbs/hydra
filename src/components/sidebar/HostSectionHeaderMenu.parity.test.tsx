@@ -2,15 +2,32 @@
 // reveals it on hover/focus like the row's neighbours, and keeps it from folding the section
 // when it opens the menu. It also locks the per-kind entries: Rename for every host kind,
 // Manage → SSH/General settings, Remove only for an SSH target, and the compatibility
-// warning as a real menu item that deep-links to the pane that can fix it.
-import { describe, expect, it, vi } from 'vitest'
+// warning as a real menu item that deep-links to the pane that can fix it. Disconnect is
+// locked too: it runs the real backend command and drops the renderer's live state.
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 import { describeRuntimeCompatBlock } from '../../shared/protocol-compat'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useAppStore } from '@/store'
 import type { HostHeaderRow } from './host-section-rows'
 import { HostSectionHeaderMenu } from './HostSectionHeaderMenu'
+
+const { invokeMock, toastSuccess } = vi.hoisted(() => ({
+  invokeMock: vi.fn(),
+  toastSuccess: vi.fn()
+}))
+vi.mock('@tauri-apps/api/core', () => ({ invoke: invokeMock }))
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), { success: toastSuccess, error: vi.fn(), info: vi.fn() })
+}))
+
+afterEach(() => {
+  useAppStore.setState({ sshConnectionStates: new Map() })
+  invokeMock.mockReset()
+  toastSuccess.mockReset()
+})
 
 
 const BLOCKED_VERDICT: RuntimeCompatVerdict = {
@@ -128,6 +145,33 @@ describe('HostSectionHeaderMenu (Orca parity)', () => {
     expect(warning).toBeInTheDocument()
     expect(warning).toHaveAttribute('title', describeRuntimeCompatBlock(BLOCKED_VERDICT))
     expect(screen.queryByRole('menuitem', { name: 'Remove host…' })).toBeNull()
+  })
+
+  it('disconnects a connected SSH host and drops its live state', async () => {
+    invokeMock.mockResolvedValue({
+      connectionId: 'srv',
+      status: 'disconnected',
+      closedSessions: 0
+    })
+    useAppStore.setState({
+      sshConnectionStates: new Map([
+        [
+          'srv',
+          { targetId: 'srv', status: 'connected', error: null, reconnectAttempt: 1 }
+        ]
+      ])
+    })
+    renderMenu(hostRow())
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for Build server' }), {
+      key: 'Enter'
+    })
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Disconnect' }))
+    await act(async () => {})
+
+    expect(invokeMock).toHaveBeenCalledWith('ssh_disconnect_target', { connectionId: 'srv' })
+    expect(useAppStore.getState().sshConnectionStates.get('srv')?.status).toBe('disconnected')
+    expect(toastSuccess).toHaveBeenCalledWith('Disconnected from Build server')
   })
 
   it('sends a blocked SSH host to the SSH pane through the warning item', () => {

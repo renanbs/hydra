@@ -1000,6 +1000,7 @@ export function AddRepoDialog({
                   hostOptions={hostSelection.hostOptions}
                   selectedHostId={hostSelection.selectedHostId}
                   connectingTargetIds={hostSelection.connectingTargetIds}
+                  sshTargetsById={hostSelection.sshTargetsById}
                   onSelect={hostSelection.setSelectedHostId}
                   onConnect={hostSelection.connectTarget}
                 />

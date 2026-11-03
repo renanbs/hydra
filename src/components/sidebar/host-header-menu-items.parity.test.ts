@@ -1,8 +1,8 @@
 // Parity guard for the host-header menu MODEL. Orca decides the host menu's actions in a pure
 // function so the rules are testable without rendering the sidebar; this port keeps that
 // seam. What it locks: rename is offered for every host kind (it is a client-side label),
-// SSH hosts get a real reconnect probe plus manage/remove, and a compatibility alarm only
-// comes from a verdict the registry itself called blocked.
+// SSH hosts get exactly one of Connect/Reconnect (probe) or Disconnect, plus manage/remove,
+// and a compatibility alarm only comes from a verdict the registry itself called blocked.
 import { describe, expect, it } from 'vitest'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 import { buildHostHeaderMenuModel } from './host-header-menu-items'
@@ -31,14 +31,14 @@ describe('buildHostHeaderMenuModel', () => {
     expect(model.blocked).toBeNull()
   })
 
-  it('drops Reconnect once the SSH host is connected (Disconnect has no backend)', () => {
+  it('swaps Reconnect for Disconnect once the SSH host is connected', () => {
     const model = buildHostHeaderMenuModel({
       kind: 'ssh',
       health: 'available',
       sshConnected: true
     })
 
-    expect(model.actions).toEqual(['rename', 'manage', 'remove'])
+    expect(model.actions).toEqual(['rename', 'ssh-disconnect', 'manage', 'remove'])
   })
 
   it('offers Rename + Manage for the local host — nothing to remove', () => {

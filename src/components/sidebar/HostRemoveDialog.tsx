@@ -5,9 +5,10 @@
 // `ssh_remote_delete_worktree` on the host and keeps branches it cannot prove merged), aborts
 // atomically when a workspace fails so no ghost rows survive, then deletes the target and
 // drops its now-orphaned display-name override.
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { invoke } from '@tauri-apps/api/core'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { SwitchIndicator } from '@/components/ui/switch'
@@ -24,8 +25,11 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import { getAllWorktreesFromState } from '@/store/selectors'
 import { hydrateSshTargets, removeSshTarget } from '@/store/ssh-bridge'
+import { PROJECTS_REFRESH_EVENT } from '@/lib/refresh-projects-awaitable'
+import type { CatalogEnvelope } from '@/lib/catalog-types'
 import type { ExecutionHostId } from '../../shared/execution-host'
 import { clearHostRename } from './host-rename-remove'
+import { selectSshHostCatalogRows, type SshHostCatalogRow } from './ssh-host-remove-catalog'
 import { resolveSshHostRemoval } from './ssh-host-remove-resolution'
 import { clearSshHostWorkspaces } from './ssh-host-remove-workspaces'
 
@@ -57,8 +61,35 @@ export function HostRemoveDialog({
   const repos = useAppStore((s) => s.repos)
   const worktreesByRepo = useAppStore((s) => s.worktreesByRepo)
   const sshConnectionStates = useAppStore((s) => s.sshConnectionStates)
+  // Why the catalog too: the live store composes no repo ring, so its rows can be empty
+  // while the sidebar still shows projects on this host. The catalog is the projection
+  // App renders, so it is the only source that can name those rows.
+  const [catalogRows, setCatalogRows] = useState<SshHostCatalogRow[]>([])
 
-  // Why: read the count off live store state, not a cached row badge, so a workspace
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    let cancelled = false
+    invoke<CatalogEnvelope>('catalog_get')
+      .then((envelope) => {
+        if (!cancelled) {
+          setCatalogRows(selectSshHostCatalogRows(envelope, targetId))
+        }
+      })
+      // Why not fatal: the store rows (when present) still drive the dialog, and a
+      // catalog read failure must not block removing the host itself.
+      .catch(() => {
+        if (!cancelled) {
+          setCatalogRows([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, targetId])
+
+  // Why: read the count off live state, not a cached row badge, so a workspace
   // created or removed since the menu opened is reflected in what the user is told.
   const resolution = useMemo(
     () =>
@@ -66,9 +97,10 @@ export function HostRemoveDialog({
         targetId,
         repos,
         worktrees: getAllWorktreesFromState({ worktreesByRepo }),
-        sshConnectionStates
+        sshConnectionStates,
+        catalogRows
       }),
-    [targetId, repos, worktreesByRepo, sshConnectionStates]
+    [targetId, repos, worktreesByRepo, sshConnectionStates, catalogRows]
   )
 
   const workspaceCount = resolution.workspaceCount
@@ -103,6 +135,11 @@ export function HostRemoveDialog({
         // Why: never remove the target while some workspaces failed — that would strand
         // ghost rows behind a now-gone host. Surface the failure and keep the target.
         if (failedIds.length > 0) {
+          // The rows that did clear are already gone from the catalog; App has to
+          // re-read it even though the host stays for a retry.
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent(PROJECTS_REFRESH_EVENT))
+          }
           toast.error(
             translate(
               'auto.components.sidebar.HostRemoveDialog.workspacesFailed',
@@ -131,6 +168,12 @@ export function HostRemoveDialog({
       useAppStore.getState().clearRemovedSshTargetState(targetId)
       dropOverridesForHost()
       await hydrateSshTargets()
+      // Why refresh: the cascade may have dropped catalog rows, and the host itself is
+      // gone from the registry. App owns the sidebar projection, so this is the only
+      // way it drops the stale host section without a reload.
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(PROJECTS_REFRESH_EVENT))
+      }
       if (mountedRef.current) {
         onOpenChange(false)
       }

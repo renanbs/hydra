@@ -1,13 +1,16 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/AddRepoHostSelector.tsx
 //
-// D02a-003: the Add Project host picker. It shows the selected host with its
-// health badge, lets the user switch to another selectable host, and probes a
-// disconnected SSH host in place (Loader2 while the probe runs).
+// D02a-003: the Add Project host picker. It shows the selected host with its health badge,
+// lets the user switch to another selectable host, and probes a disconnected SSH host in
+// place.
+//
+// D02b-021: SSH entries render through `SshTargetRow` (status dot, `username@host`
+// fallback, row selection only when connected, inline Connect with its own in-flight
+// lock) instead of a second, drifting row implementation.
 import { useState } from 'react'
-import { ChevronDown, Loader2, Monitor, PlugZap, Server, Laptop } from 'lucide-react'
+import { ChevronDown, Monitor, Server, Laptop } from 'lucide-react'
 import {
-  canConnectAddRepoHost,
   canSelectAddRepoHost,
   getAddRepoHostCompatibilityHint
 } from './add-repo-host-availability'
@@ -15,6 +18,10 @@ import {
   getSidebarHostHealthLabel,
   type SidebarHostOption
 } from './sidebar-host-options'
+import { SshTargetRow } from './SshTargetRow'
+
+/** Only the fields the row needs from a registry target. */
+export type AddRepoHostSshTarget = { username?: string; host?: string }
 
 function HostKindIcon({
   kind
@@ -36,12 +43,15 @@ export function AddRepoHostSelector({
   hostOptions,
   selectedHostId,
   connectingTargetIds,
+  sshTargetsById,
   onSelect,
   onConnect
 }: {
   hostOptions: readonly SidebarHostOption[]
   selectedHostId: string
   connectingTargetIds: ReadonlySet<string>
+  /** Full registry rows, so an unlabeled target can fall back to `username@host`. */
+  sshTargetsById?: ReadonlyMap<string, AddRepoHostSshTarget>
   onSelect: (hostId: string) => void
   onConnect: (targetId: string) => Promise<boolean>
 }): React.JSX.Element | null {
@@ -56,7 +66,6 @@ export function AddRepoHostSelector({
     <div className="relative">
       <button
         type="button"
-        aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
         className="flex w-full items-center gap-2 rounded-md border border-[#2a2b30] bg-[#0e0f11] px-2.5 py-1.5 text-left text-xs text-neutral-200 transition hover:border-[#3f3f46] cursor-pointer"
@@ -81,30 +90,50 @@ export function AddRepoHostSelector({
 
       {open && (
         <div
-          role="listbox"
+          role="group"
+          aria-label="Hosts"
           className="absolute left-0 right-0 top-9 z-50 max-h-64 space-y-0.5 overflow-y-auto rounded-lg border border-[#2c2d33] bg-[#18191d] p-1 shadow-2xl"
         >
           {hostOptions.map((host) => {
             const selectable = canSelectAddRepoHost(host)
-            const connectable = canConnectAddRepoHost(host)
             const compatibilityHint = getAddRepoHostCompatibilityHint(host)
             const targetId =
               host.kind === 'ssh' ? decodeURIComponent(host.id.slice('ssh:'.length)) : null
             const connecting = targetId ? connectingTargetIds.has(targetId) : false
+            const isSelected = host.id === selectedHostId
+
+            if (host.kind === 'ssh' && targetId) {
+              const registryRow = sshTargetsById?.get(targetId)
+              return (
+                <SshTargetRow
+                  key={host.id}
+                  target={{
+                    id: targetId,
+                    label: host.label,
+                    username: registryRow?.username,
+                    host: registryRow?.host
+                  }}
+                  // Why: a wizard-level probe (the hook's set) must spin even when the
+                  // store has not reported 'connecting' yet.
+                  status={connecting ? 'connecting' : host.connectionStatus}
+                  isSelected={isSelected}
+                  onSelect={() => onSelect(host.id)}
+                  onConnect={() => onConnect(targetId)}
+                />
+              )
+            }
+
             return (
               <div
                 key={host.id}
                 className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs ${
-                  host.id === selectedHostId
-                    ? 'bg-emerald-500/15 text-emerald-300'
-                    : 'text-neutral-300'
+                  isSelected ? 'bg-emerald-500/15 text-emerald-300' : 'text-neutral-300'
                 }`}
               >
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={host.id === selectedHostId}
                   disabled={!selectable}
+                  aria-pressed={isSelected}
                   onClick={() => {
                     onSelect(host.id)
                     setOpen(false)
@@ -126,24 +155,6 @@ export function AddRepoHostSelector({
                     {getSidebarHostHealthLabel(host.health)}
                   </span>
                 </button>
-                {connectable && targetId ? (
-                  <button
-                    type="button"
-                    aria-label={`Connect ${host.label}`}
-                    title="Connect SSH host"
-                    disabled={connecting}
-                    onClick={() => {
-                      void onConnect(targetId)
-                    }}
-                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-default cursor-pointer"
-                  >
-                    {connecting ? (
-                      <Loader2 className="size-3.5 animate-spin" />
-                    ) : (
-                      <PlugZap className="size-3.5" />
-                    )}
-                  </button>
-                ) : null}
               </div>
             )
           })}

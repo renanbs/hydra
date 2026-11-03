@@ -3,7 +3,8 @@
 // the sidebar's own host attribution (`getWorktreeExecutionHostId` prefers a worktree's own
 // host over its repo's) instead of a second, drifting rule. What it locks out: counting
 // another host's workspaces, losing the repo root (a workspace too), double-counting a
-// duplicated row, and offering a remote delete for an offline host.
+// duplicated row, ignoring catalog rows the live store cannot see, and offering a remote
+// delete for an offline host.
 import { describe, expect, it } from 'vitest'
 import { resolveSshHostRemoval } from './ssh-host-remove-resolution'
 
@@ -28,6 +29,7 @@ describe('resolveSshHostRemoval', () => {
       targetId: 'srv',
       hostRepoIds: ['repo_ssh'],
       workspaceWorktreeIds: ['wt-a', 'wt-b'],
+      catalogRows: [],
       workspaceCount: 3,
       isConnected: false
     })
@@ -70,6 +72,27 @@ describe('resolveSshHostRemoval', () => {
     })
 
     expect(resolution.workspaceCount).toBe(2)
+  })
+
+  it('counts catalog rows the store cannot see and dedupes the repo root by path', () => {
+    const STORE_REPO = { ...REPO_SSH, path: '/srv/app/' }
+    const resolution = resolveSshHostRemoval({
+      targetId: 'srv',
+      repos: [STORE_REPO],
+      worktrees: [],
+      catalogRows: [
+        { id: 'cat-app', path: '/srv/app', kind: 'repo' },
+        { id: 'cat-other', path: '/srv/other', kind: 'repo' },
+        { id: 'cat-folder', path: '/srv/docs', kind: 'folder' }
+      ]
+    })
+
+    // The store already represents cat-app's path, so only the two unseen rows add.
+    expect(resolution.catalogRows).toEqual([
+      { id: 'cat-other', path: '/srv/other', kind: 'repo' },
+      { id: 'cat-folder', path: '/srv/docs', kind: 'folder' }
+    ])
+    expect(resolution.workspaceCount).toBe(3)
   })
 
   it('reports a connected host so the dialog can offer the remote delete copy', () => {
