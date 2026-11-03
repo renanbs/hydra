@@ -14,9 +14,11 @@ import {
   GitPullRequest,
   FileText,
   Pencil,
+  BookOpenText,
 } from "lucide-react";
 import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
 import { CommentMarkdownAsync, preloadCommentMarkdown } from "./comment-markdown-lazy";
+import { WorktreeNotesDocumentDialog } from "./WorktreeNotesDocumentDialog";
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
 import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
 
@@ -56,6 +58,7 @@ export function WorktreeCardDetailsHover({
   const [copiedPath, setCopiedPath] = useState(false);
   const [copiedBranch, setCopiedBranch] = useState(false);
   const [stoppingPid, setStoppingPid] = useState<number | null>(null);
+  const [notesDocumentOpen, setNotesDocumentOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
@@ -346,17 +349,32 @@ export function WorktreeCardDetailsHover({
                     icon={<FileText className="w-3 h-3" />}
                     label="Notes"
                     actions={
-                      onEditMetadata ? (
-                        <MetadataActionIcon label="Edit workspace notes" onClick={onEditMetadata}>
-                          <Pencil className="w-3 h-3" />
+                      <>
+                        {/* D12: document view action */}
+                        <MetadataActionIcon
+                          label="Open notes document view"
+                          onClick={() => {
+                            preloadCommentMarkdown();
+                            setNotesDocumentOpen(true);
+                          }}
+                        >
+                          <BookOpenText className="w-3 h-3" />
                         </MetadataActionIcon>
-                      ) : null
+                        {onEditMetadata ? (
+                          <MetadataActionIcon label="Edit workspace notes" onClick={onEditMetadata}>
+                            <Pencil className="w-3 h-3" />
+                          </MetadataActionIcon>
+                        ) : null}
+                      </>
                     }
                   />
                   <CommentMarkdownAsync
                     content={metadata.comment}
                     className="text-[11px] leading-4 text-neutral-300"
                     fallbackClassName="whitespace-pre-wrap"
+                    expandImages
+                    linkifyFilePaths
+                    fileLinkBasePath={worktree.path}
                   />
                 </div>
               ) : null}
@@ -397,6 +415,14 @@ export function WorktreeCardDetailsHover({
           </div>
         </div>
       )}
+
+      <WorktreeNotesDocumentDialog
+        open={notesDocumentOpen}
+        onOpenChange={setNotesDocumentOpen}
+        title={cardTitle}
+        content={metadata?.comment ?? ""}
+        fileLinkBasePath={worktree.path}
+      />
     </div>
   );
 }
