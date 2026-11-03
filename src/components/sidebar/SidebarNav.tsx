@@ -10,6 +10,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import type { HydraSettings } from '@/shared/settings-types'
 import { HideSidebarMenu } from './sidebar-nav-controls'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
+import { SetupGuideSidebarEntry } from './SetupGuideSidebarEntry'
 import { useMobileSidebarOnboardingBadge } from './mobile-sidebar-onboarding-badge'
 import { useSidebarUiStore } from './sidebar-ui-store'
 
@@ -95,8 +96,7 @@ export function SidebarNav({
           ))}
         </span>
       </button>
-      {/* Setup guide entry is BLOCKED: Hydra has no setup-progress probes or
-          setup-guide modal yet, so the row would open nothing. */}
+      <SetupGuideSidebarEntry settings={settings} />
       <SidebarTaskNavButton
         settings={settings}
         onUpdateSettings={onUpdateSettings}

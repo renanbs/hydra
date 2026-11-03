@@ -9,8 +9,10 @@ import {
   Keyboard,
   Loader2,
   MessageSquareText,
+  Milestone,
   RefreshCw,
   RotateCw,
+  School,
   ScrollText
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -35,6 +37,10 @@ import {
   restartApp
 } from '@/lib/sidebar-desktop-contracts'
 import { getUpdateCheckClickOptions, getUpdateCheckHint } from '@/lib/update-check-click-options'
+import { SetupGuideProgressRing } from '../setup-guide/SetupGuideProgressRing'
+import { useSetupGuideProgress } from '../setup-guide/use-setup-guide-progress'
+import type { HydraSettings } from '../../shared/settings-types'
+import { useSidebarUiStore } from './sidebar-ui-store'
 import type * as SidebarFeedbackDialogModule from './SidebarFeedbackDialog'
 
 const hydrateFeedbackDialog = (): Promise<typeof SidebarFeedbackDialogModule> =>
@@ -78,11 +84,17 @@ function ExternalMenuItem({
 type SidebarSettingsHelpMenuProps = {
   /** Opens Settings on a specific pane (Orca `openSettingsTarget` + page). */
   onOpenSettingsSection: (section: 'shortcuts') => void
+  /** Progress inputs for the Milestones entry; optional so standalone mounts stay valid. */
+  settings?: HydraSettings | null
 }
 
 export function SidebarSettingsHelpMenu({
-  onOpenSettingsSection
+  onOpenSettingsSection,
+  settings = null
 }: SidebarSettingsHelpMenuProps): React.JSX.Element {
+  const openModal = useSidebarUiStore((state) => state.openModal)
+  const setupProgress = useSetupGuideProgress(settings, true)
+  const showMilestones = setupProgress.ready && setupProgress.coreDoneCount < setupProgress.coreTotal
   const [menuOpen, setMenuOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   // Why sticky: the dialog animates itself closed off `open`, so unmounting on close cuts that short.
@@ -108,6 +120,10 @@ export function SidebarSettingsHelpMenu({
   const handleOpenFeedback = (): void => {
     setFeedbackDialogMounted(true)
     setFeedbackOpen(true)
+  }
+
+  const handleOpenSetupGuide = (): void => {
+    openModal('setup-guide', { telemetrySource: 'help_menu' })
   }
 
   const handleRestart = (): void => {
@@ -209,8 +225,28 @@ export function SidebarSettingsHelpMenu({
               'Send Feedback'
             )}
           </DropdownMenuItem>
-          {/* Milestones + Onboarding are BLOCKED: Hydra has no setup-guide
-              progress probes and no onboarding overlay to open. */}
+          {showMilestones ? (
+            <DropdownMenuItem onSelect={handleOpenSetupGuide}>
+              <Milestone className="size-3.5" />
+              {translate(
+                'auto.components.feature.wall.FeatureWallSetupChecklist.713cc529a5',
+                'Milestones'
+              )}
+              <SetupGuideProgressRing
+                done={setupProgress.coreDoneCount}
+                total={setupProgress.coreTotal}
+                sizeClassName="size-4"
+                className="ml-auto"
+              />
+            </DropdownMenuItem>
+          ) : null}
+          <DropdownMenuItem onSelect={handleOpenSetupGuide}>
+            <School className="size-3.5" />
+            {translate(
+              'auto.components.sidebar.SidebarSettingsHelpMenu.b7e4d2a19c',
+              'Onboarding'
+            )}
+          </DropdownMenuItem>
           <ExternalMenuItem
             label={translate(
               'auto.components.sidebar.SidebarSettingsHelpMenu.cdc87f897e',

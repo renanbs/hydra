@@ -63,6 +63,7 @@ import { getShortcutPlatform } from "./lib/shortcut-platform";
 import { SplitTerminalGrid } from "./components/workbench/SplitTerminalGrid";
 import { PairingModal } from "./components/PairingModal";
 import { SettingsModal, type HydraNavId } from "./components/SettingsModal";
+import { SetupGuideModalHost } from "./components/setup-guide/SetupGuideModalHost";
 import type { HydraSettings } from "./shared/settings-types";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, DEFAULT_OPEN_IN_APPLICATIONS } from "./shared/settings-types";
 import { applyDocumentTheme } from "./lib/document-theme";
@@ -1556,7 +1557,13 @@ export default function App() {
 
     // Fatia Shell/store-owned (ui.state): leitura única no boot. As cinco chaves do
     // blob `ui.sidebar` (posse do App) ficam de fora — ver `hydrateSliceUiPreferences`.
-    hydrateUiStatePreferences().catch(console.error);
+    hydrateUiStatePreferences().catch((error) => {
+      console.error(error);
+      // Why: a rejected read must still settle the readiness gate, or every
+      // hydrated-state surface (the onboarding checklist included) stays hidden
+      // for the whole session instead of falling back to its defaults.
+      useAppStore.getState().hydrateSliceUiPreferences({});
+    });
   }, []);
 
   // 2. Carrega o estado persistido do workbench (tabs + active tab) — com dedupe por sessionId/title
@@ -6923,6 +6930,9 @@ export default function App() {
         }}
       />
 
+
+      {/* Onboarding checklist (D01-017/D01-036): sidebar entry + Help menu target */}
+      <SetupGuideModalHost settings={hydraSettings} />
 
       {/* Settings Modal */}
       <SettingsModal 
