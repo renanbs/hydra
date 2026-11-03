@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 682 | 89.2% |
-| partial | 33 | 4.3% |
-| missing | 41 | 5.4% |
+| parity | 690 | 90.2% |
+| partial | 32 | 4.2% |
+| missing | 34 | 4.4% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
 
@@ -16,7 +16,7 @@
 
 | domínio | capabilities | parity | partial | missing | not-applicable | out-of-scope |
 |---|---|---|---|---|---|---|
-| D01-shell-chrome | 52 | 39 | 1 | 11 | 1 | 0 |
+| D01-shell-chrome | 52 | 47 | 0 | 4 | 1 | 0 |
 | D02a-repo-add-wizard | 42 | 20 | 6 | 9 | 6 | 1 |
 | D02b-hosts-ssh-remote | 30 | 22 | 5 | 3 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 19 | 1 | 6 | 0 | 0 |
