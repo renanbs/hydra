@@ -108,6 +108,7 @@ import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
 import { buildTerminalQuickCommandItems } from "./components/workbench/TerminalQuickCommandsSubmenu";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
+import { GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID } from "./lib/settings-navigation-types";
 import { applyWorkspaceSidebarLiveWidth } from "./lib/sidebar-live-width";
 import {
   orderItemsByProjectOrder,
@@ -529,6 +530,9 @@ export default function App() {
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
   const [settingsSectionRequested, setSettingsSectionRequested] = useState<HydraNavId | null>(null);
+  // Orca `openSettingsTarget({ pane, sectionId })`: the pane and its in-pane
+  // subsection travel together so a deep link lands on the concrete control.
+  const [settingsTargetSectionId, setSettingsTargetSectionId] = useState<string | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -5540,6 +5544,7 @@ export default function App() {
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onOpenGlobalSettings={() => {
                   setSettingsSectionRequested("general");
+                  setSettingsTargetSectionId(GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID);
                   setIsSettingsOpen(true);
                 }}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
@@ -6274,10 +6279,11 @@ export default function App() {
       {/* Settings Modal */}
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); }} 
+        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); setSettingsTargetSectionId(null); }} 
         onLiveChange={(live) => { const n = normalizeHydraSettings(live); setHydraSettings(n); applyDocumentTheme(n.theme); }}
         onSaved={handleSettingsSaved}
         initialSection={settingsSectionRequested ?? undefined}
+        initialSectionId={settingsTargetSectionId ?? undefined}
       />
     </div>
     {/* Orca parity: sonner is the project's toast surface; without a mounted

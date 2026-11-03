@@ -30,6 +30,7 @@ import {
   type WorktreeDeleteResolvableTarget,
 } from "./sidebar/worktree-delete-request";
 import { DeleteWorktreeLineageNotice } from "./DeleteWorktreeLineageNotice";
+import { DeleteWorktreeDialogDescription } from "./DeleteWorktreeDialogDescription";
 import { DeleteWorktreeDirtyChangeHint } from "./DeleteWorktreeDirtyChangeHint";
 import {
   getDeleteWorktreeDialogCopy,
@@ -582,31 +583,22 @@ export function DeleteWorktreeDialog({
         <h2 className="text-sm font-semibold text-neutral-100 tracking-tight">
           {isBatchDelete ? "Delete Workspaces" : "Delete Workspace"}
         </h2>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-400">
-          Remove{" "}
-          <span className={dialogCopy.targetClassName}>
-            {isBatchDelete
-              ? dialogCopy.targetLabel
-              : worktrees[0]?.display_name ||
-                worktrees[0]?.displayName ||
-                worktrees[0]?.branch ||
-                worktrees[0]?.path}
-          </span>{" "}
-          {canDeleteAllLineage ? (
-            <>
-              and{" "}
-              <span className="font-medium text-foreground">
-                {lineageDialogCopy?.childTargetLabel ??
-                  (childWorkspaceCount === 1
-                    ? "1 child workspace"
-                    : `${childWorkspaceCount} child workspaces`)}
-              </span>{" "}
-              {lineageDialogCopy?.descriptionSuffix ?? dialogCopy.descriptionSuffix}
-            </>
-          ) : (
-            <>{dialogCopy.descriptionSuffix}</>
-          )}
-        </p>
+        <DeleteWorktreeDialogDescription
+          targetClassName={dialogCopy.targetClassName}
+          targetLabel={dialogCopy.targetLabel}
+          canDeleteAllLineage={canDeleteAllLineage}
+          childTargetLabel={
+            lineageDialogCopy?.childTargetLabel ??
+            (childWorkspaceCount === 1
+              ? "1 child workspace"
+              : `${childWorkspaceCount} child workspaces`)
+          }
+          descriptionSuffix={
+            canDeleteAllLineage
+              ? (lineageDialogCopy?.descriptionSuffix ?? dialogCopy.descriptionSuffix)
+              : dialogCopy.descriptionSuffix
+          }
+        />
 
         {/* Orca DeleteWorktreeTargetPreview parity: path + dirty-change count */}
         <section
