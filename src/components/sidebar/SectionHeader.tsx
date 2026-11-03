@@ -156,13 +156,11 @@ export interface GroupSectionHeaderProps {
 
 /**
  * Orca `getRepoHeaderCreateState`: the header `+` is disabled while the project's
- * host cannot accept a workspace (SSH target not connected).
+ * host cannot accept a workspace (SSH target not connected). The derivation lives
+ * in `repo-header-create-state.ts`; this surface only paints its output.
  */
-export interface RepoHeaderCreateState {
-  disabled: boolean;
-  tooltip: string;
-  ariaLabel: string;
-}
+export type { RepoHeaderCreateState } from "./repo-header-create-state";
+import type { RepoHeaderCreateState } from "./repo-header-create-state";
 
 export interface RepoSectionHeaderProps {
   variant: "repo" | "project";

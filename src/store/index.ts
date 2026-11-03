@@ -13,6 +13,7 @@ import type { AgentStatusEntry } from '../shared/agent-status-types'
 import type { ProjectHostSetupProjection } from '../shared/project-host-setup-projection'
 import type { ProviderRateLimits } from '../shared/rate-limit-types'
 import type { HydraSettings } from '../shared/settings-types'
+import type { WorktreeVisibilityDefaultsByHost } from './worktree-visibility-defaults-by-host'
 import type { KeybindingActionId } from '../shared/keybindings/keybindings-module'
 import type {
   VisibleWorkspaceHostIds,
@@ -123,6 +124,12 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   refreshRateLimits: () => Promise<void>
   /** App settings snapshot (HydraSettings) */
   settings: HydraSettings | null
+  /**
+   * Per-execution-host worktree visibility defaults (Orca
+   * `worktreeVisibilityDefaultsByHost`). Hydrated by the runtime repo catalog writers;
+   * absent until the first host snapshot lands, so readers must treat it as optional.
+   */
+  worktreeVisibilityDefaultsByHost: WorktreeVisibilityDefaultsByHost
   openSettingsTarget: (target: string | null) => void
   openSettingsPage: (page: string) => void
   /** 'used' | 'remaining' | 'percentage' */
@@ -446,6 +453,7 @@ export const useAppStore = create<AppState>()(
     rateLimits: {},
     refreshRateLimits: () => Promise.resolve(),
     settings: null,
+    worktreeVisibilityDefaultsByHost: {},
     detectedAgentIds: [],
     ensureDetectedAgents: () => Promise.resolve(),
     refreshDetectedAgents: () => Promise.resolve([]),

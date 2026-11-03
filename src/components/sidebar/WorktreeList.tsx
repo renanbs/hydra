@@ -77,8 +77,8 @@ import { getProjectedWorkspaceLineageByChildKey } from "./worktree-list/rows/wor
 import { getWorktreeItemRowGeometry } from "./worktree-list/rows/item-row-geometry";
 import {
   createLineageToggleHandlerCache,
-  renderWorktreeLineageDescendants,
-} from "./worktree-list/rows/item-row";
+} from "./worktree-lineage-toggle-handler-cache";
+import { renderWorktreeLineageDescendants } from "./worktree-list/rows/item-row";
 import { getLineageChildrenInlineStyle } from "./worktree-list/rows/indentation";
 import type { LineageGroupRow, RenderRow } from "./worktree-list/listing/render-row";
 import { buildRenderableRows } from "./worktree-list/listing/renderable-rows";
@@ -118,6 +118,11 @@ import {
 } from "./workspace-creator-visibility";
 import { folderWorkspaceKey } from "../../shared/workspace-scope";
 import { selectVisibleSidebarWorktrees } from "./worktree-list/listing/visible-worktree-selection";
+import { getPinnedSectionWorktrees } from "./pinned-section-worktrees";
+import {
+  getVisibleWorktreeBrowserActivityTabs,
+  getVisibleWorktreeTerminalActivityTabs,
+} from "./visible-worktree-activity-inputs";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -416,6 +421,11 @@ interface SidebarRowModel {
   lineageParentIdByChildId: Map<string, string>;
   /** Host-qualified workspace identity → label, only for repos visible on >1 host. */
   hostContextLabelByIdentity: Map<string, string>;
+  /**
+   * Host-qualified identities the Pinned section paints. A descendant of a pinned
+   * ancestor belongs here even when its own `isPinned` flag is false (D11-003).
+   */
+  pinnedSectionIdentities: ReadonlySet<string>;
 }
 
 export interface WorktreeListProps {
@@ -924,6 +934,50 @@ export function WorktreeList({
     }))
   );
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
+  // D11-006: the store's tab records are the real activity inputs. Their id-only
+  // projections keep a title/URL/favicon write from invalidating the visible pipeline.
+  const storeSidebarTabsByWorktree = useAppStore((s) => s.tabsByWorktree);
+  const storeSidebarBrowserTabsByWorktree = useAppStore((s) => s.browserTabsByWorktree);
+  const storeSidebarPtyIdsByTabId = useAppStore(
+    (s) => s.ptyIdsByTabId as Record<string, string[]>
+  );
+  // Why two memos: the projection returns the SAME record when only tab metadata changed,
+  // so the merge below keeps its identity and the row pipeline skips the recompute.
+  const projectedTerminalActivityTabs = useMemo(
+    () => getVisibleWorktreeTerminalActivityTabs(storeSidebarTabsByWorktree ?? {}),
+    [storeSidebarTabsByWorktree]
+  );
+  const projectedBrowserActivityTabs = useMemo(
+    () => getVisibleWorktreeBrowserActivityTabs(storeSidebarBrowserTabsByWorktree ?? {}),
+    [storeSidebarBrowserTabsByWorktree]
+  );
+  const sidebarActivityInputs = useMemo(() => {
+    // Why merge with the session sample instead of replacing it: the session pass also
+    // carries a live-agent hint a PTY gap must not erase, and both sources key by path.
+    const tabsByWorktree: Record<string, { id: string }[]> = {
+      ...liveActivity.tabsByWorktree,
+    };
+    for (const [worktreeId, tabs] of Object.entries(projectedTerminalActivityTabs)) {
+      if (tabs.length === 0) continue;
+      const existing = tabsByWorktree[worktreeId] ?? [];
+      tabsByWorktree[worktreeId] = existing.length === 0 ? tabs : [...existing, ...tabs];
+    }
+    const browserKeys = Object.keys(projectedBrowserActivityTabs);
+    return {
+      tabsByWorktree,
+      ptyIdsByTabId: {
+        ...(storeSidebarPtyIdsByTabId ?? {}),
+        ...liveActivity.ptyIdsByTabId,
+      },
+      browserTabsByWorktree:
+        browserKeys.length > 0 ? projectedBrowserActivityTabs : undefined,
+    };
+  }, [
+    liveActivity,
+    projectedTerminalActivityTabs,
+    projectedBrowserActivityTabs,
+    storeSidebarPtyIdsByTabId,
+  ]);
   // The persisted host-section tier order feeds the row pipeline, so a host drag
   // repaints the sections it just moved (D03a-020).
   const storeWorkspaceHostOrder = useAppStore((s) => s.workspaceHostOrder);
@@ -1273,8 +1327,9 @@ export function WorktreeList({
         // so this only sharpens per-row; kept for parity with the shortcut path.
         filterRepoIds: displayOptions.filterProjectIds ?? [],
         showSleepingWorkspaces: !displayOptions.hideSleeping,
-        tabsByWorktree: liveActivity.tabsByWorktree,
-        ptyIdsByTabId: liveActivity.ptyIdsByTabId,
+        tabsByWorktree: sidebarActivityInputs.tabsByWorktree,
+        ptyIdsByTabId: sidebarActivityInputs.ptyIdsByTabId,
+        browserTabsByWorktree: sidebarActivityInputs.browserTabsByWorktree,
         worktreeIdsWithLiveAgent: liveAgentWorktreeIds,
         // Why false for the two branch filters: `getFilteredAndSortedWorktrees`
         // already applied them with the active workspace spared, and re-applying
@@ -1309,6 +1364,14 @@ export function WorktreeList({
       worktreeById.set(worktree.id, worktree)
       pathByWorktreeId.set(worktree.id, worktree.path)
     }
+    // D11-003: a visible descendant of a pinned ancestor paints as pinned too. The row
+    // pipeline already relocates it into the Pinned section; the card needs the same
+    // fact, so derive it from the one resolver instead of the path set alone.
+    const pinnedSectionIdentities = new Set<string>(
+      getPinnedSectionWorktrees(visibleWorktrees, projectedLineageById, worktreeById).map(
+        getWorktreeHostIdentity
+      )
+    )
 
     // D03a-077: the folder card's synthetic review walks workspace lineage, which the
     // live store never composes; project the lineage above into the workspace-keyed
@@ -1415,6 +1478,7 @@ export function WorktreeList({
       propProjectById,
       pathByWorktreeId,
       lineageParentIdByChildId: buildLineageParentIdByChildId(projectedLineageById),
+      pinnedSectionIdentities,
     };
   }, [
     visibleProjects,
@@ -1423,6 +1487,7 @@ export function WorktreeList({
     projectGroupMap,
     liveActivity,
     liveAgentWorktreeIds,
+    sidebarActivityInputs,
     pinnedSet,
     unreadSet,
     hiddenWorktreesByProject,
@@ -2195,7 +2260,7 @@ export function WorktreeList({
             }
             lineageChildren={options?.lineageChildren}
             lineageChildrenStyle={lineageChildrenStyle}
-            isPinned={pinnedSet.has(wt.path)}
+            isPinned={pinnedSet.has(wt.path) || rowModel.pinnedSectionIdentities.has(identity)}
             isUnread={unreadSet.has(wt.path)}
             isMultiSelected={isMultiSelected}
             hostContextLabel={hostContextLabelByIdentity.get(identity)}
