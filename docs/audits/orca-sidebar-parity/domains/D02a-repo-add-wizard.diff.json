@@ -10,22 +10,15 @@
     "components/sidebar/AddRepoDialogChrome.tsx:6"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:20-21",
-     "src/App.tsx:3869",
-     "src/App.tsx:4230-4233"
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Abertura por store activeModal === 'add-repo' (Hydra usa prop booleana isOpen)",
-     "Processa caminhos arrastados via modalData.droppedLocalPath (drop de pasta do SO)",
-     "Aborta git clone ativo via window.api.repos.cloneAbort() ao fechar/resetar",
-     "Ref de geração monotônica para descartar resultados assíncronos obsoletos",
-     "onCloseAutoFocus / prop 'hosted' do workspace composer"
-    ],
-    "notes": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref).",
-    "note": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref)."
+    "missing_behaviors": [],
+    "notes": "activeModal lifecycle, dropped path, clone abort, generation guard, hosted focus.",
+    "note": "activeModal lifecycle, dropped path, clone abort, generation guard, hosted focus."
    },
    "par": [
     "PAR-13"
@@ -300,17 +293,15 @@
     "components/sidebar/CreateProjectLocationField.tsx:63"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:279-292"
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão com ícone de pasta/lápis para alterar pasta pai via picker nativo",
-     "Abertura do CreateProjectParentBrowser (RemoteFileBrowser) em tela cheia",
-     "Tooltip 'Browse host filesystem'"
-    ],
-    "notes": "Apenas input de texto editável para a pasta de localização; sem picker nativo nem navegador remoto."
+    "missing_behaviors": [],
+    "notes": "Parent picker button/tooltip + fullscreen remote browser.",
+    "note": "Parent picker button/tooltip + fullscreen remote browser."
    }
   },
   {
@@ -323,17 +314,15 @@
     "components/sidebar/create-project-defaults.ts:40"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:56-66",
-     "src/components/sidebar/AddRepoDialog.parity.test.tsx:74-90"
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "pasta padrão por host de runtime (browseRuntimeServerDirectory) e sondagem de Git no host remoto"
-    ],
-    "notes": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited.",
-    "note": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited."
+    "missing_behaviors": [],
+    "notes": "Remote ~/orca/projects default + ssh git probe.",
+    "note": "Remote ~/orca/projects default + ssh git probe."
    }
   },
   {
@@ -474,16 +463,15 @@
     "components/sidebar/useAddRepoNestedImportFlow.ts:223"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Utiliza o nome editado do grupo como displayName caso seja diferente do padrão do caminho",
-     "Executa completeNestedFolderOpen para adicionar a pasta raiz",
-     "Emite telemetria de ação e resultado associada à recuperação de pasta não-git com seleção zerada",
-     "Fecha o diálogo e ativa o workspace sintético de pasta"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
-    "notes": "handleOpenNestedRootFolder/completeNestedFolderOpen inexistentes; sem botão 'Open as Folder' no fluxo de add. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Scan root opens as folder workspace with edited name + telemetry.",
+    "note": "Scan root opens as folder workspace with edited name + telemetry."
    }
   },
   {
@@ -515,17 +503,15 @@
     "components/sidebar/ProjectAddedDialog.tsx:33"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Aceita tanto `repoId` quanto `projectId` legado para compatibilidade com versões antigas de onboarding",
-     "Aguarda hidratação do repositório via fetchRepos se o repositório ainda não estiver no store",
-     "Para projetos de pasta, atualiza worktrees e ativa o workspace sintético de pasta",
-     "Para repositórios Git, executa finishProjectAddWithDefaultCheckout com source 'project_added_compat'",
-     "Protegido contra execução duplicada em React StrictMode via handoffRunRef"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
-    "notes": "ProjectAddedDialog inexistente em src/**; sem modal 'project-added' nem handoff de compatibilidade. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "ProjectAddedDialog handoff with hydration and StrictMode guard.",
+    "note": "ProjectAddedDialog handoff with hydration and StrictMode guard."
    }
   },
   {
@@ -537,23 +523,17 @@
     "components/sidebar/project-added-default-checkout.ts:244"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:4233-4253"
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
     "backend": [
      "invoke('catalog_get') -> src-tauri/src/lib.rs:270"
     ],
-    "missing_behaviors": [
-     "Identificação do worktree principal (isMainWorktree) filtrado por executionHostId",
-     "Localização do checkout padrão detectado (detectedWorktreesByRepo)",
-     "Revelação de checkout padrão oculto",
-     "Desativação temporária de hideDefaultBranchWorkspace",
-     "activateAndRevealWorktree no sidebar",
-     "Telemetria 'add_repo_default_checkout_handoff'"
-    ],
-    "notes": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica).",
-    "note": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica)."
+    "missing_behaviors": [],
+    "notes": "Default/detected checkout reveal, temp flags, activation, telemetry.",
+    "note": "Default/detected checkout reveal, temp flags, activation, telemetry."
    }
   },
   {
@@ -563,16 +543,15 @@
     "components/sidebar/project-added-default-checkout.ts:73"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Verifica se há worktrees externos não gerenciados pelo Orca e não-visíveis (excluindo agent-scratch)",
-     "Atualiza a configuração do repositório para externalWorktreeVisibility: 'show'",
-     "Executa atualização autoritativa dos worktrees com requireAuthoritative: true",
-     "Retorna motivo de falha para telemetria caso a atualização ou o refresh falhem"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
-    "notes": "revealDetectedHiddenLinkedExternalWorktrees inexistente; nenhuma revelação de worktrees vinculados ocultos no fluxo de import. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Hidden linked externals revealed + authoritative refresh.",
+    "note": "Hidden linked externals revealed + authoritative refresh."
    }
   },
   {
@@ -582,17 +561,15 @@
     "components/sidebar/add-repo-skip-finalization.ts:18"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Define o repositório recém-importado como activeRepoId",
-     "Revela o repositório nos filtros de projeto do sidebar via revealRepoInProjectFilter",
-     "Desativa o filtro showActiveOnly para não esconder o projeto recém-adicionado",
-     "Desativa hideDefaultBranchWorkspace caso todos os worktrees importados sejam da branch padrão",
-     "Garante a isenção de alwaysShowDefaultBranchWorkspace para projetos sem PTY ativo com showSleepingWorkspaces desligado"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
-    "notes": "finalizeImportedRepoAfterSkip inexistente; AddRepoDialog não oferece opção Skip. Primitivas de filtro existem (project-filter-reveal.ts, hideDefaultBranchWorkspace) mas sem fluxo de finalização skip. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Skip finalization updates active repo, filters and branch flags.",
+    "note": "Skip finalization updates active repo, filters and branch flags."
    },
    "par": [
     "PAR-44"
@@ -640,14 +617,15 @@
     "components/sidebar/add-repo-runtime-owner.ts:19"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Converte proprietário de runtime ou conexão SSH no executionHostId correspondente",
-     "Gera objeto de opções com requireAuthoritative: true e executionHostId para direcionar a busca ao host correto"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar",
+     "src-tauri/src"
     ],
-    "notes": "capturedAddRepoExecutionHostId/worktreeRefreshOptions inexistentes; refresh é refreshGitWorktrees(proj.path) sem opções de host/autoridade (App.tsx:1584). Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Owner → executionHostId with requireAuthoritative refresh options.",
+    "note": "Owner → executionHostId with requireAuthoritative refresh options."
    }
   },
   {

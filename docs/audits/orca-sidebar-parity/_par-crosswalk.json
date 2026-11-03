@@ -6,7 +6,7 @@
   },
   {
    "id": "D02a-001",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-03": [
@@ -264,7 +264,7 @@
  "PAR-44": [
   {
    "id": "D02a-030",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D03a-044",

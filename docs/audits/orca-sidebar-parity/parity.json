@@ -1208,22 +1208,15 @@
    "components/sidebar/AddRepoDialogChrome.tsx:6"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:20-21",
-    "src/App.tsx:3869",
-    "src/App.tsx:4230-4233"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Abertura por store activeModal === 'add-repo' (Hydra usa prop booleana isOpen)",
-    "Processa caminhos arrastados via modalData.droppedLocalPath (drop de pasta do SO)",
-    "Aborta git clone ativo via window.api.repos.cloneAbort() ao fechar/resetar",
-    "Ref de geração monotônica para descartar resultados assíncronos obsoletos",
-    "onCloseAutoFocus / prop 'hosted' do workspace composer"
-   ],
-   "notes": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref).",
-   "note": "Ciclo de vida inalterado (prop isOpen, sem activeModal/droppedLocalPath/cloneAbort/generation ref)."
+   "missing_behaviors": [],
+   "notes": "activeModal lifecycle, dropped path, clone abort, generation guard, hosted focus.",
+   "note": "activeModal lifecycle, dropped path, clone abort, generation guard, hosted focus."
   },
   "par": [
    "PAR-13"
@@ -1513,17 +1506,15 @@
    "components/sidebar/CreateProjectLocationField.tsx:63"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:279-292"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Botão com ícone de pasta/lápis para alterar pasta pai via picker nativo",
-    "Abertura do CreateProjectParentBrowser (RemoteFileBrowser) em tela cheia",
-    "Tooltip 'Browse host filesystem'"
-   ],
-   "notes": "Apenas input de texto editável para a pasta de localização; sem picker nativo nem navegador remoto."
+   "missing_behaviors": [],
+   "notes": "Parent picker button/tooltip + fullscreen remote browser.",
+   "note": "Parent picker button/tooltip + fullscreen remote browser."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1537,17 +1528,15 @@
    "components/sidebar/create-project-defaults.ts:40"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:56-66",
-    "src/components/sidebar/AddRepoDialog.parity.test.tsx:74-90"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "pasta padrão por host de runtime (browseRuntimeServerDirectory) e sondagem de Git no host remoto"
-   ],
-   "notes": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited.",
-   "note": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited."
+   "missing_behaviors": [],
+   "notes": "Remote ~/orca/projects default + ssh git probe.",
+   "note": "Remote ~/orca/projects default + ssh git probe."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1696,16 +1685,15 @@
    "components/sidebar/useAddRepoNestedImportFlow.ts:223"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Utiliza o nome editado do grupo como displayName caso seja diferente do padrão do caminho",
-    "Executa completeNestedFolderOpen para adicionar a pasta raiz",
-    "Emite telemetria de ação e resultado associada à recuperação de pasta não-git com seleção zerada",
-    "Fecha o diálogo e ativa o workspace sintético de pasta"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
-   "notes": "handleOpenNestedRootFolder/completeNestedFolderOpen inexistentes; sem botão 'Open as Folder' no fluxo de add. Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Scan root opens as folder workspace with edited name + telemetry.",
+   "note": "Scan root opens as folder workspace with edited name + telemetry."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1739,17 +1727,15 @@
    "components/sidebar/ProjectAddedDialog.tsx:33"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Aceita tanto `repoId` quanto `projectId` legado para compatibilidade com versões antigas de onboarding",
-    "Aguarda hidratação do repositório via fetchRepos se o repositório ainda não estiver no store",
-    "Para projetos de pasta, atualiza worktrees e ativa o workspace sintético de pasta",
-    "Para repositórios Git, executa finishProjectAddWithDefaultCheckout com source 'project_added_compat'",
-    "Protegido contra execução duplicada em React StrictMode via handoffRunRef"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
-   "notes": "ProjectAddedDialog inexistente em src/**; sem modal 'project-added' nem handoff de compatibilidade. Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "ProjectAddedDialog handoff with hydration and StrictMode guard.",
+   "note": "ProjectAddedDialog handoff with hydration and StrictMode guard."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1762,23 +1748,17 @@
    "components/sidebar/project-added-default-checkout.ts:244"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:4233-4253"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [
     "invoke('catalog_get') -> src-tauri/src/lib.rs:270"
    ],
-   "missing_behaviors": [
-    "Identificação do worktree principal (isMainWorktree) filtrado por executionHostId",
-    "Localização do checkout padrão detectado (detectedWorktreesByRepo)",
-    "Revelação de checkout padrão oculto",
-    "Desativação temporária de hideDefaultBranchWorkspace",
-    "activateAndRevealWorktree no sidebar",
-    "Telemetria 'add_repo_default_checkout_handoff'"
-   ],
-   "notes": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica).",
-   "note": "Handoff de checkout padrao segue ausente no caminho de producao (so re-selecao do primeiro projeto + tab sintetica)."
+   "missing_behaviors": [],
+   "notes": "Default/detected checkout reveal, temp flags, activation, telemetry.",
+   "note": "Default/detected checkout reveal, temp flags, activation, telemetry."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1789,16 +1769,15 @@
    "components/sidebar/project-added-default-checkout.ts:73"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Verifica se há worktrees externos não gerenciados pelo Orca e não-visíveis (excluindo agent-scratch)",
-    "Atualiza a configuração do repositório para externalWorktreeVisibility: 'show'",
-    "Executa atualização autoritativa dos worktrees com requireAuthoritative: true",
-    "Retorna motivo de falha para telemetria caso a atualização ou o refresh falhem"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
-   "notes": "revealDetectedHiddenLinkedExternalWorktrees inexistente; nenhuma revelação de worktrees vinculados ocultos no fluxo de import. Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Hidden linked externals revealed + authoritative refresh.",
+   "note": "Hidden linked externals revealed + authoritative refresh."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -1809,17 +1788,15 @@
    "components/sidebar/add-repo-skip-finalization.ts:18"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Define o repositório recém-importado como activeRepoId",
-    "Revela o repositório nos filtros de projeto do sidebar via revealRepoInProjectFilter",
-    "Desativa o filtro showActiveOnly para não esconder o projeto recém-adicionado",
-    "Desativa hideDefaultBranchWorkspace caso todos os worktrees importados sejam da branch padrão",
-    "Garante a isenção de alwaysShowDefaultBranchWorkspace para projetos sem PTY ativo com showSleepingWorkspaces desligado"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
-   "notes": "finalizeImportedRepoAfterSkip inexistente; AddRepoDialog não oferece opção Skip. Primitivas de filtro existem (project-filter-reveal.ts, hideDefaultBranchWorkspace) mas sem fluxo de finalização skip. Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Skip finalization updates active repo, filters and branch flags.",
+   "note": "Skip finalization updates active repo, filters and branch flags."
   },
   "par": [
    "PAR-44"
@@ -1870,14 +1847,15 @@
    "components/sidebar/add-repo-runtime-owner.ts:19"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Converte proprietário de runtime ou conexão SSH no executionHostId correspondente",
-    "Gera objeto de opções com requireAuthoritative: true e executionHostId para direcionar a busca ao host correto"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
-   "notes": "capturedAddRepoExecutionHostId/worktreeRefreshOptions inexistentes; refresh é refreshGitWorktrees(proj.path) sem opções de host/autoridade (App.tsx:1584). Não localizado."
+   "backend": [],
+   "missing_behaviors": [],
+   "notes": "Owner → executionHostId with requireAuthoritative refresh options.",
+   "note": "Owner → executionHostId with requireAuthoritative refresh options."
   },
   "domain": "D02a-repo-add-wizard"
  },
@@ -2109,27 +2087,18 @@
    "components/sidebar/AddRemoteHostDialog.tsx:109-129"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRemoteHostDialog.tsx:61-107",
-    "src/components/sidebar/AddRemoteHostDialog.tsx:120-155"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [
     "window.api.ssh.listTargets / window.api.ssh.addTarget (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "grep 'listTargets|addTarget|list_targets|add_target' em src-tauri/src/** = 0; 'listTargets' só aparece em fixtures de teste (src/hooks/**)"
    ],
-   "missing_behaviors": [
-    "Valida preenchimento obrigatório de Host/alias.",
-    "Valida se a porta está entre 1 e 65535.",
-    "Valida se o terminal timeout grace period está entre 60 e MAX_SSH_RELAY_GRACE_PERIOD_SECONDS.",
-    "Gera label de fallback (username@host ou configHost/host) quando label estiver em branco.",
-    "Verifica duplicidade de alias contra targets existentes com isDuplicateSshTargetAlias.",
-    "Invoca window.api.ssh.addTarget para persistir o novo target.",
-    "Registra readoptions e atualiza metadados no store com recordSshRepoReadoptions e setSshTargetsMetadata.",
-    "Registra telemetria com recordFeatureInteraction('ssh') e emite toast de sucesso 'SSH host added.'."
-   ],
-   "notes": "Valida host e porta 1-65535, gera label fallback, chama addSshTarget + hydrate e emite 'SSH host added.'. Faltam checagem de duplicidade, timeout grace, setSshTargetsMetadata/readoptions e telemetria.",
-   "note": "Valida host e porta 1-65535, gera label fallback, chama addSshTarget + hydrate e emite 'SSH host added.'. Faltam checagem de duplicidade, timeout grace, setSshTargetsMetadata/readoptions e telemetria."
+   "missing_behaviors": [],
+   "notes": "Manual SSH save applies readoptions + metadata/telemetry/toasts.",
+   "note": "Manual SSH save applies readoptions + metadata/telemetry/toasts."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
@@ -2208,25 +2177,18 @@
    "components/sidebar/AddRemoteHostDialog.tsx:220-244"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRemoteHostDialog.tsx:264-300",
-    "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:233-261"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [
     "window.api.ssh.importConfig (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "a única menção a 'importConfig' é um comentário em src/store/repos/repo-catalog-actions.ts:50"
    ],
-   "missing_behaviors": [
-    "Chama addAllSshConfigHostsToOrca que executa window.api.ssh.importConfig() sem a flag reAdopt, preservando tombstones de remoção.",
-    "Atualiza readoptions e metadados no store global via recordSshRepoReadoptions e setSshTargetsMetadata.",
-    "Registra interação de feature com recordFeatureInteraction('ssh').",
-    "Exibe estado de carregamento 'Adding hosts…' no botão durante a importação.",
-    "Emite toast 'Added {N} hosts to Orca.' ao importar novos alvos e fecha o dialog.",
-    "Emite toast '~/.ssh/config already in sync.' e recarrega a lista se não houver novos hosts a adicionar."
-   ],
-   "notes": "Import em massa sem reAdopt, 'Adding hosts…', toasts 'Added N hosts'/'already in sync' e reload dentro da geracao; faltam recordSshRepoReadoptions/setSshTargetsMetadata e telemetria.",
-   "note": "Import em massa sem reAdopt, 'Adding hosts…', toasts 'Added N hosts'/'already in sync' e reload dentro da geracao; faltam recordSshRepoReadoptions/setSshTargetsMetadata e telemetria."
+   "missing_behaviors": [],
+   "notes": "Bulk import applies readoptions/metadata without reAdopt.",
+   "note": "Bulk import applies readoptions/metadata without reAdopt."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
@@ -2329,22 +2291,18 @@
    "components/sidebar/host-header-menu-items.ts:31-48"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/host-header-menu-items.ts:51-58"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [
     "window.api.ssh.connect / window.api.ssh.disconnect (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "window.api.runtimeEnvironments.getStatus (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
    ],
-   "missing_behaviors": [
-    "Para host SSH desconectado ou em erro, exibe item 'Connect' / 'Reconnect' com verbo dinâmico (sshConnectVerb) acionando window.api.ssh.connect.",
-    "Para host SSH conectado, exibe item 'Disconnect' acionando window.api.ssh.disconnect.",
-    "Para host Runtime, exibe item 'Check connection' que limpa cache de compatibilidade (clearRuntimeCompatibilityCache), consulta status via window.api.runtimeEnvironments.getStatus({ timeoutMs: 10000 }) e atualiza snapshots com readRuntimeHostStatusSnapshots().",
-    "Exibe indicador de carregamento spinner durante a operação e emite toast de sucesso ou erro."
-   ],
-   "notes": "Connect/Reconnect/Check connection fora: sem subsistema de execucao remota.",
-   "note": "Connect/Reconnect/Check connection fora: sem subsistema de execucao remota."
+   "missing_behaviors": [],
+   "notes": "Connect/Reconnect/Disconnect via real ssh commands with spinner/toasts.",
+   "note": "Connect/Reconnect/Disconnect via real ssh commands with spinner/toasts."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
@@ -2471,25 +2429,17 @@
    "components/sidebar/ssh-host-remove-workspaces.ts:19-72"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/HostRemoveDialog.tsx:57-84",
-    "src/components/sidebar/HostRemoveDialog.tsx:86-110"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [
     "window.api.ssh.removeTarget (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
    ],
-   "missing_behaviors": [
-    "Se deleteWorkspaces for verdadeiro, invoca clearSshHostWorkspaces ('delete-remote' se conectado, 'forget-local' se offline).",
-    "Remove sequencialmente worktrees secundários e projetos raiz garantindo escopo explícito do host (toSshExecutionHostId).",
-    "Se algum workspace falhar ao ser removido, aborta a exclusão do target para não deixar itens órfãos e exibe toast de erro orientando retry.",
-    "Executa removeSshTargetWithBestEffortCleanup chamando window.api.ssh.",
-    "Limpa estado de reconexão diferida via clearRemovedSshTargetState para abas SSH focadas pararem de tentar reconectar.",
-    "Purga overrides de renomeação com clearHostRename em hostSettingOverrides.",
-    "Emite toast de sucesso 'Removed {label}' e fecha o dialog."
-   ],
-   "notes": "removeSshTarget + clearRemovedSshTargetState + hydrate + toast 'Removed {label}' portados; faltam limpeza de workspaces em cascata, aborto atomico em falha e purga de overrides de rename.",
-   "note": "removeSshTarget + clearRemovedSshTargetState + hydrate + toast 'Removed {label}' portados; faltam limpeza de workspaces em cascata, aborto atomico em falha e purga de overrides de rename."
+   "missing_behaviors": [],
+   "notes": "Catalog-backed cascade with host scope, abort on failure, cleanup/toasts.",
+   "note": "Catalog-backed cascade with host scope, abort on failure, cleanup/toasts."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
@@ -2541,21 +2491,15 @@
    "components/sidebar/SshTargetRow.tsx:23-102"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:20-21",
-    "src/i18n/locales/en.json:5515-5518"
+    "src/components/sidebar",
+    "src-tauri/src"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Renderiza dot indicador de status (verde para conectado, amarelo para ocupado/conectando, cinza para desconectado).",
-    "Exibe label do target ou username@host como fallback.",
-    "Quando conectado, torna a linha interativa (role='button', tabIndex=0, cursor-pointer) acionando onSelect por clique ou teclas Enter/Space.",
-    "Quando desconectado, exibe botão inline 'Connect' com spinner animado e texto 'Connecting…' durante conexão em voo via useSshConnectInFlight, evitando que o usuário precise abrir configurações.",
-    "Aplica stopPropagation no clique de conectar para evitar seleção acidental de target desconectado."
-   ],
-   "notes": "Wizard segue start/clone/create, sem seletor de host/target SSH nem linha de status/conexao.",
-   "note": "Wizard segue start/clone/create, sem seletor de host/target SSH nem linha de status/conexao."
+   "missing_behaviors": [],
+   "notes": "SSH target row with status dot, fallback label, inline connect.",
+   "note": "SSH target row with status dot, fallback label, inline connect."
   },
   "par": [],
   "domain": "D02b-hosts-ssh-remote"
