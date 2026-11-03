@@ -40,15 +40,10 @@ type UpdaterBridge = {
   check?: (options: UpdateCheckOptions) => Promise<unknown>
 }
 
-type AppBridge = {
-  restart?: () => Promise<void>
-}
-
 type DesktopBridge = {
   feedback?: FeedbackBridge
   gh?: GhBridge
   updater?: UpdaterBridge
-  app?: AppBridge
 }
 
 function bridge(): DesktopBridge | null {
@@ -141,20 +136,18 @@ export async function checkForAppUpdates(options: UpdateCheckOptions): Promise<v
   throw new Error('Update checks are not available in this build.')
 }
 
-/** True when the renderer can ask the host to relaunch. */
+/** True when the renderer runs inside the Tauri host that owns `restart_app`. */
 export function isAppRestartAvailable(): boolean {
-  return typeof bridge()?.app?.restart === 'function'
+  return typeof window === 'object' && '__TAURI_INTERNALS__' in window
 }
 
 /**
- * Relaunches the application.
- * BLOCKED surface: no relaunch/exit command and no process/shell plugin.
+ * Relaunches the application through the Rust `restart_app` command.
+ *
+ * The command flags the runtime and returns before teardown; the host replaces
+ * the process once the event loop exits. Rejections (missing command in an old
+ * build, dead IPC) reach the caller so the menu can restore and show an error.
  */
 export async function restartApp(): Promise<void> {
-  const restart = bridge()?.app?.restart
-  if (typeof restart === 'function') {
-    await restart()
-    return
-  }
-  throw new Error('Application restart is not available in this build.')
+  await invoke('restart_app')
 }

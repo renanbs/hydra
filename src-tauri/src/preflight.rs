@@ -6,35 +6,46 @@ pub struct PreflightStatus {
     pub git_installed: bool,
     pub gh_installed: bool,
     pub gh_authenticated: bool,
+    pub glab_installed: bool,
+    pub glab_authenticated: bool,
+}
+
+impl Default for PreflightStatus {
+    fn default() -> Self {
+        Self {
+            git_installed: false,
+            gh_installed: false,
+            gh_authenticated: false,
+            glab_installed: false,
+            glab_authenticated: false,
+        }
+    }
+}
+
+/// Runs a CLI probe; a missing binary or a non-zero exit both read as `false`.
+fn cli_succeeds(program: &str, args: &[&str]) -> bool {
+    Command::new(program)
+        .args(args)
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
 }
 
 pub fn check_preflight_tools() -> PreflightStatus {
-    let git_installed = Command::new("git")
-        .arg("--version")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
+    let git_installed = cli_succeeds("git", &["--version"]);
+    let gh_installed = cli_succeeds("gh", &["--version"]);
+    let glab_installed = cli_succeeds("glab", &["--version"]);
 
-    let gh_installed = Command::new("gh")
-        .arg("--version")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
-
-    let gh_authenticated = if gh_installed {
-        Command::new("gh")
-            .args(["auth", "status"])
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false)
-    } else {
-        false
-    };
+    // Auth probes only make sense once the CLI answered `--version`.
+    let gh_authenticated = gh_installed && cli_succeeds("gh", &["auth", "status"]);
+    let glab_authenticated = glab_installed && cli_succeeds("glab", &["auth", "status"]);
 
     PreflightStatus {
         git_installed,
         gh_installed,
         gh_authenticated,
+        glab_installed,
+        glab_authenticated,
     }
 }
 
@@ -117,4 +128,30 @@ pub fn open_external_url(url: &str) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn status_serializes_the_glab_contract_the_renderer_reads() {
+        let json = serde_json::to_value(PreflightStatus {
+            git_installed: true,
+            gh_installed: true,
+            gh_authenticated: false,
+            glab_installed: true,
+            glab_authenticated: true,
+        })
+        .expect("serialize preflight status");
+
+        assert_eq!(json["glab_installed"], true);
+        assert_eq!(json["glab_authenticated"], true);
+        assert_eq!(json["gh_authenticated"], false);
+    }
+
+    #[test]
+    fn missing_cli_is_reported_as_not_installed() {
+        assert!(!cli_succeeds("hydra-preflight-definitely-missing-binary", &[]));
+    }
 }

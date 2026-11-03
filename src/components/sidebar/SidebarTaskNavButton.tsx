@@ -24,6 +24,7 @@ import {
 } from '@/shared/task-providers'
 import type { HydraSettings } from '@/shared/settings-types'
 import { useLinearProviderConnected } from '@/hooks/useLinearProviderConnected'
+import { usePreflightToolsStatus } from '@/hooks/usePreflightToolsStatus'
 import { useSidebarUiStore } from './sidebar-ui-store'
 
 function HideTaskSidebarMenu({ onHide }: { onHide: () => void }): React.JSX.Element {
@@ -59,17 +60,21 @@ function TaskProviderShortcut({
 }
 
 /**
- * Task provider availability Hydra can prove today.
+ * Task provider availability this host can prove.
  *
- * `gitlabInstalled` stays false: no command reports `glab`. Linear comes from
- * the live provider connection so the shortcut appears only when the Tasks
- * surface can actually query it. GitHub is always available (see
- * `task-providers.ts`), so it needs no probe here.
+ * `gitlabInstalled` comes from the Rust preflight `glab` probe (D01-020);
+ * Linear comes from the live provider connection so the shortcut appears only
+ * when the Tasks surface can actually query it. GitHub is always available
+ * (see `task-providers.ts`), so it needs no probe here.
  */
 export function resolveSidebarTaskProviderAvailability(overrides?: {
+  gitlabInstalled?: boolean
   linearConnected?: boolean
 }): TaskProviderAvailability {
-  return { gitlabInstalled: false, linearConnected: overrides?.linearConnected === true }
+  return {
+    gitlabInstalled: overrides?.gitlabInstalled === true,
+    linearConnected: overrides?.linearConnected === true
+  }
 }
 
 export function resolveVisibleSidebarTaskProviders(
@@ -111,10 +116,14 @@ export function SidebarTaskNavButton({
   const prefetchWorkItems = useSidebarUiStore((state) => state.prefetchWorkItems)
   const activeView = useSidebarUiStore((state) => state.activeView)
   const linearConnected = useLinearProviderConnected()
+  const { status: preflightStatus } = usePreflightToolsStatus()
   const showTasksButton = settings?.showTasksButton !== false
   const { visibleTaskProviders, resolvedDefaultTaskSource } = resolveVisibleSidebarTaskProviders(
     settings,
-    resolveSidebarTaskProviderAvailability({ linearConnected })
+    resolveSidebarTaskProviderAvailability({
+      gitlabInstalled: preflightStatus?.glab_installed === true,
+      linearConnected
+    })
   )
 
   const handlePrefetch = React.useCallback(() => {

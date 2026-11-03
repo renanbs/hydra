@@ -492,6 +492,11 @@ pub struct HydraSettings {
     pub skip_close_terminal_with_running_process_confirm: bool,
     #[serde(default = "default_false")]
     pub skip_delete_worktree_confirm: bool,
+    /// Sidebar nav visibility for the Orca Mobile entry (D01-024). Serialized
+    /// as the camelCase key the renderer writes, so hiding it survives a
+    /// relaunch instead of falling back to the default on `get_settings`.
+    #[serde(default = "default_true", rename = "showMobileButton")]
+    pub show_mobile_button: bool,
     #[serde(default, alias = "worktreeVisibilityDefaults")]
     pub worktree_visibility_defaults: Option<WorktreeVisibilityDefaults>,
     #[serde(default)]
@@ -624,6 +629,7 @@ impl Default for HydraSettings {
             confirm_close_pinned_tab: true,
             skip_close_terminal_with_running_process_confirm: false,
             skip_delete_worktree_confirm: false,
+            show_mobile_button: true,
             worktree_visibility_defaults: Some(WorktreeVisibilityDefaults {
                 external: Some("hide".to_string()),
                 custom_sources: Some(vec![]),
@@ -1821,11 +1827,17 @@ mod tests {
         let mut settings = HydraSettings::default();
         settings.terminal_font_size = 18;
         settings.theme = "dark".to_string();
+        settings.show_mobile_button = false;
         db.save_settings(&settings).expect("save settings");
 
         let loaded = db.get_settings().expect("get settings");
         assert_eq!(loaded.terminal_font_size, 18);
         assert_eq!(loaded.theme, "dark");
+        // D01-024: hiding the Mobile entry must survive the round trip.
+        assert!(!loaded.show_mobile_button);
+        assert!(!serde_json::to_value(&loaded).expect("serialize settings")["showMobileButton"]
+            .as_bool()
+            .unwrap_or(true));
 
         let layout = UiLayoutState {
             left_sidebar_open: false,
@@ -1837,6 +1849,15 @@ mod tests {
         let loaded_layout = db.get_layout_state().expect("get layout");
         assert_eq!(loaded_layout.left_sidebar_open, false);
         assert_eq!(loaded_layout.left_sidebar_width, 320);
+    }
+
+    #[test]
+    fn test_legacy_settings_default_the_mobile_entry_to_visible() {
+        // Saved settings from before D01-024 carry no `showMobileButton`; the
+        // sidebar entry must stay visible for them instead of failing to parse.
+        let parsed: HydraSettings = serde_json::from_str("{\"theme\":\"dark\"}")
+            .expect("legacy settings must deserialize");
+        assert!(parsed.show_mobile_button);
     }
 
     #[test]
