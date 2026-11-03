@@ -1,10 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/SidebarFeedbackDialog.tsx
-// Feedback composer mounted from the sidebar footer. The screenshot lane is the
-// part that needs care: a drop or paste over the dialog must attach to this
-// dialog instead of being claimed by the editor/terminal lane behind it, and a
-// rejected attachment must say why rather than disappearing.
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
+import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,32 +10,62 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useMountedRef } from '@/hooks/useMountedRef'
+import { GithubIcon } from '@/components/icons/BrandIcons'
+import type { GitHubViewer } from '@/shared/github/pull-request-types'
 import { translate } from '@/i18n/i18n'
 import {
   extractImageFilesFromDataTransfer,
-  hasAttachableFeedbackImage,
+  hasAttachableFeedbackImage
 } from '@/lib/feedback-image-attachments'
-import { submitSidebarFeedback } from '@/lib/sidebar-feedback-submit'
-import { stripClientEnvironmentFooter } from '../../shared/client-environment-info'
+import { stripClientEnvironmentFooter } from '@/shared/client-environment-info'
+import {
+  loadGitHubViewer,
+  openExternalUrl,
+  submitSidebarFeedback
+} from '@/lib/sidebar-desktop-contracts'
 import { SidebarFeedbackImageAttachments } from './SidebarFeedbackImageAttachments'
 import { useSidebarFeedbackEnvironmentPrefill } from './use-sidebar-feedback-environment-prefill'
 import { useSidebarFeedbackImages } from './use-sidebar-feedback-images'
 
-export type SidebarFeedbackDialogProps = {
+const GITHUB_ISSUES_URL = 'https://github.com/renanbs/hydra/issues'
+
+type SubmitIdentity = {
+  githubLogin: string | null
+  githubEmail: string | null
+}
+
+type SidebarFeedbackDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+function getSubmitIdentity(viewer: GitHubViewer | null, anonymous: boolean): SubmitIdentity {
+  if (anonymous || !viewer) {
+    return {
+      githubLogin: null,
+      githubEmail: null
+    }
+  }
+
+  return {
+    githubLogin: viewer.login,
+    githubEmail: viewer.email
+  }
+}
+
 export function SidebarFeedbackDialog({
   open,
-  onOpenChange,
+  onOpenChange
 }: SidebarFeedbackDialogProps): React.JSX.Element {
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [viewer, setViewer] = useState<GitHubViewer | null>(null)
+  const [isViewerLoading, setIsViewerLoading] = useState(false)
+  const [submitAnonymously, setSubmitAnonymously] = useState(false)
   const mountedRef = useMountedRef()
   const feedbackTextareaRef = useRef<HTMLTextAreaElement>(null)
   const {
@@ -51,7 +78,7 @@ export function SidebarFeedbackDialog({
     handleRemoveImage,
     clearImages,
     hasPendingImageReads,
-    getReservedImageSlots,
+    getReservedImageSlots
   } = useSidebarFeedbackImages({ open, isSubmitting, mountedRef })
 
   useSidebarFeedbackEnvironmentPrefill({
@@ -59,13 +86,37 @@ export function SidebarFeedbackDialog({
     feedback,
     setFeedback,
     textareaRef: feedbackTextareaRef,
-    mountedRef,
+    mountedRef
   })
 
-  // Why: the composer stays mounted between opens (dialog close animation), so a
-  // refusal from the previous attempt must not greet the next one.
-  useEffect(() => {
-    if (!open) setSubmitError(null)
+  React.useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    let cancelled = false
+    setIsViewerLoading(true)
+    void loadGitHubViewer()
+      .then((nextViewer) => {
+        if (!cancelled) {
+          setViewer(nextViewer)
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setViewer(null)
+          console.error('Failed to load GitHub viewer:', err)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsViewerLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [open])
 
   const handleSubmit = async (): Promise<void> => {
@@ -85,31 +136,21 @@ export function SidebarFeedbackDialog({
     }
 
     setIsSubmitting(true)
-    setSubmitError(null)
     try {
+      const identity = getSubmitIdentity(viewer, submitAnonymously)
       const result = await submitSidebarFeedback({
         feedback: trimmed,
-        // Hydra has no account identity in the renderer; the environment footer
-        // above carries the version/OS details the backend needs.
-        submitAnonymously: true,
-        githubLogin: null,
-        githubEmail: null,
+        submitAnonymously,
+        githubLogin: identity.githubLogin,
+        githubEmail: identity.githubEmail,
         images: images.map((image) => ({
           contentType: image.contentType,
-          data: image.data,
-        })),
+          data: image.data
+        }))
       })
 
       if (!result.ok) {
-        const message = translate(
-          'auto.components.sidebar.SidebarFeedbackDialog.60b721e857',
-          'Failed to submit feedback. Please try again.'
-        )
-        if (mountedRef.current) {
-          setSubmitError(result.error ? `${message} (${result.error})` : message)
-          toast.error(message)
-        }
-        return
+        throw new Error(result.error)
       }
 
       if (mountedRef.current) {
@@ -131,25 +172,23 @@ export function SidebarFeedbackDialog({
           )
         }
         setFeedback('')
+        setSubmitAnonymously(false)
         clearImages()
         onOpenChange(false)
       }
-    } catch (error) {
+    } catch (err) {
       if (mountedRef.current) {
-        setSubmitError(
-          translate(
-            'auto.components.sidebar.SidebarFeedbackDialog.60b721e857',
-            'Failed to submit feedback. Please try again.'
-          )
-        )
         toast.error(
           translate(
             'auto.components.sidebar.SidebarFeedbackDialog.60b721e857',
             'Failed to submit feedback. Please try again.'
-          )
+          ),
+          {
+            description: err instanceof Error ? err.message : undefined
+          }
         )
       }
-      console.error('Failed to submit feedback:', error)
+      console.error('Failed to submit feedback:', err)
     } finally {
       if (mountedRef.current) {
         setIsSubmitting(false)
@@ -187,28 +226,46 @@ export function SidebarFeedbackDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-sm">
-            {translate(
-              'auto.components.sidebar.SidebarFeedbackDialog.0eb643f07f',
-              'Send Feedback'
-            )}
+            {translate('auto.components.sidebar.SidebarFeedbackDialog.0eb643f07f', 'Send Feedback')}
           </DialogTitle>
           <DialogDescription className="text-xs">
             {translate(
-              'auto.components.sidebar.SidebarFeedbackDialog.hydraSubtitle',
+              'auto.components.sidebar.SidebarFeedbackDialog.a828fa4aee',
               "Share what's working, what's broken, or what Hydra should do next."
             )}
           </DialogDescription>
         </DialogHeader>
+
+        <div className="space-y-2 rounded-md border border-border/70 bg-muted/30 p-3">
+          <div className="text-xs font-medium text-foreground">
+            {translate(
+              'auto.components.sidebar.SidebarFeedbackDialog.9b33530b3d',
+              'Other ways to reach us'
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => void openExternalUrl(GITHUB_ISSUES_URL)}
+            >
+              <GithubIcon className="size-3.5" />
+              {translate(
+                'auto.components.sidebar.SidebarFeedbackDialog.d245c4ef6c',
+                'GitHub issues'
+              )}
+              <ExternalLink className="size-3.5" />
+            </Button>
+          </div>
+        </div>
 
         <textarea
           ref={feedbackTextareaRef}
           value={feedback}
           onChange={(event) => setFeedback(event.target.value)}
           placeholder={translate(
-            'auto.components.sidebar.SidebarFeedbackDialog.d46ddd66fc',
-            'What could we improve?'
-          )}
-          aria-label={translate(
             'auto.components.sidebar.SidebarFeedbackDialog.d46ddd66fc',
             'What could we improve?'
           )}
@@ -224,12 +281,44 @@ export function SidebarFeedbackDialog({
           onRemove={handleRemoveImage}
         />
 
-        {submitError ? (
-          <p className="break-words text-[11px] text-destructive" role="alert">
-            {submitError}
-          </p>
-        ) : null}
-
+        <div className="min-h-9 rounded-md border border-border/70 bg-muted/30 px-3 py-2">
+          {viewer ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                {translate('auto.components.sidebar.SidebarFeedbackDialog.c9e5ea0791', 'GitHub:')}{' '}
+                <span className="font-mono text-foreground">
+                  {viewer.login}
+                  {viewer.email ? ` (${viewer.email})` : ''}
+                </span>
+              </span>
+              <label className="flex cursor-pointer items-center gap-2 text-foreground">
+                <Checkbox
+                  checked={submitAnonymously}
+                  onCheckedChange={(checked) => setSubmitAnonymously(checked === true)}
+                  className="size-3.5"
+                />
+                {translate(
+                  'auto.components.sidebar.SidebarFeedbackDialog.5b120b9634',
+                  'Submit anonymously'
+                )}
+              </label>
+            </div>
+          ) : isViewerLoading ? (
+            <div className="text-xs text-muted-foreground">
+              {translate(
+                'auto.components.sidebar.SidebarFeedbackDialog.d20439c560',
+                'Checking GitHub identity…'
+              )}
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">
+              {translate(
+                'auto.components.sidebar.SidebarFeedbackDialog.8de03e23c5',
+                'Submit with your typed feedback only, or connect `gh` to include GitHub identity.'
+              )}
+            </div>
+          )}
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             {translate('auto.components.sidebar.SidebarFeedbackDialog.8bf619e4cf', 'Cancel')}

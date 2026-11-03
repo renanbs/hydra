@@ -3,16 +3,16 @@ import { createBrowserUuid } from './browser-uuid'
 import {
   INVALID_RASTER_IMAGE_PREVIEW_ERROR,
   RASTER_IMAGE_PREVIEW_TOO_LARGE_ERROR,
-  assertRasterImagePreviewWithinLimits,
+  assertRasterImagePreviewWithinLimits
 } from '../shared/raster-image-preview-limits'
 
-export const MAX_FEEDBACK_IMAGE_COUNT = 4
+export const MAX_FEEDBACK_IMAGE_COUNT = 5
 export const MAX_FEEDBACK_IMAGE_BYTES = 8 * 1024 * 1024
 export const SUPPORTED_FEEDBACK_IMAGE_TYPES = [
   'image/png',
   'image/jpeg',
   'image/webp',
-  'image/gif',
+  'image/gif'
 ] as const
 
 export const FEEDBACK_IMAGE_FILE_ACCEPT = SUPPORTED_FEEDBACK_IMAGE_TYPES.join(',')
@@ -38,17 +38,11 @@ function isSupportedType(contentType: string): boolean {
  * nothing is attachable would also discard any text riding along on the
  * clipboard.
  */
-export function hasAttachableFeedbackImage(
-  files: readonly File[],
-  existingCount = 0
-): boolean {
+export function hasAttachableFeedbackImage(files: readonly File[], existingCount = 0): boolean {
   return (
     existingCount < MAX_FEEDBACK_IMAGE_COUNT &&
     files.some(
-      (file) =>
-        isSupportedType(file.type) &&
-        file.size > 0 &&
-        file.size <= MAX_FEEDBACK_IMAGE_BYTES
+      (file) => isSupportedType(file.type) && file.size > 0 && file.size <= MAX_FEEDBACK_IMAGE_BYTES
     )
   )
 }
@@ -106,7 +100,7 @@ export async function readFeedbackImageFiles(
       if (file.size === 0) {
         addError(() =>
           translate('auto.lib.feedback.image.attachments.empty', '{{fileName}} is empty.', {
-            fileName,
+            fileName
           })
         )
         continue
@@ -116,7 +110,10 @@ export async function readFeedbackImageFiles(
           translate(
             'auto.lib.feedback.image.attachments.tooLarge',
             '{{fileName}} is larger than {{maxSize}}.',
-            { fileName, maxSize: formatFeedbackImageSize(MAX_FEEDBACK_IMAGE_BYTES) }
+            {
+              fileName,
+              maxSize: formatFeedbackImageSize(MAX_FEEDBACK_IMAGE_BYTES)
+            }
           )
         )
         continue
@@ -166,7 +163,7 @@ export async function readFeedbackImageFiles(
         contentType: file.type,
         bytes: file.size,
         data,
-        previewUrl: URL.createObjectURL(file),
+        previewUrl: URL.createObjectURL(file)
       })
     }
   } catch (error) {

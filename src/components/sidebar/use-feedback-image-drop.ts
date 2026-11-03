@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/use-feedback-image-drop.ts
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { hasNativeFileDragTypes } from '../../shared/native-file-drop'
+import { hasNativeFileDragTypes } from '@/shared/native-file-drop'
 import { extractImageFilesFromDataTransfer } from '@/lib/feedback-image-attachments'
 
 type FeedbackImageDragHandlers = {
@@ -17,9 +17,10 @@ export type FeedbackImageDrop = {
 }
 
 /**
- * Drag-and-drop attachment wiring for the feedback dialog. The drop is claimed
- * on window capture so a screenshot dropped over the dialog attaches instead of
- * being routed to the editor/native lane behind it.
+ * Drag-and-drop attachment wiring for the feedback dialog.
+ *
+ * DataTransfer.files is empty until the drop lands, so the highlight keys off
+ * the drag types the OS advertises during the drag itself.
  */
 export function useFeedbackImageDrop(
   open: boolean,
@@ -34,8 +35,6 @@ export function useFeedbackImageDrop(
     setIsDragActive(false)
   }, [])
 
-  // Why: DataTransfer.files is empty until the drop lands, so the highlight has
-  // to key off the drag types the OS advertises during the drag itself.
   const onDragEnter = useCallback((event: React.DragEvent<HTMLElement>) => {
     if (!hasNativeFileDragTypes(event.dataTransfer.types)) {
       return
@@ -44,8 +43,8 @@ export function useFeedbackImageDrop(
     setIsDragActive(true)
   }, [])
 
-  // Why: without an accepted dragover the browser refuses the drop and
-  // navigates to the dropped file, discarding the typed feedback.
+  // Why: without preventDefault on dragover the browser refuses the drop and
+  // navigates to the dropped file.
   const onDragOver = useCallback((event: React.DragEvent<HTMLElement>) => {
     if (!hasNativeFileDragTypes(event.dataTransfer.types)) {
       return
@@ -55,8 +54,6 @@ export function useFeedbackImageDrop(
   }, [])
 
   const onDragLeave = useCallback((event: React.DragEvent<HTMLElement>) => {
-    // Why: mirror the enter guard so internal drags can't decrement a counter
-    // enter never incremented.
     if (!hasNativeFileDragTypes(event.dataTransfer.types)) {
       return
     }
@@ -76,16 +73,13 @@ export function useFeedbackImageDrop(
       if (!droppedInDialog || !hasNativeFileDragTypes(event.dataTransfer?.types)) {
         return
       }
-      // Why: dragover accepted this drag, and a drop left uncancelled after that
-      // is what makes the browser navigate to the file — including the non-image
-      // drops below, which would otherwise wipe the typed feedback.
+      // Why: an accepted dragover plus an uncancelled drop is what makes the
+      // browser navigate to the file, wiping the typed feedback.
       event.preventDefault()
       const images = extractImageFilesFromDataTransfer(event.dataTransfer)
       if (images.length === 0) {
         return
       }
-      // Why: stop the native-drop lane from also opening the screenshot in an
-      // editor behind the dialog.
       event.stopPropagation()
       onAddFiles(images)
     }

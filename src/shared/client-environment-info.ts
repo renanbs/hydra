@@ -4,12 +4,12 @@ export type ClientEnvironmentInfo = {
   platform: string
   osRelease: string
   arch: string
-  /** Login/default shell path when known (e.g. SHELL / ComSpec / spawn shell). */
+  /** Login/default shell path when known. */
   shell?: string
 }
 
 const FOOTER_MARKER = '---'
-const PRODUCT_LINE_PREFIX = 'Hydra:'
+const APP_LINE_PREFIX = 'Hydra:'
 
 // Why: match the whole prefilled block (optional Shell line included) so strip
 // keeps authored text both above and below — users who click past the footer
@@ -27,7 +27,7 @@ export function formatClientEnvironmentInfo(info: ClientEnvironmentInfo): string
   const osRelease = normalizeEnvironmentValue(info.osRelease)
   const arch = normalizeEnvironmentValue(info.arch)
   const osParts = [platform, osRelease, arch ? `(${arch})` : ''].filter(Boolean)
-  const lines = [`${PRODUCT_LINE_PREFIX} ${version}`, `OS: ${osParts.join(' ')}`]
+  const lines = [`${APP_LINE_PREFIX} ${version}`, `OS: ${osParts.join(' ')}`]
   const shell = info.shell ? normalizeEnvironmentValue(info.shell) : ''
   if (shell) {
     lines.push(`Shell: ${shell}`)

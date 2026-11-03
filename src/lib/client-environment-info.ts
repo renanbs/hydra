@@ -1,63 +1,62 @@
 import { invoke } from '@tauri-apps/api/core'
-import {
-  formatClientEnvironmentFooter,
-  type ClientEnvironmentInfo
-} from '../shared/client-environment-info'
+import type { ClientEnvironmentInfo } from '../shared/client-environment-info'
 import { getRendererAppPlatform } from './renderer-app-platform'
 
-type UserAgentDataLike = {
-  platformVersion?: string
-  architecture?: string
-  bitness?: string
+/**
+ * Resolve trusted desktop env details for bug reports.
+ *
+ * Hydra has no preload bridge, so the version comes from the real
+ * `get_app_version` Tauri command and platform/arch come from the renderer.
+ * Shell is supplied by the caller when the settings snapshot knows it.
+ */
+export async function resolveClientEnvironmentInfo(shell?: string): Promise<ClientEnvironmentInfo> {
+  const appVersion = await resolveAppVersion()
+  return {
+    appVersion,
+    platform: resolveFallbackPlatform(),
+    osRelease: resolveOsRelease(),
+    arch: resolveArch(),
+    ...(shell && shell.trim() ? { shell: shell.trim() } : {})
+  }
 }
 
-function resolveArchitecture(): string {
-  const userAgentData = (navigator as Navigator & { userAgentData?: UserAgentDataLike })
-    .userAgentData
-  const fromClient = userAgentData?.architecture?.trim()
-  if (fromClient) {
-    const bitness = userAgentData?.bitness?.trim()
-    return bitness ? `${fromClient}${bitness}` : fromClient
+function resolveFallbackPlatform(): string {
+  try {
+    return getRendererAppPlatform()
+  } catch {
+    return 'unknown'
   }
-  const platform = typeof navigator === 'undefined' ? '' : navigator.platform
-  if (/x86_64|amd64|win64/i.test(platform)) return 'x64'
-  if (/aarch64|arm64/i.test(platform)) return 'arm64'
-  if (/arm/i.test(platform)) return 'arm'
-  return ''
 }
 
 function resolveOsRelease(): string {
-  const userAgentData = (navigator as Navigator & { userAgentData?: UserAgentDataLike })
-    .userAgentData
-  const fromClient = userAgentData?.platformVersion?.trim()
-  if (fromClient) return fromClient
-  const userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent
-  // Why: only the OS token is useful for a bug report; the WebKit/Gecko build
-  // string that follows would just add noise. Best-effort, never throws.
-  const osToken = /(?:Linux|Windows NT|Mac OS X)\s?[^;)]*/i.exec(userAgent)?.[0]?.trim()
-  return osToken ?? ''
+  try {
+    const match = /Android ([\d.]+)/.exec(navigator.userAgent)
+    if (match) return match[1]
+  } catch {
+    // Best-effort only.
+  }
+  return ''
+}
+
+function resolveArch(): string {
+  try {
+    const ua = navigator.userAgent
+    if (/aarch64|arm64/i.test(ua)) return 'arm64'
+    if (/x86_64|Win64|x64/i.test(ua)) return 'x86_64'
+  } catch {
+    // Best-effort only.
+  }
+  return ''
 }
 
 async function resolveAppVersion(): Promise<string> {
   try {
     const version = await invoke<string>('get_app_version')
-    if (typeof version === 'string' && version.trim()) return version.trim()
+    if (typeof version === 'string' && version.trim()) {
+      return version.trim()
+    }
   } catch {
-    // Best-effort: feedback copy should still show OS details.
+    // Best-effort: feedback/error copy should still show OS details.
   }
   return 'unknown'
-}
-
-/** Resolve trusted desktop env details (or browser best-effort) for bug reports. */
-export async function resolveClientEnvironmentInfo(): Promise<ClientEnvironmentInfo> {
-  return {
-    appVersion: await resolveAppVersion(),
-    platform: getRendererAppPlatform(),
-    osRelease: resolveOsRelease(),
-    arch: resolveArchitecture(),
-  }
-}
-
-export async function resolveClientEnvironmentFooter(): Promise<string> {
-  return formatClientEnvironmentFooter(await resolveClientEnvironmentInfo())
 }

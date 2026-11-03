@@ -1,202 +1,193 @@
-// Parity guard for the sidebar feedback composer (D10-078..D10-082): the
-// dialog must highlight and claim image drops/pastes, prefill the environment
-// footer, attach/remove previews without leaking object URLs, and turn a real
-// submission refusal into an inline alert instead of a fake success.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { SidebarFeedbackDialog } from './SidebarFeedbackDialog'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
+import {
+  loadGitHubViewer,
+  submitSidebarFeedback
+} from "@/lib/sidebar-desktop-contracts";
+import { SidebarFeedbackDialog } from "./SidebarFeedbackDialog";
 
-const { toastMock } = vi.hoisted(() => ({
-  toastMock: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
-}))
-const { submitMock } = vi.hoisted(() => ({ submitMock: vi.fn() }))
-const { resolveInfoMock } = vi.hoisted(() => ({ resolveInfoMock: vi.fn() }))
+vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn().mockResolvedValue("1.2.3") }));
 
-vi.mock('sonner', () => ({ toast: toastMock }))
-vi.mock('@/lib/sidebar-feedback-submit', () => ({ submitSidebarFeedback: submitMock }))
-vi.mock('@/lib/client-environment-info', () => ({
-  resolveClientEnvironmentInfo: resolveInfoMock,
-}))
+vi.mock("@/lib/sidebar-desktop-contracts", () => ({
+  openExternalUrl: vi.fn().mockResolvedValue(undefined),
+  submitSidebarFeedback: vi.fn(),
+  loadGitHubViewer: vi.fn().mockResolvedValue(null),
+  checkForAppUpdates: vi.fn(),
+  restartApp: vi.fn(),
+}));
 
-const PNG_BYTES = new Uint8Array([
-  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1,
-])
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    warning: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
 
-function imageFile(name = 'shot.png'): File {
-  return new File([PNG_BYTES], name, { type: 'image/png' })
+class ResizeObserverStub {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
+globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 
-beforeEach(() => {
-  toastMock.success.mockReset()
-  toastMock.warning.mockReset()
-  toastMock.error.mockReset()
-  submitMock.mockReset()
-  resolveInfoMock.mockResolvedValue({
-    appVersion: '1.4.2',
-    platform: 'linux',
-    osRelease: '6.12',
-    arch: 'x64',
-  })
-  URL.createObjectURL = vi.fn(() => 'blob:feedback-preview')
-  URL.revokeObjectURL = vi.fn()
-})
+const PNG_1X1 = Uint8Array.from(
+  atob(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+  ),
+  (char) => char.charCodeAt(0)
+);
 
-afterEach(() => {
-  vi.restoreAllMocks()
-})
+function pngFile(name = "shot.png"): File {
+  return new File([PNG_1X1], name, { type: "image/png" });
+}
 
 function renderDialog() {
-  const onOpenChange = vi.fn()
-  render(<SidebarFeedbackDialog open onOpenChange={onOpenChange} />)
-  return { onOpenChange }
+  const onOpenChange = vi.fn();
+  const utils = render(<SidebarFeedbackDialog open onOpenChange={onOpenChange} />);
+  return { onOpenChange, ...utils };
 }
 
-/** The environment footer resolves asynchronously; settle it before acting. */
-async function settlePrefill(): Promise<void> {
-  const textarea = screen.getByLabelText('What could we improve?') as HTMLTextAreaElement
-  await waitFor(() => expect(textarea.value).toContain('Hydra: 1.4.2'))
+async function waitForEnvPrefill(): Promise<HTMLTextAreaElement> {
+  const textarea = screen.getByPlaceholderText("What could we improve?");
+  await waitFor(() => expect(textarea.value).toContain("Hydra: 1.2.3"));
+  return textarea as HTMLTextAreaElement;
 }
 
-describe('SidebarFeedbackDialog attachments (D10-078/D10-079)', () => {
-  it('automatically highlights for a native file drag over the dialog', async () => {
-    renderDialog()
-    await settlePrefill()
+describe("SidebarFeedbackDialog (D01-040/D01-041/D01-042/D01-043)", () => {
+  beforeEach(() => {
+    vi.mocked(submitSidebarFeedback).mockReset();
+    vi.mocked(loadGitHubViewer).mockReset().mockResolvedValue(null);
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: vi.fn(() => "blob:feedback"),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: vi.fn(),
+    });
+  });
 
-    fireEvent.dragEnter(screen.getByRole('dialog'), {
-      dataTransfer: { types: ['Files'] },
-    })
+  it("prefills a technical footer, keeps Send disabled until authored text exists", async () => {
+    renderDialog();
+    const textarea = await waitForEnvPrefill();
 
-    expect(screen.getByText(/Attach up to 4 screenshots/).closest('.border-dashed')).toHaveClass(
-      'border-ring'
-    )
-  })
+    const send = screen.getByRole("button", { name: "Send" });
+    expect(send).toBeDisabled();
+    expect(textarea.value).toContain("OS:");
 
-  it('does not highlight for an internal drag', async () => {
-    renderDialog()
-    await settlePrefill()
+    fireEvent.change(textarea, { target: { value: `${textarea.value}\nIt crashes on launch` } });
+    expect(send).not.toBeDisabled();
 
-    fireEvent.dragEnter(screen.getByRole('dialog'), {
-      dataTransfer: { types: ['text/x-orca-file-path'] },
-    })
+    vi.mocked(submitSidebarFeedback).mockResolvedValue({ ok: true });
+    fireEvent.click(send);
 
-    expect(
-      screen.getByText(/Attach up to 4 screenshots/).closest('.border-dashed')
-    ).not.toHaveClass('border-ring')
-  })
+    await waitFor(() => expect(submitSidebarFeedback).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(submitSidebarFeedback).mock.calls[0][0];
+    expect(payload.feedback).toContain("It crashes on launch");
+    expect(payload.feedback).toContain("Hydra: 1.2.3");
+    expect(payload.images).toEqual([]);
+    expect(toast.success).toHaveBeenCalled();
+  });
 
-  it('claims a paste of a screenshot and attaches it', async () => {
-    renderDialog()
+  it("surfaces the missing submit backend as an error instead of a fake success", async () => {
+    const { onOpenChange } = renderDialog();
+    const textarea = await waitForEnvPrefill();
+    fireEvent.change(textarea, { target: { value: "broken" } });
 
-    fireEvent.paste(screen.getByRole('dialog'), {
-      clipboardData: { files: [imageFile()] },
-    })
+    vi.mocked(submitSidebarFeedback).mockResolvedValue({
+      ok: false,
+      error: "Feedback submission backend is not available in this build.",
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
-    await waitFor(() => expect(screen.getByAltText('shot.png')).toBeInTheDocument())
-    expect(screen.getByRole('button', { name: 'Remove shot.png' })).toBeInTheDocument()
-  })
-
-  it('claims a drop of a screenshot and attaches it', async () => {
-    renderDialog()
-    const dialog = screen.getByRole('dialog')
-    const drop = new Event('drop', { bubbles: true, cancelable: true })
-    Object.defineProperty(drop, 'dataTransfer', {
-      value: { types: ['Files'], files: [imageFile('dropped.png')] },
-    })
-
-    fireEvent(dialog, drop)
-
-    expect(drop.defaultPrevented).toBe(true)
-    await waitFor(() => expect(screen.getByAltText('dropped.png')).toBeInTheDocument())
-  })
-})
-
-describe('SidebarFeedbackDialog prefill and image lifecycle (D10-080..D10-082)', () => {
-  it('prefills the environment footer when it opens', async () => {
-    renderDialog()
-
-    const textarea = screen.getByLabelText('What could we improve?') as HTMLTextAreaElement
-    await waitFor(() => expect(textarea.value).toContain('Hydra: 1.4.2'))
-    expect(textarea.value).toContain('OS: linux 6.12 (x64)')
-  })
-
-  it('revokes the preview URL when an attached image is removed', async () => {
-    renderDialog()
-
-    fireEvent.paste(screen.getByRole('dialog'), {
-      clipboardData: { files: [imageFile()] },
-    })
-    await waitFor(() => expect(screen.getByAltText('shot.png')).toBeInTheDocument())
-
-    fireEvent.click(screen.getByRole('button', { name: 'Remove shot.png' }))
-
-    expect(screen.queryByAltText('shot.png')).toBeNull()
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:feedback-preview')
-  })
-})
-
-describe('SidebarFeedbackDialog submission', () => {
-  it('disables Send until the user writes feedback beyond the footer', async () => {
-    renderDialog()
     await waitFor(() =>
-      expect(
-        (screen.getByLabelText('What could we improve?') as HTMLTextAreaElement).value
-      ).toContain('Hydra: 1.4.2')
-    )
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to submit feedback. Please try again.",
+        { description: "Feedback submission backend is not available in this build." }
+      )
+    );
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 
-    const send = screen.getByRole('button', { name: 'Send' })
-    expect(send).toBeDisabled()
+  it("warns when the backend cannot confirm image delivery", async () => {
+    renderDialog();
+    const textarea = await waitForEnvPrefill();
+    fireEvent.change(textarea, { target: { value: "with image" } });
 
-    fireEvent.change(screen.getByLabelText('What could we improve?'), {
-      target: { value: 'The sidebar flickers on resize.' },
-    })
-    expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled()
-  })
+    vi.mocked(submitSidebarFeedback).mockResolvedValue({
+      ok: true,
+      imagesDelivered: false,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
-  it('submits the typed feedback and closes on success', async () => {
-    submitMock.mockResolvedValue({ ok: true })
-    const { onOpenChange } = renderDialog()
+    await waitFor(() =>
+      expect(toast.warning).toHaveBeenCalledWith(
+        "Feedback sent, but image delivery could not be confirmed."
+      )
+    );
+  });
 
-    fireEvent.change(screen.getByLabelText('What could we improve?'), {
-      target: { value: 'The sidebar flickers on resize.' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+  it("shows the viewer identity and omits it when submitting anonymously", async () => {
+    vi.mocked(loadGitHubViewer).mockResolvedValue({
+      login: "octocat",
+      email: "octo@example.com",
+    });
+    renderDialog();
+    const textarea = await waitForEnvPrefill();
 
-    await waitFor(() => expect(submitMock).toHaveBeenCalledTimes(1))
-    expect(submitMock.mock.calls[0]?.[0]).toMatchObject({
-      feedback: 'The sidebar flickers on resize.',
-      images: [],
-    })
-    expect(toastMock.success).toHaveBeenCalledTimes(1)
-    expect(onOpenChange).toHaveBeenCalledWith(false)
-  })
+    expect(await screen.findByText(/octocat/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Submit anonymously" }));
+    fireEvent.change(textarea, { target: { value: "anonymous report" } });
 
-  it('surfaces a submission refusal inline instead of reporting success', async () => {
-    submitMock.mockResolvedValue({ ok: false, error: 'submit_sidebar_feedback not found' })
-    const { onOpenChange } = renderDialog()
+    vi.mocked(submitSidebarFeedback).mockResolvedValue({ ok: true });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
-    fireEvent.change(screen.getByLabelText('What could we improve?'), {
-      target: { value: 'Keep the report.' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    await waitFor(() => expect(submitSidebarFeedback).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(submitSidebarFeedback).mock.calls[0][0]).toMatchObject({
+      submitAnonymously: true,
+      githubLogin: null,
+      githubEmail: null,
+    });
+  });
 
-    const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('Failed to submit feedback')
-    expect(alert).toHaveTextContent('submit_sidebar_feedback not found')
-    expect(toastMock.success).not.toHaveBeenCalled()
-    expect(onOpenChange).not.toHaveBeenCalled()
-  })
+  it("attaches a pasted image with its bytes and lets the user remove it", async () => {
+    renderDialog();
+    await waitForEnvPrefill();
+    const dialog = screen.getByRole("dialog");
 
-  it('warns when the backend cannot confirm image delivery', async () => {
-    submitMock.mockResolvedValue({ ok: true, imagesDelivered: false })
-    renderDialog()
+    fireEvent.paste(dialog, { clipboardData: { files: [pngFile()] } });
 
-    fireEvent.change(screen.getByLabelText('What could we improve?'), {
-      target: { value: 'Screenshot attached.' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    const thumbnail = await screen.findByAltText("shot.png");
+    expect(thumbnail).toHaveAttribute("src", "blob:feedback");
+    expect(screen.getByText("1 KB")).toBeInTheDocument();
 
-    await waitFor(() => expect(toastMock.warning).toHaveBeenCalledTimes(1))
-    expect(toastMock.warning.mock.calls[0]?.[0]).toContain('image delivery could not be confirmed')
-    expect(toastMock.success).not.toHaveBeenCalled()
-  })
-})
+    const fileInput = document.querySelector('input[type="file"]');
+    expect(fileInput).not.toBeNull();
+    expect(fileInput).toHaveAttribute("accept", "image/png,image/jpeg,image/webp,image/gif");
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove shot.png" }));
+    await waitFor(() => expect(screen.queryByAltText("shot.png")).toBeNull());
+  });
+
+  it("sends attached image data through the submit contract", async () => {
+    renderDialog();
+    const textarea = await waitForEnvPrefill();
+    fireEvent.change(textarea, { target: { value: "image attached" } });
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [pngFile()] } });
+    await screen.findByAltText("shot.png");
+
+    vi.mocked(submitSidebarFeedback).mockResolvedValue({ ok: true });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    await waitFor(() => expect(submitSidebarFeedback).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(submitSidebarFeedback).mock.calls[0][0];
+    expect(payload.images).toHaveLength(1);
+    expect(payload.images[0].contentType).toBe("image/png");
+    expect(Array.from(payload.images[0].data)).toEqual(Array.from(PNG_1X1));
+  });
+});

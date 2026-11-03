@@ -268,6 +268,7 @@ export function WorktreeSidebar({
   initialAgentsIntroShown,
   onSidebarPrefsChange,
   onUpdateSettings,
+  onOpenSettingsSection,
 }: WorktreeSidebarProps): React.JSX.Element {
   // ─── View & Preference State ─────────────────────────────────────────────
   const [sidebarBody, setSidebarBody] = useState<SidebarBody>(initialSidebarBody ?? "workspaces");
@@ -1966,6 +1967,8 @@ export function WorktreeSidebar({
       )}
       {/* 1. Top Strip Nav (Search / Worktree palette) */}
       <SidebarNav
+        settings={settings ?? null}
+        onUpdateSettings={onUpdateSettings}
         onOpenWorktreePalette={() => {
           window.dispatchEvent(new CustomEvent("hydra:open-jump-palette"));
         }}
@@ -2360,8 +2363,10 @@ export function WorktreeSidebar({
         appVersion={appVersion}
         gitStatus={gitStatus}
         onOpenSettings={onOpenSettings}
+        onOpenSettingsSection={onOpenSettingsSection ?? (() => onOpenSettings())}
         onRevealCurrent={sidebarBody === "workspaces" ? () => handleRevealCurrent() : undefined}
         workspaceBoardOpen={workspaceBoardOpen}
+        workspaceBoardDragPreviewOpen={workspaceBoardDragPreviewOpen}
         onToggleWorkspaceBoard={toggleWorkspaceBoard}
       />
 

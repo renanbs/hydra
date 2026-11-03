@@ -9,7 +9,7 @@ import {
   FEEDBACK_IMAGE_FILE_ACCEPT,
   MAX_FEEDBACK_IMAGE_COUNT,
   formatFeedbackImageSize,
-  type FeedbackImageDraft,
+  type FeedbackImageDraft
 } from '@/lib/feedback-image-attachments'
 
 type SidebarFeedbackImageAttachmentsProps = {
@@ -25,7 +25,7 @@ export function SidebarFeedbackImageAttachments({
   disabled,
   isDragActive,
   onAddFiles,
-  onRemove,
+  onRemove
 }: SidebarFeedbackImageAttachmentsProps): React.JSX.Element {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const atCapacity = images.length >= MAX_FEEDBACK_IMAGE_COUNT
@@ -41,8 +41,9 @@ export function SidebarFeedbackImageAttachments({
         <span className="text-xs text-muted-foreground">
           {translate(
             'auto.components.sidebar.SidebarFeedbackImageAttachments.screenshotsHint',
-            'Attach up to {count} screenshots'
-          ).replace('{count}', String(MAX_FEEDBACK_IMAGE_COUNT))}
+            'Attach up to {{count}} screenshots',
+            { count: MAX_FEEDBACK_IMAGE_COUNT }
+          )}
         </span>
         <Button
           type="button"

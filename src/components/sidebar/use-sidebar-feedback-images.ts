@@ -6,15 +6,11 @@ import { translate } from '@/i18n/i18n'
 import {
   readFeedbackImageFiles,
   releaseFeedbackImageDraft,
-  type FeedbackImageDraft,
+  type FeedbackImageDraft
 } from '@/lib/feedback-image-attachments'
 import { useFeedbackImageDrop, type FeedbackImageDrop } from './use-feedback-image-drop'
 
-export function useSidebarFeedbackImages(params: {
-  open: boolean
-  isSubmitting: boolean
-  mountedRef: RefObject<boolean>
-}): {
+export interface SidebarFeedbackImages {
   images: FeedbackImageDraft[]
   pendingImageReadCount: number
   isDragActive: boolean
@@ -26,12 +22,18 @@ export function useSidebarFeedbackImages(params: {
   hasPendingImageReads: () => boolean
   /** Live committed+pending count for paste capacity checks. */
   getReservedImageSlots: () => number
-} {
+}
+
+export function useSidebarFeedbackImages(params: {
+  open: boolean
+  isSubmitting: boolean
+  mountedRef: RefObject<boolean>
+}): SidebarFeedbackImages {
   const [images, setImages] = useState<FeedbackImageDraft[]>([])
   const [pendingImageReadCount, setPendingImageReadCount] = useState(0)
   const liveImageDraftsRef = useRef<FeedbackImageDraft[]>([])
-  // Why: committed state lags in-flight reads, so batches still being read count
-  // against capacity — otherwise two quick pastes both see room for four.
+  // Why: committed state lags in-flight reads, so batches still being read
+  // count against capacity — otherwise two quick pastes both see room.
   const pendingImageReadsRef = useRef(0)
   const imageCount = images.length
 
@@ -106,9 +108,7 @@ export function useSidebarFeedbackImages(params: {
     const removed = liveImageDraftsRef.current.find((image) => image.id === id)
     if (removed) {
       releaseFeedbackImageDraft(removed)
-      liveImageDraftsRef.current = liveImageDraftsRef.current.filter(
-        (image) => image.id !== id
-      )
+      liveImageDraftsRef.current = liveImageDraftsRef.current.filter((image) => image.id !== id)
     }
     setImages((current) => current.filter((image) => image.id !== id))
   }, [])
@@ -128,6 +128,6 @@ export function useSidebarFeedbackImages(params: {
     handleRemoveImage,
     clearImages,
     hasPendingImageReads: () => pendingImageReadsRef.current > 0,
-    getReservedImageSlots: () => liveImageDraftsRef.current.length + pendingImageReadsRef.current,
+    getReservedImageSlots: () => liveImageDraftsRef.current.length + pendingImageReadsRef.current
   }
 }

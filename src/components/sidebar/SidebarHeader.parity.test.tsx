@@ -198,3 +198,51 @@ describe("SidebarHeader filter trigger (D09-004)", () => {
     expect(trigger.textContent).toBe("");
   });
 });
+
+describe("SidebarHeader activity options portal target (D01-010)", () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  function renderWithTarget(sidebarBody: "workspaces" | "agents") {
+    const targets: Array<HTMLDivElement | null> = [];
+    const optionsButtonRef = React.createRef<HTMLButtonElement>();
+    render(
+      <SidebarHeader
+        sidebarBody={sidebarBody}
+        setSidebarBody={vi.fn()}
+        introShown
+        onAcknowledgeIntro={vi.fn()}
+        groupBy="repo"
+        onOpenAddRepoDialog={vi.fn()}
+        onOpenNewWorkspaceModal={vi.fn()}
+        optionsButtonRef={optionsButtonRef}
+        optionsMenuOpen={false}
+        setOptionsMenuOpen={vi.fn()}
+        projects={[]}
+        activeFilterCount={0}
+        hasActiveFilters={false}
+        onActivityOptionsTargetChange={(target) => targets.push(target)}
+      />
+    );
+    return targets;
+  }
+
+  it("mounts the portal target beside the header actions in the agents body", () => {
+    const targets = renderWithTarget("agents");
+
+    const target = document.querySelector("[data-agents-options-target]");
+    expect(target).not.toBeNull();
+    expect(targets[targets.length - 1]).toBe(target);
+    expect(
+      screen.getByRole("button", { name: "Turn off activity view" })
+    ).toBeInTheDocument();
+  });
+
+  it("unmounts the target in the workspaces body", () => {
+    const targets = renderWithTarget("workspaces");
+
+    expect(document.querySelector("[data-agents-options-target]")).toBeNull();
+    expect(screen.getByRole("button", { name: "View activity" })).toBeInTheDocument();
+  });
+});

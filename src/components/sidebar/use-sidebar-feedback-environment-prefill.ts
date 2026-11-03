@@ -4,8 +4,8 @@ import { useLayoutEffect, useEffect, useRef, type RefObject } from 'react'
 import { resolveClientEnvironmentInfo } from '@/lib/client-environment-info'
 import {
   appendClientEnvironmentFooter,
-  type ClientEnvironmentInfo,
-} from '../../shared/client-environment-info'
+  type ClientEnvironmentInfo
+} from '@/shared/client-environment-info'
 
 type FeedbackSelection = {
   feedback: string
@@ -20,7 +20,7 @@ function insertClientEnvironmentFooter(params: {
 }): string {
   const withFooter = appendClientEnvironmentFooter({
     message: params.feedback,
-    info: params.environmentInfo,
+    info: params.environmentInfo
   })
   return params.feedback.trim() === '' ? `\n\n${withFooter}` : withFooter
 }
@@ -32,8 +32,9 @@ export function useSidebarFeedbackEnvironmentPrefill(params: {
   setFeedback: (updater: (current: string) => string) => void
   textareaRef: RefObject<HTMLTextAreaElement | null>
   mountedRef: RefObject<boolean>
+  shell?: string
 }): void {
-  const { open, feedback, setFeedback, textareaRef, mountedRef } = params
+  const { open, feedback, setFeedback, textareaRef, mountedRef, shell } = params
   const pendingFeedbackSelectionRef = useRef<FeedbackSelection | null>(null)
 
   useLayoutEffect(() => {
@@ -51,14 +52,14 @@ export function useSidebarFeedbackEnvironmentPrefill(params: {
     }
   }, [feedback, textareaRef])
 
-  // Why: copied feedback does not include the structured environment metadata.
+  // Why: copied feedback does not include the structured IPC metadata.
   useEffect(() => {
     if (!open) {
       return
     }
 
     let cancelled = false
-    void resolveClientEnvironmentInfo().then((environmentInfo) => {
+    void resolveClientEnvironmentInfo(shell).then((environmentInfo) => {
       if (cancelled || !mountedRef.current) {
         return
       }
@@ -67,11 +68,11 @@ export function useSidebarFeedbackEnvironmentPrefill(params: {
         pendingFeedbackSelectionRef.current = {
           feedback: insertClientEnvironmentFooter({
             feedback: textarea.value,
-            environmentInfo,
+            environmentInfo
           }),
           start: textarea.selectionStart,
           end: textarea.selectionEnd,
-          direction: textarea.selectionDirection,
+          direction: textarea.selectionDirection
         }
       }
       setFeedback((current) =>
@@ -82,5 +83,5 @@ export function useSidebarFeedbackEnvironmentPrefill(params: {
     return () => {
       cancelled = true
     }
-  }, [open, mountedRef, setFeedback, textareaRef])
+  }, [open, mountedRef, setFeedback, shell, textareaRef])
 }
