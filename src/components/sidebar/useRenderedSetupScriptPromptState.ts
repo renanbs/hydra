@@ -1,17 +1,11 @@
-// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: components/sidebar/useRenderedSetupScriptPromptState.ts
 import { useEffect, useRef } from 'react'
 import {
   getRenderedSetupScriptPromptState,
   type LastVisibleSetupScriptPrompt,
-  type SetupScriptPromptState,
+  type SetupScriptPromptState
 } from './setup-script-prompt-render-state'
 
-/**
- * Retains the last visible setup-script prompt while a re-inspection is in
- * flight, but never across a repo/host switch: a prompt retained for the wrong
- * identity would offer to import another repo's setup script.
- */
+/** Keep the last prompt visible during a short re-inspection of the same host. */
 export function useRenderedSetupScriptPromptState(input: {
   promptState: SetupScriptPromptState | null
   activeRepoId: string | null
@@ -26,7 +20,7 @@ export function useRenderedSetupScriptPromptState(input: {
           promptState,
           activeRepoId,
           activeRepoHostIdentity,
-          lastVisiblePrompt: lastVisiblePromptRef.current,
+          lastVisiblePrompt: lastVisiblePromptRef.current
         })
       : null
 

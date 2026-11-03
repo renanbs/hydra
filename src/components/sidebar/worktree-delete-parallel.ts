@@ -32,7 +32,13 @@ export type ParallelDeleteTarget = {
 export type PreservedBranchInfo = {
   worktreeId: string
   branchName: string
+  /** Head at removal time; force delete is safe only while the branch still points here. */
+  expectedHead?: string
   hostId?: ExecutionHostId
+  runtimeEnvironmentId?: string
+  /** Display name and workspace kind for the single-branch recovery toast. */
+  displayName?: string
+  isMainWorktree?: boolean
 }
 
 export type ParallelDeleteOutcome =

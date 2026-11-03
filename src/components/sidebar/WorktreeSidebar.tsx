@@ -29,6 +29,10 @@ import { translate } from "../../i18n/i18n";
 import { effectiveExternalWorktreeVisibility } from "../../lib/worktree-visibility-sources";
 import { lazyWithRetry } from "../../lib/lazy-with-retry";
 import { SidebarDialogPortal } from "./SidebarDialogPortal";
+import { SetupScriptPromptCard } from "./SetupScriptPromptCard";
+import { NonGitFolderModalHost } from "./NonGitFolderModalHost";
+import { PreservedBranchBatchReviewModalHost } from "./PreservedBranchBatchReviewModalHost";
+import { OrcaYamlTrustDialog } from "./OrcaYamlTrustDialog";
 
 // Why lazy: the Agents list pulls the whole activity pipeline (virtualizer, markdown
 // previews, thread derivation), so users on the workspaces view should not load or
@@ -2345,6 +2349,12 @@ export function WorktreeSidebar({
 
       <AgentSendTargetPicker />
 
+      {/* Setup script suggestion (Orca SetupScriptPromptCard): floats above the footer
+          without reserving a static row in the sidebar body. */}
+      <div className="relative shrink-0">
+        <SetupScriptPromptCard />
+      </div>
+
       {/* 5. Footer */}
       <SidebarFooter
         appVersion={appVersion}
@@ -2777,6 +2787,9 @@ export function WorktreeSidebar({
           the sidebar's own theme. Each one is code-split (Orca `lazyWithRetry`). */}
       <SidebarDialogPortal>
         <React.Suspense fallback={null}>
+      <NonGitFolderModalHost />
+      <PreservedBranchBatchReviewModalHost />
+      <OrcaYamlTrustDialog />
       <ProjectGroupNameDialog
         open={groupNameDialog.open}
         title={groupNameDialog.title}

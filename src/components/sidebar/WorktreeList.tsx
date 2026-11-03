@@ -62,6 +62,7 @@ import {
   computeSidebarRows,
   type SidebarRowsState,
 } from "./rendered-sidebar-worktree-order";
+import { getEmptyProjectPlaceholderRepoIds } from "./empty-project-placeholder-repos";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
@@ -426,6 +427,8 @@ interface SidebarRowModel {
    * ancestor belongs here even when its own `isPinned` flag is false (D11-003).
    */
   pinnedSectionIdentities: ReadonlySet<string>;
+  /** Repos still painting a section without visible cards (empty scan or filtered group member). */
+  placeholderRepoCount: number;
 }
 
 export interface WorktreeListProps {
@@ -1444,6 +1447,7 @@ export function WorktreeList({
       hostedReviewCache: reviewCaches.hostedReviewCache,
       // A host-header drag force-collapses every section so the bound is the header itself.
       hostDragActive,
+      filterRepoIds: displayOptions.filterProjectIds ?? [],
     };
 
     // Mixed-host labels: one repo visible on more than one host needs the card
@@ -1454,6 +1458,14 @@ export function WorktreeList({
       if (!labels) continue;
       for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
     }
+
+    const placeholderRepoIds = getEmptyProjectPlaceholderRepoIds({
+      groupBy: displayOptions.groupBy,
+      repos: pipelineRepos,
+      worktreesByRepo,
+      visibleWorktrees,
+      filterRepoIds: displayOptions.filterProjectIds ?? [],
+    });
 
     const rows = computeSidebarRows(
       pipelineState,
@@ -1479,6 +1491,7 @@ export function WorktreeList({
       pathByWorktreeId,
       lineageParentIdByChildId: buildLineageParentIdByChildId(projectedLineageById),
       pinnedSectionIdentities,
+      placeholderRepoCount: placeholderRepoIds.size,
     };
   }, [
     visibleProjects,
@@ -1525,7 +1538,7 @@ export function WorktreeList({
     pendingCreationRefs,
   ]);
 
-  const { rows, hostContextLabelByIdentity } = rowModel;
+  const { rows, hostContextLabelByIdentity, placeholderRepoCount } = rowModel;
   // Why: the painted model folds each visible lineage subtree into one virtual slot
   // (D03a-080); every other consumer (drag groups, reveal keys, selection) keeps the
   // flat row model it always used.
@@ -2953,9 +2966,9 @@ export function WorktreeList({
     hasFilters,
     visibleWorktreeCount: rows.filter((row) => row.type === "item").length,
     visibleFolderWorkspaceCount: rows.filter((row) => row.type === "folder-workspace").length,
-    // Hydra's row union has no empty-project placeholder rows (Orca's
-    // `placeholderRepoIds`), so this term is structurally zero.
-    placeholderRepoCount: 0,
+    // Empty repos and filtered project-group members still paint a section, so a
+    // filter is not what hid every row (Orca `placeholderRepoIds`).
+    placeholderRepoCount,
     importedWorktreeCardCount: rows.filter((row) => row.type === "imported-worktrees-card").length,
   });
 

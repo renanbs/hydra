@@ -1,4 +1,13 @@
-// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+import type { SetupScriptImportProvider } from './setup-script-import-providers'
 
-export const SetupScriptImportCandidate: any = null
-export type SetupScriptImportCandidate = any
+export type SetupScriptImportCandidate = {
+  provider: SetupScriptImportProvider
+  label: string
+  files: string[]
+  setup: string
+  archive?: string
+  unsupportedFields?: string[]
+}
+
+export type SetupScriptImportFileRead = (relativePath: string) => Promise<string | null>
+export type SetupScriptImportFileExists = (relativePath: string) => Promise<boolean>
