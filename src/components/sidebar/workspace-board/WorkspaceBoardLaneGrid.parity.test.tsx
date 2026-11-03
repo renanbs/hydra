@@ -90,6 +90,7 @@ function LaneRowHarness({
           open
           lanes={LANES}
           hasQuery={false}
+          renderCards
           columnWidth={columnWidth}
           isResizingColumn={false}
           onColumnResizeStart={vi.fn()}

@@ -13,6 +13,10 @@ export interface PrDisplay {
   state: ReviewState;
   status?: ReviewChecks | null;
   provider?: "github" | "gitlab" | string | null;
+  /** Provider title, when the probe carried it (Orca `HostedReviewInfo.title`). */
+  title?: string | null;
+  /** Canonical web URL for "view on provider" / unlink actions. */
+  url?: string | null;
 }
 
 /** Orca `getCheckTone`: live check status outranks the review state's own tone. */

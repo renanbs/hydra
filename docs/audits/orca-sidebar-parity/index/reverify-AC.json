@@ -4,16 +4,12 @@
  "rows": [
   {
    "id": "D07-005",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:3505-3515",
-    "src/hooks/requestVirtualizedScrollAnchorRecord.ts:1-18",
-    "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:156-162"
+    "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
    ],
-   "missing_behaviors": [
-    "Reversão da limpeza do workspace ativo e toast consolidado quando o teardown falha (o sleep local não tem teardown assíncrono)"
-   ],
-   "note": "Sleep snapshots the virtual scroll anchor before mutating sessions, so the restore keeps the same visible row."
+   "missing_behaviors": [],
+   "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
   }
  ]
 }

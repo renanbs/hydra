@@ -52,6 +52,12 @@ function WorkspaceBoardStatusLaneCardList({
   const itemIdentities = useMemo(() => cards.map((card) => card.identity), [cards])
   const itemIdentitiesRef = useRef(itemIdentities)
   itemIdentitiesRef.current = itemIdentities
+  const itemWorktreeIds = useMemo(
+    () => cards.map((card) => card.worktree.id ?? card.worktree.path),
+    [cards]
+  )
+  const itemWorktreeIdsRef = useRef(itemWorktreeIds)
+  itemWorktreeIdsRef.current = itemWorktreeIds
   const estimateSize = useCallback(
     () => estimateWorkspaceBoardCardHeight(compactCards),
     [compactCards]
@@ -81,6 +87,7 @@ function WorkspaceBoardStatusLaneCardList({
       scrollElement: scrollerElement,
       spacerElement,
       getItemIdentities: () => itemIdentitiesRef.current,
+      getItemWorktreeIds: () => itemWorktreeIdsRef.current,
       getMeasurements: () => virtualizer.measurementsCache
     })
   }, [scrollerElement, virtualizer])

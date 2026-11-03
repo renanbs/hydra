@@ -60,7 +60,7 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
   const containerRef = useRef<HTMLDivElement | null>(null)
   const scrollOffsetRef = useRef(0)
   const scrollAnchorRef = useRef<VirtualizedScrollAnchor>(null)
-  const scrollSuppression = useWorktreeSidebarScrollSuppression()
+  const scrollSuppression = useWorktreeSidebarScrollSuppression({ scrollRef: containerRef })
   const { markDirectScrollInput, markScrollMovement } = scrollSuppression
 
   const firstHeaderIndex = useMemo(

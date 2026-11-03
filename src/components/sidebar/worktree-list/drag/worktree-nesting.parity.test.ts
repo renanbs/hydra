@@ -64,11 +64,18 @@ function context(overrides: Partial<WorktreeDropCommitContext> = {}): WorktreeDr
       dropAnchorId: null,
       previewOffsetsByWorktreeId: new Map(),
     })),
+    computeWorktreeStatusDrop: vi.fn(() => ({
+      dropIndex: 0,
+      dropIndicatorY: 10,
+      dropAnchorId: null,
+      previewOffsetsByWorktreeId: new Map(),
+    })),
     refreshWorktreeDragSession: () => true,
     clearWorktreeDrag: vi.fn(),
     resolveDraggedWorktreeIds: () => ["child"],
     onReorderWorktrees: vi.fn(),
     onAssignWorktreesStatus: vi.fn(),
+    onStatusLaneDrop: vi.fn(),
     onPinWorktrees: vi.fn(),
     lineageParentIdByChildId: PARENTS,
     onNestWorktrees: vi.fn(),
@@ -341,10 +348,12 @@ describe("list section drops (D03a-009 / D03a-010)", () => {
     commitWorktreePointerDrop({ drag: drag(), ctx });
 
     // The source host is part of the write now (D03a-021); this drag has none.
-    expect(ctx.onAssignWorktreesStatus).toHaveBeenCalledWith(
-      ["child"],
-      "in-progress",
-      undefined
+    expect(ctx.onStatusLaneDrop).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "in-progress",
+        draggedIds: ["child"],
+        dropIndex: 0,
+      })
     );
     expect(ctx.onReorderWorktrees).not.toHaveBeenCalled();
     expect(ctx.onNestWorktrees).not.toHaveBeenCalled();

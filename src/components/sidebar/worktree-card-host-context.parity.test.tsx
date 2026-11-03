@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { WorktreeCard } from "./WorktreeCard";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const project = {
   id: "repo_1",
@@ -22,6 +23,7 @@ const worktree = {
 
 function renderCard(props: Record<string, unknown> = {}) {
   return render(
+    <TooltipProvider>
     <WorktreeCard
       worktree={worktree}
       project={project}
@@ -30,6 +32,7 @@ function renderCard(props: Record<string, unknown> = {}) {
       branch="main"
       {...props}
     />
+    </TooltipProvider>
   );
 }
 

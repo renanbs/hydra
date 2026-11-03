@@ -30,6 +30,41 @@ export function findSidebarSectionDropTarget(x: number, y: number): SidebarSecti
   return status ? { kind: "status", status } : null;
 }
 
+/**
+ * How far a release may trail the last resolved lane/pin header and still commit to it
+ * (Orca `STATUS_DROP_TARGET_FALLBACK_TOLERANCE_PX`). The live hit test runs on the drag's
+ * RAF, so the pointerup can arrive with no frame for its final position.
+ */
+export const SIDEBAR_SECTION_DROP_FALLBACK_TOLERANCE_PX = 6;
+
+export type SidebarTrackedSectionDropTarget = {
+  target: SidebarSectionDropTarget;
+  x: number;
+  y: number;
+};
+
+/**
+ * The section target a release commits to: the live hit test when it names a header, else
+ * the last tracked header when the pointer has not moved away from it by more than the
+ * tolerance (Orca `resolveWorktreeSidebarStatusDropCommitTarget`).
+ */
+export function resolveSidebarSectionDropCommitTarget(args: {
+  currentTarget: SidebarSectionDropTarget;
+  latestTrackedTarget: SidebarTrackedSectionDropTarget | null;
+  x: number;
+  y: number;
+}): SidebarSectionDropTarget {
+  if (args.currentTarget) {
+    return args.currentTarget;
+  }
+  const latest = args.latestTrackedTarget;
+  if (!latest?.target) {
+    return args.currentTarget;
+  }
+  const distance = Math.hypot(args.x - latest.x, args.y - latest.y);
+  return distance <= SIDEBAR_SECTION_DROP_FALLBACK_TOLERANCE_PX ? latest.target : args.currentTarget;
+}
+
 let activeDropHeader: HTMLElement | null = null;
 
 export function updateSidebarSectionDropVisual(target: SidebarSectionDropTarget): void {

@@ -1,402 +1,541 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+// Source: components/sidebar/WorktreeCardMeta.tsx
+//
+// The workspace details hover: identity heading plus one section per piece of
+// linked metadata. Sections are data-gated — an empty hover never opens — and
+// every action closes the card before running so a portaled overlay cannot race
+// the popover it came from.
+import React, { useCallback } from 'react'
+import { toast } from 'sonner'
 import {
+  BookOpenText,
   ExternalLink,
-  Copy,
-  Check,
-  GitBranch,
-  Plug,
-  Square,
   Folder,
-  CircleDot,
-  SquareTerminal,
-  GitPullRequest,
-  FileText,
+  MonitorUp,
   Pencil,
-} from "lucide-react";
-import { DetailHeader, MetadataActionIcon } from "./worktree-card-detail-controls";
-import { CommentMarkdownAsync, preloadCommentMarkdown } from "./comment-markdown-lazy";
-import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from "./types";
-import { WorktreeCardReviewBadge } from "./WorktreeCardReviewBadge";
+  SquareTerminal,
+  StickyNote
+} from 'lucide-react'
+
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger
+} from '@/components/ui/hover-card'
+import { Badge } from '@/components/ui/badge'
+import { translate } from '@/i18n/i18n'
+import { SelectedTextCopyMenu } from '@/components/SelectedTextCopyMenu'
+import { CommentMarkdownAsync, preloadCommentMarkdown } from './comment-markdown-lazy'
+import { WorktreeNotesDocumentDialog } from './WorktreeNotesDocumentDialog'
+import {
+  WorktreeCardDetailSection,
+  WorktreeCardDetailSectionContent
+} from './WorktreeCardDetailSection'
+import { DetailHeader, MetadataActionIcon } from './worktree-card-detail-controls'
+import { WorktreeCardHoverIdentityHeader } from './WorktreeCardHoverIdentityHeader'
+import { WorktreeCardIssueDetailSection } from './WorktreeCardIssueDetailSection'
+import { WorktreeCardReviewDetailSection } from './WorktreeCardReviewDetailSection'
+import { LinearStateBadge } from './WorktreeCardMetadataStatusBadges'
+import { WorktreeCardPortsDetails } from './WorktreeCardPorts'
+import { WORKTREE_NATIVE_CONTEXT_MENU_ATTR } from './worktree-context-menu-policy'
+import {
+  useWorktreeCardDetailsHoverControl,
+  type WorktreeCardDetailsHoverControl
+} from './worktree-card-details-hover-state'
+import type {
+  WorktreeCardIssueDisplay,
+  WorktreeCardJiraIssueDisplay,
+  WorktreeCardLinearIssueDisplay
+} from './worktree-card-meta-types'
+import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from './types'
+import type { PrDisplay } from './pr-display'
+import { getProviderName, getReviewLabel } from './pr-display'
+
+const COMMENT_MARKDOWN_CLASS_NAME =
+  'text-[11.5px] text-foreground break-words leading-normal [&_.comment-md-p]:block [&_.comment-md-p+.comment-md-p]:mt-1'
+
 
 export interface WorktreeCardDetailsHoverProps {
-  worktree: GitWorktreeInfo;
-  project: HydraProject;
-  ports?: WorkspacePort[];
-  review?: WorktreeReviewStatus;
+  worktree: GitWorktreeInfo
+  project?: HydraProject
+  ports?: WorkspacePort[]
+  review?: WorktreeReviewStatus
   /** Persisted workspace metadata (notes + linked work items). */
   metadata?: {
-    comment: string;
-    linkedIssue: number | null;
-    linkedPR: number | null;
-    linkedLinearIssue: string | null;
-  } | null;
-  /** Opens the workspace metadata editor for this card (Orca detail actions). */
-  onEditMetadata?: () => void;
+    comment: string
+    linkedIssue: number | null
+    linkedPR: number | null
+    linkedLinearIssue: string | null
+  } | null
+  /** Provider-projected display objects; fall back to the persisted links. */
+  issue?: WorktreeCardIssueDisplay | null
+  linearIssue?: WorktreeCardLinearIssueDisplay | null
+  jiraIssue?: WorktreeCardJiraIssueDisplay | null
   /** The workspace was created through the CLI (Orca CLI provenance section). */
-  cliCreated?: boolean;
-  children: React.ReactNode;
-  onPortKilled?: () => void;
+  cliCreated?: boolean
+  /** Opens the workspace metadata editor for this card (Orca detail actions). */
+  onEditMetadata?: () => void
+  onEditIssue?: (event: React.MouseEvent) => void
+  onEditComment?: (event: React.MouseEvent) => void
+  onRenameWorkspaceTitle?: (displayName: string) => Promise<void> | void
+  onWorkspaceTitleEditingChange?: (editing: boolean) => void
+  workspaceTitleRenameDisabled?: boolean
+  identityOrder?: 'workspace-first' | 'branch-first'
+  onOpenIssueInBrowser?: (url: string) => void
+  onOpenReviewInBrowser?: (url: string) => void
+  onUnlinkReview?: () => void
+  openDelay?: number
+  closeDelay?: number
+  hoverControl?: WorktreeCardDetailsHoverControl
+  onPortKilled?: () => void
+  children: React.ReactNode
 }
 
-export function WorktreeCardDetailsHover({
-  worktree,
-  project,
-  ports = [],
-  review,
-  metadata = null,
-  onEditMetadata,
-  cliCreated = false,
-  children,
-  onPortKilled,
-}: WorktreeCardDetailsHoverProps): React.JSX.Element {
-  const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-  const [copiedPath, setCopiedPath] = useState(false);
-  const [copiedBranch, setCopiedBranch] = useState(false);
-  const [stoppingPid, setStoppingPid] = useState<number | null>(null);
+function hasComment(comment: string | null | undefined): boolean {
+  return (comment ?? '').trim().length > 0
+}
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
-  const openTimerRef = useRef<number | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
 
-  const clearTimers = () => {
-    if (openTimerRef.current !== null) {
-      window.clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
-    }
-    if (closeTimerRef.current !== null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  };
+/** Adapt the sidebar's review status wire shape to the badges' display shape. */
+function toReviewDisplay(review: WorktreeReviewStatus | undefined): PrDisplay | null {
+  if (!review?.state) {
+    return null
+  }
+  return {
+    number: review.pr_number ?? null,
+    state: review.state,
+    status: review.has_failing_checks ? 'failure' : null,
+    provider: review.provider ?? null,
+    title: review.title ?? null,
+    url: review.url ?? null
+  }
+}
 
-  useEffect(() => {
-    return clearTimers;
-  }, []);
+/** A persisted link with no provider title yet. */
+function fallbackIssue(number: number | null | undefined): WorktreeCardIssueDisplay | null {
+  return number == null ? null : { number, title: '' }
+}
 
-  const handleMouseEnter = () => {
-    // Orca preloads the markdown chunk on hover-enter when there is a note, so the
-    // popover never flashes the raw-text fallback.
-    if (metadata?.comment?.trim()) preloadCommentMarkdown();
-    if (closeTimerRef.current !== null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    if (!isOpen && openTimerRef.current === null) {
-      openTimerRef.current = window.setTimeout(() => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          const popoverWidth = 288; // w-72 = 18rem = 288px
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
+function fallbackLinear(identifier: string | null | undefined): WorktreeCardLinearIssueDisplay | null {
+  return identifier ? { identifier, title: '' } : null
+}
 
-          // Position to the right of the card, or to the left if overflowing
-          let left = rect.right + 6;
-          if (left + popoverWidth > viewportWidth - 10) {
-            left = Math.max(10, rect.left - popoverWidth - 6);
-          }
+export function WorktreeCardDetailsHover(
+  props: WorktreeCardDetailsHoverProps
+): React.JSX.Element {
+  const {
+    worktree,
+    project,
+    ports = [],
+    review,
+    metadata = null,
+    issue,
+    linearIssue,
+    jiraIssue,
+    cliCreated = false,
+    onEditMetadata,
+    onEditIssue,
+    onEditComment,
+    onRenameWorkspaceTitle,
+    onWorkspaceTitleEditingChange,
+    workspaceTitleRenameDisabled = false,
+    identityOrder = 'workspace-first',
+    onOpenIssueInBrowser,
+    onOpenReviewInBrowser,
+    onUnlinkReview,
+    openDelay = 250,
+    closeDelay = 120,
+    hoverControl,
+    children
+  } = props
+  const internalHoverControl = useWorktreeCardDetailsHoverControl()
+  const {
+    hoverOpen,
+    issueMenuOpen,
+    reviewMenuOpen,
+    handleHoverOpenChange,
+    handleIssueMenuOpenChange,
+    handleReviewMenuOpenChange,
+    closeHover
+  } = hoverControl ?? internalHoverControl
 
-          // Position top aligned, clamped so it doesn't overflow bottom
-          let top = rect.top;
-          if (top + 280 > viewportHeight - 10) {
-            top = Math.max(10, viewportHeight - 290);
-          }
+  const [workspaceTitleEditing, setWorkspaceTitleEditing] = React.useState(false)
+  const [notesDocumentOpen, setNotesDocumentOpen] = React.useState(false)
+  const pendingWorkspaceTitleCloseRef = React.useRef(false)
 
-          setCoords({ top, left });
-          setIsOpen(true);
-        }
-      }, 150);
-    }
-  };
+  const handleWorkspaceTitleEditingChange = useCallback(
+    (editing: boolean): void => {
+      setWorkspaceTitleEditing(editing)
+      onWorkspaceTitleEditingChange?.(editing)
+      if (!editing && pendingWorkspaceTitleCloseRef.current) {
+        pendingWorkspaceTitleCloseRef.current = false
+        handleHoverOpenChange(false)
+      }
+    },
+    [handleHoverOpenChange, onWorkspaceTitleEditingChange]
+  )
 
-  const handleMouseLeave = () => {
-    if (openTimerRef.current !== null) {
-      window.clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
-    }
-    if (isOpen && closeTimerRef.current === null) {
-      closeTimerRef.current = window.setTimeout(() => {
-        setIsOpen(false);
-      }, 150);
-    }
-  };
+  // Why: a close requested mid-rename is deferred until the editor commits, so
+  // the hover does not unmount the input the user is typing into.
+  const handleEffectiveHoverOpenChange = useCallback(
+    (next: boolean): void => {
+      if (!next && workspaceTitleEditing) {
+        pendingWorkspaceTitleCloseRef.current = true
+        return
+      }
+      pendingWorkspaceTitleCloseRef.current = false
+      handleHoverOpenChange(next)
+    },
+    [handleHoverOpenChange, workspaceTitleEditing]
+  )
 
-  const copyText = useCallback(async (text: string, setCopied: (v: boolean) => void) => {
+  const dismissAndRun = useCallback(
+    (handler: ((event: React.MouseEvent) => void) | undefined) =>
+      (event: React.MouseEvent): void => {
+        closeHover()
+        handler?.(event)
+      },
+    [closeHover]
+  )
+
+  const copyLink = useCallback(async (url: string, label: string): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {}
-  }, []);
-
-  const handleStopPort = async (pid: number) => {
-    setStoppingPid(pid);
-    try {
-      await invoke("kill_port_process", { pid, worktreePath: worktree.path });
-      onPortKilled?.();
-      window.dispatchEvent(new CustomEvent("hydra:refresh-ports"));
-    } catch (e) {
-      console.error("Failed to stop port process:", e);
-    } finally {
-      setStoppingPid(null);
+      await navigator.clipboard.writeText(url)
+      toast.success(
+        translate('auto.components.sidebar.WorktreeCardMeta.copyLinkSuccess', '{{value0}} copied', {
+          value0: label
+        })
+      )
+    } catch {
+      toast.error(
+        translate(
+          'auto.components.sidebar.WorktreeCardMeta.copyLinkFailure',
+          'Failed to copy link'
+        )
+      )
     }
-  };
+  }, [])
 
-  const cardTitle =
-    worktree.display_name?.trim() ||
-    worktree.branch?.trim() ||
-    worktree.path.split("/").filter(Boolean).pop() ||
-    "worktree";
+  const issueDisplay = issue ?? fallbackIssue(metadata?.linkedIssue)
+  const linearDisplay = linearIssue ?? fallbackLinear(metadata?.linkedLinearIssue)
+  const reviewDisplay = toReviewDisplay(review)
+  const comment = metadata?.comment ?? ''
+  const branchName = (worktree.branch ?? '').trim() || undefined
+  const workspaceTitle = (worktree.displayName ?? worktree.display_name ?? '').trim() || undefined
+  const reviewLabelText = reviewDisplay ? getReviewLabel(reviewDisplay) : 'PR'
+  const showIdentityHeader = Boolean(branchName || workspaceTitle)
 
-  const branchName = worktree.branch?.trim() || "HEAD";
-  const commitSha = worktree.head_commit ? worktree.head_commit.slice(0, 7) : "";
+  const handleCopyIssueLink = useCallback((): void => {
+    const url = issueDisplay && 'url' in issueDisplay ? issueDisplay.url : undefined
+    if (!url) {
+      return
+    }
+    closeHover()
+    void copyLink(
+      url,
+      translate('auto.components.sidebar.WorktreeCardMeta.issueLinkLabel', 'Issue link')
+    )
+  }, [closeHover, copyLink, issueDisplay])
+
+  const handleCopyReviewLink = useCallback((): void => {
+    if (!reviewDisplay?.url) {
+      return
+    }
+    void copyLink(
+      reviewDisplay.url,
+      translate('auto.components.sidebar.WorktreeCardMeta.reviewLinkLabel', '{{value0}} link', {
+        value0: reviewLabelText
+      })
+    )
+  }, [copyLink, reviewDisplay, reviewLabelText])
+
+  const hasDetails = Boolean(
+    showIdentityHeader ||
+      issueDisplay ||
+      linearDisplay ||
+      jiraIssue ||
+      reviewDisplay ||
+      cliCreated ||
+      hasComment(comment) ||
+      ports.length > 0
+  )
+  if (!hasDetails) {
+    return <>{children}</>
+  }
 
   return (
-    <div
-      ref={containerRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="w-full"
+    <>
+    <HoverCard
+      open={hoverOpen || workspaceTitleEditing}
+      onOpenChange={handleEffectiveHoverOpenChange}
+      openDelay={openDelay}
+      closeDelay={closeDelay}
     >
-      {children}
+      <HoverCardTrigger
+        asChild
+        onPointerEnter={hasComment(comment) ? preloadCommentMarkdown : undefined}
+      >
+        {children}
+      </HoverCardTrigger>
+      <HoverCardContent
+        side="right"
+        align="start"
+        sideOffset={8}
+        className="scrollbar-sleek max-h-[28rem] w-80 overflow-y-auto p-3 text-xs"
+        {...{ [WORKTREE_NATIVE_CONTEXT_MENU_ATTR]: '' }}
+        // Why: the card underneath owns click/double-click activation; a click in
+        // the popover must never also select or rename the workspace.
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+      >
+        <SelectedTextCopyMenu className="space-y-3">
+          {showIdentityHeader && (
+            <WorktreeCardHoverIdentityHeader
+              branchName={branchName}
+              workspaceTitle={workspaceTitle}
+              identityOrder={identityOrder}
+              workspaceTitleRenameDisabled={workspaceTitleRenameDisabled}
+              onRenameWorkspaceTitle={onRenameWorkspaceTitle}
+              onWorkspaceTitleEditingChange={handleWorkspaceTitleEditingChange}
+            />
+          )}
 
-      {isOpen && (
-        <div
-          ref={popoverRef}
-          onMouseEnter={() => {
-            if (closeTimerRef.current !== null) {
-              window.clearTimeout(closeTimerRef.current);
-              closeTimerRef.current = null;
+          <WorktreeCardIssueDetailSection
+            issue={issueDisplay}
+            issueMenuOpen={issueMenuOpen}
+            onIssueMenuOpenChange={handleIssueMenuOpenChange}
+            onCopyIssueLink={
+              issueDisplay && 'url' in issueDisplay && issueDisplay.url
+                ? handleCopyIssueLink
+                : undefined
             }
-          }}
-          onMouseLeave={handleMouseLeave}
-          style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
-          className="fixed z-[99999] w-72 rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl p-3 text-xs text-neutral-200 space-y-2.5 animate-in fade-in-0 zoom-in-95 duration-100"
-        >
-          {/* Header: Title and Branch */}
-          <div className="pb-2 border-b border-neutral-800 space-y-1">
-            <div className="flex items-center justify-between gap-1">
-              <div className="font-semibold text-[13px] text-neutral-100 truncate">
-                {cardTitle}
-              </div>
-              <span className="text-[10px] text-neutral-500 font-mono shrink-0">
-                {project.name}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-neutral-400">
-              <div className="flex items-center gap-1 min-w-0">
-                <GitBranch className="w-3 h-3 text-emerald-400 shrink-0" />
-                <span className="truncate">{branchName}</span>
-                {commitSha && (
-                  <span className="font-mono text-[9px] text-neutral-500">
-                    ({commitSha})
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => copyText(branchName, setCopiedBranch)}
-                className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition cursor-pointer"
-                title="Copy branch name"
-              >
-                {copiedBranch ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </button>
-            </div>
-          </div>
+            onEditIssue={onEditIssue ? dismissAndRun(onEditIssue) : undefined}
+            onOpenIssueInBrowser={
+              onOpenIssueInBrowser && issueDisplay && 'url' in issueDisplay && issueDisplay.url
+                ? (url: string) => {
+                    closeHover()
+                    onOpenIssueInBrowser(url)
+                  }
+                : undefined
+            }
+          />
 
-          {/* Ports Section */}
-          {ports.length > 0 && (
-            <div className="space-y-1.5 pb-2 border-b border-neutral-800">
-              <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
-                <Plug className="w-3 h-3 shrink-0" />
-                <span>Live Ports ({ports.length})</span>
-              </div>
-              <div className="space-y-1">
-                {ports.map((p) => {
-                  const url = `http://localhost:${p.port}`;
-                  return (
-                    <div
-                      key={p.port}
-                      className="flex items-center justify-between gap-1 p-1.5 rounded-lg bg-neutral-900/60 border border-neutral-800/80 text-[11px]"
+          {linearDisplay && (
+            <WorktreeCardDetailSection>
+              <DetailHeader
+                icon={<span className="text-[9px] font-bold text-muted-foreground">L</span>}
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.5e982e6128',
+                  'Linear {{value0}}',
+                  { value0: linearDisplay.identifier }
+                )}
+                actions={
+                  linearDisplay.url ? (
+                    <MetadataActionIcon
+                      label={translate(
+                        'auto.components.sidebar.WorktreeCardMeta.e42941631a',
+                        'View on Linear'
+                      )}
+                      href={linearDisplay.url}
                     >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-mono text-emerald-300 font-medium">
-                          :{p.port}
-                        </span>
-                        {p.process_name && (
-                          <span className="text-[10px] text-neutral-400 truncate">
-                            {p.process_name}
-                          </span>
-                        )}
-                        {p.pid && (
-                          <span className="font-mono text-[9px] text-neutral-500">
-                            PID {p.pid}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => window.open(url, "_blank")}
-                          className="p-1 rounded text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition cursor-pointer"
-                          title={`Open ${url} in browser`}
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                        </button>
-                        {p.pid && (
-                          <button
-                            type="button"
-                            disabled={stoppingPid === p.pid}
-                            onClick={() => handleStopPort(p.pid!)}
-                            className="p-1 rounded text-neutral-400 hover:text-rose-400 hover:bg-neutral-800 transition cursor-pointer"
-                            title={`Stop process (PID ${p.pid})`}
-                          >
-                            <Square className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      <ExternalLink className="size-3" />
+                    </MetadataActionIcon>
+                  ) : null
+                }
+              />
+              <WorktreeCardDetailSectionContent className="space-y-1.5">
+                {linearDisplay.title ? (
+                  <div className="break-words text-[13px] font-semibold leading-snug text-foreground">
+                    {linearDisplay.title}
+                  </div>
+                ) : null}
+                {((linearDisplay.labels && linearDisplay.labels.length > 0) ||
+                  linearDisplay.stateName) && (
+                  <div className="flex flex-wrap gap-1">
+                    {linearDisplay.stateName && (
+                      <LinearStateBadge stateName={linearDisplay.stateName} />
+                    )}
+                    {(linearDisplay.labels ?? []).map((label) => (
+                      <Badge key={label} variant="outline" className="h-4 px-1.5 text-[9px]">
+                        {label}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </WorktreeCardDetailSectionContent>
+            </WorktreeCardDetailSection>
           )}
 
-          {/* PR / Review Section */}
-          {review && (
-            <div className="space-y-1 pb-2 border-b border-neutral-800">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                Pull Request
-              </div>
-              <div className="flex items-center gap-2">
-                <WorktreeCardReviewBadge review={review} />
-                {review.title && (
-                  <span className="text-[11px] text-neutral-300 truncate">
-                    {review.title}
-                  </span>
+          {jiraIssue && (
+            <WorktreeCardDetailSection>
+              <DetailHeader
+                icon={<span className="text-[9px] font-bold text-muted-foreground">J</span>}
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.jiraIssue',
+                  'Jira {{value0}}',
+                  { value0: jiraIssue.identifier }
                 )}
-              </div>
-            </div>
+                actions={
+                  <MetadataActionIcon
+                    label={translate(
+                      'auto.components.sidebar.WorktreeCardMeta.viewOnJira',
+                      'View on Jira'
+                    )}
+                    href={jiraIssue.url}
+                  >
+                    <ExternalLink className="size-3" />
+                  </MetadataActionIcon>
+                }
+              />
+              <WorktreeCardDetailSectionContent>
+                <div className="break-words text-[13px] font-semibold leading-snug text-foreground">
+                  {jiraIssue.title}
+                </div>
+              </WorktreeCardDetailSectionContent>
+            </WorktreeCardDetailSection>
           )}
+
+          <WorktreeCardReviewDetailSection
+            review={reviewDisplay}
+            fallbackNumber={metadata?.linkedPR ?? null}
+            reviewMenuOpen={reviewMenuOpen}
+            onReviewMenuOpenChange={handleReviewMenuOpenChange}
+            onOpenReviewInBrowser={
+              onOpenReviewInBrowser && reviewDisplay?.url ? onOpenReviewInBrowser : undefined
+            }
+            onCopyReviewLink={reviewDisplay?.url ? handleCopyReviewLink : undefined}
+            onUnlinkReview={onUnlinkReview}
+            closeHover={closeHover}
+          />
 
           {cliCreated ? (
-            <div className="space-y-1 pb-2 border-b border-neutral-800">
-              <DetailHeader icon={<SquareTerminal className="w-3 h-3 text-neutral-400" />} label="Created by CLI" />
-            </div>
+            <WorktreeCardDetailSection>
+              <DetailHeader
+                icon={<SquareTerminal className="size-3 text-muted-foreground" />}
+                label={translate('auto.components.sidebar.WorktreeCardMeta.cliHeader', 'CLI')}
+              />
+              <WorktreeCardDetailSectionContent>
+                <div className="break-words text-[11.5px] leading-snug text-muted-foreground">
+                  {translate(
+                    'auto.components.sidebar.WorktreeCardMeta.cliCreatedFromShell',
+                    'Created via the CLI'
+                  )}
+                </div>
+              </WorktreeCardDetailSectionContent>
+            </WorktreeCardDetailSection>
           ) : null}
 
-          {(metadata?.linkedIssue != null ||
-            metadata?.linkedPR != null ||
-            metadata?.linkedLinearIssue ||
-            (metadata?.comment?.trim().length ?? 0) > 0) && (
-            <div className="space-y-2 pb-2 border-b border-neutral-800">
-              {metadata?.linkedIssue != null && (
-                <div className="space-y-1">
-                  <DetailHeader
-                    icon={<CircleDot className="w-3 h-3 text-emerald-400" />}
-                    label="Issue"
-                    actions={
-                      onEditMetadata ? (
-                        <MetadataActionIcon label="Edit workspace metadata" onClick={onEditMetadata}>
-                          <Pencil className="w-3 h-3" />
-                        </MetadataActionIcon>
-                      ) : null
-                    }
-                  />
-                  <div className="font-mono text-[11px] text-neutral-300">
-                    #{metadata.linkedIssue}
-                  </div>
-                </div>
-              )}
+          {hasComment(comment) && (
+            <WorktreeCardDetailSection>
+              <DetailHeader
+                icon={<StickyNote className="size-3 text-muted-foreground" />}
+                label={translate('auto.components.sidebar.WorktreeCardMeta.93cbea12c2', 'Notes')}
+                actions={
+                  <>
+                    <MetadataActionIcon
+                      label={translate(
+                        'auto.components.sidebar.WorktreeCardMeta.openNotesDocument',
+                        'Open notes document view'
+                      )}
+                      onClick={() => {
+                        preloadCommentMarkdown()
+                        setNotesDocumentOpen(true)
+                      }}
+                    >
+                      <BookOpenText className="size-3" />
+                    </MetadataActionIcon>
+                    {onEditComment || onEditMetadata ? (
+                      <MetadataActionIcon
+                        label={translate(
+                          'auto.components.sidebar.WorktreeCardMeta.c7fa72ead0',
+                          'Edit notes'
+                        )}
+                        onClick={onEditComment ?? (onEditMetadata ? dismissAndRun(onEditMetadata) : undefined)}
+                      >
+                        <Pencil className="size-3" />
+                      </MetadataActionIcon>
+                    ) : null}
+                  </>
+                }
+              />
+              <WorktreeCardDetailSectionContent className="space-y-2">
+                <CommentMarkdownAsync
+                  content={comment}
+                  className={COMMENT_MARKDOWN_CLASS_NAME}
+                  // Mirrors remark-breaks so the fallback keeps the note's line count.
+                  fallbackClassName="whitespace-pre-wrap"
+                  expandImages
+                  linkifyFilePaths
+                  fileLinkBasePath={worktree.path}
+                />
+              </WorktreeCardDetailSectionContent>
+            </WorktreeCardDetailSection>
 
-              {metadata?.linkedPR != null && (
-                <div className="space-y-1">
-                  <DetailHeader
-                    icon={<GitPullRequest className="w-3 h-3 text-violet-400" />}
-                    label="Review"
-                  />
-                  <div className="font-mono text-[11px] text-neutral-300">
-                    #{metadata.linkedPR}
-                  </div>
-                </div>
-              )}
-
-              {metadata?.linkedLinearIssue && (
-                <div className="space-y-1">
-                  <DetailHeader
-                    icon={<CircleDot className="w-3 h-3 text-indigo-400" />}
-                    label="Linear"
-                  />
-                  <div className="font-mono text-[11px] text-neutral-300">
-                    {metadata.linkedLinearIssue}
-                  </div>
-                </div>
-              )}
-
-              {metadata?.comment?.trim() ? (
-                <div className="min-w-0 space-y-1">
-                  <DetailHeader
-                    icon={<FileText className="w-3 h-3" />}
-                    label="Notes"
-                    actions={
-                      onEditMetadata ? (
-                        <MetadataActionIcon label="Edit workspace notes" onClick={onEditMetadata}>
-                          <Pencil className="w-3 h-3" />
-                        </MetadataActionIcon>
-                      ) : null
-                    }
-                  />
-                  <CommentMarkdownAsync
-                    content={metadata.comment}
-                    className="text-[11px] leading-4 text-neutral-300"
-                    fallbackClassName="whitespace-pre-wrap"
-                  />
-                </div>
-              ) : null}
-            </div>
           )}
 
-          {/* Absolute Path */}
-          <div className="space-y-1 pt-0.5">
-            <div className="flex items-center justify-between text-[10px] text-neutral-400">
-              <div className="flex items-center gap-1">
-                <Folder className="w-3 h-3 text-neutral-500" />
-                <span>Path</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => copyText(worktree.path, setCopiedPath)}
-                className="inline-flex items-center gap-1 text-[9px] text-neutral-400 hover:text-neutral-200 transition cursor-pointer"
-              >
-                {copiedPath ? (
-                  <>
-                    <Check className="w-2.5 h-2.5 text-emerald-400" />
-                    <span className="text-emerald-400">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-2.5 h-2.5" />
-                    <span>Copy</span>
-                  </>
+          <WorktreeCardPortsDetails ports={ports} />
+
+          {onEditMetadata ? (
+            <WorktreeCardDetailSection>
+              <DetailHeader
+                icon={<Folder className="size-3 text-muted-foreground" />}
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.workspaceHeader',
+                  'Workspace'
                 )}
-              </button>
+                actions={
+                  <MetadataActionIcon
+                    label={translate(
+                      'auto.components.sidebar.WorktreeCardMeta.editMetadata',
+                      'Edit workspace metadata'
+                    )}
+                    onClick={dismissAndRun(onEditMetadata)}
+                  >
+                    <Pencil className="size-3" />
+                  </MetadataActionIcon>
+                }
+              />
+              <WorktreeCardDetailSectionContent className="space-y-1">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span>{project?.displayName || project?.name || 'Workspace'}</span>
+                </div>
+                <div
+                  className="break-all rounded border border-border/80 bg-muted/50 p-1.5 font-mono text-[10px] text-muted-foreground select-all"
+                  title={worktree.path}
+                >
+                  {worktree.path}
+                </div>
+              </WorktreeCardDetailSectionContent>
+            </WorktreeCardDetailSection>
+          ) : null}
+
+          {reviewDisplay && onOpenReviewInBrowser && reviewDisplay.url ? (
+            <div className="flex justify-end">
+              <MetadataActionIcon
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.viewOnProvider',
+                  'View on {{value0}}',
+                  { value0: getProviderName(reviewDisplay) }
+                )}
+                href={reviewDisplay.url}
+              >
+                <MonitorUp className="size-3" />
+              </MetadataActionIcon>
             </div>
-            <div
-              className="font-mono text-[10px] text-neutral-400 bg-neutral-900/80 p-1.5 rounded border border-neutral-800/80 break-all select-all"
-              title={worktree.path}
-            >
-              {worktree.path}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+          ) : null}
+        </SelectedTextCopyMenu>
+      </HoverCardContent>
+    </HoverCard>
+    <WorktreeNotesDocumentDialog
+      open={notesDocumentOpen}
+      onOpenChange={setNotesDocumentOpen}
+      title={workspaceTitle ?? branchName ?? worktree.path}
+      content={comment}
+      fileLinkBasePath={worktree.path}
+    />
+    </>
+  )
+
 }
+
+export default WorktreeCardDetailsHover

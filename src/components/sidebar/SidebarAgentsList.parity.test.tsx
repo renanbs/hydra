@@ -27,8 +27,10 @@ function renderList(scrollTopRef: { current: number }) {
       onDeleteSession={vi.fn()}
       groupBy="state"
       onGroupByChange={vi.fn()}
-      statusFilter="all"
-      onStatusFilterChange={vi.fn()}
+      readFilter="all"
+      onReadFilterChange={vi.fn()}
+      query=""
+      onQueryChange={vi.fn()}
       scrollTopRef={scrollTopRef}
     />
   );

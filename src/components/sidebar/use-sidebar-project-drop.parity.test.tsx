@@ -24,14 +24,17 @@ vi.mock("@tauri-apps/api/webview", () => ({
   }),
 }));
 
-import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
+import {
+  getSidebarProjectDropAffordance,
+  resolveSidebarProjectDropPath,
+  useSidebarProjectDrop,
+} from "./use-sidebar-project-drop";
 
-function Harness({ onAdded }: { onAdded: () => void }) {
+function Harness() {
   const ref = React.useRef<HTMLDivElement | null>(null);
-  const { isProjectDropActive } = useSidebarProjectDrop({
+  const { isProjectDropActive, affordance } = useSidebarProjectDrop({
     enabled: true,
     sidebarRef: ref,
-    onProjectAdded: onAdded,
   });
   return (
     <div
@@ -44,7 +47,9 @@ function Harness({ onAdded }: { onAdded: () => void }) {
       }}
       data-testid="sidebar"
     >
-      {isProjectDropActive ? <div data-testid="overlay" /> : null}
+      {isProjectDropActive && affordance.visible ? (
+        <div data-testid="overlay" data-tone={affordance.tone} />
+      ) : null}
     </div>
   );
 }
@@ -59,9 +64,19 @@ beforeEach(() => {
   // The hook only registers against a real Tauri host; the test impersonates one.
   (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ = {};
   invokeMock.mockReset();
-  invokeMock.mockResolvedValue(undefined);
+  invokeMock.mockResolvedValue({ path: "/a", exists: true, reason: null });
   state.handler = null;
 });
+
+function captureDroppedPaths(): string[] {
+  const paths: string[] = [];
+  const listener = (event: Event) => {
+    const path = (event as CustomEvent<{ path?: string }>).detail?.path;
+    if (path) paths.push(path);
+  };
+  window.addEventListener("hydra:add-project-from-folder", listener);
+  return paths;
+}
 
 describe("useSidebarProjectDrop (D01-004)", () => {
   it("paints the outline only while the drag is over the sidebar", async () => {
@@ -78,28 +93,74 @@ describe("useSidebarProjectDrop (D01-004)", () => {
     expect(screen.queryByTestId("overlay")).toBeNull();
   });
 
-  it("adds every dropped folder and reports once when the drop lands inside", async () => {
-    const onAdded = vi.fn();
-    render(<Harness onAdded={onAdded} />);
+  it("routes a single dropped folder into the Add Project wizard after the directory gate", async () => {
+    const routed = captureDroppedPaths();
+    render(<Harness />);
+    await act(async () => {});
+
+    await emit({ type: "drop", paths: ["/a"], position: { x: 20, y: 20 } });
+
+    expect(invokeMock).toHaveBeenCalledWith("folder_path_status", { path: "/a" });
+    // The catalog write belongs to the wizard, not to the drop handler.
+    expect(invokeMock).not.toHaveBeenCalledWith("catalog_add_folder", expect.anything());
+    await act(async () => {});
+    expect(routed).toEqual(["/a"]);
+    expect(screen.queryByTestId("overlay")).toBeNull();
+  });
+
+  it("refuses a multi-folder drop instead of adding the first path", async () => {
+    const routed = captureDroppedPaths();
+    render(<Harness />);
     await act(async () => {});
 
     await emit({ type: "drop", paths: ["/a", "/b"], position: { x: 20, y: 20 } });
 
-    expect(invokeMock).toHaveBeenCalledWith("catalog_add_folder", { path: "/a" });
-    expect(invokeMock).toHaveBeenCalledWith("catalog_add_folder", { path: "/b" });
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(routed).toEqual([]);
+  });
+
+  it("refuses a path the directory probe rejects", async () => {
+    const routed = captureDroppedPaths();
+    invokeMock.mockResolvedValue({ path: "/file.txt", exists: false, reason: "not-directory" });
+    render(<Harness />);
     await act(async () => {});
-    expect(onAdded).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId("overlay")).toBeNull();
+
+    await emit({ type: "drop", paths: ["/file.txt"], position: { x: 20, y: 20 } });
+
+    expect(invokeMock).toHaveBeenCalledWith("folder_path_status", { path: "/file.txt" });
+    expect(routed).toEqual([]);
   });
 
   it("ignores a drop outside the sidebar", async () => {
-    const onAdded = vi.fn();
-    render(<Harness onAdded={onAdded} />);
+    const routed = captureDroppedPaths();
+    render(<Harness />);
     await act(async () => {});
 
     await emit({ type: "drop", paths: ["/a"], position: { x: 900, y: 20 } });
 
     expect(invokeMock).not.toHaveBeenCalled();
-    expect(onAdded).not.toHaveBeenCalled();
+    expect(routed).toEqual([]);
+  });
+
+  it("resolves one usable path and reports multi/empty drops", () => {
+    expect(resolveSidebarProjectDropPath(["/a"])).toEqual({ status: "ready", path: "/a" });
+    expect(resolveSidebarProjectDropPath(["/a", "  "])).toEqual({ status: "ready", path: "/a" });
+    expect(resolveSidebarProjectDropPath([])).toEqual({ status: "empty" });
+    expect(resolveSidebarProjectDropPath(["/a", "/b"])).toEqual({ status: "multiple", count: 2 });
+  });
+
+  it("tones the overlay for ready, blocked and busy drags", () => {
+    expect(
+      getSidebarProjectDropAffordance({ isDragOver: false, isHandlingDrop: false, remoteRuntimeActive: false })
+    ).toEqual({ visible: false });
+    expect(
+      getSidebarProjectDropAffordance({ isDragOver: true, isHandlingDrop: false, remoteRuntimeActive: false })
+    ).toMatchObject({ tone: "ready", label: "Drop folder to add project" });
+    expect(
+      getSidebarProjectDropAffordance({ isDragOver: true, isHandlingDrop: false, remoteRuntimeActive: true })
+    ).toMatchObject({ tone: "blocked", label: "Server runtime active" });
+    expect(
+      getSidebarProjectDropAffordance({ isDragOver: true, isHandlingDrop: true, remoteRuntimeActive: false })
+    ).toMatchObject({ tone: "busy" });
   });
 });

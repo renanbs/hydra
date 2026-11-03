@@ -40,6 +40,8 @@ export type SidebarHeaderProjectGroup = {
   name: string
   parentGroupId?: string | null
   tabOrder?: number
+  /** Owner host of the group; the commit must target it, not the focused host. */
+  hostId?: ExecutionHostId
 }
 
 type SidebarHeaderTier = SidebarHeaderDropIndicator['tier']
@@ -106,7 +108,11 @@ export function useWorktreeSidebarHeaderDrag(args: {
   scrollRef: React.RefObject<HTMLDivElement | null>
   projectGroups: readonly SidebarHeaderProjectGroup[]
   onReorderHostSections?: (orderedHostIds: ExecutionHostId[]) => void
-  onUpdateProjectGroup?: (groupId: string, updates: { tabOrder: number }) => void
+  onUpdateProjectGroup?: (
+    groupId: string,
+    updates: { tabOrder: number },
+    options?: { hostId?: ExecutionHostId }
+  ) => void
   /** Panel handlers for the legacy project drag; the list wraps them, never replaces them. */
   onProjectDragStart?: (event: React.DragEvent, projectId: string) => void
   onProjectDragOver?: (event: React.DragEvent, projectId: string) => void
@@ -382,12 +388,18 @@ export function useWorktreeSidebarHeaderDrag(args: {
       )
       const targetId = renderedGroupIds[dropIndex]
       const targetIndex = targetId ? siblingIds.indexOf(targetId) : siblingIds.length
-      onUpdateProjectGroup(draggedId, {
-        tabOrder: getProjectGroupTabOrderForDrop({
-          siblingTabOrders: siblingIds.map((id) => projectGroupById.get(id)?.tabOrder ?? 0),
-          insertIndex: targetIndex < 0 ? siblingIds.length : targetIndex
-        })
-      })
+      onUpdateProjectGroup(
+        draggedId,
+        {
+          tabOrder: getProjectGroupTabOrderForDrop({
+            siblingTabOrders: siblingIds.map((id) => projectGroupById.get(id)?.tabOrder ?? 0),
+            insertIndex: targetIndex < 0 ? siblingIds.length : targetIndex
+          })
+        },
+        // Why the owner host: the sidebar lists groups from every host, so the
+        // focused host must never receive another host's order write.
+        { hostId: draggedGroup?.hostId }
+      )
     },
     [onUpdateProjectGroup, projectGroupById, renderedGroupIds]
   )

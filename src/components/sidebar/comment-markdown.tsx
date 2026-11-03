@@ -16,12 +16,14 @@ import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { invoke } from "@tauri-apps/api/core";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { cn } from "@/lib/utils";
+import { routeNativeChatHref } from "../../shared/native-chat-href-routing";
+import { resolveExplicitFileLinkTargetPath } from "../../lib/explicit-file-link-target";
+import { remarkNativeChatFileLinks } from "./comment-markdown-native-chat-file-links";
 import {
-  compactCommentMarkdownComponents,
   createCompactCommentMarkdownComponents,
   createDocumentCommentMarkdownComponents,
-  documentCommentMarkdownComponents,
   isTrustedCompactImageSrc,
   type CommentMarkdownLinkClickHandler,
   type DocumentCodeBlockRenderer,
@@ -60,6 +62,16 @@ const commentMarkdownUrlTransform: UrlTransform = (value, key, node) => {
     return value;
   }
   return defaultUrlTransform(value);
+};
+
+// Why: file: hrefs are stripped by react-markdown's default transform. Consumers
+// that route file links themselves opt in explicitly; the markdown itself never
+// navigates the webview.
+const commentMarkdownFileUriUrlTransform: UrlTransform = (value, key, node) => {
+  if (key === "href" && node?.tagName === "a" && value.trim().toLowerCase().startsWith("file:")) {
+    return value;
+  }
+  return commentMarkdownUrlTransform(value, key, node);
 };
 
 // Why: standard CommonMark collapses single newlines into spaces. The old
@@ -189,22 +201,51 @@ export type CommentMarkdownProps = React.ComponentPropsWithoutRef<"div"> & {
   variant?: "compact" | "document";
   githubRepo?: GitHubRepoReference | null;
   onLinkClick?: CommentMarkdownLinkClickHandler;
+  /** `file:` hrefs survive the URL transform so a caller can route them. */
+  allowFileUriLinks?: boolean;
+  /** Path-shaped prose and inline code become `#orca-native-chat-file=` links. */
+  linkifyFilePaths?: boolean;
+  /** Base directory used to resolve relative file links into absolute paths. */
+  fileLinkBasePath?: string;
   expandImages?: boolean;
   renderCodeBlock?: DocumentCodeBlockRenderer;
 };
 
-function openExternalLink(event: React.MouseEvent<HTMLElement>, href: string | undefined): void {
-  if (!href || !/^(https?:\/\/|mailto:)/i.test(href.trim())) {
-    return;
-  }
-  // Why: the webview must never navigate away from the app; the link opens in
-  // the system browser instead. `stopPropagation` keeps the card's own click
-  // (select/activate) from firing on the same gesture.
-  event.preventDefault();
-  event.stopPropagation();
+function openWebLink(href: string): void {
   void invoke("open_external_url_cmd", { url: href }).catch((error) =>
     console.error("Failed to open link:", error)
   );
+}
+
+/**
+ * Default link activation: web links open in the system browser, file links open
+ * with the OS default app when they resolve to an absolute path. Both cancel the
+ * webview navigation so the app never leaves its own document.
+ */
+function openCommentMarkdownLink(
+  event: React.MouseEvent<HTMLElement>,
+  href: string | undefined,
+  fileLinkBasePath: string | undefined
+): void {
+  const route = routeNativeChatHref(href);
+  if (route.kind === "web") {
+    event.preventDefault();
+    // Why: stopPropagation keeps the parent card's select/activate gesture from
+    // firing on the same click.
+    event.stopPropagation();
+    openWebLink(route.url);
+    return;
+  }
+  if (route.kind !== "file") {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  const absolutePath = resolveExplicitFileLinkTargetPath(route.pathText, fileLinkBasePath ?? "");
+  if (!absolutePath) {
+    return;
+  }
+  void openPath(absolutePath).catch((error) => console.error("Failed to open file:", error));
 }
 
 // Why forwardRef + rest props: Radix's HoverCardTrigger asChild merges a ref and
@@ -218,7 +259,10 @@ const CommentMarkdown = React.memo(
       className,
       variant = "compact",
       githubRepo,
-      onLinkClick = openExternalLink,
+      onLinkClick,
+      allowFileUriLinks = false,
+      linkifyFilePaths = false,
+      fileLinkBasePath,
       expandImages = false,
       renderCodeBlock,
       ...rest
@@ -226,24 +270,29 @@ const CommentMarkdown = React.memo(
     ref
   ) {
     const source = content ?? text ?? "";
-    const components = React.useMemo(() => {
-      if (!onLinkClick) {
-        return variant === "document"
-          ? renderCodeBlock
-            ? createDocumentCommentMarkdownComponents(undefined, renderCodeBlock)
-            : documentCommentMarkdownComponents
-          : expandImages
-            ? createCompactCommentMarkdownComponents(undefined, true)
-            : compactCommentMarkdownComponents;
-      }
-      return variant === "document"
-        ? createDocumentCommentMarkdownComponents(onLinkClick, renderCodeBlock)
-        : createCompactCommentMarkdownComponents(onLinkClick, expandImages);
-    }, [expandImages, renderCodeBlock, variant, onLinkClick]);
-    const activeRemarkPlugins = React.useMemo(
-      () => (githubRepo ? [...remarkPlugins, remarkGitHubReferences(githubRepo)] : remarkPlugins),
-      [githubRepo]
+    const handleLinkClick = React.useMemo<CommentMarkdownLinkClickHandler>(
+      () =>
+        onLinkClick ?? ((event, href) => openCommentMarkdownLink(event, href, fileLinkBasePath)),
+      [onLinkClick, fileLinkBasePath]
     );
+    const components = React.useMemo(() => {
+      if (variant === "document") {
+        return createDocumentCommentMarkdownComponents(
+          handleLinkClick,
+          renderCodeBlock,
+          expandImages
+        );
+      }
+      return expandImages
+        ? createCompactCommentMarkdownComponents(handleLinkClick, true)
+        : createCompactCommentMarkdownComponents(handleLinkClick);
+    }, [expandImages, renderCodeBlock, variant, handleLinkClick]);
+    const activeRemarkPlugins = React.useMemo(() => {
+      const plugins = linkifyFilePaths
+        ? [...remarkPlugins, remarkNativeChatFileLinks]
+        : remarkPlugins;
+      return githubRepo ? [...plugins, remarkGitHubReferences(githubRepo)] : plugins;
+    }, [githubRepo, linkifyFilePaths]);
 
     return (
       <div
@@ -260,7 +309,9 @@ const CommentMarkdown = React.memo(
           remarkPlugins={activeRemarkPlugins}
           rehypePlugins={rehypePlugins}
           components={components}
-          urlTransform={commentMarkdownUrlTransform}
+          urlTransform={
+            allowFileUriLinks ? commentMarkdownFileUriUrlTransform : commentMarkdownUrlTransform
+          }
         >
           {source}
         </Markdown>

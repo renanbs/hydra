@@ -10,12 +10,18 @@ import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { WorktreeMetadataByPath } from "./worktree-metadata-types";
 import type { AgentSubagentSnapshot } from "./agent-status-types";
 import type { ProjectGroup } from "./worktree-list/types";
+import type {
+  ProjectGroupMapByHost,
+  ProjectGroupPrefEntry,
+  ProjectGroupsByHost,
+} from "../../lib/project-group-host-state";
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import type {
   VisibleWorkspaceHostIds,
   WorkspaceHostScope,
 } from "../../shared/ui-chrome-types";
 import type { FolderWorkspacePathStatus } from "../../shared/folder-workspace-path-status";
+import type { ThreadReadFilter } from "../../shared/agents-view-thread-filters";
 
 export type { ProjectGroup };
 
@@ -23,7 +29,8 @@ export type { ProjectGroup };
 // O blob merged é um JSON plano; todos os campos são opcionais para que um blob
 // parcial hidrate campo a campo com fallback para os defaults atuais.
 export type SidebarBody = "workspaces" | "agents";
-export type AgentsStatusFilter = "all" | "blocked" | "waiting" | "working" | "done" | "idle";
+/** Orca `ThreadReadFilter`: the Agents view filters by read state, never by agent status. */
+export type AgentsReadFilter = ThreadReadFilter;
 export type AgentsGroupBy = "state" | "project";
 
 export interface SidebarPrefsSnapshot {
@@ -34,10 +41,16 @@ export interface SidebarPrefsSnapshot {
   unreadProjects?: string[];
   pinnedWorktrees?: string[];
   unreadWorktrees?: string[];
+  /** Legacy flat membership map; loaded into the local host bucket (D03a-087). */
   projectGroupMap?: Record<string, string>;
-  projectGroups?: Array<{ id: string; name: string }>;
+  /** Legacy flat group list; loaded into the local host bucket (D03a-087). */
+  projectGroups?: ProjectGroupPrefEntry[];
+  /** Host-qualified groups, keyed by `ExecutionHostId` (local vs connection/runtime host). */
+  projectGroupsByHost?: ProjectGroupsByHost;
+  /** Host-qualified project → group map; a mutation only touches its own bucket. */
+  projectGroupMapByHost?: ProjectGroupMapByHost;
   displayOptions?: WorkspaceDisplayOptions;
-  agentsReadFilter?: AgentsStatusFilter;
+  agentsReadFilter?: AgentsReadFilter;
   agentsGroupBy?: AgentsGroupBy;
   /** Set once the one-time Agents-view intro popover has been acknowledged (D01-009). */
   agentsSidebarIntroShown?: boolean;
@@ -53,7 +66,7 @@ export interface SidebarShellPrefs {
   collapsedProjects: string[];
   collapsedGroups: string[];
   displayOptions: WorkspaceDisplayOptions;
-  agentsReadFilter: AgentsStatusFilter;
+  agentsReadFilter: AgentsReadFilter;
   agentsGroupBy: AgentsGroupBy;
   agentsSidebarIntroShown: boolean;
 }
@@ -64,6 +77,8 @@ export interface AvailableAgent {
   executable: string;
   is_installed: boolean;
 }
+
+type HydraProjectExecutionHostId = 'local' | `ssh:${string}` | `runtime:${string}`;
 
 export interface HydraProject {
   id: string;
@@ -98,6 +113,9 @@ export interface HydraProject {
    *  `worktreeVisibilitySourcePreferences`). */
   worktreeVisibilitySourcePreferences?: WorktreeVisibilitySourcePreferences | null;
   repo_icon?: RepoIcon | null;
+  /** Host stamp of the repo's checkout (D03a-046). Local repos leave both null. */
+  connectionId?: string | null;
+  executionHostId?: HydraProjectExecutionHostId | null;
 }
 
 export interface GitWorktreeInfo {
@@ -131,6 +149,9 @@ export interface GitWorktreeInfo {
   /** Proveniência vinda do scan: `'created-by-cli'` quando a worktree foi criada
    *  via CLI; omitido quando não há proveniência. Projetado em `Worktree.cliProvenance`. */
   cliProvenanceKind?: string;
+  /** Recipe-provisioned opener (`'provisioned-root'`): the default-branch filter
+   *  must keep it visible (Orca `isDefaultBranchWorkspace`). */
+  ephemeralVmCheckoutMode?: "orca-worktree" | "provisioned-root";
 }
 
 export interface WorkspacePort {
@@ -282,7 +303,8 @@ export interface WorktreeSidebarProps {
   unreadWorktrees?: Set<string>;
   hiddenWorktreesByProject?: Record<string, GitWorktreeInfo[]>;
   projectGroupMap?: Record<string, string>;
-  projectGroups?: Array<{ id: string; name: string }>;
+  /** Groups merged from every host bucket; `hostId` names the bucket that owns the row. */
+  projectGroups?: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
   folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
   /** Workspace paths with a mounted terminal tab (Orca's live-PTY signal for the status dot). */
   liveWorkspacePaths?: ReadonlySet<string>;
@@ -301,6 +323,11 @@ export interface WorktreeSidebarProps {
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry; the folder on disk stays. */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
+  /** Orca folder-row context menu: remove the entry through the typed delete intent. */
+  onFolderWorkspaceContextMenu?: (
+    event: React.MouseEvent,
+    folderWorkspace: { id: string; name: string; folderPath: string }
+  ) => void;
   /** Review display per worktree path, from the host `pr_status` probe. */
   prByPath?: Record<string, import("./pr-display").PrDisplay>;
   compactCards?: boolean;
@@ -322,8 +349,16 @@ export interface WorktreeSidebarProps {
   initialCollapsedProjects?: string[];
   initialCollapsedGroups?: string[];
   initialDisplayOptions?: WorkspaceDisplayOptions;
-  initialAgentsReadFilter?: AgentsStatusFilter;
+  initialAgentsReadFilter?: AgentsReadFilter;
   initialAgentsGroupBy?: AgentsGroupBy;
   initialAgentsIntroShown?: boolean;
   onSidebarPrefsChange?: (prefs: SidebarShellPrefs) => void;
+  /**
+   * Orca `setWorktreeCardMode` writes `compactWorktreeCards` through the settings
+   * writer; App owns that write, so the menu delegates the preset change here.
+   * The nav entries also hide themselves through this same writer.
+   */
+  onUpdateSettings?: (patch: Partial<HydraSettings>) => void;
+  /** Orca `openSettingsTarget({pane:'shortcuts'})` entry point for the help menu. */
+  onOpenSettingsSection?: (section: "shortcuts") => void;
 }

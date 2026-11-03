@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WorktreeCardDetailsHover } from "./WorktreeCardDetailsHover";
 
@@ -10,6 +10,16 @@ const WORKTREE = {
   head_commit: "abcdef1234",
   is_bare: false,
   is_locked: false,
+};
+
+const OPEN_CONTROL = {
+  hoverOpen: true,
+  issueMenuOpen: false,
+  reviewMenuOpen: false,
+  handleHoverOpenChange: vi.fn(),
+  handleIssueMenuOpenChange: vi.fn(),
+  handleReviewMenuOpenChange: vi.fn(),
+  closeHover: vi.fn(),
 };
 
 function openHover(overrides: Partial<Parameters<typeof WorktreeCardDetailsHover>[0]> = {}) {
@@ -25,6 +35,10 @@ function openHover(overrides: Partial<Parameters<typeof WorktreeCardDetailsHover
           linkedPR: 34,
           linkedLinearIssue: "ENG-7",
         }}
+        // Why the explicit control: Radix hover input needs a pointer-capable
+        // document, so the content contract is exercised through the public
+        // open-state handle instead of a synthetic hover.
+        hoverControl={OPEN_CONTROL}
         onEditMetadata={onEditMetadata}
         {...overrides}
       >
@@ -32,48 +46,39 @@ function openHover(overrides: Partial<Parameters<typeof WorktreeCardDetailsHover
       </WorktreeCardDetailsHover>
     </TooltipProvider>
   );
-  act(() => {
-    vi.advanceTimersByTime(200);
-  });
-  fireEvent.mouseEnter(screen.getByText("card").parentElement!);
-  act(() => {
-    vi.advanceTimersByTime(200);
-  });
   return { onEditMetadata };
 }
 
 describe("WorktreeCardDetailsHover metadata sections (Orca parity)", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("renders issue, review and Linear sections and the compact markdown note", async () => {
-    vi.useFakeTimers();
     openHover();
 
-    expect(screen.getByText("Issue")).toBeInTheDocument();
-    expect(screen.getByText("#12")).toBeInTheDocument();
-    expect(screen.getByText("Review")).toBeInTheDocument();
-    expect(screen.getByText("#34")).toBeInTheDocument();
-    expect(screen.getByText("Linear")).toBeInTheDocument();
-    expect(screen.getByText("ENG-7")).toBeInTheDocument();
+    // Orca section headings name the work item, not the slots: "Issue #12".
+    expect(screen.getByText("Issue #12")).toBeInTheDocument();
+    expect(screen.getByText("PR #34")).toBeInTheDocument();
+    expect(screen.getByText("Linear ENG-7")).toBeInTheDocument();
     // The markdown renderer is a lazy chunk; the raw-text fallback paints first.
-    vi.useRealTimers();
     expect((await screen.findByText("bold note", undefined, { timeout: 5000 })).tagName).toBe(
       "STRONG"
     );
   });
 
   it("offers the metadata edit action from the section header", () => {
-    vi.useFakeTimers();
     const { onEditMetadata } = openHover();
     fireEvent.click(screen.getByRole("button", { name: "Edit workspace metadata" }));
     expect(onEditMetadata).toHaveBeenCalledTimes(1);
   });
 
   it("shows the CLI provenance section only for CLI-created workspaces", () => {
-    vi.useFakeTimers();
     openHover({ cliCreated: true });
-    expect(screen.getByText("Created by CLI")).toBeInTheDocument();
+    expect(screen.getByText("CLI")).toBeInTheDocument();
+  });
+
+  it("renders the Jira section only when the provider projection exists", () => {
+    openHover({
+      jiraIssue: { identifier: "OPS-4", title: "Rotate the token", url: "https://jira/OPS-4" },
+    });
+    expect(screen.getByText("Jira OPS-4")).toBeInTheDocument();
+    expect(screen.getByText("Rotate the token")).toBeInTheDocument();
   });
 });

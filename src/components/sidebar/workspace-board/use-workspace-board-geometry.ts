@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import type React from 'react'
+import {
+  STATUS_BAR_RESERVE_HEIGHT,
+  WORKSPACE_TOP_CHROME_HEIGHT,
+} from './workspace-board-chrome-metrics'
 
 /** Viewport-space box the board sheet occupies, derived from the sidebar itself. */
 export type WorkspaceBoardGeometry = {
@@ -8,7 +12,11 @@ export type WorkspaceBoardGeometry = {
   bottom: number
 }
 
-const ZERO_GEOMETRY: WorkspaceBoardGeometry = { left: 0, top: 0, bottom: 0 }
+const INITIAL_GEOMETRY: WorkspaceBoardGeometry = {
+  left: 0,
+  top: WORKSPACE_TOP_CHROME_HEIGHT,
+  bottom: STATUS_BAR_RESERVE_HEIGHT,
+}
 
 /**
  * Why measure instead of recompute: the board is a fixed-position companion panel
@@ -21,7 +29,7 @@ export function useWorkspaceBoardGeometry(
   sidebarRef: React.RefObject<HTMLElement | null>,
   enabled: boolean
 ): WorkspaceBoardGeometry {
-  const [geometry, setGeometry] = useState<WorkspaceBoardGeometry>(ZERO_GEOMETRY)
+  const [geometry, setGeometry] = useState<WorkspaceBoardGeometry>(INITIAL_GEOMETRY)
 
   const measure = useCallback(() => {
     const rect = sidebarRef.current?.getBoundingClientRect()

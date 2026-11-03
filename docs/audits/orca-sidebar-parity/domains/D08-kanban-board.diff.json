@@ -11,24 +11,15 @@
     "components/sidebar/useWorkspaceBoardPanel.ts:160"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:43",
-     "src/components/sidebar/workspace-board/use-workspace-board-panel.ts:124-127",
-     "src/components/sidebar/SidebarFooter.tsx:53-58",
-     "src/components/sidebar/WorktreeSidebar.tsx:207-211",
-     "src/components/sidebar/WorktreeSidebar.tsx:893-894",
-     "src/shared/keybindings/definitions-core-1.ts:103"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Gerencia o estado de abertura workspaceBoardOpen/renderedOpen",
-     "Registra interação de feature workspace-board no store ao abrir",
-     "Fecha e limpa estados de pré-visualização de drag e menus ativos",
-     "Escuta o evento global orca:toggle-workspace-board na janela"
-    ],
-    "notes": "Board substitui o antigo missing: toggle ligado via evento global + botao do footer; faltam telemetria e handler do keybinding workspace.openBoard.",
-    "note": "Board substitui o antigo missing: toggle ligado via evento global + botao do footer; faltam telemetria e handler do keybinding workspace.openBoard."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -43,19 +34,15 @@
     "components/sidebar/useWorkspaceBoardPanel.ts:109"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
-     "src/components/sidebar/worktree-sidebar-drop-preview.ts:1"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ativa workspaceBoardDragPreviewOpen sem telemetria até solidificar",
-     "Solidifica a abertura convertendo preview em abertura definitiva + telemetria",
-     "Cancela a pré-visualização se o drag for abortado/sair sem drop"
-    ],
-    "notes": "Sem previewWorkspaceBoardFromDrag/solidify: o board so recebe cards por drop interno (ponteiro), nao por drag da lista.",
-    "note": "Sem previewWorkspaceBoardFromDrag/solidify: o board so recebe cards por drop interno (ponteiro), nao por drag da lista."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14",
@@ -96,20 +83,15 @@
     "components/sidebar/WorkspaceKanbanSheet.tsx:30"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:60-61",
-     "src/components/sidebar/WorktreeSidebar.tsx:312-316"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Calcula bounding rect do sheet content e descarta o board em clique à direita do painel",
-     "Preserva abertura via preserveOpenForMenu",
-     "Preserva abertura para isWorkspaceBoardKeepOpenTarget (gatilhos, popovers, context menus, dropdowns, dialogs, toasts, tour)",
-     "Ignora cliques à esquerda da borda viva do sheet"
-    ],
-    "notes": "Board ignora pointerdown/interact outside (sem outside dismiss); so Escape/botao e o click-outside do WorkspaceOptionsMenu existem.",
-    "note": "Board ignora pointerdown/interact outside (sem outside dismiss); so Escape/botao e o click-outside do WorkspaceOptionsMenu existem."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -148,19 +130,15 @@
     "components/sidebar/use-workspace-kanban-render-lifecycle.ts:30"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/use-workspace-board-lane-hydration.ts:44-68",
-     "src/components/sidebar/workspace-board/use-workspace-board-selection.ts:70-82"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Diferimento da renderização de cards com requestAnimationFrame + startTransition",
-     "Cancela a animação se o drawer fechar antes do frame disparar",
-     "Limpa seleção de cards em pointerdown fora do sheet e fora de keep-open targets"
-    ],
-    "notes": "Ciclo diferido existe por raia (startTransition, D08-020) e a selecao e descartada ao reabrir/fechar o board; falta o descarte por pointerdown fora do board (Orca useWorkspaceKanbanRenderLifecycle), declarado fora do escopo do PR 24.",
-    "note": "Ciclo diferido existe por raia (startTransition, D08-020) e a selecao e descartada ao reabrir/fechar o board; falta o descarte por pointerdown fora do board (Orca useWorkspaceKanbanRenderLifecycle), declarado fora do escopo do PR 24."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -175,21 +153,15 @@
     "components/sidebar/WorkspaceKanbanSheet.tsx:60"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-56",
-     "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:24-57"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Renderiza Sheet não-modal (modal={false}) no lado esquerdo com largura min(calc(100vw - sidebarWidth), 1294px)",
-     "Posiciona topo abaixo de WORKSPACE_TOP_CHROME_HEIGHT e base conforme STATUS_BAR_RESERVE_HEIGHT",
-     "Impede auto-focus e desativa close button nativo do Radix Sheet",
-     "Configura overlay sem pointer events alinhado à largura da sidebar",
-     "Expõe data-attributes de tour contextual e preview de drag"
-    ],
-    "notes": "Sheet reserva chrome/status por medicao do sidebar; faltam as constantes WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT e o data-contextual-tour-target.",
-    "note": "Sheet reserva chrome/status por medicao do sidebar; faltam as constantes WORKSPACE_TOP_CHROME_HEIGHT/STATUS_BAR_RESERVE_HEIGHT e o data-contextual-tour-target."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -205,22 +177,15 @@
     "components/sidebar/WorkspaceKanbanDrawerHeader.tsx:112"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:36-95",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSearchField.tsx:1-175",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:1-182"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "SheetTitle com label 'Workspace board' e badge de contagem de seleção ({selectedCount} selected)",
-     "Campo de busca como irmão do título dentro do SheetHeader",
-     "SheetDescription oculta para leitores de tela",
-     "Agrupa SidebarFilter + WorkspaceKanbanSettingsMenu + botão fechar (X)",
-     "Encaminha clique de fechar ao callback onClose explícito"
-    ],
-    "notes": "Titulo, badge de contagem de selecao (>1), busca, menu de configuracoes, descricao sr-only e botao fechar existem; falta apenas o menu de filtro do sidebar (SidebarFilter) no cluster direito.",
-    "note": "Titulo, badge de contagem de selecao (>1), busca, menu de configuracoes, descricao sr-only e botao fechar existem; falta apenas o menu de filtro do sidebar (SidebarFilter) no cluster direito."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -235,21 +200,15 @@
     "components/sidebar/WorkspaceKanbanDrawerView.tsx:50"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardDrawerView.tsx:100-127",
-     "src/components/sidebar/workspace-board/WorkspaceBoardAreaSelectionOverlay.tsx:1-21",
-     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:183"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Layout interno combinando Header + overlay de seleção + target de tour + drop target de Pin",
-     "Superfície de seleção via data-workspace-board-selection-surface",
-     "Listeners de pointerdown capture para cards e pointerdown para seleção por área",
-     "Container com rolagem horizontal personalizada (scrollbar-sleek) para a grade de raias"
-    ],
-    "notes": "Superficie de selecao (data-workspace-board-selection-surface) com pointerdown do marquee, overlay de area e container de raias existem; falta o alvo central de contextual tour (o Hydra nao tem sistema de tour).",
-    "note": "Superficie de selecao (data-workspace-board-selection-surface) com pointerdown do marquee, overlay de area e container de raias existem; falta o alvo central de contextual tour (o Hydra nao tem sistema de tour)."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -265,18 +224,15 @@
     "components/sidebar/WorkspaceKanbanSearchField.tsx:150"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Preserva foco no input ao clicar em limpar (onMouseDown.preventDefault + refocus imediato)",
-     "Calcula overlayReserve à direita para o contador sem sobrepor o texto digitado",
-     "Campo vive no header do board Kanban (superfície distinta da lista)"
-    ],
-    "notes": "Busca do sidebar existe (input + Clear filter), mas o board nao tem campo de busca proprio; o clear nao preserva foco.",
-    "note": "Busca do sidebar existe (input + Clear filter), mas o board nao tem campo de busca proprio; o clear nao preserva foco."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -289,18 +245,15 @@
     "components/sidebar/WorkspaceKanbanSearchField.tsx:120"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:704-709"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ignora Escape durante composição de caractere (event.nativeEvent.isComposing)",
-     "Aciona o fechamento do painel Kanban (onClose) se o campo já estiver vazio",
-     "Previne propagação do evento para evitar duplo acionamento"
-    ],
-    "notes": "Escape limpa texto do filtro ou da blur; sem guard de IME nem fechar-board (nao ha busca no board).",
-    "note": "Escape limpa texto do filtro ou da blur; sem guard de IME nem fechar-board (nao ha busca no board)."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -349,21 +302,15 @@
     "components/sidebar/workspace-kanban-search.ts:43"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:562-635",
-     "src/components/sidebar/visible-worktree-filters.ts:1"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "useDeferredValue para manter o input responsivo e permitir interrupção do re-render",
-     "Política board-only de indexação (apenas texto impresso nos cards, sem portas/reviews/automações)",
-     "Retorna null para query vazia ou acima do limite (isWorktreePaletteQueryTooLarge) em vez de zerar o board",
-     "Chave de resultado qualificada por host (composeWorktreeHostIdentity)",
-     "Estabilidade de referência de matchingWorktreeIds (evita re-render em ticks de status de agente) e reset da query ao fechar"
-    ],
-    "notes": "Matching de busca do sidebar existe; falta o pipeline host-qualified/board (deferred value, politica de campos, guarda de tamanho).",
-    "note": "Matching de busca do sidebar existe; falta o pipeline host-qualified/board (deferred value, politica de campos, guarda de tamanho)."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -704,20 +651,15 @@
     "components/sidebar/workspace-kanban-filtered-drop-index.ts:25"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-status-drag-data.ts:3-5",
-     "src/components/sidebar/workspace-status.ts:38-46"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Serializa IDs completos da raia com delimitador NUL (WORKSPACE_LANE_FULL_IDS_DELIMITER)",
-     "Publica data-workspace-lane-full-ids na raia apenas sob busca ativa",
-     "Permite que drops da sidebar conheçam a lista completa de IDs da raia",
-     "Faz parsing seguro distinguindo raia não publicada de raia vazia"
-    ],
-    "notes": "Sem canal DOM de IDs completos (delimitador NUL); helpers de payload seguem sem consumidor.",
-    "note": "Sem canal DOM de IDs completos (delimitador NUL); helpers de payload seguem sem consumidor."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -778,20 +720,15 @@
     "components/sidebar/workspace-kanban-worktree-groups.ts:22"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
-     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Agrupa worktrees em raias por status do workspace (colunas do board)",
-     "Aplica ordenação manual (sortManualBoardWorktrees por manualOrder/sortOrder) no board",
-     "Constrói grupos de drag do board (boardDragGroups) e registra para drop da sidebar",
-     "Constrói buildUnambiguousWorktreeIdIndex e identidade ativa host-qualified no board"
-    ],
-    "notes": "Projecao reusa os filtros/sort do sidebar e fixa os pinned no topo da raia; faltam ordenacao manual, grupos host-qualified e indice de board.",
-    "note": "Projecao reusa os filtros/sort do sidebar e fixa os pinned no topo da raia; faltam ordenacao manual, grupos host-qualified e indice de board."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -1014,22 +951,15 @@
     "components/sidebar/workspace-kanban-card-pointer-drag-dom.ts:243"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:18",
-     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:77-82",
-     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:228-252"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Resolve status da raia sob o ponteiro com tolerância de 24px entre colunas (STATUS_DROP_GAP_TOLERANCE_PX)",
-     "Detecta drop target na área de fixação (data-workspace-pin-drop-target)",
-     "Calcula índice de inserção comparando Y com os pontos médios dos cards",
-     "Renderiza linha indicadora (data-workspace-board-card-drop-indicator)",
-     "Mantém o último alvo com tolerância de 6px (COMMIT_TARGET_FALLBACK_TOLERANCE_PX)"
-    ],
-    "notes": "Resolucao de raia com tolerancia de gap e linha indicadora existem; falta o alvo de pin.",
-    "note": "Resolucao de raia com tolerancia de gap e linha indicadora existem; falta o alvo de pin."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -1042,20 +972,15 @@
     "components/sidebar/workspace-kanban-filtered-drop-index.ts:33"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:168-234"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Mapeia índice de drop dos cards visíveis para a posição na lista completa da raia",
-     "Retorna o índice direto quando a raia não está filtrada",
-     "Append ao final quando todos os cards da raia estão filtrados",
-     "Mapeia inserção antes do primeiro / após o último item visível para a raia cheia",
-     "Garante que a ordenação manual não seja corrompida por filtros parciais"
-    ],
-    "notes": "Sem traducao de indice filtrado->raia cheia (o board nao tem busca).",
-    "note": "Sem traducao de indice filtrado->raia cheia (o board nao tem busca)."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"
@@ -1073,24 +998,15 @@
     "components/sidebar/workspace-kanban-sidebar-drop.ts:182"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:55-66",
-     "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:84-104",
-     "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:112-137",
-     "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:164",
-     "src/components/sidebar/worktree-list/drag/pointer-flush.ts:44-49",
-     "src/components/sidebar/worktree-list/drag/pointer-commit.ts:34-47",
-     "src/components/sidebar/worktree-list/drag/pointer-commit.ts:59-68",
-     "src/components/sidebar/worktree-list/drag/worktree-pointer-board-drop.parity.test.tsx:323-395"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Traduz índices virtuais/filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex)",
-     "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
-    ],
-    "notes": "Sidebar drag now resolves board lanes/pin strip via a registered open board, paints lane highlight + indicator and commits status/pin; index translation and batch metadata updates remain absent.",
-    "note": "Sidebar drag now resolves board lanes/pin strip via a registered open board, paints lane highlight + indicator and commits status/pin; index translation and batch metadata updates remain absent."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14",
@@ -1223,19 +1139,15 @@
     "components/sidebar/workspace-board-task-status-sync.ts:46"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-preference-actions.ts:259",
-     "src/shared/constants.ts:289"
+     "src/components/sidebar/workspace-board",
+     "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Retorna null com sync desabilitada ou lista de IDs vazia",
-     "Localiza a definição do status alvo em workspaceStatuses do store",
-     "Filtra IDs duplicados e worktrees já no status alvo",
-     "Retorna changedWorktreeIds e targetStatus limpos"
-    ],
-    "notes": "Passo 1/3: getWorkspaceBoardTaskStatusSyncRequest ausente (0 hits). O estado base existe mas inerte: syncTaskStatusFromWorkspaceBoard default false (constants.ts:289) com setter persistente sem caller (ui-slice-preference-actions.ts:259-262) e nenhuma leitura no renderer. Não localizado."
+    "missing_behaviors": [],
+    "notes": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired.",
+    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
    },
    "par": [
     "PAR-14"

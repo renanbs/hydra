@@ -13,14 +13,23 @@
 // there later. `src/lib/smart-attention.ts` had these two swapped, which is what made
 // the painted "Agent Activity" sort disagree with Orca.
 import { AGENT_STATUS_STALE_AFTER_MS } from "../../shared/agent-status-freshness";
+import { classifyTitleActivity } from "@/lib/pane-agent-evidence";
+import type { AgentStateHistoryEntry } from "../../shared/agent-status-types";
 import type { WorktreeSession } from "./types";
-import type { WorktreeAttention } from "./smart-attention";
+import { mostRecentAttentionInHistory, type WorktreeAttention } from "./smart-attention";
 
 /** The slice of a session the class contract needs. */
 export type SessionAttentionSource = Pick<
   WorktreeSession,
   "state" | "state_started_at" | "updated_at"
->;
+> & {
+  /** Terminal title: the hookless-pane fallback (Orca design doc edge case 9). */
+  title?: string;
+  /** Whether a live PTY still backs this session (Orca `tabHasLivePty`). */
+  hasLivePty?: boolean;
+  /** Rolling history of the matching hook entry, for Class 3's prior-attention stamp. */
+  stateHistory?: readonly AgentStateHistoryEntry[];
+};
 
 export const SESSION_IDLE_ATTENTION: WorktreeAttention = { cls: 5, attentionTimestamp: 0 };
 
@@ -55,6 +64,9 @@ export function resolveSessionAttentionClass(
   now: number,
   hasLivePty = false
 ): WorktreeAttention {
+  // Why the per-source override: Orca's authority is per PANE, and the caller
+  // knows each session's PTY better than a worktree-level flag does.
+  const live = session.hasLivePty ?? hasLivePty;
   switch (session.state) {
     case "blocked":
     case "waiting":
@@ -66,12 +78,38 @@ export function resolveSessionAttentionClass(
       }
       return { cls: 2, attentionTimestamp: completedAt };
     }
-    case "working":
-      return { cls: 3, attentionTimestamp: attentionTimestamp(session) };
-    case "unknown":
-      return hasLivePty
+    case "working": {
+      // Why prior attention: a turn that just started must outrank one that has
+      // been running for an hour. Orca reads the entry's history for the same
+      // done/blocked/waiting scan (`mostRecentAttentionInHistory`).
+      const prior = mostRecentAttentionInHistory(
+        (session.stateHistory ?? []) as AgentStateHistoryEntry[]
+      );
+      return { cls: 3, attentionTimestamp: prior ?? attentionTimestamp(session) };
+    }
+    case "unknown": {
+      // Why: no fresh hook entry for this pane, so the runtime title is the only
+      // evidence left. Orca gates the fallback on a live PTY — a slept tab's stale
+      // working-pattern title must not promote the row.
+      //
+      // Why `string`: `classifyTitleActivity` is typed with Orca's three-value
+      // `AgentStatus`, but Hydra's detector underneath emits the six-state
+      // vocabulary — the same titles Orca calls `permission` arrive as `waiting`.
+      // Accepting both keeps the fallback honest about that seam.
+      const titleStatus: string | null =
+        live && session.title ? classifyTitleActivity(session.title) : null;
+      if (titleStatus === "permission" || titleStatus === "waiting") {
+        // Why now: the title detector exposes no stateStartedAt; pinning it to the
+        // top of Class 1 keeps the prompt above an older hook-backed one.
+        return { cls: 1, attentionTimestamp: now, cause: "title-heuristic" };
+      }
+      if (titleStatus === "working") {
+        return { cls: 3, attentionTimestamp: attentionTimestamp(session) };
+      }
+      return live
         ? { cls: 4, attentionTimestamp: attentionTimestamp(session) }
         : SESSION_IDLE_ATTENTION;
+    }
     default:
       return SESSION_IDLE_ATTENTION;
   }

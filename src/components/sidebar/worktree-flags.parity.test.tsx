@@ -3,9 +3,10 @@
 // `scan_worktrees` que já hidrata os metadados do worktree (`GitWorktreeInfo`:
 // `is_pinned`/`is_unread`), então o card/linha pinta o estado persistido já no
 // primeiro paint — sem fetch novo.
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render } from "@testing-library/react";
+import { render as rtlRender } from "@testing-library/react";
 import { useAppStore } from "@/store";
 import { WorktreeList, type WorktreeListProps } from "./WorktreeList";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
@@ -109,6 +110,8 @@ function createInvokeSpy(rejects = false) {
   };
   return { calls, invoke };
 }
+
+const render = (ui: React.ReactElement) => rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe("worktree flags — toggle persistido (D07 G7)", () => {
   it("grava o path e a flag no comando e espelha a main worktree no projeto", async () => {
@@ -269,9 +272,11 @@ describe("worktree flags — primeiro paint do card/linha", () => {
 
     const card = container.querySelector(`[data-worktree-path="${unreadPath}"]`);
     expect(card).not.toBeNull();
-    const titleSpans = Array.from(card!.querySelectorAll("span")).filter(
-      (el) => el.textContent === "feat/unread"
+    // Unread emphasis is the medium-weight title plus its screen-reader suffix.
+    const titleSpan = Array.from(card!.querySelectorAll("span")).find(
+      (el) => (el.textContent ?? "").startsWith("feat/unread")
     );
-    expect(titleSpans.some((el) => el.className.includes("font-medium"))).toBe(true);
+    expect(titleSpan?.className).toContain("font-medium");
+    expect(card!.textContent).toContain("(unread)");
   });
 });

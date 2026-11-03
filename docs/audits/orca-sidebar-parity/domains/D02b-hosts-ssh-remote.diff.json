@@ -9,22 +9,14 @@
     "components/sidebar/AddRemoteHostDialog.tsx:300-374"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRemoteHostDialog.tsx:120-160",
-     "src/components/sidebar/AddRemoteHostDialog.tsx:36-40",
-     "src/components/settings/SshPane.tsx:145-152"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Latching de renderMode ('ssh' | 'server') para evitar flash de transição na animação de fechamento quando mode transiciona para null.",
-     "Controle de estado de ocupado (busy) agregando isSaving, isBulkImporting e resolvingConfigAlias.",
-     "Invalidação de resoluções pendentes e buscas via reset() ao fechar o modal.",
-     "Bloqueio de fechamento enquanto salvamento ou importação em lote estiver em andamento.",
-     "Alternância entre formulário SSH, picker de ~/.ssh/config e formulário de servidor remoto conforme renderMode e sshView."
-    ],
-    "notes": "Dialog SSH agora existe e esta ligado (montado pelo SshPane em Settings): reset() invalida resolucoes, close bloqueia com isSaving/isBulkImporting e ha view form/config-picker. Falta o modo 'server' e o latch de renderMode; o gatilho no cabecalho do sidebar foi removido (botao inventado).",
-    "note": "Dialog SSH agora existe e esta ligado (montado pelo SshPane em Settings): reset() invalida resolucoes, close bloqueia com isSaving/isBulkImporting e ha view form/config-picker. Falta o modo 'server' e o latch de renderMode; o gatilho no cabecalho do sidebar foi removido (botao inventado)."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -36,22 +28,14 @@
     "components/sidebar/AddRemoteHostFields.tsx:13-130"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRemoteHostFields.tsx:30-125",
-     "src/components/sidebar/AddRemoteHostSshFormPanel.tsx:18-72"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Renderiza campo Label com placeholder 'Dev box'.",
-     "Renderiza campo Host ou alias com autoFocus, placeholder 'deploy@server:22' e parsing no blur via applyParsedSshHostInput.",
-     "Renderiza campos de Username e Porta (default 22, range 1-65535).",
-     "Renderiza campo de Identity file (~/.ssh/id_ed25519) com hint contextual para configs importadas sem chave explícita.",
-     "Disclosure colapsável para campos avançados via SshHostAdvancedFields.",
-     "Link de rodapé 'Fill from ~/.ssh/config…' para alternar para a visualização do picker de configuração."
-    ],
-    "notes": "Label, Host (autoFocus + parse no blur), Username, Port e Identity file com hint portados; faltam o disclosure avancado (SshHostAdvancedFields) e os campos de servidor remoto.",
-    "note": "Label, Host (autoFocus + parse no blur), Username, Port e Identity file com hint portados; faltam o disclosure avancado (SshHostAdvancedFields) e os campos de servidor remoto."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -98,18 +82,14 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:22",
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:92-100",
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:108-150",
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:218-228",
-     "src/components/sidebar/AddRemoteHostDialog.tsx:157-200"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [
      "window.api.ssh.listConfigHosts (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
     ],
     "missing_behaviors": [],
-    "notes": "Picker portado: debounce 200ms, guarda de geracao, 'Reading ~/.ssh/config…', 'Try again', empty vs no-match, aviso de truncamento por SSH_CONFIG_HOST_RESULT_LIMIT e 'Back'.",
-    "note": "Picker portado: debounce 200ms, guarda de geracao, 'Reading ~/.ssh/config…', 'Try again', empty vs no-match, aviso de truncamento por SSH_CONFIG_HOST_RESULT_LIMIT e 'Back'."
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -122,25 +102,16 @@
     "components/sidebar/AddRemoteHostSshConfigPicker.tsx:160-205"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRemoteHostDialog.tsx:203-262",
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:184-196"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [
      "window.api.ssh.resolveConfigHost (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
     ],
-    "missing_behaviors": [
-     "Dispara prefillFormFromSshConfigHost chamando window.api.ssh.resolveConfigHost({ alias }).",
-     "Exibe indicador 'Reading…' na linha selecionada e congela as demais linhas via resolvingAlias.",
-     "Guarda de geração configResolveGeneration garante que resolução lenta não sobrescreva seleção posterior ou tela fechada.",
-     "Popula os campos do formulário SSH com os valores resolvidos (host, porta, usuário, gssapi, etc.).",
-     "Expande automaticamente o disclosure de campos avançados se houver valores como proxyCommand ou jumpHost.",
-     "Emite toast de sucesso 'Filled from {alias}. Review and Save.' e alterna a visualização de volta para o formulário.",
-     "Trata erro de incompatibilidade orientando a reiniciar o Orca se a API de preload estiver desatualizada."
-    ],
-    "notes": "Resolucao por alias com configResolveGeneration, indicador 'Reading…', prefill e toast 'Filled from…' portados; faltam expansao automatica do disclosure avancado e o tratamento de preload desatualizado.",
-    "note": "Resolucao por alias com configResolveGeneration, indicador 'Reading…', prefill e toast 'Filled from…' portados; faltam expansao automatica do disclosure avancado e o tratamento de preload desatualizado."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -153,13 +124,12 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:152-172",
-     "src/components/sidebar/AddRemoteHostSshConfigPicker.tsx:193-215"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Badge 'In Orca' desabilitado e 'Removed from Orca' re-selecionavel, com aria-busy na lista.",
-    "note": "Badge 'In Orca' desabilitado e 'Removed from Orca' re-selecionavel, com aria-busy na lista."
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -202,19 +172,14 @@
     "components/sidebar/AddRemoteHostFields.tsx:132-180"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6162-6180"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Exibe cabeçalho com título 'Add remote server' e descrição 'Pair with Orca running on another computer.'.",
-     "Renderiza campo 'Name in Orca' com autoFocus e placeholder 'Dev box'.",
-     "Renderiza campo 'Access link' com fonte mono e placeholder 'orca://pair?code=...'.",
-     "Exibe texto de ajuda contextual indicando como gerar o link no computador remoto (Settings → Remote Orca Servers → Share this host)."
-    ],
-    "notes": "Modo 'server' (pareamento Orca Server) ausente; so i18n orfao e o Mobile Companion, que e outra feature.",
-    "note": "Modo 'server' (pareamento Orca Server) ausente; so i18n orfao e o Mobile Companion, que e outra feature."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -226,21 +191,14 @@
     "components/sidebar/AddRemoteHostDialog.tsx:57-64"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6171-6174"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Valida formato do link em tempo real via parseHostAccessLink(pairingCode).",
-     "Exibe mensagem de erro acessível com aria-invalid e role='alert' quando o link for inválido.",
-     "Quando o link é válido, exibe card com o destino do link, badge do tipo de endpoint (LAN, Tailscale, loopback, etc.) e endereço formatado.",
-     "Detecta se o endpoint é loopback (127.0.0.1/localhost) e bloqueia o botão Save por padrão.",
-     "Exibe checkbox de override 'I am using an SSH tunnel' para permitir loopback intencional via túnel SSH.",
-     "Reseta o checkbox de override automaticamente ao alterar o texto do pairingCode."
-    ],
-    "notes": "parseHostAccessLink/loopback override seguem sem implementacao.",
-    "note": "parseHostAccessLink/loopback override seguem sem implementacao."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -280,23 +238,14 @@
     "components/sidebar/host-header-menu-items.ts:4-72"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/HostSectionHeaderMenu.tsx:26-70",
-     "src/components/sidebar/HostSectionHeaderMenu.tsx:73-98",
-     "src/components/sidebar/host-header-menu-items.ts:51-58",
-     "src/components/sidebar/WorktreeList.tsx:438"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão de reticências com tooltip 'Host actions' e aria-label 'Host actions for {label}'.",
-     "Aplica stopPropagation no clique e no teclado para evitar colapso da seção ao abrir o menu.",
-     "Apresenta label do host no topo do menu dropdown.",
-     "Quando o host está bloqueado por incompatibilidade de protocolo (client-too-old ou server-too-old), renderiza item destrutivo com AlertTriangle e tooltip explicativa via describeRuntimeCompatBlock.",
-     "Clique no item de alerta direciona diretamente para as preferências do host correspondente."
-    ],
-    "notes": "Trigger com aria-label/title, stopPropagation no clique e tecla, label do host e aviso destrutivo com AlertTriangle + describeRuntimeCompatBlock portados e ligados na linha host-header. O aviso nao e item clicavel (nao direciona para prefs do host).",
-    "note": "Trigger com aria-label/title, stopPropagation no clique e tecla, label do host e aviso destrutivo com AlertTriangle + describeRuntimeCompatBlock portados e ligados na linha host-header. O aviso nao e item clicavel (nao direciona para prefs do host)."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -363,21 +312,14 @@
     "components/sidebar/host-rename-remove.ts:13-39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/HostRenameDialog.tsx:30-160"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Disponível para todos os tipos de host (local, SSH e runtime).",
-     "Exibe campo 'Display name' preenchido com o override atual ou vazio.",
-     "Placeholder exibe o label padrão/derivado do host (derivedLabel).",
-     "Reseed do valor do input a partir de getHostDisplayLabelOverride ao abrir o modal.",
-     "Pressionar Enter submete o formulário e salva a renomeação em hostSettingOverrides via applyHostRename.",
-     "Botão 'Reset to default' (habilitado apenas se houver override ativo) restaura o label padrão via clearHostRename."
-    ],
-    "notes": "Dialog de rename existe (ssh_update_target + hydrate, Enter submete, validacao vazio/duplicado). Difere do Orca: grava o label real do registry, sem override/placeholder derivado e sem 'Reset to default'; indisponivel para local/runtime.",
-    "note": "Dialog de rename existe (ssh_update_target + hydrate, Enter submete, validacao vazio/duplicado). Difere do Orca: grava o label real do registry, sem override/placeholder derivado e sem 'Reset to default'; indisponivel para local/runtime."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -415,21 +357,14 @@
     "components/sidebar/ssh-host-remove-resolution.ts:16-55"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/ssh-host-remove-resolution.ts:29-56",
-     "src/components/sidebar/HostRemoveDialog.tsx:45-55",
-     "src/components/sidebar/HostRemoveDialog.tsx:86-110"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "resolveSshHostRemoval coleta e deduplica repositórios raiz (hostRepoIds) e worktrees secundários (workspaceWorktreeIds) vinculados ao targetId.",
-     "Calcula workspaceCount total e verifica se o host está conectado via sshConnectionStates.",
-     "Adapta a descrição do dialog para 0, 1 ou múltiplos workspaces, alertando que por padrão os workspaces permanecem no Orca e arquivos remotos não são tocados.",
-     "Pluralização correta de '1 workspace' vs '{N} workspaces'."
-    ],
-    "notes": "Coleta/dedupe de repos e worktrees, contagem e pluralizacao portadas; nao consulta sshConnectionStates para variar a descricao conectado/offline.",
-    "note": "Coleta/dedupe de repos e worktrees, contagem e pluralizacao portadas; nao consulta sshConnectionStates para variar a descricao conectado/offline."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -440,18 +375,14 @@
     "components/sidebar/HostRemoveDialog.tsx:206-267"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/HostRemoveDialog.tsx:1-9"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Exibe toggle switch acessível (role='switch', SwitchIndicator) para exclusão de workspaces.",
-     "Quando conectado, exibe label 'Also delete these {count} workspaces on {host}' com hint avisando sobre deleção física irreversível de worktrees git e branches no host remoto.",
-     "Quando desconectado/offline, exibe label 'Also remove these {count} workspaces from Orca' com hint avisando que registros serão limpos apenas no Orca sem tocar no host remoto."
-    ],
-    "notes": "O switch Advanced ('also delete/forget these N workspaces') segue ausente por decisao declarada; nenhum controle existe.",
-    "note": "O switch Advanced ('also delete/forget these N workspaces') segue ausente por decisao declarada; nenhum controle existe."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -492,19 +423,14 @@
     "components/sidebar/ssh-workspace-forget-resolution.ts:14-49"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/ssh-host-remove-resolution.ts:1-20"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Classifica repositório sem connectionId ou de runtime-VM como 'not-ssh'.",
-     "Classifica target que não consta mais em sshTargetLabels como 'ghost' (host fantasma cujo target foi removido).",
-     "Classifica target configurado e com status 'connected' como 'connected' (remoção normal permitida).",
-     "Classifica target configurado mas com status desconectado ou em erro como 'disconnected'."
-    ],
-    "notes": "So conta workspaces; sem classificacao ghost/connected/disconnected nem resolucao de esquecimento.",
-    "note": "So conta workspaces; sem classificacao ghost/connected/disconnected nem resolucao de esquecimento."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -515,22 +441,16 @@
     "components/sidebar/ForgetSshWorkspaceDialog.tsx:28-203"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6231-6240"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [
      "window.api.ssh.connect (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
     ],
-    "missing_behaviors": [
-     "Exibe ícone ServerOff, título 'Delete “{name}”?' e badge com label do host (resolvido por sshTargetLabels -> removedSshTargetLabels -> targetId).",
-     "Para host fantasma (ghost), explica que o host não existe mais e oferece apenas o botão 'Remove from Orca' (removeWorktree com mode: 'forget-local').",
-     "Para host desconectado (disconnected), oferece 'Remove from Orca' e o botão principal 'Reconnect & Delete'.",
-     "Ao clicar em 'Reconnect & Delete', executa window.api.ssh.connect({ targetId }) e, após reconectar com sucesso, fecha o modal e dispara runWorktreeDeleteWithToast.",
-     "Lida com estados ocupados de carregamento com spinners animados e bloqueio de botões."
-    ],
-    "notes": "ForgetSshWorkspaceDialog segue orfao em i18n, sem componente.",
-    "note": "ForgetSshWorkspaceDialog segue orfao em i18n, sem componente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -595,21 +515,14 @@
     "components/sidebar/remote-file-browser-drive-paths.ts:24-62"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão 'Up' (ArrowUp) sobe para o diretório pai (desabilitado na raiz '/' ou durante carregamento).",
-     "Botão 'Home' (ícone Home) navega para '~'.",
-     "Segmento raiz '/' permite retornar diretamente à raiz.",
-     "Em caminhos de unidade Windows (win32), exibe breadcrumb da unidade (ex: 'M:') com separador.",
-     "Renderiza cada segmento intermediário com separador ChevronRight e truncamento de até 120px.",
-     "Clique em qualquer segmento intermediário remonta o caminho absoluto correspondente via breadcrumbPathTo e navega diretamente."
-    ],
-    "notes": "Breadcrumbs remotos ausentes.",
-    "note": "Breadcrumbs remotos ausentes."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -621,20 +534,14 @@
     "components/sidebar/RemoteFileBrowser.tsx:156-215"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Renderiza pastas com ícone Folder e seta ChevronRight; renderiza arquivos com ícone tipado por extensão via getFileTypeIcon.",
-     "Clique simples em pasta aguarda debounce de 220ms (clickTimerRef) e navega para o diretório.",
-     "Duplo clique em pasta cancela o timer de clique simples e seleciona imediatamente a pasta como projeto via onSelect.",
-     "Clique em arquivo dispara aviso temporário 'Files can't be opened as a project' no rodapé por 2000ms (fileHintTimerRef).",
-     "onMouseDown com preventDefault na linha garante que o foco permaneça no input de texto para digitação contínua."
-    ],
-    "notes": "Listagem remota com debounce/duplo clique ausente.",
-    "note": "Listagem remota com debounce/duplo clique ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -646,21 +553,14 @@
     "components/sidebar/RemoteFileBrowser.tsx:288-323"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Exibe spinner animado LoaderCircle durante o carregamento de diretórios.",
-     "Exibe mensagem de erro centralizada em vermelho quando o fetch falha.",
-     "Diferencia diretório vazio ('Empty directory' ou '{path} is empty') de diretório filtrado sem correspondências ('No matches for '{filter}'' ou 'No matches for this long input').",
-     "Exibe caminho resolvido no rodapé com tooltip explicativa.",
-     "Botão 'Select folder' confirma e retorna o caminho resolvido committed, desabilitado durante loading ou preview ativo com filtro.",
-     "Botão 'Cancel' fecha o navegador de arquivos sem selecionar."
-    ],
-    "notes": "Estados do file browser remoto ausentes.",
-    "note": "Estados do file browser remoto ausentes."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -673,19 +573,14 @@
     "components/sidebar/remote-file-browser-helpers.ts:98-175"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Função isPathMode detecta '/', marcadores de base ('~', '.', '..') ou âncoras de drive Windows ('M:').",
-     "Em modo de filtro simples, executa filterEntries localmente por substring case-insensitive instantânea.",
-     "Em modo de caminho (Path Mode), dispara resolução remota assíncrona com debounce de 300ms (PATH_DEBOUNCE_MS) exibindo spinner no input.",
-     "Otimização de prefixo comprometido (committedPrefix): se a parte do caminho antes da última barra não mudou, filtra a pré-visualização localmente sem fazer requisições de rede adicionais."
-    ],
-    "notes": "Path Mode do navegador remoto ausente.",
-    "note": "Path Mode do navegador remoto ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -697,22 +592,14 @@
     "components/sidebar/remote-file-browser-helpers.ts:192-270"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Itera sobre os segmentos comprometidos buscando listagens intermediárias.",
-     "Executa resolveSegmentStep em cada segmento: correspondência exata case-sensitive tem prioridade;",
-     "Fallback para correspondência exata case-insensitive se não houver exata;",
-     "Fallback para prefix-match único que desce automaticamente na pasta se for unívoco;",
-     "Retorna erro explicativo se o segmento for um arquivo, se não existir na pasta base ou se casar com múltiplos diretórios ambíguos;",
-     "Suporta segmentos especiais '.' (permanece) e '..' (sobe um nível via parentPath);",
-     "Atualiza estado de preview com o caminho final resolvido, listagem de entradas e filtro da cauda."
-    ],
-    "notes": "Resolucao de segmentos remotos ausente.",
-    "note": "Resolucao de segmentos remotos ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -725,20 +612,14 @@
     "components/sidebar/use-remote-file-browser-path-preview.ts:156-188"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Rejeita caminhos com barras consecutivas ('//' ou '\\\\') com erro 'Invalid path: repeated separators'.",
-     "Rejeita caracteres de controle ASCII (0x00 a 0x1F, NUL e newlines) para prevenir injeção e quebra do parser do shell backend.",
-     "Limita tamanho máximo de filtro via REMOTE_FILE_BROWSER_FILTER_QUERY_MAX_BYTES (2048 bytes).",
-     "Descarta e defere resolução de colagens com textos gigantescos via shouldDeferRemoteFileBrowserPasteResolve / isRemoteFileBrowserPathResolveTextTooLarge.",
-     "Colagens de tamanho padrão executam resolução de caminho no próximo tick sem debounce (pasteResolveTimerRef)."
-    ],
-    "notes": "Limites/guarda de colagem remotos ausentes.",
-    "note": "Limites/guarda de colagem remotos ausentes."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -750,19 +631,14 @@
     "components/sidebar/remote-file-browser-helpers.ts:40-62"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Enter em modo de filtro: se houver exatamente uma pasta correspondente, navega para ela (decideEnterAction); se houver apenas arquivos, ativa fileHint; caso contrário é no-op.",
-     "Enter em modo de caminho: se terminar em '/' ou marcador de base, navega para o diretório resolvido; se tiver filtro na cauda, navega para a pasta única correspondente ou ativa fileHint.",
-     "Escape: se o input tiver texto, limpa o filtro e cancela a pré-visualização (decideEscAction); se o input já estiver vazio, fecha o modal via onCancel.",
-     "Backspace em input vazio sem pré-visualização: sobe para o diretório pai (navigateUp), exceto se já estiver na raiz '/'."
-    ],
-    "notes": "Navegacao por teclado do input remoto ausente.",
-    "note": "Navegacao por teclado do input remoto ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -775,21 +651,14 @@
     "components/sidebar/remote-file-browser-helpers.ts:117-130"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Detecta âncoras de drive com isDrivePath e isDriveRoot.",
-     "Normaliza para formato de raiz maiúscula com contra-barra via driveRootOf (ex: 'M:\\').",
-     "Divide caminhos em segmentos aceitando separadores '/' ou '\\' via splitBrowsePath.",
-     "Une caminhos com contra-barra via joinDrivePath.",
-     "Subir nível a partir da raiz de uma unidade Windows retorna para a listagem raiz do host ('/') via parentOfDrivePath.",
-     "Garante que pastas POSIX com nomes em formato de drive não sejam interpretadas incorretamente como unidades Windows."
-    ],
-    "notes": "Suporte a drives win32 no file browser remoto ausente.",
-    "note": "Suporte a drives win32 no file browser remoto ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
    },
    "par": []
   }

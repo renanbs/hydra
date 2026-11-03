@@ -34,20 +34,6 @@
    "note": "Shortcut comes from the keybinding registry (sidebar.sleepingWorkspaces.toggle) and the badge is omitted when the action is unassigned."
   },
   {
-   "id": "D09-004",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
-    "src/components/sidebar/SidebarHeader.tsx:163-190",
-    "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:155-166"
-   ],
-   "missing_behaviors": [
-    "Ícone ListFilter do gatilho (Hydra usa SlidersHorizontal)",
-    "data-workspace-board-preserve-open no gatilho do menu"
-   ],
-   "note": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ."
-  },
-  {
    "id": "D09-005",
    "status": "parity",
    "evidence": [
@@ -69,18 +55,6 @@
     "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-42"
    ],
    "note": "The exception row appears only while Hide sleeping is on, writes alwaysShowDefaultBranch, keeps the default branch visible and counts as a narrowing filter."
-  },
-  {
-   "id": "D09-007",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:642-665",
-    "src/components/sidebar/worktree-list/buildSidebarRows.ts:72-75"
-   ],
-   "missing_behaviors": [
-    "Nuance 'exceto quando mantido por provisão de receita' no hide default branch"
-   ],
-   "note": "Automation/CLI/default-branch/detached toggles are wired into the live row builder."
   },
   {
    "id": "D09-010",
@@ -113,6 +87,24 @@
     "src/components/sidebar/WorktreeSidebar.tsx:745"
    ],
    "note": "The trigger consumes the active-filter count and renders the badge plus the dynamic tooltip/aria label."
+  },
+  {
+   "id": "D09-004",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "ListFilter trigger with data-workspace-board-preserve-open; badge/label consume sidebarHasActiveFilters."
+  },
+  {
+   "id": "D09-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Painted filter uses the projected C1 row predicates (default branch/detached) including the provisioned-root exception."
   }
  ]
 }

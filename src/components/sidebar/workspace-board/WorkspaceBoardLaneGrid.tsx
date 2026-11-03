@@ -32,11 +32,21 @@ type WorkspaceBoardLaneGridProps = {
   lanes: readonly WorkspaceBoardLane[]
   /** True while a query narrows the board; the lanes print "matches / total". */
   hasQuery: boolean
+  /**
+   * Each lane's full membership as worktree ids. Published by the lane under an
+   * active query so a sidebar drop can translate its rendered slot to the lane.
+   */
+  laneFullWorktreeIds?: ReadonlyMap<WorkspaceStatus, readonly string[]>
   columnWidth: number
   isResizingColumn: boolean
   onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
   onColumnResizeKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void
   compactCards: boolean
+  /**
+   * Whether the board may paint cards yet. The render lifecycle defers them one
+   * frame; the lane shells still paint, and each lane's hydration adds its cards.
+   */
+  renderCards: boolean
   /** The element the card drag measures its lanes against and hit-tests inside. */
   boardRef: React.RefObject<HTMLDivElement | null>
   /**
@@ -89,11 +99,13 @@ export default function WorkspaceBoardLaneGrid({
   open,
   lanes,
   hasQuery,
+  laneFullWorktreeIds,
   columnWidth,
   isResizingColumn,
   onColumnResizeStart,
   onColumnResizeKeyDown,
   compactCards,
+  renderCards,
   boardRef,
   laneScrollerElement,
   dropTargetStatus,
@@ -217,7 +229,8 @@ export default function WorkspaceBoardLaneGrid({
               cards={lane.cards}
               totalCount={lane.totalCount}
               hasQuery={hasQuery}
-              renderCards={hydratedLaneIds.has(lane.status.id)}
+              renderCards={renderCards && hydratedLaneIds.has(lane.status.id)}
+              fullWorktreeIds={laneFullWorktreeIds?.get(lane.status.id)}
               columnWidth={columnWidth}
               isResizingColumn={isResizingColumn}
               compactCards={compactCards}

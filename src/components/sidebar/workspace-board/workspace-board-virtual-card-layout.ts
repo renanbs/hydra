@@ -19,6 +19,12 @@ type WorkspaceBoardVirtualCardLayoutRegistration = {
   scrollElement: HTMLElement
   spacerElement: HTMLElement
   getItemIdentities: () => readonly string[]
+  /**
+   * The worktree ids of the lane's rendered cards, in order. The sidebar drop
+   * translator needs worktree ids (the drag's vocabulary), while the marquee and
+   * the card drag key on host-qualified identities.
+   */
+  getItemWorktreeIds: () => readonly string[]
   getMeasurements: () => readonly Pick<VirtualItem, 'index' | 'start' | 'end'>[]
 }
 
@@ -47,12 +53,14 @@ export function registerWorkspaceBoardVirtualCardLayout(args: {
   scrollElement: HTMLElement
   spacerElement: HTMLElement
   getItemIdentities: () => readonly string[]
+  getItemWorktreeIds: () => readonly string[]
   getMeasurements: () => readonly Pick<VirtualItem, 'index' | 'start' | 'end'>[]
 }): () => void {
   const registration: WorkspaceBoardVirtualCardLayoutRegistration = {
     scrollElement: args.scrollElement,
     spacerElement: args.spacerElement,
     getItemIdentities: args.getItemIdentities,
+    getItemWorktreeIds: args.getItemWorktreeIds,
     getMeasurements: args.getMeasurements
   }
   cardLayouts.set(args.scrollElement, registration)
@@ -66,6 +74,18 @@ export function registerWorkspaceBoardVirtualCardLayout(args: {
 /** How many cards the lane holds, painted or not; `null` when the lane registered no list. */
 export function getWorkspaceBoardVirtualCardItemCount(scrollElement: HTMLElement): number | null {
   return cardLayouts.get(scrollElement)?.getItemIdentities().length ?? null
+}
+
+/**
+ * The lane's rendered cards as worktree ids, in order; `null` when the lane never
+ * registered a card list. This is the `renderedIds` side of the filtered→full drop
+ * index translation.
+ */
+export function getWorkspaceBoardVirtualCardWorktreeIds(
+  scrollElement: HTMLElement
+): string[] | null {
+  const registration = cardLayouts.get(scrollElement)
+  return registration ? [...registration.getItemWorktreeIds()] : null
 }
 
 /**

@@ -35,8 +35,15 @@ export function useRetiredWorktreeNames(
         setLoaded((previous) => retiredNamesAfterRefresh(previous, repoId, registry))
       }
     }
-    void window.api.worktrees
-      .listRetiredNames({ repoId })
+    // The bridge is absent in unit/demo builds; retired names just stay empty.
+    const listRetiredNames = window.api?.worktrees?.listRetiredNames
+    if (!listRetiredNames) {
+      settle(null)
+      return () => {
+        cancelled = true
+      }
+    }
+    void listRetiredNames({ repoId })
       .then(settle)
       .catch((err: any) => {
         settle(null)

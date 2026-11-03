@@ -24,12 +24,19 @@ type WorkspaceBoardHeaderProps = {
   onClose: () => void
   /** The board's status CRUD, wired to the store by the drawer. */
   statusActions: WorkspaceBoardStatusActions
+  /**
+   * The sidebar filter menu, rendered as a sibling of the settings menu. The
+   * drawer supplies it so the board filters through the sidebar's own writers
+   * instead of owning a second copy of the display options.
+   */
+  filterMenu?: React.ReactNode
 }
 
 /**
- * Ported from Orca `WorkspaceKanbanDrawerHeader`, minus the sidebar filter menu —
- * that surface belongs to a later increment, so the header carries the title, the
- * board's search field, the status settings menu and the close button.
+ * Ported from Orca `WorkspaceKanbanDrawerHeader`: the title, the selection badge,
+ * the board's search field, the sidebar filter menu, the status settings menu and
+ * the close button. The filter menu arrives as a node because its state belongs to
+ * the sidebar shell, which owns the display options writers.
  */
 export default function WorkspaceBoardHeader({
   query,
@@ -42,6 +49,7 @@ export default function WorkspaceBoardHeader({
   onClearQuery,
   onClose,
   statusActions,
+  filterMenu,
 }: WorkspaceBoardHeaderProps): React.JSX.Element {
   return (
     <>
@@ -89,6 +97,7 @@ export default function WorkspaceBoardHeader({
       </SheetHeader>
 
       <div className="absolute right-3 top-2.5 flex items-center gap-1">
+        {filterMenu}
         <WorkspaceBoardSettingsMenu
           workspaceStatuses={statusActions.workspaceStatuses}
           onRenameStatus={statusActions.onRenameStatus}

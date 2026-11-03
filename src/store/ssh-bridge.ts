@@ -4,6 +4,7 @@ import type {
   SshConfigHostListResult,
   SshConfigHostResolution,
   SshConfigImportResult,
+  SshReconnectResult,
   SshRemoveTargetResult,
   SshTarget,
   SshTargetAddResult,
@@ -95,4 +96,15 @@ export async function removeSshTarget(targetId: string): Promise<SshRemoveTarget
  */
 export async function importSshConfig(): Promise<SshConfigImportResult> {
   return invoke<SshConfigImportResult>('ssh_import_config', { reAdopt: null })
+}
+
+/**
+ * Probe one target with the system OpenSSH client and persist the attempt.
+ *
+ * This is Hydra's Connect/Reconnect: the registry has no PTY-over-SSH relay, so the truthful
+ * connection action is the probe the backend exposes. A missing target is an error; a
+ * reachable host with a bad key comes back classified.
+ */
+export async function reconnectSshTarget(targetId: string): Promise<SshReconnectResult> {
+  return invoke<SshReconnectResult>('ssh_reconnect_target', { connectionId: targetId })
 }

@@ -14,17 +14,25 @@ import {
   FolderPlus,
   ChevronRight,
   Shapes,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { WorktreeList } from "./WorktreeList";
+import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import type { RepoHeaderCreateState } from "./SectionHeader";
+import { getRepoHeaderCreateState } from "./repo-header-create-state";
 import { stopRepoHeaderMenuEvent } from "./ProjectHeaderActions";
 import { translate } from "../../i18n/i18n";
 import { effectiveExternalWorktreeVisibility } from "../../lib/worktree-visibility-sources";
 import { lazyWithRetry } from "../../lib/lazy-with-retry";
+import { SidebarDialogPortal } from "./SidebarDialogPortal";
+import { SetupScriptPromptCard } from "./SetupScriptPromptCard";
+import { NonGitFolderModalHost } from "./NonGitFolderModalHost";
+import { PreservedBranchBatchReviewModalHost } from "./PreservedBranchBatchReviewModalHost";
+import { OrcaYamlTrustDialog } from "./OrcaYamlTrustDialog";
 
 // Why lazy: the Agents list pulls the whole activity pipeline (virtualizer, markdown
 // previews, thread derivation), so users on the workspaces view should not load or
@@ -56,36 +64,85 @@ import { useSettledSortEpoch } from "./worktree-list/listing/use-sort-settle-epo
 import { getIndexedAllWorktrees } from "../../store/worktree-repo-index";
 import type { ProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
-import { ProjectGroupNameDialog } from "./ProjectGroupNameDialog";
+const ProjectGroupNameDialog = lazyWithRetry(() =>
+  import("./ProjectGroupNameDialog").then((module) => ({
+    default: module.ProjectGroupNameDialog,
+  }))
+);
 import { useSidebarProjectDrop } from "./use-sidebar-project-drop";
 import { relaxFiltersForReveal } from "./reveal-filter-relaxation";
+import {
+  SIDEBAR_REVEAL_FILTER_REQUEST_EVENT,
+} from "./reveal-filter-request";
+import type { RevealTargetTraits } from "./reveal-filter-relaxation";
 import { resolveRevealWorktreePath } from "./reveal-target-resolution";
 import { requestProjectsRefresh } from "../../lib/refresh-projects-awaitable";
-import { ProjectGroupDeleteDialog } from "./ProjectGroupDeleteDialog";
-import { WorktreeVisibilityDialog } from "./WorktreeVisibilityDialog";
+const ProjectGroupDeleteDialog = lazyWithRetry(() =>
+  import("./ProjectGroupDeleteDialog").then((module) => ({
+    default: module.ProjectGroupDeleteDialog,
+  }))
+);
+const WorktreeVisibilityDialog = lazyWithRetry(() =>
+  import("./WorktreeVisibilityDialog").then((module) => ({
+    default: module.WorktreeVisibilityDialog,
+  }))
+);
+import { RepoIconPicker } from "./RepoIconPicker";
 import { PromptDialog, type PromptDialogProps } from "../PromptDialog";
 import type {
   HydraProject,
   GitWorktreeInfo,
   WorktreeSidebarProps,
   AgentsGroupBy,
-  AgentsStatusFilter,
+  AgentsReadFilter,
   WorkspacePort,
   SidebarBody,
   SidebarShellPrefs,
 } from "./types";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
-import { applyPersistedWorktreeOrder, resolveComparatorSortBy, sortSidebarWorktrees } from "./sidebar-worktree-sort";
+import {
+  applyPersistedWorktreeOrder,
+  isSidebarSortColdStart,
+  resolveComparatorSortBy,
+  sortSidebarWorktrees,
+} from "./sidebar-worktree-sort";
+import { isDefaultBranchWorkspace } from "./default-branch-workspace";
+import { isDetachedHeadWorkspace } from "./visible-worktree-kinds";
+import { tabHasLivePty } from "@/lib/tab-has-live-pty";
+import { isRepoHeaderActionTarget } from "./project-header-drag-contract";
+import type { AgentStateHistoryEntry } from "../../shared/agent-status-types";
 import { resolveWorktreeAttentionFromSessions } from "./sidebar-session-attention";
+import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import { useAppStore } from "../../store";
 import { getRepoExecutionHostId } from "../../shared/execution-host";
 import { useWorktreeRevealBodyRedirect } from "./use-worktree-reveal-body-redirect";
 import { revealElementInScrollContainer } from "./worktree-sidebar-reveal";
-import { isRuntimeOwnedSshTargetId } from "../../shared/execution-host";
-import { RemoveFolderDialog } from "./RemoveFolderDialog";
-import SuppressExternalWorktreeInboxDialog from "./SuppressExternalWorktreeInboxDialog";
-import { RevealHiddenWorkspaceDialog } from "./RevealHiddenWorkspaceDialog";
+import { isRuntimeOwnedSshTargetId, parseExecutionHostId } from "../../shared/execution-host";
+import type { RepoIcon } from "../../shared/repo-icon";
+import { catalogRepoIdFromProjectId, setCatalogRepoIcon } from "../../lib/catalog-client";
+import {
+  PROJECT_ICON_OPTIMISTIC_EVENT,
+  REPO_ICON_REMOTE_DISABLED_REASON,
+} from "../../lib/repo-icon-write";
+const RemoveFolderDialog = lazyWithRetry(() =>
+  import("./RemoveFolderDialog").then((module) => ({
+    default: module.RemoveFolderDialog,
+  }))
+);
+const SuppressExternalWorktreeInboxDialog = lazyWithRetry(
+  () => import("./SuppressExternalWorktreeInboxDialog")
+);
+const RevealHiddenWorkspaceDialog = lazyWithRetry(() =>
+  import("./RevealHiddenWorkspaceDialog").then((module) => ({
+    default: module.RevealHiddenWorkspaceDialog,
+  }))
+);
+const RepoSettingsDialog = lazyWithRetry(() =>
+  import("./RepoSettingsDialog").then((module) => ({
+    default: module.RepoSettingsDialog,
+  }))
+);
 import { AgentSendTargetPicker } from "./AgentSendTargetPicker";
 import { ALL_EXECUTION_HOSTS_SCOPE } from "../../shared/execution-host";
 
@@ -195,6 +252,7 @@ export function WorktreeSidebar({
   prByPath,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
+  onFolderWorkspaceContextMenu,
   compactCards = false,
   onSelectNextSession,
   onSelectPrevSession,
@@ -209,6 +267,8 @@ export function WorktreeSidebar({
   initialAgentsGroupBy,
   initialAgentsIntroShown,
   onSidebarPrefsChange,
+  onUpdateSettings,
+  onOpenSettingsSection,
 }: WorktreeSidebarProps): React.JSX.Element {
   // ─── View & Preference State ─────────────────────────────────────────────
   const [sidebarBody, setSidebarBody] = useState<SidebarBody>(initialSidebarBody ?? "workspaces");
@@ -221,12 +281,14 @@ export function WorktreeSidebar({
   const [displayOptions, setDisplayOptions] = useState<WorkspaceDisplayOptions>(
     () => initialDisplayOptions ?? defaultDisplayOptions
   );
-  const [agentsStatusFilter, setAgentsStatusFilter] = useState<AgentsStatusFilter>(
+  const [agentsReadFilter, setAgentsReadFilter] = useState<AgentsReadFilter>(
     initialAgentsReadFilter ?? "all"
   );
   const [agentsGroupBy, setAgentsGroupBy] = useState<AgentsGroupBy>(
     initialAgentsGroupBy ?? "state"
   );
+  const [agentsQuery, setAgentsQuery] = useState("");
+  const [agentsOptionsTarget, setAgentsOptionsTarget] = useState<HTMLDivElement | null>(null);
   // D01-009: the one-time Agents-view intro is gated by a persisted preference
   // (the same `ui.sidebar` blob the other shell prefs use), not raw localStorage.
   const [agentsIntroShown, setAgentsIntroShown] = useState<boolean>(
@@ -258,7 +320,15 @@ export function WorktreeSidebar({
   // Orca `RepoHeaderProjectActionsMenu`: "Move to group" is a submenu, not a flat
   // list of rows; the current group stays visible and disabled.
   const [projectMenuSubmenu, setProjectMenuSubmenu] = useState<"move-to-group" | null>(null);
+  /** Inline glyph picker anchored at the project menu it replaced. */
+  const [projectIconPicker, setProjectIconPicker] = useState<{
+    project: HydraProject;
+    x: number;
+    y: number;
+  } | null>(null);
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
+  // D03b-017: repo-scoped settings surface, opened from the project menu.
+  const [repoSettingsTarget, setRepoSettingsTarget] = useState<HydraProject | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
   const [hiddenWorktreeErrorByProject, setHiddenWorktreeErrorByProject] = useState<
@@ -363,15 +433,18 @@ export function WorktreeSidebar({
   const worktreeScrollRef = useRef<HTMLDivElement | null>(null);
   /** Agents list scroll offset, held here so switching bodies preserves it (Orca parity). */
   const agentsScrollTopRef = useRef(0);
+  // D03b-002: the agents body unmounts on every body switch, so its focus/selection live
+  // here, beside the scroll offset, and survive the switch (Orca holds them in the shell).
+  const [agentsFocusedSessionId, setAgentsFocusedSessionId] = useState<string | null>(null);
+  const [agentsSelectedSessionIds, setAgentsSelectedSessionIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
 
   // ─── Workspace board (Orca D08 shell) ────────────────────────────────────
   // The board is a companion panel of this sidebar: it is anchored to the
   // sidebar's own box and reads the sidebar's visible workspaces, so it lives
   // here rather than in the shell.
   const sidebarRootRef = useRef<HTMLDivElement | null>(null);
-  const handleDroppedProjectAdded = useCallback(() => {
-    window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-  }, []);
   const pendingRevealWorktree = useAppStore((state) => state.pendingRevealWorktree);
   const pendingRevealSidebarRow = useAppStore((state) => state.pendingRevealSidebarRow);
   const agentSendTargetMode = useAppStore((state) => state.agentSendPopoverTargetMode);
@@ -379,16 +452,19 @@ export function WorktreeSidebar({
     (state) => state.clearPendingRevealSidebarRow
   );
   const clearPendingRevealWorktreeId = useAppStore((state) => state.clearPendingRevealWorktreeId);
-  const { isProjectDropActive } = useSidebarProjectDrop({
-    enabled: true,
-    sidebarRef: sidebarRootRef,
-    onProjectAdded: handleDroppedProjectAdded,
-  });
+  const { isProjectDropActive, affordance: projectDropAffordance, dropHandlers: projectDropHandlers, nativeDropTarget } =
+    useSidebarProjectDrop({
+      enabled: true,
+      sidebarRef: sidebarRootRef,
+    });
   const {
     workspaceBoardOpen,
     workspaceBoardRenderedOpen,
+    workspaceBoardDragPreviewOpen,
+    workspaceBoardMenuOpen,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
+    setWorkspaceBoardMenuOpen,
     previewWorkspaceBoardFromDrag,
     solidifyWorkspaceBoardFromDrag,
     cancelWorkspaceBoardDragPreview,
@@ -510,19 +586,21 @@ export function WorktreeSidebar({
   // Listen for custom group creation events
   useEffect(() => {
     const handleOpenNewGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string }>).detail;
+      const detail = (e as CustomEvent<{ projectId?: string; defaultName?: string; hostId?: string }>).detail;
       setGroupNameDialog({
         open: true,
         title: "New Project Group",
         description: "Create a group to organize projects in your sidebar.",
         confirmLabel: "Create",
         initialName: detail?.defaultName ?? "",
+        hostId: detail?.hostId,
         onSubmit: (name) => {
-          window.dispatchEvent(
-            new CustomEvent("hydra:create-project-group", {
-              detail: { name, projectId: detail?.projectId },
-            })
-          );
+          const created = dispatchProjectGroupChange("hydra:create-project-group", {
+            name,
+            projectId: detail?.projectId,
+            ...(detail?.hostId ? { hostId: detail.hostId } : {}),
+          });
+          if (!created) reportGroupCreateFailure();
         },
       });
     };
@@ -548,7 +626,7 @@ export function WorktreeSidebar({
       collapsedProjects: patch?.collapsedProjects ?? Array.from(collapsedProjects),
       collapsedGroups: patch?.collapsedGroups ?? Array.from(collapsedGroups),
       displayOptions: patch?.displayOptions ?? displayOptions,
-      agentsReadFilter: patch?.agentsReadFilter ?? agentsStatusFilter,
+      agentsReadFilter: patch?.agentsReadFilter ?? agentsReadFilter,
       agentsGroupBy: patch?.agentsGroupBy ?? agentsGroupBy,
       agentsSidebarIntroShown: patch?.agentsSidebarIntroShown ?? agentsIntroShown,
     });
@@ -558,7 +636,7 @@ export function WorktreeSidebar({
     collapsedProjects,
     collapsedGroups,
     displayOptions,
-    agentsStatusFilter,
+    agentsReadFilter,
     agentsGroupBy,
     agentsIntroShown,
   ]);
@@ -593,6 +671,73 @@ export function WorktreeSidebar({
     setDisplayOptions(newOptions);
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
+
+  /**
+   * Switches the sidebar to Manual when a board drop wrote a manual order. The board's
+   * placement is only visible in Manual, so the write and the mode must move together
+   * (Orca `setSortBy('manual')` inside its board drop).
+   */
+  const handleSwitchToManualSort = useCallback(() => {
+    if (displayOptions.sortBy === "manual") return;
+    handleDisplayOptionsChange({ ...displayOptions, sortBy: "manual" });
+  }, [displayOptions, handleDisplayOptionsChange]);
+
+  /**
+   * Applies the board's manual order: the ordered ids become each project's array
+   * order, which is how Hydra persists manual order. Rows the board hides keep their
+   * slots (`applyWorktreeGroupOrder`), so a filtered board never drops a row.
+   */
+  const handleApplyBoardManualOrder = useCallback(
+    (orderedWorktreeIds: readonly string[]) => {
+      if (!onReorderWorktrees) return;
+      const rowsById = new Map<
+        string,
+        { worktree: GitWorktreeInfo; project: HydraProject }
+      >();
+      for (const project of projects) {
+        for (const worktree of getWorktreesForProject(project)) {
+          const id = worktree.id ?? `${project.id}::${worktree.path}`;
+          if (!rowsById.has(id)) rowsById.set(id, { worktree, project });
+        }
+      }
+      const orderedByProject = new Map<string, GitWorktreeInfo[]>();
+      for (const worktreeId of orderedWorktreeIds) {
+        const entry = rowsById.get(worktreeId);
+        if (!entry) continue;
+        const bucket = orderedByProject.get(entry.project.path) ?? [];
+        bucket.push(entry.worktree);
+        orderedByProject.set(entry.project.path, bucket);
+      }
+      for (const project of projects) {
+        const ordered = orderedByProject.get(project.path);
+        if (!ordered || ordered.length === 0) continue;
+        const current = getWorktreesForProject(project);
+        const next = applyWorktreeGroupOrder(current, ordered);
+        const changed = next.some((worktree, index) => worktree.path !== current[index]?.path);
+        if (changed) onReorderWorktrees(next, project.path);
+      }
+    },
+    [getWorktreesForProject, onReorderWorktrees, projects]
+  );
+
+  // Orca `revealWorkspaceFilters` (D09-018): activation asks the sidebar to lift only
+  // the filters hiding its target. The request names the workspace; this component
+  // owns the display options, so it is the only writer that can act on it.
+  useEffect(() => {
+    const onRelaxRequest = (event: Event) => {
+      const target = (event as CustomEvent<RevealTargetTraits | undefined>).detail;
+      if (!target) return;
+      const { displayOptions: nextOptions, changed } = relaxFiltersForReveal(
+        displayOptions,
+        target
+      );
+      if (!changed) return;
+      handleDisplayOptionsChange(nextOptions);
+    };
+    window.addEventListener(SIDEBAR_REVEAL_FILTER_REQUEST_EVENT, onRelaxRequest);
+    return () =>
+      window.removeEventListener(SIDEBAR_REVEAL_FILTER_REQUEST_EVENT, onRelaxRequest);
+  }, [displayOptions, handleDisplayOptionsChange]);
 
   // Registry-dispatched toggle (D09-005): one writer, the same one the menu uses.
   useEffect(() => {
@@ -644,6 +789,19 @@ export function WorktreeSidebar({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
   const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder);
+  // The trigger's badge and the empty-state gate read the same answer (Orca
+  // `sidebarHasActiveFilters` + the per-flag count), so they cannot disagree.
+  const sidebarFilterChrome = useMemo(() => {
+    const filterState = toSidebarFilterState(displayOptions, {
+      visibleWorkspaceHostIds: storeVisibleWorkspaceHostIds,
+      workspaceHostScope: storeWorkspaceHostScope,
+    })
+    return {
+      hasActiveFilters: sidebarHasActiveFilters(filterState),
+      activeFilterCount: countActiveWorkspaceFilters(displayOptions),
+    }
+  }, [displayOptions, storeVisibleWorkspaceHostIds, storeWorkspaceHostScope]);
+
   const handleClearSidebarFilters = useCallback(() => {
     // Orca `clearFilters`: reset only the filters that are actually set, so the
     // button never churns unrelated display options or the debounced write-back.
@@ -681,9 +839,9 @@ export function WorktreeSidebar({
     notifyPrefs({ agentsSidebarIntroShown: true });
   }, [notifyPrefs]);
 
-  const handleAgentsStatusFilterChange = useCallback((statusFilterValue: AgentsStatusFilter) => {
-    setAgentsStatusFilter(statusFilterValue);
-    notifyPrefs({ agentsReadFilter: statusFilterValue });
+  const handleAgentsReadFilterChange = useCallback((readFilter: AgentsReadFilter) => {
+    setAgentsReadFilter(readFilter);
+    notifyPrefs({ agentsReadFilter: readFilter });
   }, [notifyPrefs]);
 
   // ─── Reveal Action ───────────────────────────────────────────────────────
@@ -1290,6 +1448,12 @@ export function WorktreeSidebar({
   }, [draggedWorktreePath]);
 
   const handleProjectDragStart = useCallback((e: React.DragEvent, id: string) => {
+    // Why: the repo header also hosts the .../+ /chevron overlay; a drag that
+    // starts on an action must not reorder the project (D15a-009).
+    if (isRepoHeaderActionTarget(e.target, e.currentTarget as HTMLElement)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedProjectId(id);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("application/x-hydra-project-drag", id);
@@ -1362,26 +1526,22 @@ export function WorktreeSidebar({
   const createStateByProjectId = useMemo(() => {
     const states = new Map<string, RepoHeaderCreateState>();
     for (const project of projects) {
-      const label = project.displayName || project.name;
-      const connectionId = repoByPath.get(project.path)?.connectionId ?? null;
-      const gated =
-        project.is_git &&
-        Boolean(connectionId) &&
-        !isRuntimeOwnedSshTargetId(connectionId) &&
-        sshConnectionStates.get(connectionId as string)?.status !== "connected";
+      const repo = repoByPath.get(project.path);
+      const connectionId = repo?.connectionId ?? project.connectionId ?? null;
       states.set(
         project.id,
-        gated
-          ? {
-              disabled: true,
-              tooltip: "Reconnect SSH target before creating workspaces",
-              ariaLabel: `Reconnect SSH target before creating workspaces for ${label}`,
-            }
-          : {
-              disabled: false,
-              tooltip: `Create workspace for ${label}`,
-              ariaLabel: `Create workspace for ${label}`,
-            }
+        getRepoHeaderCreateState({
+          // Why the fallback: the sidebar model can paint a project before the store
+          // catalog row lands, and a missing row must stay creatable.
+          repo: {
+            kind: repo?.kind ?? (project.is_git ? "git" : "folder"),
+            connectionId,
+          },
+          label: project.displayName || project.name,
+          sshStatus: connectionId
+            ? (sshConnectionStates.get(connectionId)?.status ?? null)
+            : null,
+        })
       );
     }
     return states;
@@ -1398,10 +1558,70 @@ export function WorktreeSidebar({
 
   const resolveGroupOwnerHostId = useCallback(
     (groupId: string): string | undefined => {
+      // Why the stamp first: an empty group has no member to derive a host from,
+      // and App's host-qualified buckets already know which host owns the row.
+      const groupHostId = projectGroups.find((group) => group.id === groupId)?.hostId;
+      if (groupHostId) return groupHostId;
       const member = projects.find((project) => projectGroupMap?.[project.id] === groupId);
       return member ? resolveProjectHostId(member) : undefined;
     },
-    [projects, projectGroupMap, resolveProjectHostId]
+    [projectGroups, projects, projectGroupMap, resolveProjectHostId]
+  );
+
+  /**
+   * `catalog_set_repo_icon` writes this computer's catalog file, so a project
+   * owned by an SSH/runtime host has no row to write. The menu entry is disabled
+   * with this reason instead of reporting a save that only painted locally.
+   */
+  const repoIconDisabledReason = useCallback(
+    (project: HydraProject): string | null => {
+      const host = parseExecutionHostId(resolveProjectHostId(project) ?? null);
+      return host && host.kind !== "local" ? REPO_ICON_REMOTE_DISABLED_REASON : null;
+    },
+    [resolveProjectHostId]
+  );
+
+  /**
+   * Pick → optimistic echo (App patches `projects` immediately) → catalog write →
+   * authoritative refresh. A rejected write echoes the previous glyph back so the
+   * header cannot keep an icon the file never stored.
+   */
+  const commitProjectIcon = useCallback(
+    async (project: HydraProject, repoIcon: RepoIcon | null) => {
+      const previousIcon = project.repo_icon ?? null;
+      window.dispatchEvent(
+        new CustomEvent(PROJECT_ICON_OPTIMISTIC_EVENT, {
+          detail: { projectId: project.id, repoIcon },
+        })
+      );
+      try {
+        await setCatalogRepoIcon(catalogRepoIdFromProjectId(project.id), repoIcon);
+      } catch (error) {
+        window.dispatchEvent(
+          new CustomEvent(PROJECT_ICON_OPTIMISTIC_EVENT, {
+            detail: { projectId: project.id, repoIcon: previousIcon },
+          })
+        );
+        toast.error(
+          translate(
+            "auto.components.sidebar.WorktreeList.projectIconFailed",
+            "Could not change the project icon"
+          )
+        );
+        console.error(error);
+        return;
+      }
+      const refreshed = await requestProjectsRefresh();
+      if (!refreshed) {
+        toast.error(
+          translate(
+            "auto.components.sidebar.WorktreeList.projectIconRefreshFailed",
+            "Project icon saved, but the sidebar could not reload it"
+          )
+        );
+      }
+    },
+    []
   );
 
   /**
@@ -1450,6 +1670,30 @@ export function WorktreeSidebar({
     );
   }, []);
 
+  const reportGroupOrderFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupOrderFailed", "Failed to reorder group"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupOrderFailedDesc",
+          "Hydra could not save the new group order on the group's host. Reorder it again after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
+  const reportGroupMoveFailure = useCallback(() => {
+    toast.error(
+      translate("auto.components.sidebar.WorktreeList.groupMoveFailed", "Failed to move project"),
+      {
+        description: translate(
+          "auto.components.sidebar.WorktreeList.groupMoveFailedDesc",
+          "Hydra could not confirm the move with the project's host. Recheck the group after reconnecting."
+        ),
+      }
+    );
+  }, []);
+
   const reportGroupDeleteFailure = useCallback(() => {
     toast.error(
       translate("auto.components.sidebar.WorktreeList.groupDeleteFailed", "Failed to delete group"),
@@ -1463,6 +1707,55 @@ export function WorktreeSidebar({
   }, []);
 
   const query = filter.trim().toLowerCase();
+
+  // ─── Smart-sort inputs (Orca `sortWorktreesSmart`) ────────────────────────
+  // Why the store here: the painted order needs the PTY/agent evidence the props do
+  // not carry. Reading it in WorktreeSidebar keeps one writer over the painted order.
+  const storeTabsByWorktree = useAppStore((s) => s.tabsByWorktree);
+  const storePtyIdsByTabId = useAppStore((s) => s.ptyIdsByTabId);
+  const storeAgentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey);
+
+  // Session ids whose tab still holds a live PTY: title-only evidence may promote them.
+  const liveSessionIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const tabs of Object.values(storeTabsByWorktree ?? {})) {
+      for (const tab of tabs) {
+        if (tab.sessionId && tabHasLivePty(storePtyIdsByTabId ?? {}, tab.id)) {
+          ids.add(tab.sessionId);
+        }
+      }
+    }
+    return ids;
+  }, [storeTabsByWorktree, storePtyIdsByTabId]);
+
+  // Rolling hook history per worktree path: Class 3's prior-attention stamp
+  // (`mostRecentAttentionInHistory`), newest entry wins.
+  const hookHistoryByWorktreePath = useMemo(() => {
+    const byPath = new Map<string, { updatedAt: number; history: readonly AgentStateHistoryEntry[] }>();
+    for (const entry of Object.values(storeAgentStatusByPaneKey ?? {})) {
+      if (!entry.worktreeId || !entry.stateHistory || entry.stateHistory.length === 0) continue;
+      const current = byPath.get(entry.worktreeId);
+      if (!current || entry.updatedAt > current.updatedAt) {
+        byPath.set(entry.worktreeId, { updatedAt: entry.updatedAt, history: entry.stateHistory });
+      }
+    }
+    return new Map(
+      [...byPath.entries()].map(([path, value]) => [path, value.history] as const)
+    );
+  }, [storeAgentStatusByPaneKey]);
+
+  // Cold start: no live PTY and no fresh hook-attributed status means the agent
+  // snapshot has not landed, so the smart modes keep the persisted order.
+  const sortColdStart = useMemo(
+    () =>
+      isSidebarSortColdStart({
+        tabsByWorktree: storeTabsByWorktree,
+        ptyIdsByTabId: storePtyIdsByTabId,
+        agentStatusByPaneKey: storeAgentStatusByPaneKey,
+        now: Date.now(),
+      }),
+    [storeTabsByWorktree, storePtyIdsByTabId, storeAgentStatusByPaneKey]
+  );
 
   // Why settled only for attention-driven modes: Smart and Recent rank by time-decaying
   // scores, so background activity must not reorder them mid-read. Name/Repo/Manual are
@@ -1488,13 +1781,23 @@ export function WorktreeSidebar({
         ? new Map(
             projected.map((row) => {
               const worktree = wts.find((candidate) => candidate.path === row.path);
-              const rowSessions = sessions.filter(
-                (session) =>
-                  session.project_path === row.path ||
-                  ((worktree?.is_main || worktree?.isMainWorktree) &&
-                    session.project_path === proj.path)
-              );
-              return [row.id, resolveWorktreeAttentionFromSessions(rowSessions, now)] as const;
+              const history = hookHistoryByWorktreePath.get(row.path);
+              const rowSessions = sessions
+                .filter(
+                  (session) =>
+                    session.project_path === row.path ||
+                    ((worktree?.is_main || worktree?.isMainWorktree) &&
+                      session.project_path === proj.path)
+                )
+                .map((session) => ({
+                  ...session,
+                  hasLivePty: liveSessionIds.has(session.id),
+                  ...(history ? { stateHistory: history } : {}),
+                }));
+              return [
+                row.id,
+                resolveWorktreeAttentionFromSessions(rowSessions, now),
+              ] as const;
             })
           )
         : undefined;
@@ -1504,13 +1807,22 @@ export function WorktreeSidebar({
         repoMap: pipelineRepoMap,
         now,
         attentionByWorktree,
+        coldStart: sortColdStart,
       });
       const byPath = new Map(wts.map((worktree) => [worktree.path, worktree]));
       return ordered
         .map((row) => byPath.get(row.path))
         .filter((worktree): worktree is GitWorktreeInfo => worktree !== undefined);
     },
-    [displayOptions.sortBy, sessions, pipelineRepoMap, worktreesByRepo]
+    [
+      displayOptions.sortBy,
+      sessions,
+      pipelineRepoMap,
+      worktreesByRepo,
+      hookHistoryByWorktreePath,
+      liveSessionIds,
+      sortColdStart,
+    ]
   );
 
   // Why a ref: only the settle gate may move an attention-driven order. Routing the
@@ -1538,12 +1850,27 @@ export function WorktreeSidebar({
   const getFilteredAndSortedWorktrees = useCallback((proj: HydraProject): GitWorktreeInfo[] => {
     let wts = getWorktreesForProject(proj);
 
-    // Filter by display options
+    // Filter by display options through the SAME predicates the filter pipeline
+    // uses, projected onto the Orca row shape: `isDefaultBranchWorkspace` keeps a
+    // recipe-provisioned root visible, and `isDetachedHeadWorkspace` needs the git
+    // identity rather than a branch-string guess. The active workspace stays
+    // visible so a filter cannot hide the row the user is looking at.
+    const projectedByPath = new Map(
+      wts.map((worktree) => [worktree.path, toWorktreeRow(worktree, { repoId: proj.id })])
+    );
     if (displayOptions.hideDefaultBranch) {
-      wts = wts.filter((w) => !(w.is_main || w.isMainWorktree) || w.path === activeWorktreePath);
+      wts = wts.filter((w) => {
+        if (w.path === activeWorktreePath) return true;
+        const row = projectedByPath.get(w.path);
+        return !row || !isDefaultBranchWorkspace(row);
+      });
     }
     if (displayOptions.hideDetachedHead) {
-      wts = wts.filter((w) => (w.branch !== "HEAD" && w.branch !== "(detached)") || w.path === activeWorktreePath);
+      wts = wts.filter((w) => {
+        if (w.path === activeWorktreePath) return true;
+        const row = projectedByPath.get(w.path);
+        return !row || !isDetachedHeadWorkspace(row);
+      });
     }
 
     // Filter by text search query
@@ -1600,26 +1927,48 @@ export function WorktreeSidebar({
     [onPinWorktree]
   );
 
+  // Resolved once per render: the menu row and its tooltip read the same reason.
+  const activeProjectMenuIconReason = activeProjectMenu
+    ? repoIconDisabledReason(activeProjectMenu.proj)
+    : null;
+
   return (
     <div
       ref={sidebarRootRef}
+      data-native-file-drop-target={nativeDropTarget}
       className="relative flex h-full w-full flex-col bg-worktree-sidebar text-worktree-sidebar-foreground select-none overflow-hidden"
       style={leftSidebarStyle}
+      {...projectDropHandlers}
     >
       {/* Orca `useSidebarProjectDrop`: native folder drag over the sidebar. */}
-      {isProjectDropActive && (
+      {isProjectDropActive && projectDropAffordance.visible && (
         <div
           data-sidebar-project-drop-overlay="true"
-          className="pointer-events-none absolute inset-2 z-50 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-500/70 bg-emerald-500/10 text-center"
+          data-sidebar-project-drop-tone={projectDropAffordance.tone}
+          className={[
+            "pointer-events-none absolute inset-2 z-50 flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center",
+            projectDropAffordance.tone === "blocked"
+              ? "border-destructive/70 bg-destructive/10"
+              : "border-emerald-500/70 bg-emerald-500/10"
+          ].join(" ")}
         >
-          <FolderPlus className="size-6 text-emerald-400" />
-          <span className="px-4 text-[11px] font-medium text-emerald-200">
-            Drop folder to add project
+          {projectDropAffordance.tone === "busy" ? (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <FolderPlus className="size-6 text-emerald-400" />
+          )}
+          <span className="text-[12px] font-medium text-worktree-sidebar-foreground">
+            {projectDropAffordance.label}
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            {projectDropAffordance.description}
           </span>
         </div>
       )}
       {/* 1. Top Strip Nav (Search / Worktree palette) */}
       <SidebarNav
+        settings={settings ?? null}
+        onUpdateSettings={onUpdateSettings}
         onOpenWorktreePalette={() => {
           window.dispatchEvent(new CustomEvent("hydra:open-jump-palette"));
         }}
@@ -1639,7 +1988,9 @@ export function WorktreeSidebar({
         optionsMenuOpen={optionsMenuOpen}
         setOptionsMenuOpen={setOptionsMenuOpen}
         projects={projects}
-        activeFilterCount={countActiveWorkspaceFilters(displayOptions)}
+        activeFilterCount={sidebarFilterChrome.activeFilterCount}
+        hasActiveFilters={sidebarFilterChrome.hasActiveFilters}
+        onActivityOptionsTargetChange={setAgentsOptionsTarget}
       />
 
       {/* 3. Main Body */}
@@ -1656,9 +2007,16 @@ export function WorktreeSidebar({
             isModalOpen={isModalOpen}
             groupBy={agentsGroupBy}
             onGroupByChange={handleAgentsGroupByChange}
-            statusFilter={agentsStatusFilter}
-            onStatusFilterChange={handleAgentsStatusFilterChange}
+            readFilter={agentsReadFilter}
+            onReadFilterChange={handleAgentsReadFilterChange}
+            query={agentsQuery}
+            onQueryChange={setAgentsQuery}
+            optionsTarget={agentsOptionsTarget}
             scrollTopRef={agentsScrollTopRef}
+            focusedSessionId={agentsFocusedSessionId}
+            onFocusedSessionIdChange={setAgentsFocusedSessionId}
+            selectedSessionIds={agentsSelectedSessionIds}
+            onSelectedSessionIdsChange={setAgentsSelectedSessionIds}
           />
         </React.Suspense>
       ) : (
@@ -1728,6 +2086,7 @@ export function WorktreeSidebar({
               prByPath={prByPath}
               onActivateFolderWorkspace={onActivateFolderWorkspace}
               onDeleteFolderWorkspace={onDeleteFolderWorkspace}
+              onFolderWorkspaceContextMenu={onFolderWorkspaceContextMenu}
               collapsedProjects={collapsedProjects}
               collapsedGroups={collapsedGroups}
               filter={filter}
@@ -1774,6 +2133,7 @@ export function WorktreeSidebar({
                 }
               }}
               workspaceBoardOpen={workspaceBoardOpen}
+              onSwitchToManualSort={handleSwitchToManualSort}
               onWorkspaceBoardDragPreviewStart={previewWorkspaceBoardFromDrag}
               onWorkspaceBoardDragPreviewCommit={solidifyWorkspaceBoardFromDrag}
               onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
@@ -1907,12 +2267,14 @@ export function WorktreeSidebar({
               onReorderWorktreesInGroup={commitReorderedWorktrees}
               onReorderHostSections={setWorkspaceHostOrder}
               onUpdateProjectGroup={(groupId, updates) => {
-                // App owns group state; the drop only reports the new tab order.
-                window.dispatchEvent(
-                  new CustomEvent("hydra:update-project-group", {
-                    detail: { id: groupId, tabOrder: updates.tabOrder },
-                  })
-                );
+                // App owns group state; the drop reports the new tab order on the
+                // host bucket that owns the group row (D03a-021).
+                const applied = dispatchProjectGroupChange("hydra:update-project-group", {
+                  id: groupId,
+                  tabOrder: updates.tabOrder,
+                  hostId: resolveGroupOwnerHostId(groupId),
+                });
+                if (!applied) reportGroupOrderFailure();
               }}
               lineageByPath={lineageByPath}
               worktreeMetadataByPath={worktreeMetadataByPath}
@@ -1933,6 +2295,17 @@ export function WorktreeSidebar({
               onProjectDragOver={handleProjectDragOver}
               onProjectDrop={handleProjectDrop}
               onProjectDragEnd={handleProjectDragEnd}
+              onReorderRepoHeaders={(orderedRepoIds) => {
+                if (!onReorderProjects) return;
+                // Multi-host: one merged header controls every host-qualified occurrence of
+                // a project, so ordering by logical id moves the whole block. A stable sort
+                // keeps same-id duplicates together and leaves unknown ids at the end.
+                const rankById = new Map(orderedRepoIds.map((id, index) => [id, index]));
+                const rankOf = (project: HydraProject) =>
+                  rankById.get(project.id) ?? rankById.get(project.path) ?? orderedRepoIds.length;
+                const next = [...projects].sort((left, right) => rankOf(left) - rankOf(right));
+                onReorderProjects(next);
+              }}
               onGroupDragOver={(e, groupId) => {
                 if (draggedProjectId) {
                   e.preventDefault();
@@ -1946,11 +2319,14 @@ export function WorktreeSidebar({
                 if (draggedProjectId) {
                   e.preventDefault();
                   setGroupDropTargetId(null);
-                  window.dispatchEvent(
-                    new CustomEvent("hydra:move-project-to-group", {
-                      detail: { projectId: draggedProjectId, groupId },
-                    })
-                  );
+                  const draggedProject = projects.find((project) => project.id === draggedProjectId);
+                  const hostId = draggedProject ? resolveProjectHostId(draggedProject) : undefined;
+                  const moved = dispatchProjectGroupChange("hydra:move-project-to-group", {
+                    projectId: draggedProjectId,
+                    groupId,
+                    ...(hostId ? { hostId } : {}),
+                  });
+                  if (!moved) reportGroupMoveFailure();
                   setDraggedProjectId(null);
                 }
               }}
@@ -1968,17 +2344,29 @@ export function WorktreeSidebar({
         onClose={() => setOptionsMenuOpen(false)}
         onOptionsChange={handleDisplayOptionsChange}
         onAddProject={onOpenAddRepoDialog}
+        // Orca `clearFilters`: the shell's writer resets every narrowing filter
+        // (and the host scope) and persists it, so the menu never forks the logic.
+        onClearFilters={handleClearSidebarFilters}
+        onUpdateSettings={onUpdateSettings}
       />
 
       <AgentSendTargetPicker />
+
+      {/* Setup script suggestion (Orca SetupScriptPromptCard): floats above the footer
+          without reserving a static row in the sidebar body. */}
+      <div className="relative shrink-0">
+        <SetupScriptPromptCard />
+      </div>
 
       {/* 5. Footer */}
       <SidebarFooter
         appVersion={appVersion}
         gitStatus={gitStatus}
         onOpenSettings={onOpenSettings}
+        onOpenSettingsSection={onOpenSettingsSection ?? (() => onOpenSettings())}
         onRevealCurrent={sidebarBody === "workspaces" ? () => handleRevealCurrent() : undefined}
         workspaceBoardOpen={workspaceBoardOpen}
+        workspaceBoardDragPreviewOpen={workspaceBoardDragPreviewOpen}
         onToggleWorkspaceBoard={toggleWorkspaceBoard}
       />
 
@@ -1986,6 +2374,16 @@ export function WorktreeSidebar({
       <WorkspaceBoardDrawer
         open={workspaceBoardOpen}
         renderedOpen={workspaceBoardRenderedOpen}
+        dragPreview={workspaceBoardDragPreviewOpen}
+        preserveOpenForMenu={workspaceBoardMenuOpen}
+        onMenuOpenChange={setWorkspaceBoardMenuOpen}
+        filterProjects={projects}
+        onDisplayOptionsChange={handleDisplayOptionsChange}
+        onAddProject={onOpenAddRepoDialog}
+        onClearFilters={handleClearSidebarFilters}
+        onUpdateSettings={onUpdateSettings}
+        onSwitchToManualSort={handleSwitchToManualSort}
+        onApplyManualOrder={handleApplyBoardManualOrder}
         sidebarRef={sidebarRootRef}
         displayProjects={displayProjects}
         getProjectWorktrees={getFilteredAndSortedWorktrees}
@@ -2041,8 +2439,12 @@ export function WorktreeSidebar({
             <button
               type="button"
               onClick={() => {
+                const proj = activeProjectMenu.proj;
                 setActiveProjectMenu(null);
-                onOpenSettings();
+                setProjectMenuSubmenu(null);
+                // Orca `handleOpenRepoSettings`: a repo-scoped settings surface, not the
+                // global modal with no repo context.
+                setRepoSettingsTarget(proj);
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
             >
@@ -2052,13 +2454,17 @@ export function WorktreeSidebar({
 
             <button
               type="button"
+              disabled={Boolean(activeProjectMenuIconReason)}
+              aria-disabled={activeProjectMenuIconReason ? true : undefined}
+              title={activeProjectMenuIconReason ?? undefined}
               onClick={() => {
-                // Why: Hydra has no repository-icon settings pane yet; the entry
-                // still opens the settings surface instead of becoming a dead row.
+                if (activeProjectMenuIconReason) return;
+                const { proj, x, y } = activeProjectMenu;
                 setActiveProjectMenu(null);
-                onOpenSettings();
+                setProjectMenuSubmenu(null);
+                setProjectIconPicker({ project: proj, x, y });
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer disabled:pointer-events-none disabled:opacity-40"
             >
               <Shapes className="size-3.5 text-worktree-sidebar-foreground/60" />
               Change Project Icon
@@ -2223,11 +2629,15 @@ export function WorktreeSidebar({
                             const proj = activeProjectMenu.proj;
                             setActiveProjectMenu(null);
                             setProjectMenuSubmenu(null);
-                            dispatchProjectGroupChange("hydra:move-project-to-group", {
-                              projectId: proj.id,
-                              groupId: group.id,
-                              hostId: resolveProjectHostId(proj),
-                            });
+                            const moved = dispatchProjectGroupChange(
+                              "hydra:move-project-to-group",
+                              {
+                                projectId: proj.id,
+                                groupId: group.id,
+                                hostId: resolveProjectHostId(proj),
+                              }
+                            );
+                            if (!moved) reportGroupMoveFailure();
                           }}
                           className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left transition cursor-pointer text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent disabled:pointer-events-none disabled:opacity-40"
                         >
@@ -2247,10 +2657,14 @@ export function WorktreeSidebar({
                   const proj = activeProjectMenu.proj;
                   setActiveProjectMenu(null);
                   setProjectMenuSubmenu(null);
-                  dispatchProjectGroupChange("hydra:remove-project-from-group", {
-                    projectId: proj.id,
-                    hostId: resolveProjectHostId(proj),
-                  });
+                  const removed = dispatchProjectGroupChange(
+                    "hydra:remove-project-from-group",
+                    {
+                      projectId: proj.id,
+                      hostId: resolveProjectHostId(proj),
+                    }
+                  );
+                  if (!removed) reportGroupMoveFailure();
                 }}
                 className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground/70 text-left transition cursor-pointer"
               >
@@ -2275,6 +2689,28 @@ export function WorktreeSidebar({
             </button>
           </div>
         </>
+      )}
+
+      {projectIconPicker && (
+        <RepoIconPicker
+          projectName={
+            projectIconPicker.project.displayName || projectIconPicker.project.name
+          }
+          currentIcon={projectIconPicker.project.repo_icon}
+          x={projectIconPicker.x}
+          y={projectIconPicker.y}
+          onPick={(repoIcon) => {
+            const project = projectIconPicker.project;
+            setProjectIconPicker(null);
+            void commitProjectIcon(project, repoIcon);
+          }}
+          onClear={() => {
+            const project = projectIconPicker.project;
+            setProjectIconPicker(null);
+            void commitProjectIcon(project, null);
+          }}
+          onClose={() => setProjectIconPicker(null)}
+        />
       )}
 
       {activeGroupMenu && (
@@ -2351,6 +2787,14 @@ export function WorktreeSidebar({
       )}
 
       {/* 7. Dialogs */}
+      {/* Orca renders these modals as siblings of the sidebar, outside its DOM subtree;
+          the portal keeps the scroller from clipping them and keeps their surfaces out of
+          the sidebar's own theme. Each one is code-split (Orca `lazyWithRetry`). */}
+      <SidebarDialogPortal>
+        <React.Suspense fallback={null}>
+      <NonGitFolderModalHost />
+      <PreservedBranchBatchReviewModalHost />
+      <OrcaYamlTrustDialog />
       <ProjectGroupNameDialog
         open={groupNameDialog.open}
         title={groupNameDialog.title}
@@ -2382,8 +2826,11 @@ export function WorktreeSidebar({
           if (!group) return;
           const deleted = dispatchProjectGroupChange("hydra:delete-project-group", {
             id: group.id,
-            removeProjectPaths: groupDeleteDialog.removeContainedProjects
-              ? groupDeleteMembers.map((project) => project.path)
+            groupName: group.name,
+            // Per-project identity, not just paths: App reports each removal that
+            // failed instead of collapsing them into one boolean.
+            removeProjects: groupDeleteDialog.removeContainedProjects
+              ? groupDeleteMembers.map((project) => ({ id: project.id, path: project.path }))
               : [],
             hostId: groupDeleteDialog.hostId,
           });
@@ -2499,6 +2946,23 @@ export function WorktreeSidebar({
         }}
       />
 
+      <RepoSettingsDialog
+        open={repoSettingsTarget != null}
+        project={repoSettingsTarget}
+        onOpenChange={(open) => {
+          if (!open) setRepoSettingsTarget(null);
+        }}
+        onOpenWorktreeVisibility={(proj) => {
+          setVisibilityDialog({
+            open: true,
+            project: proj,
+            hiddenWorktrees: hiddenWorktreesByProject?.[proj.path] ?? [],
+            hostId: resolveProjectHostId(proj) ?? null,
+          });
+        }}
+        onRemoveProject={(proj) => setRemoveProjectTarget(proj)}
+      />
+
       {promptDialog && (
         <PromptDialog
           open={promptDialog.open}
@@ -2516,6 +2980,8 @@ export function WorktreeSidebar({
           }}
         />
       )}
+        </React.Suspense>
+      </SidebarDialogPortal>
     </div>
   );
 }

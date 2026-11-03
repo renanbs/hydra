@@ -86,19 +86,14 @@
     "components/sidebar/SidebarFilter.tsx:209"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:31-46",
-     "src/components/sidebar/SidebarHeader.tsx:163-190",
-     "src/components/sidebar/WorkspaceOptionsMenu.parity.test.tsx:155-166"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ícone ListFilter do gatilho (Hydra usa SlidersHorizontal)",
-     "data-workspace-board-preserve-open no gatilho do menu"
-    ],
-    "notes": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ.",
-    "note": "Badge with 9+ cap and the dynamic 'Workspace display options (N active)' label are wired; icon/attribute differ."
+    "missing_behaviors": [],
+    "notes": "ListFilter trigger with data-workspace-board-preserve-open; badge/label consume sidebarHasActiveFilters.",
+    "note": "ListFilter trigger with data-workspace-board-preserve-open; badge/label consume sidebarHasActiveFilters."
    }
   },
   {
@@ -158,17 +153,14 @@
     "components/sidebar/SidebarFilter.tsx:270"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:642-665",
-     "src/components/sidebar/worktree-list/buildSidebarRows.ts:72-75"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Nuance 'exceto quando mantido por provisão de receita' no hide default branch"
-    ],
-    "notes": "Automation/CLI/default-branch/detached toggles are wired into the live row builder.",
-    "note": "Automation/CLI/default-branch/detached toggles are wired into the live row builder."
+    "missing_behaviors": [],
+    "notes": "Painted filter uses the projected C1 row predicates (default branch/detached) including the provisioned-root exception.",
+    "note": "Painted filter uses the projected C1 row predicates (default branch/detached) including the provisioned-root exception."
    }
   },
   {
@@ -181,22 +173,14 @@
     "components/sidebar/SidebarFilter.tsx:361"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:143-260",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:242-262"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "CommandInput/CommandList (Radix cmdk) e placeholder 'Search projects...' — Hydra usa <input> com placeholder fixo 'Add project...' (WorkspaceOptionsMenu.tsx:216)",
-     "Estado vazio 'No projects match'",
-     "Reset da seleção de teclado ao digitar nova query",
-     "Interrupção de onKeyDown para não vazar para o typeahead do menu (menu não é Radix)",
-     "RepoBadgeLabel (nome + cor de badge) e badge 'SSH' com ícone Server para connectionId",
-     "Alternância de repoId em filterRepoIds (Hydra filtra por id de PROJETO em displayOptions.filterProjectIds, WorkspaceOptionsMenu.tsx:246-262)"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Projects filter panel with repo badge, SSH badge, search/empty/highlight reset, keydown containment, repo-id filtering.",
+    "note": "Projects filter panel with repo badge, SSH badge, search/empty/highlight reset, keydown containment, repo-id filtering."
    }
   },
   {
@@ -251,19 +235,14 @@
     "components/sidebar/SidebarGroupByToggle.tsx:25"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:278-302",
-     "src/components/sidebar/WorktreeSidebar.tsx:364-367"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Modo 'project-group' do toggle (Hydra usa 'workspace-status' como 3º modo; grupos de projeto são renderizados sempre, não como modo)",
-     "onPointerDownCapture contra roving-focus do Radix e ToggleGroup single-select (Hydra usa 3 <button> num grid)",
-     "Disparo de setGroupBy (Hydra usa onOptionsChange({groupBy}))"
-    ],
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "notes": "Four Orca group-by modes incl. project-group; pressed semantics and persisted normalization.",
+    "note": "Four Orca group-by modes incl. project-group; pressed semantics and persisted normalization."
    }
   },
   {
@@ -275,21 +254,14 @@
     "components/sidebar/SidebarProjectFilterPanel.tsx:139"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:196-235",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:159-161",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:48"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Foco via requestAnimationFrame para escapar do focus-scope do Radix (Hydra usa autoFocus direto, WorkspaceOptionsMenu.tsx:203)",
-     "cancelAnimationFrame no unmount",
-     "Reset da query ao reabrir o painel (projectSearch é estado do componente e persiste entre aberturas, WorkspaceOptionsMenu.tsx:48/205)",
-     "Placeholder alternando 'Filter projects...'/'Add project...' (fixo em 'Add project...')"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "rAF focus with cleanup, query reset on reopen, alternating placeholder.",
+    "note": "rAF focus with cleanup, query reset on reopen, alternating placeholder."
    }
   },
   {
@@ -373,17 +345,14 @@
     "components/sidebar/SidebarRepositoryFilterSection.tsx:86"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:250-258"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Props filterRepoIds/setFilterRepoIds para reuso pela visão de agentes",
-     "RepoBadgeLabel no gatilho do submenu"
-    ],
-    "notes": "The Projects row hides when there is nothing to filter; the agents-view reuse still depends on shared props.",
-    "note": "The Projects row hides when there is nothing to filter; the agents-view reuse still depends on shared props."
+    "missing_behaviors": [],
+    "notes": "Repository filter section with dynamic visibility summary, clear/select all, reusable props, hidden when pointless.",
+    "note": "Repository filter section with dynamic visibility summary, clear/select all, reusable props, hidden when pointless."
    }
   },
   {
@@ -395,19 +364,14 @@
     "components/sidebar/SidebarWorkspaceFilterSection.tsx:75"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:397-472",
-     "src/components/sidebar/visible-worktrees.ts:125-129",
-     "src/store/index.ts:135,377"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Toggle 'Hide other-client workspaces' (hideWorkspacesFromOtherDevices) — não existe UI; o flag só vive na store/pipeline não montado (visible-worktrees.ts:125)",
-     "Gate de visibilidade por runtimeEnvironments/runtimeEnvironmentCatalogHydrated e permanência do filtro quando já ativo"
-    ],
-    "notes": "Sem mudanca de comportamento; linhas do store atualizadas.",
-    "note": "Sem mudanca de comportamento; linhas do store atualizadas."
+    "missing_behaviors": [],
+    "notes": "Hide other-client workspaces toggle with hydration gate and persisted visibility.",
+    "note": "Hide other-client workspaces toggle with hydration gate and persisted visibility."
    }
   },
   {
@@ -417,19 +381,14 @@
     "components/sidebar/project-filter-reveal.ts:6"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/project-filter-reveal.ts:1-12",
-     "src/lib/worktree-activation.ts:279",
-     "src/components/sidebar/WorktreeSidebar.tsx:400-433"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Alcance a partir da interação com workspace no sidebar montado: worktree-activation.ts não tem consumidor de produção (só workspace-port-actions.ts:1-99, cujo goToWorkspacePortOwner também não tem consumidor, e testes)",
-     "Efeito sobre o estado que a sidebar renderiza: revealRepoInProjectFilter muta store.filterRepoIds, mas o sidebar renderiza displayOptions.filterProjectIds (WorktreeSidebar.tsx:510-512)"
-    ],
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "notes": "Worktree activation publishes a reveal request consumed by the single displayOptions writer.",
+    "note": "Worktree activation publishes a reveal request consumed by the single displayOptions writer."
    }
   },
   {
@@ -439,17 +398,14 @@
     "components/sidebar/sidebar-filter-actions.ts:11"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-filter-actions.ts:12-26",
-     "src/components/sidebar/visible-worktrees.ts:12"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Consumidor: nenhum componente/hook usa sidebarHasActiveFilters (o símbolo só é re-exportado em visible-worktrees.ts:12) — logo não existe badge de filtros ativos nem gate de 'Clear Filters' com esse cálculo"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Trigger badge and empty-state gate share sidebarHasActiveFilters including host/device flags.",
+    "note": "Trigger badge and empty-state gate share sidebarHasActiveFilters including host/device flags."
    }
   },
   {
@@ -459,17 +415,14 @@
     "components/sidebar/sidebar-filter-actions.ts:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-filter-actions.ts:31-67",
-     "src/components/sidebar/visible-worktrees.ts:12"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Consumidor: computeClearFilterActions não é chamado por nenhum componente — não há botão de Clear/Reset que execute o plano de mutações"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Reset filters executes the computed clear plan through the single writer.",
+    "note": "Reset filters executes the computed clear plan through the single writer."
    }
   },
   {
@@ -479,19 +432,14 @@
     "components/sidebar/worktree-filter-visibility.ts:18"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/visible-worktree-host-scope.ts:30-39",
-     "src/components/sidebar/visible-worktrees.ts:111-190",
-     "src/components/sidebar/visible-worktrees.ts:147-160"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Predicado isolado por worktree (worktreePassesSidebarFilters: 0 hits; só existe o pipeline em lote computeVisibleWorktrees)",
-     "Garantia explícita de que elisão por colapso de grupo/ordem renderizada não entra no predicado (no Hydra o colapso é aplicado depois, em rendered-sidebar-worktree-order.ts)"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "worktreePassesSidebarFilters predicate used by the batch pipeline, host-qualified; collapse/order stays out.",
+    "note": "worktreePassesSidebarFilters predicate used by the batch pipeline, host-qualified; collapse/order stays out."
    }
   },
   {
@@ -526,17 +474,14 @@
     "components/sidebar/smart-attention.ts:210"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-session-attention.ts:53-105"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "fallback por heurística de título (permission -> classe 1, working -> classe 3) quando não há entrada de hook",
-     "propagação de `cause` da heurística de título"
-    ],
-    "notes": "Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path.",
-    "note": "Class order now matches Orca for hook-backed sessions; title heuristics still only exist in the unused tab/pane path."
+    "missing_behaviors": [],
+    "notes": "Hookless attention gets the title heuristic (permission class 1, working class 3) with cause.",
+    "note": "Hookless attention gets the title heuristic (permission class 1, working class 3) with cause."
    }
   },
   {
@@ -546,19 +491,14 @@
     "components/sidebar/smart-attention.ts:69"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/shared/agent-completion-time.ts:6-22",
-     "src/shared/agent-completion-time.ts:35-47",
-     "src/components/sidebar/agent-finished-timestamp.ts:12-51",
-     "src/components/sidebar/compact-agent-row-labels.ts:165"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Varredura inclui 'blocked'/'waiting' (Hydra varre apenas 'done' em agent-completion-time.ts:13-18; Orca considera done/blocked/waiting)",
-     "Consumo pelo resolvedor de atenção/sort (no Hydra o histórico alimenta só o relógio de 'finished' da linha de agente; lib/smart-attention.ts não lê stateHistory)"
-    ],
-    "notes": "O análogo existe e mantém os detalhes: pula done com interrupted=true, exige startedAt finito e retorna o maior (ou null) — agent-completion-time.ts:6-22 (mostRecentCompletedTurnInHistory), consumido por lastEnteredDoneAt (agent-finished-timestamp.ts:12) via compact-agent-row-labels.ts:165."
+    "missing_behaviors": [],
+    "notes": "Attention timestamps scan done/blocked/waiting history and feed the painted sort.",
+    "note": "Attention timestamps scan done/blocked/waiting history and feed the painted sort."
    }
   },
   {
@@ -617,16 +557,14 @@
     "components/sidebar/smart-attention.ts:45"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-worktree-sort.ts:96-113"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "cold start do caminho pintado a partir do sortOrder persistido"
-    ],
-    "notes": "hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch.",
-    "note": "hasFreshAttributedAgentStatus exists, but the painted comparator has no cold-start branch."
+    "missing_behaviors": [],
+    "notes": "Cold-start gate: no live PTY and no fresh attributed status.",
+    "note": "Cold-start gate: no live PTY and no fresh attributed status."
    }
   },
   {
@@ -694,17 +632,14 @@
     "components/sidebar/smart-sort.ts:167"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-worktree-sort.ts:28-46",
-     "src/components/sidebar/smart-sort.ts:178-205"
+     "docs/audits/orca-sidebar-parity/domains/D09-filters-sort.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "cold start: reordenar pelo sortOrder persistido até chegar o snapshot de agent status"
-    ],
-    "notes": "The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback.",
-    "note": "The painted path sorts the modes themselves; it does not run sortWorktreesSmart's cold-start fallback."
+    "missing_behaviors": [],
+    "notes": "Painted smart sort falls back to persisted sortOrder during cold start.",
+    "note": "Painted smart sort falls back to persisted sortOrder during cold start."
    }
   }
  ],

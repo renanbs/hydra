@@ -1267,7 +1267,372 @@ fn persist_worktree_creation(
     Ok(())
 }
 
-pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) -> Result<(), String> {
+/// One local branch left behind on purpose because Git could not prove it was
+/// fully merged (`git branch -d` refused). Mirrors Orca
+/// `RemoveWorktreeResult.preservedBranch`, widened to a list because the removal
+/// outcome is also the batch result's unit.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct PreservedBranch {
+    pub branch_name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub head: Option<String>,
+}
+
+/// Why a removal was refused (or waived) by the repo's archive hook. Field
+/// spellings match `src/shared/worktree/archive-hook-removal-gate.ts`.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ArchiveHookFailureRecord {
+    pub worktree_path: String,
+    /// `exited` when Git observed a non-zero exit; `unverifiable` when it did
+    /// not (spawn failure, timeout, signal). Never claim an exit we did not see.
+    pub outcome: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit_code: Option<i32>,
+    pub output: String,
+    pub overridden: bool,
+}
+
+/// Structured result of removing one worktree. Backward-compatible at the
+/// wire level: `delete_worktree` used to resolve `null`, and no caller relied on
+/// the absence of a value; the batch result keeps its `deleted`/`failures` keys.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct WorktreeDeleteOutcome {
+    pub path: String,
+    pub removed: bool,
+    #[serde(default)]
+    pub preserved_branches: Vec<PreservedBranch>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archive_hook_override: Option<ArchiveHookFailureRecord>,
+}
+
+/// Same prefix as the renderer's `ARCHIVE_HOOK_FAILED_REMOVAL_PREFIX`; it is how
+/// the failure toast recognizes the one class that may be retried with a waiver.
+pub const ARCHIVE_HOOK_FAILED_REMOVAL_PREFIX: &str = "Archive hook failed for worktree:";
+pub const ARCHIVE_HOOK_OVERRIDE_HINT: &str =
+    "Nothing was stopped, deleted or deregistered. Fix the hook and retry, or delete anyway with an explicit waiver (allow_archive_skip).";
+/// Outlive the renderer's `ARCHIVE_HOOK_TIMEOUT_MS`? Both are 120s: the client
+/// waits exactly as long as the hook it is waiting on.
+pub const ARCHIVE_HOOK_TIMEOUT_MS: u64 = 120_000;
+const ARCHIVE_HOOK_OUTPUT_LIMIT: usize = 8_000;
+
+/// Resolves the repository whose `orca.yaml` describes this worktree. Order:
+/// the worktree's own `.git` link, `repo_path` itself, then child repositories of
+/// a folder workspace (the worktree can be owned by any of them).
+fn archive_hook_repo_root(repo_path: &str, worktree_path: &str) -> Option<PathBuf> {
+    let wt = Path::new(worktree_path);
+    let git_entry = wt.join(".git");
+    if git_entry.is_file() {
+        if let Ok(content) = std::fs::read_to_string(&git_entry) {
+            if let Some(rest) = content
+                .lines()
+                .map(str::trim)
+                .find_map(|line| line.strip_prefix("gitdir:"))
+            {
+                let gd = PathBuf::from(rest.trim());
+                let abs_gd = if gd.is_absolute() { gd } else { wt.join(gd) };
+                // <repo>/.git/worktrees/<name> -> <repo>
+                if let Some(root) = abs_gd
+                    .parent()
+                    .and_then(Path::parent)
+                    .and_then(Path::parent)
+                {
+                    if root.join(".git").exists() {
+                        return Some(root.to_path_buf());
+                    }
+                }
+            }
+        }
+    }
+    let explicit = PathBuf::from(repo_path);
+    if explicit.join(".git").exists() {
+        return Some(explicit);
+    }
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    collect_git_repos(&explicit, &mut candidates, 4);
+    let normalized_wt = worktree_path.replace('\\', "/");
+    for candidate in candidates {
+        if let Ok(out) = Command::new("git")
+            .args(["worktree", "list", "--porcelain"])
+            .current_dir(&candidate)
+            .output()
+        {
+            if !out.status.success() {
+                continue;
+            }
+            let listed = parse_worktree_porcelain(&String::from_utf8_lossy(&out.stdout))
+                .into_iter()
+                .any(|info| info.path.replace('\\', "/") == normalized_wt);
+            if listed {
+                return Some(candidate);
+            }
+        }
+    }
+    None
+}
+
+/// Reads `scripts.archive` from the repository's committed `orca.yaml`, the
+/// same source Orca's archive gate uses. An unreadable or absent file is "no
+/// hook", never a refusal: blocking deletes on a parse failure would refuse every
+/// repo that does not use hooks.
+fn read_archive_hook_script(repo_root: &Path) -> Option<String> {
+    let content = std::fs::read_to_string(repo_root.join("orca.yaml")).ok()?;
+    let yaml: serde_yaml::Value = serde_yaml::from_str(&content).ok()?;
+    let script = yaml
+        .get("scripts")
+        .and_then(|scripts| scripts.get("archive"))
+        .and_then(|archive| archive.as_str())
+        .map(str::trim)
+        .filter(|script| !script.is_empty())?;
+    Some(script.to_string())
+}
+
+struct ArchiveHookRunResult {
+    success: bool,
+    exit_code: Option<i32>,
+    output: String,
+}
+
+fn truncate_hook_output(output: &str) -> String {
+    if output.len() <= ARCHIVE_HOOK_OUTPUT_LIMIT {
+        return output.to_string();
+    }
+    let mut end = ARCHIVE_HOOK_OUTPUT_LIMIT;
+    while !output.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}… [truncated]", &output[..end])
+}
+
+/// Reads a hook's captured stream. A read failure is an empty stream, never a
+/// verdict: only the child's exit code decides.
+fn read_hook_stream(path: &Path) -> String {
+    use std::io::Read;
+    let mut buffer = String::new();
+    if let Ok(mut file) = std::fs::File::open(path) {
+        let _ = file.read_to_string(&mut buffer);
+    }
+    buffer
+}
+
+/// Runs the archive hook in the worktree before anything is stopped or deleted.
+/// A timeout or spawn failure yields no exit code, which the gate classifies as
+/// `unverifiable` instead of inventing a verdict.
+///
+/// Why temp files instead of pipes: a hook that leaves a grandchild holding the
+/// stdout pipe would keep a reader thread blocked after the timeout kills the
+/// shell, hanging the delete forever. Files keep the wait bounded.
+fn run_archive_hook(worktree_path: &str, script: &str) -> ArchiveHookRunResult {
+    use std::process::Stdio;
+    use std::time::{Duration, Instant};
+
+    let unique = format!(
+        "hydra-archive-hook-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|duration| duration.as_nanos())
+            .unwrap_or(0)
+    );
+    let stdout_path = std::env::temp_dir().join(format!("{unique}.out"));
+    let stderr_path = std::env::temp_dir().join(format!("{unique}.err"));
+    let stdout_file = match std::fs::File::create(&stdout_path) {
+        Ok(file) => file,
+        Err(error) => {
+            return ArchiveHookRunResult {
+                success: false,
+                exit_code: None,
+                output: format!("archive hook output could not be captured: {error}"),
+            }
+        }
+    };
+    let stderr_file = match std::fs::File::create(&stderr_path) {
+        Ok(file) => file,
+        Err(error) => {
+            let _ = std::fs::remove_file(&stdout_path);
+            return ArchiveHookRunResult {
+                success: false,
+                exit_code: None,
+                output: format!("archive hook output could not be captured: {error}"),
+            };
+        }
+    };
+
+    #[cfg(windows)]
+    let mut command = {
+        let mut cmd = Command::new("cmd");
+        cmd.args(["/d", "/s", "/c", script]);
+        cmd
+    };
+    #[cfg(not(windows))]
+    let mut command = {
+        let mut cmd = Command::new("/bin/bash");
+        cmd.args(["-lc", script]);
+        cmd
+    };
+    command
+        .current_dir(worktree_path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::from(stdout_file))
+        .stderr(Stdio::from(stderr_file));
+
+    let mut child = match command.spawn() {
+        Ok(child) => child,
+        Err(error) => {
+            let _ = std::fs::remove_file(&stdout_path);
+            let _ = std::fs::remove_file(&stderr_path);
+            return ArchiveHookRunResult {
+                success: false,
+                exit_code: None,
+                output: format!("archive hook could not start: {error}"),
+            }
+        }
+    };
+
+    let deadline = Instant::now() + Duration::from_millis(ARCHIVE_HOOK_TIMEOUT_MS);
+    let mut timed_out = false;
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break Some(status),
+            Ok(None) => {
+                if Instant::now() >= deadline {
+                    timed_out = true;
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    break None;
+                }
+                std::thread::sleep(Duration::from_millis(25));
+            }
+            Err(error) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                let _ = std::fs::remove_file(&stdout_path);
+                let _ = std::fs::remove_file(&stderr_path);
+                return ArchiveHookRunResult {
+                    success: false,
+                    exit_code: None,
+                    output: format!("archive hook could not be observed: {error}"),
+                };
+            }
+        }
+    };
+
+    let mut output = read_hook_stream(&stdout_path);
+    output.push_str(&read_hook_stream(&stderr_path));
+    let _ = std::fs::remove_file(&stdout_path);
+    let _ = std::fs::remove_file(&stderr_path);
+    let mut output = output.trim().to_string();
+    if timed_out {
+        if !output.is_empty() {
+            output.push('\n');
+        }
+        output.push_str("archive hook timed out");
+    }
+    let exit_code = status.and_then(|status| status.code());
+    ArchiveHookRunResult {
+        success: !timed_out && exit_code == Some(0),
+        exit_code,
+        output: truncate_hook_output(&output),
+    }
+}
+
+fn describe_archive_hook_verdict(exit_code: Option<i32>) -> String {
+    match exit_code {
+        Some(code) => format!("exited {code}"),
+        None => "outcome unverifiable (the hook never reported an exit)".to_string(),
+    }
+}
+
+/// The archive-hook precondition for a destructive removal. Runs while the
+/// checkout is still intact; a failure without the waiver is returned as an
+/// error whose prefix the renderer maps to the "Delete Anyway" recovery class.
+pub fn gate_worktree_archive_hook(
+    repo_path: &str,
+    worktree_path: &str,
+    allow_archive_skip: bool,
+) -> Result<Option<ArchiveHookFailureRecord>, String> {
+    let Some(repo_root) = archive_hook_repo_root(repo_path, worktree_path) else {
+        return Ok(None);
+    };
+    let Some(script) = read_archive_hook_script(&repo_root) else {
+        return Ok(None);
+    };
+    let result = run_archive_hook(worktree_path, &script);
+    if result.success {
+        return Ok(None);
+    }
+    let outcome = if result.exit_code.is_some() {
+        "exited"
+    } else {
+        "unverifiable"
+    };
+    let record = ArchiveHookFailureRecord {
+        worktree_path: worktree_path.to_string(),
+        outcome: outcome.to_string(),
+        exit_code: result.exit_code,
+        output: result.output,
+        overridden: allow_archive_skip,
+    };
+    if allow_archive_skip {
+        eprintln!(
+            "[hooks] archive hook failure waived for {worktree_path}; deleting anyway: {}",
+            record.output
+        );
+        return Ok(Some(record));
+    }
+    eprintln!("[hooks] archive hook refused removal of {worktree_path}: {}", record.output);
+    Err(format!(
+        "{ARCHIVE_HOOK_FAILED_REMOVAL_PREFIX} {worktree_path} — {}. {ARCHIVE_HOOK_OVERRIDE_HINT} {}",
+        describe_archive_hook_verdict(record.exit_code),
+        record.output
+    ))
+}
+
+/// Branch this worktree checks out, when deleting it afterwards is safe. A branch
+/// checked out in another worktree is not "preserved" — it is still in use.
+fn branch_owned_by_worktree(repo: &Path, worktree_path: &str) -> Option<(String, Option<String>)> {
+    let out = Command::new("git")
+        .args(["worktree", "list", "--porcelain"])
+        .current_dir(repo)
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let entries = parse_worktree_porcelain(&String::from_utf8_lossy(&out.stdout));
+    let normalized = normalize_runtime_path_for_comparison(worktree_path);
+    let current = entries
+        .iter()
+        .find(|entry| normalize_runtime_path_for_comparison(&entry.path) == normalized)?;
+    let branch = current.branch.trim();
+    if branch.is_empty() || branch == "HEAD" {
+        return None;
+    }
+    if entries.iter().any(|entry| {
+        normalize_runtime_path_for_comparison(&entry.path) != normalized
+            && entry.branch.trim() == branch
+    }) {
+        return None;
+    }
+    let head = if current.head_commit.trim().is_empty() {
+        None
+    } else {
+        Some(current.head_commit.clone())
+    };
+    Some((branch.to_string(), head))
+}
+
+/// `git branch -d` (never `-D`): safe delete succeeds only when Git proves the
+/// branch has no unmerged commits. Failure is the preserved-branch signal.
+fn delete_local_branch_if_merged(repo: &Path, branch: &str) -> bool {
+    Command::new("git")
+        .args(["branch", "-d", "--", branch])
+        .current_dir(repo)
+        .output()
+        .map(|out| out.status.success())
+        .unwrap_or(false)
+}
+
+pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) -> Result<WorktreeDeleteOutcome, String> {
     let wt = PathBuf::from(worktree_path);
     let wt_existed = wt.exists();
 
@@ -1376,6 +1741,13 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) ->
     // 2. Perform Removal via Git if target repo was identified
     let mut git_remove_succeeded = false;
     let mut git_error: Option<String> = None;
+    // Why before removal: once the checkout is gone its branch is not discoverable
+    // from the worktree, and a branch Git refuses (-d, unmerged) is the one we must
+    // report as preserved instead of silently keeping.
+    let branch_cleanup = resolved_repo
+        .as_ref()
+        .and_then(|target| branch_owned_by_worktree(target, worktree_path));
+    let mut preserved_branches: Vec<PreservedBranch> = Vec::new();
 
     if let Some(target) = &resolved_repo {
         // Orca parity: `force` is explicit. Without it Git refuses dirty or locked
@@ -1433,9 +1805,23 @@ pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) ->
         }
     }
 
-    // If git remove succeeded or the directory is now gone, return Ok(())
+    // If git remove succeeded or the directory is now gone, return the outcome.
     if git_remove_succeeded || !wt.exists() {
-        Ok(())
+        if let (Some(target), Some((branch, head))) = (&resolved_repo, branch_cleanup) {
+            // `-d` preserves unmerged work; only a provably merged branch goes.
+            if !delete_local_branch_if_merged(target, &branch) {
+                preserved_branches.push(PreservedBranch {
+                    branch_name: branch,
+                    head,
+                });
+            }
+        }
+        Ok(WorktreeDeleteOutcome {
+            path: worktree_path.to_string(),
+            removed: true,
+            preserved_branches,
+            archive_hook_override: None,
+        })
     } else if let Some(err) = git_error {
         Err(err)
     } else {
@@ -1775,6 +2161,171 @@ branch refs/heads/feat/auth\n";
         let forced = remove_git_worktree(repo.to_str().unwrap(), wt.to_str().unwrap(), true);
         assert!(forced.is_ok(), "force delete must remove the dirty checkout: {:?}", forced);
         assert!(!wt.exists(), "force delete removes the directory");
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    fn init_repo_with_commit(repo: &Path) {
+        let _ = std::fs::create_dir_all(repo);
+        let _ = Command::new("git").args(["init", "-b", "main"]).current_dir(repo).output();
+        let _ = Command::new("git").args(["config", "user.name", "Test"]).current_dir(repo).output();
+        let _ = Command::new("git")
+            .args(["config", "user.email", "test@test.com"])
+            .current_dir(repo)
+            .output();
+        let _ = std::fs::write(repo.join("README.md"), "hello");
+        let _ = Command::new("git").args(["add", "."]).current_dir(repo).output();
+        let _ = Command::new("git")
+            .args(["commit", "-m", "initial"])
+            .current_dir(repo)
+            .output();
+    }
+
+    fn commit_in(dir: &Path, file: &str, content: &str) {
+        let _ = std::fs::write(dir.join(file), content);
+        let _ = Command::new("git").args(["add", "."]).current_dir(dir).output();
+        let _ = Command::new("git")
+            .args(["commit", "-m", "worktree change"])
+            .current_dir(dir)
+            .output();
+    }
+
+    fn branch_exists(repo: &Path, branch: &str) -> bool {
+        Command::new("git")
+            .args(["rev-parse", "--verify", "--quiet", &format!("refs/heads/{branch}")])
+            .current_dir(repo)
+            .output()
+            .map(|out| out.status.success())
+            .unwrap_or(false)
+    }
+
+    #[test]
+    fn remove_git_worktree_preserves_unmerged_branch_and_deletes_merged_one() {
+        let tmp = std::env::temp_dir().join(format!(
+            "hydra-test-rm-branches-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let repo = tmp.join("repo");
+        init_repo_with_commit(&repo);
+
+        // 1. A branch with an unmerged commit must survive and be reported.
+        let unmerged_wt = tmp.join("wt-unmerged");
+        let add = Command::new("git")
+            .args([
+                "worktree",
+                "add",
+                "-b",
+                "feature/unmerged",
+                unmerged_wt.to_str().unwrap(),
+            ])
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add");
+        assert!(add.status.success());
+        commit_in(&unmerged_wt, "unmerged.txt", "keep me");
+
+        let outcome = remove_git_worktree(&repo.to_string_lossy(), &unmerged_wt.to_string_lossy(), true)
+            .expect("remove unmerged worktree");
+        assert!(outcome.removed);
+        assert_eq!(outcome.preserved_branches.len(), 1);
+        assert_eq!(outcome.preserved_branches[0].branch_name, "feature/unmerged");
+        assert!(outcome.preserved_branches[0].head.is_some(), "head is needed to recover the branch");
+        assert!(branch_exists(&repo, "feature/unmerged"), "unmerged branch must survive");
+        assert!(!unmerged_wt.exists());
+
+        // 2. A fully merged branch is safe-deleted, so nothing is preserved.
+        let merged_wt = tmp.join("wt-merged");
+        let add = Command::new("git")
+            .args([
+                "worktree",
+                "add",
+                "-b",
+                "feature/merged",
+                merged_wt.to_str().unwrap(),
+            ])
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add");
+        assert!(add.status.success());
+
+        let outcome = remove_git_worktree(&repo.to_string_lossy(), &merged_wt.to_string_lossy(), false)
+            .expect("remove merged worktree");
+        assert!(outcome.removed);
+        assert!(
+            outcome.preserved_branches.is_empty(),
+            "a merged branch is deleted, not preserved: {:?}",
+            outcome.preserved_branches
+        );
+        assert!(!branch_exists(&repo, "feature/merged"), "merged branch must be deleted");
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn archive_hook_gate_refuses_unless_waived() {
+        let tmp = std::env::temp_dir().join(format!(
+            "hydra-test-archive-hook-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let repo = tmp.join("repo");
+        init_repo_with_commit(&repo);
+        std::fs::write(
+            repo.join("orca.yaml"),
+            "scripts:\n  archive: \"echo archiving; exit 7\"\n",
+        )
+        .unwrap();
+        let wt = tmp.join("wt");
+        let add = Command::new("git")
+            .args(["worktree", "add", "-b", "feature/hook", wt.to_str().unwrap()])
+            .current_dir(&repo)
+            .output()
+            .expect("git worktree add");
+        assert!(add.status.success());
+
+        let refused = gate_worktree_archive_hook(
+            &repo.to_string_lossy(),
+            &wt.to_string_lossy(),
+            false,
+        );
+        let error = refused.expect_err("failed archive hook must refuse the removal");
+        assert!(error.starts_with(ARCHIVE_HOOK_FAILED_REMOVAL_PREFIX), "{error}");
+        assert!(error.contains("exited 7"), "{error}");
+        assert!(error.contains("archiving"), "{error}");
+        assert!(wt.exists(), "refusal must leave the checkout intact");
+
+        let waived = gate_worktree_archive_hook(
+            &repo.to_string_lossy(),
+            &wt.to_string_lossy(),
+            true,
+        )
+        .expect("waiver must not refuse")
+        .expect("waiver reports the override");
+        assert!(waived.overridden);
+        assert_eq!(waived.outcome, "exited");
+        assert_eq!(waived.exit_code, Some(7));
+        assert!(waived.output.contains("archiving"));
+
+        // A repo without orca.yaml has no hook and never blocks.
+        let plain = tmp.join("plain");
+        init_repo_with_commit(&plain);
+        let plain_wt = tmp.join("plain-wt");
+        let add = Command::new("git")
+            .args(["worktree", "add", "-b", "feature/plain", plain_wt.to_str().unwrap()])
+            .current_dir(&plain)
+            .output()
+            .expect("git worktree add");
+        assert!(add.status.success());
+        assert_eq!(
+            gate_worktree_archive_hook(&plain.to_string_lossy(), &plain_wt.to_string_lossy(), false)
+                .expect("no hook"),
+            None
+        );
 
         let _ = std::fs::remove_dir_all(&tmp);
     }

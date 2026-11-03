@@ -20,7 +20,8 @@ export function shouldFiltersHideAllRows(counts: {
     counts.hasFilters &&
     counts.visibleWorktreeCount === 0 &&
     counts.visibleFolderWorkspaceCount === 0 &&
-    counts.placeholderRepoCount === 0 &&
+    // Placeholder headers paint only when a real row survives; under active
+    // filters the Clear Filters state must win (Orca #15362).
     counts.importedWorktreeCardCount === 0
   )
 }

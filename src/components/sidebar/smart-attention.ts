@@ -10,9 +10,9 @@ import { classifyTitleActivity, isExplicitAgentStatusFresh } from '@/lib/pane-ag
 import { resolveDecayedAgentRowState } from '@/lib/agent-row-decay-state'
 import { migrationUnsupportedToAgentStatusEntry } from '@/lib/migration-unsupported-agent-entry'
 import { tabHasLivePty } from '@/lib/tab-has-live-pty'
+import { resolveRuntimePaneTitleLeafId } from '@/lib/runtime-pane-title-leaf-id'
 import { agentEntryCompletionAt } from '../../shared/agent-completion-time'
-import { FIRST_PANE_ID } from '../../shared/pane-key'
-import { isTerminalLeafId, parsePaneKey } from '../../shared/stable-pane-id'
+import { parsePaneKey } from '../../shared/stable-pane-id'
 import { isSyntheticAgentPermissionTitle } from '../../shared/synthetic-agent-title'
 import type { AgentStatus } from '../../shared/agent-detection'
 import {
@@ -22,10 +22,7 @@ import {
   type AgentStatusEntry,
   type MigrationUnsupportedPtyEntry
 } from '../../shared/agent-status-types'
-import type {
-  TerminalLayoutSnapshot,
-  TerminalPaneLayoutNode
-} from '../../shared/terminal-tab-types'
+import type { TerminalLayoutSnapshot } from '../../shared/terminal-tab-types'
 import type { Worktree } from '../../shared/worktree/types'
 import type { TabItem } from '../../components/workbench/WorkbenchTabBar'
 
@@ -315,63 +312,6 @@ export type TabPaneInputSources = {
   ptyIdsByTabId: Record<string, string[]>
   runtimePaneTitlesByTabId: Record<string, Record<number, string>>
   terminalLayoutsByTabId?: Record<string, TerminalLayoutSnapshot>
-}
-
-// Ported from Orca `src/renderer/src/lib/runtime-pane-title-leaf-id.ts` (MIT).
-// Why local: Hydra's `@/lib/runtime-pane-title-leaf-id` is still an auto-stub exporting `null`
-// (docs/audits/orca-sidebar-parity/domains/D05-agents-rows.gaps.md) and is outside this module's
-// file scope — importing it would re-introduce the null-call TypeError this module exists to fix.
-// Swap to the import once that module is wired.
-type RuntimePaneTitleLayout = { root?: TerminalLayoutSnapshot['root'] } | undefined
-
-function leftmostLeafId(node: TerminalPaneLayoutNode): string {
-  return node.type === 'leaf' ? node.leafId : leftmostLeafId(node.first)
-}
-
-function collectReplayCreatedPaneLeafIds(
-  node: TerminalPaneLayoutNode,
-  leafIdsInReplayCreationOrder: string[]
-): void {
-  if (node.type === 'leaf') {
-    return
-  }
-
-  leafIdsInReplayCreationOrder.push(leftmostLeafId(node.second))
-
-  if (node.first.type === 'split') {
-    collectReplayCreatedPaneLeafIds(node.first, leafIdsInReplayCreationOrder)
-  }
-  if (node.second.type === 'split') {
-    collectReplayCreatedPaneLeafIds(node.second, leafIdsInReplayCreationOrder)
-  }
-}
-
-function collectLeafIdsInReplayCreationOrder(
-  node: TerminalPaneLayoutNode | null | undefined
-): string[] {
-  if (!node) {
-    return []
-  }
-  const leafIdsInReplayCreationOrder = [leftmostLeafId(node)]
-  if (node.type === 'split') {
-    collectReplayCreatedPaneLeafIds(node, leafIdsInReplayCreationOrder)
-  }
-  return leafIdsInReplayCreationOrder
-}
-
-function resolveRuntimePaneTitleLeafId(
-  tabLayout: RuntimePaneTitleLayout,
-  runtimePaneId: string
-): string | null {
-  if (isTerminalLeafId(runtimePaneId)) {
-    return runtimePaneId
-  }
-  const numericPaneId = Number(runtimePaneId)
-  if (!Number.isInteger(numericPaneId) || numericPaneId < FIRST_PANE_ID) {
-    return null
-  }
-  const leafIds = collectLeafIdsInReplayCreationOrder(tabLayout?.root)
-  return leafIds[numericPaneId - FIRST_PANE_ID] ?? null
 }
 
 /**

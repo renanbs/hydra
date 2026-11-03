@@ -1,27 +1,75 @@
-import { describe, expect, it } from "vitest";
-import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { useAppStore } from "@/store";
+import type { PendingWorktreeCreation } from "@/lib/pending-worktree-creation";
 import { PendingWorktreeCreationRow } from "./PendingWorktreeCreationRow";
 
-describe("PendingWorktreeCreationRow (Orca parity)", () => {
-  it("shows the branch being created and the agent/repo context", () => {
-    render(
-      <PendingWorktreeCreationRow branchName="feat/x" agentName="Claude" repoName="hydra" />
-    );
-    expect(screen.getByRole("status")).toHaveTextContent("Creating feat/x…");
-    expect(screen.getByText("Claude")).toBeInTheDocument();
-    expect(screen.getByText("hydra")).toBeInTheDocument();
+function pendingEntry(
+  overrides: Partial<PendingWorktreeCreation> = {}
+): PendingWorktreeCreation {
+  return {
+    creationId: "creation_1",
+    phase: "creating",
+    status: "creating",
+    startedAt: 0,
+    indeterminate: false,
+    loaderVisible: true,
+    request: {
+      repoId: "repo_a",
+      name: "feat-row",
+      displayName: "feat-row",
+    } as PendingWorktreeCreation["request"],
+    ...overrides,
+  };
+}
+
+function seed(entry: PendingWorktreeCreation): void {
+  useAppStore.setState({
+    pendingWorktreeCreations: { [entry.creationId]: entry },
+    activePendingCreationId: entry.creationId,
+  });
+}
+
+describe("PendingWorktreeCreationRow (Orca parity, D03b-021/022)", () => {
+  beforeEach(() => {
+    useAppStore.setState({ pendingWorktreeCreations: {}, activePendingCreationId: null });
   });
 
-  it("falls back to a generic workspace label", () => {
-    render(<PendingWorktreeCreationRow />);
-    expect(screen.getByRole("status")).toHaveTextContent("Creating workspace…");
+  it("paints the workspace name with its progress label", () => {
+    seed(pendingEntry());
+    render(<PendingWorktreeCreationRow creationId="creation_1" repoName="repo" />);
+    const row = screen.getByRole("status");
+    expect(row).toHaveAttribute("data-pending-worktree-creation-id", "creation_1");
+    expect(screen.getByText("feat-row")).toBeTruthy();
+    expect(screen.getByText("Creating worktree…")).toBeTruthy();
+    expect(screen.getByText("repo")).toBeTruthy();
   });
 
-  it("addresses the optimistic row by creation id (D03a-072)", () => {
-    const { container } = render(<PendingWorktreeCreationRow creationId="creation-1" />);
-    expect(
-      container.querySelector('[data-pending-worktree-creation-id="creation-1"]')
-    ).not.toBeNull();
+  it("paints the failure reason instead of progress", () => {
+    seed(pendingEntry({ status: "error", error: "git worktree add failed" }));
+    render(<PendingWorktreeCreationRow creationId="creation_1" />);
+    expect(screen.getByText("git worktree add failed")).toBeTruthy();
+    expect(screen.getByLabelText("Worktree creation failed")).toBeTruthy();
+  });
+
+  it("cancels through removePendingWorktreeCreation", () => {
+    seed(pendingEntry());
+    render(<PendingWorktreeCreationRow creationId="creation_1" />);
+    fireEvent.click(screen.getByLabelText("Cancel worktree creation"));
+    expect(useAppStore.getState().pendingWorktreeCreations).toEqual({});
+    expect(useAppStore.getState().activePendingCreationId).toBeNull();
+  });
+
+  it("routes a click to the creation content surface", () => {
+    seed(pendingEntry());
+    useAppStore.setState({ activePendingCreationId: null });
+    render(<PendingWorktreeCreationRow creationId="creation_1" />);
+    fireEvent.click(screen.getByText("feat-row"));
+    expect(useAppStore.getState().activePendingCreationId).toBe("creation_1");
+  });
+
+  it("renders nothing for a settled creation", () => {
+    const { container } = render(<PendingWorktreeCreationRow creationId="missing" />);
+    expect(container.innerHTML).toBe("");
   });
 });

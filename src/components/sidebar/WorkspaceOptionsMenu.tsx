@@ -6,26 +6,48 @@ import {
   CalendarClock, 
   SquareTerminal, 
   GitCommitHorizontal,
-  Search,
-  Server,
-  X
+  MonitorSmartphone,
 } from "lucide-react";
 import { useAppStore } from "@/store";
 import { ALL_EXECUTION_HOSTS_SCOPE, type ExecutionHostId } from "../../shared/execution-host";
 import {
-  buildSidebarHostOptions,
-  buildSidebarHostScopeOptions,
   getSidebarHostHealthLabel,
   getSidebarHostVisibilityLabel,
   shouldShowHostScopeControls,
-  type SidebarHostOption,
   type SidebarHostScopeOption,
 } from "./sidebar-host-options";
-import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
+import { useSidebarHostScopeOptions } from "./use-sidebar-host-scope-options";
+import { planSidebarClearFilters, shouldShowOtherClientFilter } from "./sidebar-filter-actions";
 import type { HydraProject } from "./WorktreeSidebar";
 import { FilterToggleRow } from "./FilterToggleRow";
 import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
-import { searchProjects } from "./project-filter-search";
+import { SidebarRepositoryFilterSection } from "./SidebarRepositoryFilterSection";
+import {
+  AGENT_ACTIVITY_DISPLAY_OPTIONS,
+  CARD_LAYOUT_OPTIONS,
+  GROUP_BY_OPTIONS,
+  PROJECT_ORDER_OPTIONS,
+  PROPERTY_OPTIONS,
+  SORT_OPTIONS,
+  getWorktreeCardPropertyOptions,
+} from "./worktree-card-display-property-options";
+import { getWorktreeCardModeProperties } from "../../shared/worktree/card-properties";
+import type {
+  AgentActivityDisplayMode,
+  WorktreeCardProperty,
+} from "../../shared/ui-chrome-types";
+
+/**
+ * The UI slice fields exist at runtime but are not part of the composed
+ * `AppState` surface yet; narrow through this local contract rather than `any`.
+ */
+type CardDisplayState = {
+  worktreeCardProperties: WorktreeCardProperty[];
+  setWorktreeCardProperties: (properties: readonly WorktreeCardProperty[]) => void;
+  agentActivityDisplayMode: AgentActivityDisplayMode;
+  setAgentActivityDisplayMode: (mode: AgentActivityDisplayMode) => void;
+};
+
 
 export type GroupByMode = "none" | "workspace-status" | "pr-status" | "repo";
 
@@ -74,14 +96,6 @@ export function toggleWorkspaceHostVisibility(args: {
   };
 }
 
-/** The menu's five modes; ids stay compatible with the persisted prefs. */
-const SORT_BY_OPTIONS = [
-  { id: "agent-activity", label: "Agent Activity" },
-  { id: "name", label: "Name" },
-  { id: "recent", label: "Recent" },
-  { id: "project", label: "Project" },
-  { id: "manual", label: "Manual" },
-] as const;
 
 const SORT_BY_LABELS: Record<WorkspaceDisplayOptions["sortBy"], string> = {
   "agent-activity": "Agent Activity",
@@ -119,6 +133,17 @@ interface WorkspaceOptionsMenuProps {
   onOptionsChange: (newOptions: WorkspaceDisplayOptions) => void;
   /** Opens the Add project dialog from the menu footer (Orca SidebarFilter footer). */
   onAddProject?: () => void;
+  /**
+   * Orca `clearFilters`: the ONE writer that resets every narrowing filter
+   * (`computeClearFilterActions` + host scope), owned by the sidebar shell.
+   */
+  onClearFilters?: () => void;
+  /**
+   * Orca `setWorktreeCardMode` writes `compactWorktreeCards` through the settings
+   * writer; App owns that write in Hydra.
+   */
+  onUpdateSettings?: (patch: { compact_worktree_cards: boolean }) => void;
+
 }
 
 export function WorkspaceOptionsMenu({
@@ -129,50 +154,71 @@ export function WorkspaceOptionsMenu({
   onClose,
   onOptionsChange,
   onAddProject,
+  onClearFilters,
+  onUpdateSettings,
+
 }: WorkspaceOptionsMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const projectSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 80, left: 240 });
   const [openSubmenu, setOpenSubmenu] = useState<"sort" | "projectOrder" | "cardDisplay" | "show" | "hosts" | null>(null);
-  const [projectSearch, setProjectSearch] = useState("");
-  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const sleepingShortcut = useOptionalShortcutLabel("sidebar.sleepingWorkspaces.toggle");
 
   // ─── Host scope (Orca SidebarHostScopeMenuSection) ────────────────────────
-  const storeRepos = useAppStore((s) => s.repos);
-  const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
-  const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
   const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
+  const storeRuntimeEnvironmentCatalogHydrated = useAppStore(
+    (s) => s.runtimeEnvironmentCatalogHydrated
+  );
   const storeSettings = useAppStore((s) => s.settings);
   const visibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
+  const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const setWorkspaceHostScope = useAppStore((s) => s.setWorkspaceHostScope);
   const setVisibleWorkspaceHostIds = useAppStore((s) => s.setVisibleWorkspaceHostIds);
-
-  const hostOptions = useMemo<SidebarHostOption[]>(
-    () =>
-      buildSidebarHostOptions({
-        repos: storeRepos,
-        sshTargetLabels: toHostSourceMap<string>(storeSshTargetLabels) ?? new Map<string, string>(),
-        sshConnectionStates: toHostSourceMap(storeSshConnectionStates),
-        settings: storeSettings,
-        runtimeEnvironments: Array.isArray(storeRuntimeEnvironments)
-          ? storeRuntimeEnvironments
-          : undefined,
-      }),
-    [
-      storeRepos,
-      storeSshTargetLabels,
-      storeSshConnectionStates,
-      storeSettings,
-      storeRuntimeEnvironments,
-    ]
+  // Orca WorktreeCardDisplayMenuSection reads the same persisted UI slice.
+  const worktreeCardProperties =
+    useAppStore((s) => (s as unknown as CardDisplayState).worktreeCardProperties) ?? [];
+  const setWorktreeCardProperties = useAppStore(
+    (s) => (s as unknown as CardDisplayState).setWorktreeCardProperties
   );
-  const hostScopeOptions = useMemo(() => buildSidebarHostScopeOptions(hostOptions), [hostOptions]);
+  const agentActivityDisplayMode = useAppStore(
+    (s) => (s as unknown as CardDisplayState).agentActivityDisplayMode
+  );
+  const setAgentActivityDisplayMode = useAppStore(
+    (s) => (s as unknown as CardDisplayState).setAgentActivityDisplayMode
+  );
+  const storeProjectGroups = useAppStore((s) => s.projectGroups);
+  const newCardStyle =
+    (storeSettings as { experimentalNewWorktreeCardStyle?: boolean } | null)
+      ?.experimentalNewWorktreeCardStyle === true;
+  const hasProjectGroups = Array.isArray(storeProjectGroups) && storeProjectGroups.length > 0;
+  const cardLayout = storeSettings?.compact_worktree_cards ? "compact" : "detailed";
+  const cardLayoutLabel =
+    CARD_LAYOUT_OPTIONS.find((option) => option.id === cardLayout)?.label ?? "Detailed";
+  const visiblePropertyCount = PROPERTY_OPTIONS.filter((option) =>
+    worktreeCardProperties.includes(option.id)
+  ).length;
+  const propertyOptions = useMemo(
+    () => getWorktreeCardPropertyOptions({ newCardStyle, hasProjectGroups }),
+    [hasProjectGroups, newCardStyle]
+  );
+  const handleCardPropertyChange = (
+    properties: readonly WorktreeCardProperty[],
+    checked: boolean
+  ) => {
+    const next = checked
+      ? [...worktreeCardProperties, ...properties.filter((property) => !worktreeCardProperties.includes(property))]
+      : worktreeCardProperties.filter((property) => !properties.includes(property));
+    setWorktreeCardProperties(next);
+  };
+  const handleCardLayoutChange = (layout: "detailed" | "compact") => {
+    // Why settings + properties together: layout is a preset, not a density-only
+    // toggle, so the visible property set stays aligned with the chosen mode.
+    onUpdateSettings?.({ compact_worktree_cards: layout === "compact" });
+    setWorktreeCardProperties(getWorktreeCardModeProperties(layout === "compact" ? "Compact" : "Default"));
+  };
+
+  const { hostOptions, hostScopeOptions } = useSidebarHostScopeOptions();
   useEffect(() => {
-    if (!isOpen) {
-      setOpenSubmenu(null);
-      setProjectSearch("");
-    }
+    if (!isOpen) setOpenSubmenu(null);
   }, [isOpen]);
 
   useEffect(() => {
@@ -226,35 +272,6 @@ export function WorkspaceOptionsMenu({
 
   if (!isOpen) return null;
 
-  // Orca SidebarRepositoryFilterSection.getProjectFilterVisibilityLabel: o label do
-  // submenu "Show → Projects" reflete o filtro ativo — "All projects" sem sufixo,
-  // o nome do projeto quando só um está selecionado, ou "N projects". Derivado de
-  // `projects` para ids obsoletos (projeto removido) não inflarem a contagem.
-  const selectedFilterProjects = options.filterProjectIds?.length
-    ? projects.filter((p) => options.filterProjectIds!.includes(p.id))
-    : [];
-  const filteredProjects = useMemo(
-    () => searchProjects(projects, projectSearch),
-    [projects, projectSearch]
-  );
-
-  const toggleProjectFilter = (projectId: string) => {
-    const current = options.filterProjectIds || [];
-    const next = current.length === 0
-      ? [projectId]
-      : current.includes(projectId)
-        ? current.filter((id) => id !== projectId)
-        : [...current, projectId];
-    onOptionsChange({ ...options, filterProjectIds: next });
-  };
-
-  const projectFilterLabel =
-    selectedFilterProjects.length === 0
-      ? "All projects"
-      : selectedFilterProjects.length === 1
-        ? selectedFilterProjects[0].name
-        : `${selectedFilterProjects.length} projects`;
-
   // ─── Host scope handlers (Orca SidebarHostScopeMenuSection) ───────────────
   const showHostScopeControls = shouldShowHostScopeControls(hostOptions);
   const allHostsVisible = visibleWorkspaceHostIds == null;
@@ -287,11 +304,47 @@ export function WorkspaceOptionsMenu({
     if (result.changed) setVisibleWorkspaceHostIds(result.visibleWorkspaceHostIds);
   };
 
+  // Orca `showOtherClientFilter`: hidden only once the runtime-environment catalog
+  // is hydrated AND knows no other client — never while a sweep is still applied.
+  const showOtherClientFilter = shouldShowOtherClientFilter({
+    runtimeEnvironmentCatalogHydrated: storeRuntimeEnvironmentCatalogHydrated === true,
+    runtimeEnvironmentCount: Array.isArray(storeRuntimeEnvironments)
+      ? storeRuntimeEnvironments.length
+      : 0,
+    hideWorkspacesFromOtherDevices: options.hideWorkspacesFromOtherDevices === true,
+  });
+  // Orca's badge/footer gate reads the same state Clear Filters resets; host scope
+  // is part of this menu, so it counts as an active filter here too.
+  const hasAnyFilter =
+    countActiveWorkspaceFilters(options) > 0 || visibleWorkspaceHostIds != null;
+
+  /**
+   * Orca `clearFilters`. The shell owns the writer when it supplies one; the
+   * fallback runs the SAME pure plan, so no surface can invent a different reset.
+   */
+  const handleResetFilters = () => {
+    if (onClearFilters) {
+      onClearFilters();
+      return;
+    }
+    const plan = planSidebarClearFilters(options, {
+      visibleWorkspaceHostIds: visibleWorkspaceHostIds ?? null,
+      workspaceHostScope: storeWorkspaceHostScope,
+    });
+    if (!plan.changed) return;
+    if (plan.displayOptions !== options) onOptionsChange(plan.displayOptions);
+    if (plan.resetHostScope) {
+      setWorkspaceHostScope(ALL_EXECUTION_HOSTS_SCOPE);
+      setVisibleWorkspaceHostIds(null);
+    }
+  };
+
   return (
     <div
       ref={menuRef}
       style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
       onClick={(e) => e.stopPropagation()}
+      data-workspace-board-preserve-open=""
       className="fixed w-72 rounded-xl bg-popover border border-border p-2 shadow-2xl z-[99999] text-xs text-popover-foreground select-none space-y-2.5 font-sans"
     >
       {/* Header */}
@@ -304,191 +357,16 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Show
         </div>
-        {projects.length > 1 ? (
-        <div className="relative">
-          <div
-            onClick={() => {
-              const next = openSubmenu === "show" ? null : "show";
-              // Orca resets the query when the panel is reopened.
-              if (next === "show") setProjectSearch("");
-              setOpenSubmenu(next);
-            }}
-            className={`flex items-center justify-between px-2 py-1 text-[11px] text-popover-foreground hover:bg-accent rounded cursor-pointer transition-colors ${openSubmenu === "show" ? "bg-accent" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <span>Projects</span>
-            </div>
-            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-              <span>{projectFilterLabel}</span>
-              <ChevronRight className="w-3 h-3 text-muted-foreground" />
-            </span>
-          </div>
-          {openSubmenu === "show" && (
-            <div className="absolute left-full top-0 ml-1 w-64 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-80 overflow-hidden flex flex-col">
-              <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase">
-                  Projects
-                  {selectedFilterProjects.length > 0 && (
-                    <span className="ml-1.5 font-medium text-foreground normal-case">· {selectedFilterProjects.length}</span>
-                  )}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    disabled={(options.filterProjectIds?.length ?? 0) === projects.length}
-                    onClick={() =>
-                      onOptionsChange({
-                        ...options,
-                        filterProjectIds: projects.map((project) => project.id),
-                      })
-                    }
-                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!options.filterProjectIds?.length}
-                    onClick={() => onOptionsChange({ ...options, filterProjectIds: [] })}
-                    className="text-[10px] text-muted-foreground hover:text-foreground font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-              {options.filterProjectIds?.length ? (
-                <div className="flex max-h-16 flex-wrap gap-1 overflow-y-auto px-2 py-1">
-                  {options.filterProjectIds.map((id) => {
-                    const proj = projects.find((p) => p.id === id);
-                    if (!proj) return null;
-                    return (
-                      <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent border border-border text-[10px] text-foreground">
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: proj.color || "var(--color-emerald-500)" }}
-                        />
-                        <span className="max-w-[8rem] truncate">{proj.name}</span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${proj.displayName || proj.name} filter`}
-                          onClick={() => {
-                            const next = (options.filterProjectIds || []).filter((pid) => pid !== id);
-                            onOptionsChange({ ...options, filterProjectIds: next });
-                          }}
-                          className="ml-1 hover:text-foreground cursor-pointer"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              ) : null}
-              <div className="px-1 py-1">
-                <div className="relative">
-                  <input
-                    ref={projectSearchInputRef}
-                    autoFocus
-                    type="text"
-                    value={projectSearch}
-                    onChange={(e) => {
-                      setProjectSearch(e.target.value);
-                      setActiveProjectIndex(0);
-                    }}
-                    onKeyDown={(e) => {
-                      // Orca SidebarFilter pattern: Escape clears a non-empty query
-                      // first (keeps the menu open); an empty query lets the menu's
-                      // own window-level Escape close run.
-                      if (e.key === "Escape" && projectSearch) {
-                        e.stopPropagation();
-                        setProjectSearch("");
-                        return;
-                      }
-                      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                        e.preventDefault();
-                        if (filteredProjects.length === 0) return;
-                        const delta = e.key === "ArrowDown" ? 1 : -1;
-                        setActiveProjectIndex(
-                          (previous) =>
-                            (previous + delta + filteredProjects.length) % filteredProjects.length
-                        );
-                        return;
-                      }
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const project = filteredProjects[activeProjectIndex];
-                        if (project) toggleProjectFilter(project.id);
-                        return;
-                      }
-                      if (e.key === "Backspace" && !projectSearch) {
-                        const selected = options.filterProjectIds ?? [];
-                        const last = selected[selected.length - 1];
-                        if (last) {
-                          e.preventDefault();
-                          onOptionsChange({
-                            ...options,
-                            filterProjectIds: selected.slice(0, -1),
-                          });
-                        }
-                        return;
-                      }
-                      if (e.key === "ArrowLeft" && e.currentTarget.selectionStart === 0) {
-                        e.preventDefault();
-                        setOpenSubmenu(null);
-                        return;
-                      }
-                      // Arrows stay local; every other key must not reach the menu typeahead.
-                      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
-                        e.stopPropagation();
-                      }
-                    }}
-                    placeholder="Add project..."
-                    className="w-full bg-muted/50 border border-border rounded-md pl-7 pr-6 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <span className="absolute left-2 top-1.5 text-muted-foreground pointer-events-none">
-                    <Search className="w-3 h-3" />
-                  </span>
-                  {projectSearch ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setProjectSearch("");
-                        projectSearchInputRef.current?.focus();
-                      }}
-                      aria-label="Clear project search"
-                      title="Clear project search"
-                      className="absolute right-1.5 top-1 inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto max-h-48 space-y-0.5 px-1">
-                {filteredProjects.map((proj, index) => {
-                    const isExplicitlySelected = options.filterProjectIds?.includes(proj.id);
-                    const showAsSelected = options.filterProjectIds?.length ? isExplicitlySelected : true;
-                    const isActive = index === activeProjectIndex;
-                    return (
-                      <button
-                        key={proj.id}
-                        data-active-project={isActive || undefined}
-                        onClick={() => toggleProjectFilter(proj.id)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] text-left transition cursor-pointer ${showAsSelected ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"} ${isActive ? "ring-1 ring-ring/50" : ""}`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${showAsSelected ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
-                        <span className="truncate">{proj.name}</span>
-                        {showAsSelected && options.filterProjectIds?.length ? <span className="ml-auto text-[10px] text-muted-foreground">✓</span> : null}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-        </div>
-        ) : null}
+        <SidebarRepositoryFilterSection
+          projects={projects}
+          filterRepoIds={options.filterProjectIds ?? []}
+          setFilterRepoIds={(filterProjectIds) =>
+            onOptionsChange({ ...options, filterProjectIds })
+          }
+          open={openSubmenu === "show"}
+          onOpenChange={(open) => setOpenSubmenu(open ? "show" : null)}
+          preserveWorkspaceBoardOpen
+        />
 
         {/* Hosts — Orca SidebarHostScopeMenuSection: single row, multi-select panel */}
         {showHostScopeControls && (
@@ -565,19 +443,34 @@ export function WorkspaceOptionsMenu({
         <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Group by
         </div>
-        <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border">
-          {[
-            { id: "none", label: "None" },
-            { id: "workspace-status", label: "Status" },
-            { id: "pr-status", label: "PR" },
-            { id: "repo", label: "Project" },
-          ].map((item) => {
+        <div
+          role="group"
+          aria-label="Group by"
+          className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-muted/40 border border-border"
+        >
+
+          {GROUP_BY_OPTIONS.map((item) => {
             const isSelected = options.groupBy === item.id;
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => onOptionsChange({ ...options, groupBy: item.id as GroupByMode })}
+                aria-pressed={isSelected}
+                data-group-by-option={item.id}
+                data-option-id={item.dataId}
+                // Why pointer-down: inside a menu the roving-focus handling can
+                // swallow the click that a pointer started, so the intent is
+                // committed before focus moves (Orca SidebarGroupByToggle).
+                // Keyboard activation (detail 0) commits from the click instead.
+                onPointerDownCapture={() =>
+                  onOptionsChange({ ...options, groupBy: item.id })
+                }
+                onClick={(event) => {
+                  if (event.detail === 0) {
+                    onOptionsChange({ ...options, groupBy: item.id })
+                  }
+                }}
+
                 className={`py-1 text-[10px] font-medium rounded transition text-center cursor-pointer ${
                   isSelected
                     ? "bg-background text-foreground font-semibold shadow-xs"
@@ -605,13 +498,19 @@ export function WorkspaceOptionsMenu({
             </span>
           </div>
           {openSubmenu === "sort" && (
-            <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
-              {SORT_BY_OPTIONS.map((opt) => (
+            <div
+              data-workspace-board-preserve-open=""
+              className="absolute left-full top-0 ml-1 w-52 rounded-lg border border-border bg-popover p-1 shadow-xl z-10"
+            >
+              {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
+                  type="button"
+                  data-sort-by-option={opt.id}
+                  title={opt.description ?? undefined}
                   onClick={() => {
                     onOptionsChange({ ...options, sortBy: opt.id as WorkspaceDisplayOptions["sortBy"] });
-                    setOpenSubmenu(null);
+                    // Orca keeps the submenu open so modes can be compared.
                   }}
                   className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] transition cursor-pointer ${options.sortBy === opt.id ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
                 >
@@ -619,6 +518,10 @@ export function WorkspaceOptionsMenu({
                   {options.sortBy === opt.id && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
                 </button>
               ))}
+              <div className="px-2 pt-1 text-[10px] text-muted-foreground">
+                {SORT_OPTIONS.find((option) => option.id === options.sortBy)?.description ??
+                  "Workspaces keep their group order"}
+              </div>
             </div>
           )}
         </div>
@@ -630,23 +533,25 @@ export function WorkspaceOptionsMenu({
             >
               <span>Project order</span>
               <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
-                <span>{options.projectsOrder === "recent" ? "Recent" : "Manual"}</span>
+                <span>{PROJECT_ORDER_OPTIONS.find((option) => option.id === (options.projectsOrder ?? "manual"))?.label ?? "Manual"}</span>
                 <ChevronRight className="w-3 h-3 text-muted-foreground" />
               </span>
             </div>
             {openSubmenu === "projectOrder" && (
-              <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
-                {([
-                  { id: "manual", label: "Manual", hint: "Drag to reorder projects" },
-                  { id: "recent", label: "Recent", hint: "Most recent workspace activity" },
-                ] as const).map((option) => (
+              <div
+                data-workspace-board-preserve-open=""
+                className="absolute left-full top-0 ml-1 w-48 rounded-lg border border-border bg-popover p-1 shadow-xl z-10"
+              >
+                {PROJECT_ORDER_OPTIONS.map((option) => (
                   <button
                     key={option.id}
+                    type="button"
+                    data-project-order-option={option.id}
+                    title={option.description}
                     onClick={() => {
                       // Project order is its own choice, decoupled from workspace
-                      // sortBy (Orca `projectOrderBy`).
+                      // sortBy (Orca `projectOrderBy`); the displayOptions writer persists it.
                       onOptionsChange({ ...options, projectsOrder: option.id });
-                      setOpenSubmenu(null);
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${
                       (options.projectsOrder ?? "manual") === option.id
@@ -660,10 +565,10 @@ export function WorkspaceOptionsMenu({
                     ) : null}
                   </button>
                 ))}
-                <div className="px-2 py-1 text-[10px] text-muted-foreground">
-                  {(options.projectsOrder ?? "manual") === "recent"
-                    ? "Most recent workspace activity"
-                    : "Drag to reorder projects"}
+                <div className="px-2 pt-1 text-[10px] text-muted-foreground">
+                  {PROJECT_ORDER_OPTIONS.find(
+                    (option) => option.id === (options.projectsOrder ?? "manual")
+                  )?.description}
                 </div>
               </div>
             )}
@@ -676,20 +581,100 @@ export function WorkspaceOptionsMenu({
           >
             <span>Card display</span>
             <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+              <span>{cardLayoutLabel}</span>
               <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </span>
           </div>
           {openSubmenu === "cardDisplay" && (
-            <div className="absolute left-full top-0 ml-1 w-48 rounded-lg border border-border bg-popover p-1 shadow-xl z-10">
-              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">Card layout</div>
-              <button
-                onClick={() => setOpenSubmenu(null)}
-                className="w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] bg-accent text-foreground font-medium cursor-pointer"
-              >
-                <span>Detailed</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              </button>
-              <div className="px-2 py-1 text-[10px] text-muted-foreground">Compact via Settings → Appearance</div>
+            <div
+              data-workspace-board-preserve-open=""
+              className="absolute left-full top-0 ml-1 w-56 rounded-lg border border-border bg-popover p-1 shadow-xl z-10 max-h-[60vh] overflow-y-auto"
+            >
+              {newCardStyle ? (
+                <>
+                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">
+                    Show properties
+                  </div>
+                  {propertyOptions.map((option) => {
+                    const checked = option.properties.every((property) =>
+                      worktreeCardProperties.includes(property)
+                    );
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={checked}
+                        data-card-property-option={option.id}
+                        onClick={() => handleCardPropertyChange(option.properties, !checked)}
+                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${checked ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
+                      >
+                        <span>{option.label}</span>
+                        {checked ? <span className="text-[10px]">✓</span> : null}
+                      </button>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">
+                    Card layout
+                  </div>
+                  {CARD_LAYOUT_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={cardLayout === option.id}
+                      data-card-layout-option={option.id}
+                      onClick={() => handleCardLayoutChange(option.id)}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${cardLayout === option.id ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
+                    >
+                      <span>{option.label}</span>
+                      {cardLayout === option.id ? <span className="w-1.5 h-1.5 rounded-full bg-primary" /> : null}
+                    </button>
+                  ))}
+                  <div className="h-px my-1 bg-border" />
+                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">
+                    Show properties{cardLayout === "compact" ? " · Hover" : visiblePropertyCount > 0 ? ` · ${visiblePropertyCount}` : ""}
+                  </div>
+                  {PROPERTY_OPTIONS.map((option) => {
+                    const checked = worktreeCardProperties.includes(option.id);
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={checked}
+                        data-card-property-option={option.id}
+                        onClick={() => handleCardPropertyChange([option.id], !checked)}
+                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${checked ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
+                      >
+                        <span>{option.label}</span>
+                        {checked ? <span className="text-[10px]">✓</span> : null}
+                      </button>
+                    );
+                  })}
+                  <div className="h-px my-1 bg-border" />
+                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase">
+                    Agent activity layout
+                  </div>
+                  {AGENT_ACTIVITY_DISPLAY_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={agentActivityDisplayMode === option.id}
+                      data-agent-activity-option={option.id}
+                      onClick={() => setAgentActivityDisplayMode(option.id)}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-[11px] cursor-pointer ${agentActivityDisplayMode === option.id ? "bg-accent text-foreground font-medium" : "text-popover-foreground hover:bg-accent"}`}
+                    >
+                      <span>{option.label}</span>
+                      {agentActivityDisplayMode === option.id ? <span className="w-1.5 h-1.5 rounded-full bg-primary" /> : null}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -746,42 +731,33 @@ export function WorkspaceOptionsMenu({
           checked={options.hideCliCreated}
           onChange={(hideCliCreated) => onOptionsChange({ ...options, hideCliCreated })}
         />
+        {showOtherClientFilter ? (
+          <FilterToggleRow
+            icon={<MonitorSmartphone className="w-3.5 h-3.5" />}
+            label="Hide other-client workspaces"
+            ariaLabel="Hide workspaces created from other Hydra clients on shared remote servers"
+            checked={options.hideWorkspacesFromOtherDevices ?? false}
+            onChange={(hideWorkspacesFromOtherDevices) =>
+              onOptionsChange({ ...options, hideWorkspacesFromOtherDevices })
+            }
+          />
+        ) : null}
         <FilterToggleRow
           icon={<GitCommitHorizontal className="w-3.5 h-3.5" />}
           label="Hide detached HEAD"
           checked={options.hideDetachedHead}
           onChange={(hideDetachedHead) => onOptionsChange({ ...options, hideDetachedHead })}
         />
-        <FilterToggleRow
-          icon={<Server className="w-3.5 h-3.5" />}
-          label="Hide other devices"
-          ariaLabel="Hide workspaces created on other devices"
-          checked={options.hideWorkspacesFromOtherDevices ?? false}
-          onChange={(hideWorkspacesFromOtherDevices) =>
-            onOptionsChange({ ...options, hideWorkspacesFromOtherDevices })
-          }
-        />
 
         <div className="flex items-center justify-between gap-2 px-2 pt-1">
-          {countActiveWorkspaceFilters(options) > 0 ? (
+          {hasAnyFilter ? (
           <button
             type="button"
-            onClick={() =>
-              onOptionsChange({
-                ...options,
-                hideSleeping: false,
-                hideDefaultBranch: false,
-                hideAutomationCreated: false,
-                hideCliCreated: false,
-                hideDetachedHead: false,
-                alwaysShowDefaultBranch: false,
-                hideWorkspacesFromOtherDevices: false,
-                filterProjectIds: [],
-              })
-            }
+            data-sidebar-reset-filters=""
+            onClick={handleResetFilters}
             className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
-            Clear filters
+            Reset filters
           </button>
           ) : <span />}
           {onAddProject ? (

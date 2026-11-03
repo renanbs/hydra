@@ -5182,7 +5182,10 @@
           "current": "現在",
           "searchPlaceholder": "ワークツリーを検索…",
           "empty": "一致する対象ワークツリーがありません。",
-          "setParentFor": "次のワークツリーの親を設定"
+          "setParentFor": "次のワークツリーの親を設定",
+          "searchLabel": "ワークスペースを検索",
+          "listLabel": "親に設定できるワークツリー",
+          "removeParent": "親リンクを解除"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "ブランチ"

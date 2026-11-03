@@ -17,23 +17,6 @@
    "note": "SidebarNav agora assina useTranslation() e passa aria-label/'Search' por translate(), que aplica pseudoLocalizeString; a nav reage a troca de locale sem remontagem."
   },
   {
-   "id": "D01-032",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/SidebarFooter.tsx:81",
-    "src/components/sidebar/SidebarFooter.tsx:83-89",
-    "src/components/sidebar/SidebarFooter.tsx:95-104",
-    "src/components/sidebar/WorktreeSidebar.tsx:966-972",
-    "src/components/sidebar/SidebarFooter.parity.test.tsx:22-46"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "data-workspace-board-preview no gatilho durante o drag de card para o board",
-    "variante secondary (destaque) quando workspaceBoardDragPreviewOpen"
-   ],
-   "note": "Gatilho Kanban existe no rodapé (aria-label, tooltip dinâmico, data-workspace-board-trigger, aria-pressed, variant secondary ao abrir, toggle); falta só o estado de preview por drag."
-  },
-  {
    "id": "D03a-011",
    "status": "parity",
    "evidence": [
@@ -389,52 +372,6 @@
    "note": "Indicador de soltura dedicado (bolinhas + linha) pintado como dropIndicator do viewport."
   },
   {
-   "id": "D03b-025",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:269-272",
-    "src/components/sidebar/WorktreeSidebar.tsx:563-566",
-    "src/components/sidebar/WorktreeSidebar.tsx:923-925",
-    "src/components/sidebar/project-header-drop.ts:25-58"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "sessao de arrasto por ponteiro (createProjectHeaderDragSession/useRepoHeaderDrag) com limiar de 4px e preview flutuante",
-    "qualificacao de alvo: handle data-repo-header-drag-handle e exclusao de data-repo-header-actions"
-   ],
-   "note": "Hydra inicia drag via HTML5 draggable no header inteiro e comita reordenacao plana."
-  },
-  {
-   "id": "D03b-027",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/project-header-drop.ts:130-162",
-    "src/components/sidebar/project-header-drop.ts:185-200",
-    "src/components/sidebar/SectionHeader.tsx:276-281"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers",
-    "preview por limites de secao: data-repo-header-section-end sem produtor"
-   ],
-   "note": "Helpers medidos do Orca estao portados mas mortos; o affordance observavel e a linha de drop nativa do header."
-  },
-  {
-   "id": "D03b-028",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/project-header-drop.ts:61-107",
-    "src/components/sidebar/project-header-drop.ts:205-220",
-    "src/components/sidebar/WorktreeSidebar.tsx:577-593"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers",
-    "commit por bucket de grupo com ranks/tabOrder por irmaos"
-   ],
-   "note": "Reordenar cabecalho funciona, mas o commit e global e ignora os buckets/ranks de grupo do Orca."
-  },
-  {
    "id": "D03b-042",
    "status": "parity",
    "evidence": [
@@ -473,20 +410,6 @@
    "backend": [],
    "missing_behaviors": [],
    "note": "O indicador alinha ao placeholderTop-3 do layout replayado e e pintado pelo WorktreeDragDropIndicator."
-  },
-  {
-   "id": "D03b-045",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:40-46",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:104-124",
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:29"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar"
-   ],
-   "note": "Soltar sobre lane do board ja atribui status; falta a tolerancia de 6px para pointerup sem frame final."
   },
   {
    "id": "D04b-006",
@@ -797,26 +720,6 @@
    "note": "Rename trims and ignores blanks, color/icon updates are applied, and every edit commits through setWorkspaceStatuses plus workspace-board-actions telemetry."
   },
   {
-   "id": "D08-040",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:55-66",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:84-104",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:112-137",
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:164",
-    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:44-49",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:34-47",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:59-68",
-    "src/components/sidebar/worktree-list/drag/worktree-pointer-board-drop.parity.test.tsx:323-395"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "Traduz índices virtuais/filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex)",
-    "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
-   ],
-   "note": "Sidebar drag now resolves board lanes/pin strip via a registered open board, paints lane highlight + indicator and commits status/pin; index translation and batch metadata updates remain absent."
-  },
-  {
    "id": "D09-025",
    "status": "parity",
    "evidence": [
@@ -885,63 +788,103 @@
    "note": "Veredito obsoleto: a expansao e chamada por getReorderDraggedIds no pointer drag vivo e a lista pintada ja tem multi-selecao de cards."
   },
   {
-   "id": "D15b-002",
-   "status": "partial",
+   "id": "D08-040",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:108",
-    "src/components/sidebar/visible-worktree-filters.ts:62-73",
-    "src/components/sidebar/workspace-board/workspace-board-worktrees.parity.test.ts:208-217",
-    "src/components/sidebar/visible-worktrees.ts:301-304"
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
    ],
-   "backend": [],
-   "missing_behaviors": [
-    "Amostragem re-chaveada por epoch clock (getAgentStatusEpochNow/agentStatusEpoch) em vez de Date.now()",
-    "Sentinela 0 que desliga a amostra de agentes quando showSleepingWorkspaces esta ativo",
-    "Memo do conjunto de ids vivos compartilhado entre board e lista"
-   ],
-   "note": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome."
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
   },
   {
-   "id": "D15b-011",
-   "status": "partial",
+   "id": "D03b-025",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-53",
-    "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:20-38"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
-   "backend": [],
-   "missing_behaviors": [
-    "Constantes exportadas WORKSPACE_TOP_CHROME_HEIGHT = 36 e STATUS_BAR_RESERVE_HEIGHT = 24",
-    "Modulo de metricas compartilhado para paineis portalizados (o sheet mede o rect do sidebar em vez de usar as constantes)"
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
-   "note": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta."
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-045",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D01-032",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
   },
   {
    "id": "D04a-088",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-compact-agents.tsx:63-66",
-    "src/components/sidebar/worktree-card-compact-agents.tsx:101",
-    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:13-18",
-    "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:44-50"
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
    ],
-   "backend": [],
-   "missing_behaviors": [
-    "Revelação do card no próximo frame (rAF) em useLayoutEffect, só em expansão genuína (o toggle não revela o card após abrir)"
-   ],
-   "note": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta."
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
   },
   {
    "id": "D04a-110",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/shared/worktree/card-properties.ts:45-58",
-    "src/shared/ui-chrome-types.ts:28-33"
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
    ],
-   "backend": [],
-   "missing_behaviors": [
-    "Catálogo de rótulos traduzidos por propriedade (equivalente a PROPERTY_OPTIONS com translate), consumível pelo menu de opções"
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-002",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
    ],
-   "note": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade."
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-011",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
   }
  ]
 }

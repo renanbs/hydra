@@ -21,6 +21,7 @@ export function commitWorktreePointerDrop(args: {
     reorderDraggedIds: drag.reorderDraggedIds,
     sourceGroupKey: drag.sourceGroupKey,
     executionHostId: drag.executionHostId,
+    latestSectionDropTarget: drag.latestSectionDropTarget,
     requireInsideSidebarBand: true,
     onBoardTarget: () => {
       drag.boardPreviewCommitted = true

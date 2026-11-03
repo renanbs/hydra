@@ -146,17 +146,21 @@ export interface GroupSectionHeaderProps {
   /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
   sectionEnd?: number;
   className?: string;
+  /** Pointer session that reorders project-group headers (D03b-030…033). */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  /** Parent bucket (`root` / `parent:<groupId>`) this header reorders inside. */
+  dragBucket?: string;
+  /** Index among the bucket's group headers, in the row model. */
+  dragIndex?: number;
 }
 
 /**
  * Orca `getRepoHeaderCreateState`: the header `+` is disabled while the project's
- * host cannot accept a workspace (SSH target not connected).
+ * host cannot accept a workspace (SSH target not connected). The derivation lives
+ * in `repo-header-create-state.ts`; this surface only paints its output.
  */
-export interface RepoHeaderCreateState {
-  disabled: boolean;
-  tooltip: string;
-  ariaLabel: string;
-}
+export type { RepoHeaderCreateState } from "./repo-header-create-state";
+import type { RepoHeaderCreateState } from "./repo-header-create-state";
 
 export interface RepoSectionHeaderProps {
   variant: "repo" | "project";
@@ -186,6 +190,12 @@ export interface RepoSectionHeaderProps {
   sectionEnd?: number;
   className?: string;
   inGroup?: boolean;
+  /** Pointer session that reorders repo headers (D03b-025…029). */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  /** Drag bucket (`group:<id>` / `ungrouped`) this header reorders inside. */
+  dragBucket?: string;
+  /** Index among the bucket's repo headers, in the row model. */
+  dragIndex?: number;
 }
 
 export type SectionHeaderProps = GroupSectionHeaderProps | RepoSectionHeaderProps;
@@ -213,7 +223,13 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   className = "",
   createWorkspaceDisabledReason,
   folderPathStatus,
+  onHeaderPointerDown,
+  dragBucket,
+  dragIndex,
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
+  // Why: the pointer session is the only thing that can reorder a group header,
+  // so its presence arms both the handle attributes and the grab cursor.
+  const isDraggable = Boolean(onHeaderPointerDown);
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -238,16 +254,24 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={`Project Group ${group.name}`}
       data-section-header-id={sectionKey}
+      data-project-group-header-id={group.id}
+      data-project-group-header-bucket={dragBucket}
+      data-project-group-header-index={dragIndex}
       data-project-group-header-section-end={sectionEnd}
+      data-project-group-header-drag-handle={isDraggable ? "" : undefined}
       data-repo-header-color={badgeColor ? resolveRepoHeaderColor(badgeColor) : undefined}
       className={cn(
-        "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
+        "group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all select-none text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
+        // Why: no row-level grab — only the title surface below shows the hand;
+        // actions use cursor-pointer so … / + never look reorderable.
+        !isDraggable && "cursor-pointer",
         isDropTarget && "bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/40",
         className
       )}
       style={{
         paddingLeft: getProjectGroupHeaderPaddingLeft(depth),
       }}
+      onPointerDown={onHeaderPointerDown}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -260,7 +284,13 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-1.5 self-stretch">
+      <div
+        data-project-group-header-drag-handle={isDraggable ? "" : undefined}
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-1.5 self-stretch",
+          isDraggable && "cursor-grab active:cursor-grabbing"
+        )}
+      >
         <div
           className="flex size-4 shrink-0 items-center justify-center rounded-[4px] text-foreground"
           style={badgeColor ? { color: resolveRepoHeaderColor(badgeColor) } : undefined}
@@ -374,7 +404,13 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   sectionEnd,
   className = "",
   inGroup = false,
+  onHeaderPointerDown,
+  dragBucket,
+  dragIndex,
 }: Omit<RepoSectionHeaderProps, "variant">): React.JSX.Element {
+  // Why: the pointer session is what actually reorders the header; the grab
+  // cursor and handle attrs only advertise what can currently happen.
+  const isDraggable = Boolean(onHeaderPointerDown);
   const handleClick = useCallback(() => {
     onSelectProject?.(project);
     onToggleCollapse();
@@ -435,14 +471,21 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         aria-expanded={!isCollapsed}
         aria-label={`Project ${project.displayName || project.name}`}
         data-repo-header-id={project.id}
+        data-repo-header-drag-handle={isDraggable ? "" : undefined}
+        data-repo-header-bucket={dragBucket}
+        data-repo-header-index={dragIndex}
         data-repo-header-section-end={sectionEnd}
         data-repo-header-color={resolveRepoHeaderColor(project.color)}
-        className="flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
+        className={cn(
+          "flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground",
+          !isDraggable && "cursor-pointer"
+        )}
         style={{
           paddingLeft: inGroup
             ? getProjectGroupHeaderPaddingLeft(depth || 1)
             : WORKTREE_SECTION_HEADER_PADDING_LEFT,
         }}
+        onPointerDown={onHeaderPointerDown}
         onClick={handleClick}
         onKeyDown={(e) => {
           // Orca `shouldIgnoreRepoHeaderToggle`: Enter on the menu/create trigger
@@ -455,7 +498,13 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         }}
         onContextMenu={handleContext}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 self-stretch">
+        <div
+          data-repo-header-drag-handle={isDraggable ? "" : undefined}
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-1.5 self-stretch",
+            isDraggable && "cursor-grab active:cursor-grabbing"
+          )}
+        >
           <div
             className={cn(
               "flex size-4 shrink-0 items-center justify-center rounded-[4px]",

@@ -229,15 +229,14 @@
     "components/sidebar/SidebarHeader.tsx:125-127"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "container com ref activityOptionsTarget ao lado dos botões de ação do cabeçalho",
-     "injeção dos filtros de agentes (SidebarAgentsList) dentro do cabeçalho",
-     "desmontagem do alvo no modo workspaces"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) createPortal/Portal em src/components/sidebar -> 0 ocorrências; (2) nenhum div-alvo no SidebarHeader (src/components/sidebar/SidebarHeader.tsx:51-170); (3) os filtros de agentes renderizam dentro da própria lista (src/components/sidebar/SidebarAgentsList.tsx:52, :66-90); (4) nenhum hook de portal; (5) src/App.tsx sem alvo de header."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -401,19 +400,14 @@
     "components/sidebar/SidebarNav.tsx:123"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-task-actions.ts:35"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "botão 'Tasks' com ícone List e target data-contextual-tour-target='sidebar-tasks'",
-     "prefetch de work items em pointerEnter/focus",
-     "openTaskPage() ao clicar",
-     "habilitado com zero repositórios",
-     "ocultar via menu de contexto (settings.showTasksButton = false)"
-    ],
-    "notes": "Busca em 5 passos: (1) 'SidebarTaskNavButton' -> 0 ocorrências em src; (2) labels 'Tasks'/'Open GitHub tasks'/'Open Jira tasks' -> 0 em src/components/sidebar (existem no census-v3 static_sidebar); (3) o store porta openTaskPage (src/store/slices/ui/ui-slice-task-actions.ts:35) e o registry de work items (shared/work-items.ts:2), mas nenhum componente .tsx chama openTaskPage; (4) sem comando Tauri (sem ponte gh/linear/jira); (5) SidebarNav do Hydra não tem a entrada (SidebarNav.tsx:1-23). Escapes: 'Open GitHub tasks'/'Open Jira tasks' do census = mesma capability."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -425,15 +419,14 @@
     "components/sidebar/SidebarTaskNavButton.tsx:186-231"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "botões TaskProviderShortcut para provedores visíveis (Github/Gitlab/Linear/Jira)",
-     "abertura da página de tarefas filtrada por taskSource",
-     "posicionamento fora do button pai com tabIndex 0"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) 'TaskProviderShortcut' -> 0; (2) ícones/labels Github/Gitlab/Linear/Jira em src/components/sidebar -> 0; (3) nenhuma função de provider no sidebar; (4) sem comandos Tauri de provider; (5) census-v3 static_sidebar confirma 'Open GitHub tasks'/'Open Jira tasks' no runtime do Orca, ausentes no Hydra. Escape do runtime coberto por esta linha."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -470,18 +463,14 @@
     "components/sidebar/SidebarNav.tsx:124-152"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-view-actions.ts:82"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "botão Files/'Artifacts' condicionado a settings.showArtifactsButton",
-     "estilo ativo + aria-current='page' quando activeView === 'artifacts'",
-     "openArtifactsPage() ao clicar",
-     "ocultar via updateSettings({ showArtifactsButton: false })"
-    ],
-    "notes": "Busca em 5 passos: (1-2) sem componente e sem label 'Artifacts' em src/components/sidebar; (3) o store porta openArtifactsPage (ui-slice-view-actions.ts:82) mas nenhum .tsx o chama e não existe página de artifacts montada; (4) sem comando Tauri; (5) SidebarNav do Hydra só tem Search (SidebarNav.tsx:1-23)."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -497,18 +486,14 @@
     "components/sidebar/SidebarNav.tsx:153-181"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-view-actions.ts:49"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "botão BookOpen/'Skills' condicionado a settings.showSkillsButton",
-     "estilo ativo + aria-current='page' quando activeView === 'skills'",
-     "openSkillsPage() ao clicar",
-     "ocultar via updateSettings({ showSkillsButton: false })"
-    ],
-    "notes": "Busca em 5 passos: (1-2) sem componente/label 'Skills' no sidebar; (3) openSkillsPage existe no store (ui-slice-view-actions.ts:49) sem consumidor .tsx e sem página montada (existe só src/components/skills/skill-update-run-store.ts); (4) sem comando Tauri associado ao botão; (5) SidebarNav sem a entrada."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -524,18 +509,14 @@
     "components/sidebar/SidebarNav.tsx:182-210"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/settings/appearance-sidebar-search.ts:146-150"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "botão CalendarClock/'Automations' condicionado a settings.showAutomationsButton",
-     "estilo ativo + aria-current='page' quando activeView === 'automations'",
-     "openAutomationsPage() ao clicar",
-     "ocultar via updateSettings({ showAutomationsButton: false })"
-    ],
-    "notes": "Busca em 5 passos: (1) 'SidebarAutomations'/'openAutomationsPage' em src/components/sidebar -> 0; (2) label 'Automations' no sidebar -> 0 (só entradas de busca de settings dizendo 'Show Automations Button at the top of the left sidebar', appearance-sidebar-search.ts:146-150); (3) sem ação de view para automations; (4) sem comando Tauri; (5) census-v3 static_sidebar tem 'Automations' + data-state=closed (context-menu-trigger) no Orca, ausente no Hydra. Escape do runtime coberto por esta linha."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -577,15 +558,14 @@
     "components/sidebar/sidebar-nav-controls.tsx:1-15"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "ContextMenuContent + ContextMenuItem com ícone EyeOff",
-     "texto localizado 'Hide from sidebar'",
-     "callback onHide ao selecionar"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) 'sidebar-nav-controls' -> 0 ocorrências em src; (2) string 'Hide from sidebar' -> 0; (3) nenhum menu de contexto de itens de nav (os únicos context menus do sidebar são de projeto/worktree, WorktreeSidebar.tsx:865+); (4) sem backend; (5) SidebarNav do Hydra não tem itens ocultáveis (SidebarNav.tsx:1-23)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -713,21 +693,14 @@
     "components/sidebar/SidebarToolbar.tsx:80-120"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/SidebarFooter.tsx:81",
-     "src/components/sidebar/SidebarFooter.tsx:83-89",
-     "src/components/sidebar/SidebarFooter.tsx:95-104",
-     "src/components/sidebar/WorktreeSidebar.tsx:966-972",
-     "src/components/sidebar/SidebarFooter.parity.test.tsx:22-46"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "data-workspace-board-preview no gatilho durante o drag de card para o board",
-     "variante secondary (destaque) quando workspaceBoardDragPreviewOpen"
-    ],
-    "notes": "Gatilho Kanban existe no rodapé (aria-label, tooltip dinâmico, data-workspace-board-trigger, aria-pressed, variant secondary ao abrir, toggle); falta só o estado de preview por drag.",
-    "note": "Gatilho Kanban existe no rodapé (aria-label, tooltip dinâmico, data-workspace-board-trigger, aria-pressed, variant secondary ao abrir, toggle); falta só o estado de preview por drag."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-14"
@@ -744,16 +717,14 @@
     "components/sidebar/SidebarToolbar.tsx:104-108"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "gate hasFeatureInteraction(featureInteractions, 'workspace-board')",
-     "tooltip 'Workspace board moved to the bottom bar' com auto-show pós-hidratação",
-     "persistência orca.workspaceBoardMovedHintSeen.v1 em localStorage",
-     "auto-dismiss em 12s (WORKSPACE_BOARD_MOVED_HINT_DURATION_MS) e fechamento no clique do botão"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1-2) string 'Workspace board moved to the bottom bar' -> 0 em src (presente no census-v3 static_sidebar como span); (3) sem featureInteractions 'workspace-board' (o store tem hasFeatureInteraction/recordFeatureInteraction mas sem esse gate); (4) sem backend; (5) sem botão Kanban para ancorar a dica. Prefs/timer do Orca mapeados (inventory D01-033, coverage.prefs/timers)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -790,15 +761,14 @@
     "components/sidebar/SidebarSettingsHelpMenu.tsx:225-247"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "botão CircleHelp com tooltip 'Help' e aria-expanded",
-     "DropdownMenu side='top' align='start'",
-     "preload assíncrono do módulo SidebarFeedbackDialog em onOpenChange(true)"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) 'SidebarSettingsHelpMenu' -> 0 em src; (2) label 'Help' -> 0 no sidebar (census-v3 static_sidebar: 'Help' [36,1146,24,24]); (3) nenhum import() dinâmico de feedback; (4) n/a; (5) o rodapé do Hydra tem apenas Settings e Reveal (SidebarFooter.tsx:19-44)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -843,16 +813,16 @@
     "components/sidebar/SidebarSettingsHelpMenu.tsx:294-328"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+    ],
     "backend": [
      "EXISTE o comando equivalente: invoke('open_external_url_cmd') -> src-tauri/src/lib.rs:97 (registrado lib.rs e usado em src/components/Landing.tsx:141) — mas nenhum item do sidebar o chama"
     ],
-    "missing_behaviors": [
-     "links Docs/Changelog/GitHub/Discord/X com ícone ExternalLink",
-     "abertura via broadcast externo (Hydra: open_external_url_cmd, já existente)"
-    ],
-    "notes": "Busca em 5 passos: (1-2) labels Docs/Changelog/Discord/X -> 0 em src/components/sidebar; (3) o único consumidor de open_external_url_cmd é Landing.tsx:71/:141; (4) backend já disponível (lib.rs:97), falta a UI; (5) rodapé do Hydra sem menu Help."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -922,17 +892,14 @@
     "components/sidebar/SidebarFeedbackDialog.tsx:357-374"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "modal 'Send Feedback' com atalhos para GitHub Issues/Discord/X",
-     "preenchimento assíncrono de rodapé técnico (versão, OS, arch, shell)",
-     "preservação do texto digitado antes do load",
-     "validação via stripClientEnvironmentFooter para habilitar Send",
-     "scroll com max-h-[calc(100vh-3rem)]"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) 'SidebarFeedbackDialog' -> 0 em src; (2) label 'Send Feedback' -> 0; (3) existe src/components/settings/general-support-search.ts (busca de settings) mas nenhum diálogo de feedback; (4) BACKEND AUSENTE: sem comando de submit; (5) o app tem toast (sonner) e a versão via get_app_version (src-tauri/src/lib.rs:72), mas nenhum consumidor de UI de feedback. Contrato Tauri necessário: ver gaps.md."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -972,18 +939,14 @@
     "components/sidebar/SidebarFeedbackImageAttachments.tsx:1-107"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "limite de 5 imagens (MAX_FEEDBACK_IMAGE_COUNT)",
-     "onPaste no diálogo sem consumir texto não-imagem",
-     "miniaturas com tamanho em bytes + remoção individual",
-     "revogação de object URLs ao desmontar",
-     "aguardar leituras em voo antes de habilitar Send",
-     "rejeitar novas imagens após iniciar a submissão"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
-    "notes": "Busca em 5 passos: (1) 'SidebarFeedbackImageAttachments' -> 0; (2) sem strings de anexo no sidebar; (3) existe infra de imagem no repo (src-tauri Cargo.toml depende de image 0.25, drag nativo em shared/native-file-drop.ts) mas nenhum hook useSidebarFeedbackImages; (4) o blob de imagem para o backend de feedback não existe; (5) sem modal de feedback. Contrato Tauri necessário: ver gaps.md."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1033,24 +996,14 @@
     "components/sidebar/sidebar-host-options.ts:97-154"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:87-98",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:119",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:202-229",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:381-437",
-     "src/store/slices/ui/ui-slice-preference-actions.ts:68-80"
+     "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "trigger com resumo de visibilidade (getSidebarHostVisibilityLabel)",
-     "alternância entre 'All hosts' e seleção múltipla (setWorkspaceHostScope/setVisibleWorkspaceHostIds)",
-     "metadados de presença/saúde por host (getSidebarHostHealthLabel)",
-     "disabled ao tentar desmarcar o último host",
-     "data-workspace-board-preserve-open"
-    ],
-    "notes": "ERRATA: o submenu 'Hosts' existe e esta ligado (buildSidebarHostScopeOptions, resumo getSidebarHostVisibilityLabel, saude por host, toggle All/multiplo) e os writers duplicados foram consolidados (PR9); falta apenas data-workspace-board-preserve-open.",
-    "note": "ERRATA: o submenu 'Hosts' existe e esta ligado (buildSidebarHostScopeOptions, resumo getSidebarHostVisibilityLabel, saude por host, toggle All/multiplo) e os writers duplicados foram consolidados (PR9); falta apenas data-workspace-board-preserve-open."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D01 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
    }
   },
   {

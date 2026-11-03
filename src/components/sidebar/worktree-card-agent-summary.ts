@@ -1,13 +1,31 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: components/sidebar/worktree-card-agent-summary.ts
+import type { AgentDotState } from '../AgentStateDot'
+import { formatAgentTypeLabel } from '../../shared/agent-type-label'
 import { normalizeAgentId } from '../workbench/tab-agent'
-import type { AgentStatusEntry } from '../../store/agent-status-types'
+import type { AgentRowState } from '../../lib/agent-row-decay-state'
+import type { AgentStatusEntry, AgentType } from '../../shared/agent-status-types'
+import { agentRowDotState } from '../../lib/agent-row-dot-state'
+import type {
+  AgentRowLineagePresentation,
+  WorktreeAgentRowSource,
+  WorktreeAgentTab
+} from './worktree-agent-row-types'
 
+/**
+ * UI row shape. Built from the canonical `WorktreeAgentRow` pipeline but kept
+ * structurally permissive because Orca-derived row components also accept
+ * synthetic rows (and their tests construct minimal fixtures).
+ */
 export interface AgentRow {
   paneKey: string
-  agentType?: string
   entry: AgentStatusEntry
-  rowSource?: 'live' | 'retained' | 'subagent' | 'session'
-  status?: AgentStatusEntry['state']
-  state?: AgentStatusEntry['state']
+  agentType?: AgentType
+  tab?: WorktreeAgentTab
+  rowSource?: WorktreeAgentRowSource
+  /** Legacy alias for `state`, read by summary grouping. */
+  status?: AgentRowState
+  state?: AgentRowState
   startedAt?: number
   prompt?: string
   /** Ported identifier: from session or custom rendering info */
@@ -17,19 +35,17 @@ export interface AgentRow {
   /** Original tool run command or custom title */
   terminalTitle?: string
   isDerivedFromTitle?: boolean
+  /** Hydra session backing this row; absent means the pane is gone (inert row). */
+  sessionId?: string
+  activationPaneKey?: string
   childAgentCount?: number
   childAgentsExpanded?: boolean
   onToggleChildAgents?: () => void
-  lineage?: {
-    depth: number
-    isFirstSibling: boolean
-    isLastSibling: boolean
-    childCount: number
-  }
+  lineage?: AgentRowLineagePresentation
 }
 
 /** Port of Orca shared/comparable-agent-rows priority table */
-export function agentStatusOrder(state?: AgentStatusEntry['state']): number {
+export function agentStatusOrder(state?: AgentRowState | 'unknown'): number {
   switch (state) {
     case 'blocked':
     case 'waiting':
@@ -45,89 +61,136 @@ export function agentStatusOrder(state?: AgentStatusEntry['state']): number {
   }
 }
 
-export function summarizeAgents(agents: AgentRow[]): {
-  primaryStatus: AgentStatusEntry['state'] | null
-  statusCounts: Record<string, number>
-  consolidatedLabel: string
-} {
-  const statusCounts: Record<string, number> = {}
-  let firstProxy: string | null = null
+/**
+ * Orca `SUMMARY_STATE_ORDER`: reporting states first, then the two that mean
+ * "we cannot tell", with true idle last. The dots read top-to-bottom as urgency.
+ */
+export const SUMMARY_STATE_ORDER: AgentDotState[] = [
+  'waiting',
+  'blocked',
+  'working',
+  'monitoring',
+  'interrupted',
+  'done',
+  // Why: below every reporting state, above true idle — the pane is still held.
+  'unverifiable',
+  'idle'
+]
 
-  let blockStop = 0
-  let workingStop = 0
-  let idleStop = 0
-  let doneStop = 0
-
-  for (const a of agents) {
-    const st = a.status ?? a.state ?? 'unknown'
-    statusCounts[st] = (statusCounts[st] ?? 0) + 1
-    if (!firstProxy && a.agentType) firstProxy = a.agentType
-    if (agentStatusOrder(st) === 0) blockStop++
-    if (agentStatusOrder(st) === 1) workingStop++
-    if (agentStatusOrder(st) === 2) idleStop++
-    if (agentStatusOrder(st) === 3) doneStop++
+/** Orca `getAgentDotState`: an interrupt wins, otherwise the state (+ monitoring). */
+export function getSummaryAgentDotState(agent: AgentRow): AgentDotState {
+  if (agent.entry.interrupted === true) {
+    return 'interrupted'
   }
-
-  let primaryStatus: AgentStatusEntry['state'] | null = null
-  if (blockStop > 0) primaryStatus = 'blocked'
-  else if (workingStop > 0) primaryStatus = 'working'
-  else if (idleStop > 0) primaryStatus = 'idle'
-  else if (doneStop > 0) primaryStatus = 'done'
-
-  // fallback or pick the first seen status if none fit exact sets
-  if (!primaryStatus) {
-    primaryStatus = (Object.keys(statusCounts)[0] as AgentStatusEntry['state']) || 'unknown'
-  }
-
-  const statusLabels: string[] = []
-  for (const [k, v] of Object.entries(statusCounts)) {
-    if (v > 0) statusLabels.push(`${v} ${k}`)
-  }
-
-  const count = agents.length
-  let consolidatedLabel = ''
-  if (statusLabels.length === 0) {
-    consolidatedLabel = 'No agents'
-  } else if (statusLabels.length === 1) {
-    consolidatedLabel = `${count} ${count === 1 ? 'agent' : 'agents'} ${statusLabels[0].replace(/^\d+\s+/, '')}`
-  } else {
-    consolidatedLabel = `${count} agents: ${statusLabels.join(', ')}`
-  }
-
-  return { primaryStatus, statusCounts, consolidatedLabel }
+  return agentRowDotState((agent.status ?? agent.state ?? agent.entry.state) as AgentRowState, agent.entry.workingMode)
 }
 
-export function buildSummaryAgentGroups(agents: AgentRow[]): Array<{ status: AgentStatusEntry['state']; agents: AgentRow[] }> {
-  const map = new Map<AgentStatusEntry['state'], AgentRow[]>()
-  for (const a of agents) {
-    const ws = a.status ?? a.state ?? 'unknown'
-    if (!map.has(ws)) map.set(ws, [])
-    map.get(ws)!.push(a)
+/** Orca `formatSummaryStateLabel`: the sentence fragment a state contributes. */
+export function formatSummaryStateLabel(state: AgentDotState): string {
+  switch (state) {
+    case 'waiting':
+      return 'waiting'
+    case 'blocked':
+      return 'blocked'
+    case 'interrupted':
+      return 'interrupted'
+    case 'failed':
+      return 'failed'
+    case 'working':
+      return 'working'
+    case 'monitoring':
+      return 'monitoring'
+    case 'done':
+      return 'done'
+    case 'idle':
+      return 'idle'
+    case 'unverifiable':
+      return 'not reporting'
+    case 'permission':
+      return 'needs attention'
   }
-  
-  return [...map.entries()]
-    .sort(([a], [b]) => agentStatusOrder(a) - agentStatusOrder(b))
-    .map(([status, agents]) => ({ status, agents }))
 }
 
-export function selectSummaryGroupIconAgents(agents: AgentRow[], maxCount = 3): AgentRow[] {
-  const sorted = [...agents].sort((a, b) => {
-    const aNorm = normalizeAgentId(a.agentType || a.displayAgent);
-    const bNorm = normalizeAgentId(b.agentType || b.displayAgent);
-    const aCount = agents.filter((x) => normalizeAgentId(x.agentType || x.displayAgent) === aNorm).length;
-    const bCount = agents.filter((x) => normalizeAgentId(x.agentType || x.displayAgent) === bNorm).length;
-    return bCount - aCount;
-  });
-  
-  const out: AgentRow[] = [];
-  const seenTypes = new Set<string>();
-  for (const a of sorted) {
-    const norm = normalizeAgentId(a.agentType || a.displayAgent);
-    if (!seenTypes.has(norm)) {
-      out.push(a);
-      seenTypes.add(norm);
+export interface SummaryAgentGroup {
+  state: AgentDotState
+  agents: AgentRow[]
+}
+
+export function buildSummaryAgentGroups(agents: AgentRow[]): SummaryAgentGroup[] {
+  const groups = new Map<AgentDotState, AgentRow[]>()
+  for (const agent of agents) {
+    const dotState = getSummaryAgentDotState(agent)
+    const group = groups.get(dotState)
+    if (group) {
+      group.push(agent)
+    } else {
+      groups.set(dotState, [agent])
     }
-    if (out.length >= maxCount) break;
   }
-  return out;
+  return SUMMARY_STATE_ORDER.flatMap((state) => {
+    const groupAgents = groups.get(state)
+    return groupAgents ? [{ state, agents: groupAgents }] : []
+  })
+}
+
+/**
+ * The sentence the collapsed summary announces, e.g. `All 3 agents working` or
+ * `3 agents: 2 working, 1 blocked`.
+ */
+export function summarizeAgents(agents: AgentRow[], subjectLabel: string): string {
+  const counts = new Map<AgentDotState, number>()
+  for (const agent of agents) {
+    const dotState = getSummaryAgentDotState(agent)
+    counts.set(dotState, (counts.get(dotState) ?? 0) + 1)
+  }
+  const parts = SUMMARY_STATE_ORDER.flatMap((state) => {
+    const count = counts.get(state) ?? 0
+    if (count === 0) {
+      return []
+    }
+    return `${count} ${formatSummaryStateLabel(state)}`
+  })
+  if (parts.length === 1) {
+    const onlyStatusLabel = parts[0].replace(/^\d+\s+/, '')
+    return agents.length === 1
+      ? `${subjectLabel} ${onlyStatusLabel}`
+      : `All ${subjectLabel} ${onlyStatusLabel}`
+  }
+  return `${subjectLabel}: ${parts.join(', ')}`
+}
+
+/** Orca `summarizeAgentIdentities`: one `Claude working` clause per agent. */
+export function summarizeAgentIdentities(agents: AgentRow[]): string {
+  return agents
+    .map((agent) => {
+      const agentLabel = formatAgentTypeLabel(agent.agentType)
+      const stateLabel = formatSummaryStateLabel(getSummaryAgentDotState(agent))
+      return `${agentLabel} ${stateLabel}`
+    })
+    .join('; ')
+}
+
+/** Orca `selectSummaryGroupIconAgents`: one icon per agent type, most common first. */
+export function selectSummaryGroupIconAgents(agents: AgentRow[], maxCount: number): AgentRow[] {
+  const groups = new Map<string, { agents: AgentRow[]; firstIndex: number }>()
+  agents.forEach((agent, index) => {
+    const key = normalizeAgentId(agent.agentType ?? agent.displayAgent)
+    const group = groups.get(key)
+    if (group) {
+      group.agents.push(agent)
+    } else {
+      groups.set(key, { agents: [agent], firstIndex: index })
+    }
+  })
+  const sortedGroups = [...groups.values()].sort(
+    (a, b) => b.agents.length - a.agents.length || a.firstIndex - b.firstIndex
+  )
+  const selected: AgentRow[] = []
+  for (const group of sortedGroups) {
+    if (selected.length >= maxCount) {
+      break
+    }
+    selected.push(group.agents[0])
+  }
+  return selected
 }

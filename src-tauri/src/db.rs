@@ -85,6 +85,21 @@ pub struct WorktreeMetadataRecord {
     pub linked_linear_issue: Option<String>,
     pub updated_at: i64,
 }
+
+/// D07: durable sleep marker for a workspace. Hydra has no ephemeral VM to
+/// suspend, so the suspend contract is this row: a workspace whose PTYs were
+/// released on purpose survives an app restart and is still known to be asleep.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct WorkspaceSleepStateRecord {
+    /// Workspace path (`Worktree.path` / folder workspace key).
+    pub worktree_path: String,
+    /// Epoch ms at which the workspace was put to sleep.
+    pub suspended_at: i64,
+    /// Opaque JSON the sleep flow wants restored with the marker. `None` when
+    /// the caller persisted only the fact of sleeping.
+    pub payload: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UiLayoutState {
     pub left_sidebar_open: bool,
@@ -721,6 +736,16 @@ impl DatabaseManager {
                  linked_pr INTEGER,
                  linked_linear_issue TEXT,
                  updated_at INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS workspace_sleep_state (
+                 worktree_path TEXT PRIMARY KEY,
+                 suspended_at INTEGER NOT NULL,
+                 payload TEXT
+             );
+             CREATE TABLE IF NOT EXISTS worktree_lineage (
+                 child_path TEXT PRIMARY KEY,
+                 parent_path TEXT NOT NULL,
+                 updated_at INTEGER NOT NULL
              );",
         )
         .map_err(|e| format!("Error running SQLite migrations: {e}"))?;
@@ -1347,6 +1372,63 @@ impl DatabaseManager {
         Ok(())
     }
 
+    /// Persists the sleep marker for one workspace. Upsert so a repeated sleep
+    /// refreshes `suspended_at` instead of failing on the primary key.
+    pub fn set_workspace_sleep_state(
+        &self,
+        worktree_path: &str,
+        payload: Option<&str>,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO workspace_sleep_state (worktree_path, suspended_at, payload)
+             VALUES (?1, ?2, ?3)
+             ON CONFLICT(worktree_path) DO UPDATE SET
+                suspended_at = excluded.suspended_at,
+                payload = excluded.payload",
+            params![worktree_path, now, payload],
+        )
+        .map_err(|e| format!("Error setting workspace sleep state: {e}"))?;
+        Ok(())
+    }
+
+    /// Every persisted sleep marker, oldest first so a boot restore walks them
+    /// in the order the workspaces were put to sleep.
+    pub fn get_workspace_sleep_states(&self) -> Result<Vec<WorkspaceSleepStateRecord>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare(
+                "SELECT worktree_path, suspended_at, payload
+                 FROM workspace_sleep_state
+                 ORDER BY suspended_at ASC",
+            )
+            .map_err(|e| format!("Error preparing workspace sleep state select: {e}"))?;
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok(WorkspaceSleepStateRecord {
+                    worktree_path: row.get(0)?,
+                    suspended_at: row.get(1)?,
+                    payload: row.get(2).ok().flatten(),
+                })
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("Error reading workspace sleep states: {e}"))
+    }
+
+    /// Drops the marker on wake. Deleting an absent row is a successful no-op,
+    /// so a wake that races a second wake never fails.
+    pub fn clear_workspace_sleep_state(&self, worktree_path: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "DELETE FROM workspace_sleep_state WHERE worktree_path = ?1",
+            params![worktree_path],
+        )
+        .map_err(|e| format!("Error clearing workspace sleep state: {e}"))?;
+        Ok(())
+    }
+
     /// Records how a worktree came to exist (Orca `WorktreeMeta.createdAt` /
     /// `createdWithAgent`). Either field makes the worktree `orca-managed` and
     /// therefore visible regardless of the `external` visibility policy (Orca
@@ -1401,6 +1483,101 @@ impl DatabaseManager {
         .map_err(|e| format!("Error setting worktree provenance kind: {e}"))?;
         Ok(())
     }
+    /// Maps `child_path -> parent_path` for the whole sidebar hierarchy.
+    ///
+    /// A separate table (not a `worktree_metadata` column) because the edge is
+    /// optional per worktree, changes independently of the card metadata, and a
+    /// child must be able to point at any other worktree path.
+    pub fn get_all_worktree_lineage(&self) -> Result<std::collections::HashMap<String, String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT child_path, parent_path FROM worktree_lineage")
+            .map_err(|e| format!("Error preparing worktree lineage select: {e}"))?;
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(|e| format!("Query error: {e}"))?;
+        let mut map = std::collections::HashMap::new();
+        for row in rows.flatten() {
+            map.insert(row.0, row.1);
+        }
+        Ok(map)
+    }
+
+    /// Upserts one parent edge. Bound parameters keep hostile paths literal.
+    pub fn set_worktree_lineage(&self, child_path: &str, parent_path: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO worktree_lineage (child_path, parent_path, updated_at)
+             VALUES (?1, ?2, ?3)
+             ON CONFLICT(child_path) DO UPDATE SET
+                parent_path = excluded.parent_path,
+                updated_at = excluded.updated_at",
+            params![child_path, parent_path, now],
+        )
+        .map_err(|e| format!("Error setting worktree lineage: {e}"))?;
+        Ok(())
+    }
+
+    /// Removes one parent edge. Returns whether a row existed, so the command
+    /// can stay idempotent without pretending an unknown child was cleared.
+    pub fn clear_worktree_lineage(&self, child_path: &str) -> Result<bool, String> {
+        let conn = self.conn.lock();
+        let affected = conn
+            .execute(
+                "DELETE FROM worktree_lineage WHERE child_path = ?1",
+                params![child_path],
+            )
+            .map_err(|e| format!("Error clearing worktree lineage: {e}"))?;
+        Ok(affected > 0)
+    }
+
+    /// Deletes every persisted agent session bound to one worktree path.
+    /// Messages follow via the FK cascade. Returns the removed session ids so
+    /// the caller can close their live PTYs first.
+    pub fn delete_sessions_for_project_path(&self, project_path: &str) -> Result<Vec<String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT id FROM sessions WHERE project_path = ?1")
+            .map_err(|e| format!("Error preparing session purge: {e}"))?;
+        let ids: Vec<String> = stmt
+            .query_map(params![project_path], |row| row.get::<_, String>(0))
+            .map_err(|e| format!("Query error: {e}"))?
+            .flatten()
+            .collect();
+        drop(stmt);
+        // Delete children explicitly: legacy databases may predate the FK
+        // cascade, and a forgotten workspace must not leave orphan messages.
+        for session_id in &ids {
+            conn.execute(
+                "DELETE FROM messages WHERE session_id = ?1",
+                params![session_id],
+            )
+            .map_err(|e| format!("Error purging session messages: {e}"))?;
+        }
+        conn.execute(
+            "DELETE FROM sessions WHERE project_path = ?1",
+            params![project_path],
+        )
+        .map_err(|e| format!("Error purging sessions: {e}"))?;
+        Ok(ids)
+    }
+
+    /// Removes the sidebar metadata row for a forgotten workspace (display
+    /// name, notes, pins, provenance). Returns whether a row existed.
+    pub fn delete_worktree_metadata(&self, worktree_path: &str) -> Result<bool, String> {
+        let conn = self.conn.lock();
+        let affected = conn
+            .execute(
+                "DELETE FROM worktree_metadata WHERE worktree_path = ?1",
+                params![worktree_path],
+            )
+            .map_err(|e| format!("Error deleting worktree metadata: {e}"))?;
+        Ok(affected > 0)
+    }
+
     #[cfg(test)]
     pub fn new_in_memory() -> Result<Self, String> {
         let conn = Connection::open_in_memory().map_err(|e| format!("Error opening SQLite in memory: {e}"))?;
@@ -1465,6 +1642,16 @@ impl DatabaseManager {
                  linked_issue INTEGER,
                  linked_pr INTEGER,
                  linked_linear_issue TEXT,
+                 updated_at INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS workspace_sleep_state (
+                 worktree_path TEXT PRIMARY KEY,
+                 suspended_at INTEGER NOT NULL,
+                 payload TEXT
+             );
+             CREATE TABLE IF NOT EXISTS worktree_lineage (
+                 child_path TEXT PRIMARY KEY,
+                 parent_path TEXT NOT NULL,
                  updated_at INTEGER NOT NULL
              );"
         )
@@ -1957,6 +2144,158 @@ mod tests {
         db.set_worktree_flags(wt_path, Some(false), None).expect("unpin");
         let after_flags = db.get_worktree_metadata(wt_path).expect("query after flags").expect("record exists");
         assert_eq!(after_flags.provenance_kind.as_deref(), Some("created-by-cli"));
+    }
+
+    #[test]
+    fn test_workspace_sleep_state_roundtrip_and_clear() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let first = "/home/renan/src/hydra/.worktrees/sleep-a";
+        let second = "/home/renan/src/hydra/.worktrees/sleep-b";
+
+        assert!(db.get_workspace_sleep_states().expect("initial states").is_empty());
+
+        db.set_workspace_sleep_state(first, Some(r#"{"reason":"manual-sleep"}"#))
+            .expect("set first");
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        db.set_workspace_sleep_state(second, None).expect("set second");
+
+        let states = db.get_workspace_sleep_states().expect("read states");
+        assert_eq!(states.len(), 2);
+        assert_eq!(states[0].worktree_path, first, "oldest sleep comes first");
+        assert_eq!(
+            states[0].payload.as_deref(),
+            Some(r#"{"reason":"manual-sleep"}"#)
+        );
+        assert!(states[0].suspended_at > 0);
+        assert_eq!(states[1].worktree_path, second);
+        assert_eq!(states[1].payload, None);
+        assert!(states[1].suspended_at >= states[0].suspended_at);
+
+        // A repeated sleep refreshes the timestamp and payload in place.
+        db.set_workspace_sleep_state(first, Some(r#"{"reason":"retry"}"#))
+            .expect("refresh first");
+        let refreshed = db.get_workspace_sleep_states().expect("read refreshed");
+        assert_eq!(refreshed.len(), 2, "upsert must not duplicate the row");
+        let first_row = refreshed
+            .iter()
+            .find(|row| row.worktree_path == first)
+            .expect("first row");
+        assert_eq!(first_row.payload.as_deref(), Some(r#"{"reason":"retry"}"#));
+
+        db.clear_workspace_sleep_state(first).expect("clear first");
+        let after_clear = db.get_workspace_sleep_states().expect("read after clear");
+        assert_eq!(after_clear.len(), 1);
+        assert_eq!(after_clear[0].worktree_path, second);
+
+        // Wake is idempotent: clearing an absent marker succeeds.
+        db.clear_workspace_sleep_state(first).expect("clear missing");
+        db.clear_workspace_sleep_state("/never/slept").expect("clear unknown");
+        assert_eq!(db.get_workspace_sleep_states().expect("final states").len(), 1);
+    }
+
+    #[test]
+    fn test_worktree_lineage_roundtrip_overwrite_and_clear() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let child = "/home/renan/src/hydra/.worktrees/child";
+        let parent = "/home/renan/src/hydra/.worktrees/parent";
+        let grandparent = "/home/renan/src/hydra/.worktrees/grandparent";
+
+        assert!(db.get_all_worktree_lineage().expect("empty lineage").is_empty());
+
+        db.set_worktree_lineage(child, parent).expect("set parent");
+        assert_eq!(
+            db.get_all_worktree_lineage().expect("lineage after set").get(child),
+            Some(&parent.to_string())
+        );
+
+        // The child_path primary key makes a second write an overwrite, never a
+        // duplicate row.
+        db.set_worktree_lineage(child, grandparent).expect("overwrite parent");
+        let lineage = db.get_all_worktree_lineage().expect("lineage after overwrite");
+        assert_eq!(lineage.len(), 1);
+        assert_eq!(lineage.get(child), Some(&grandparent.to_string()));
+
+        assert!(db.clear_worktree_lineage(child).expect("clear existing"));
+        assert!(db.get_all_worktree_lineage().expect("lineage after clear").is_empty());
+
+        // Idempotent clear: a missing edge is not an error and reports `false`.
+        assert!(!db.clear_worktree_lineage(child).expect("clear missing"));
+    }
+
+    #[test]
+    fn test_worktree_lineage_paths_are_bound_parameters() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let evil_child = "x'); DROP TABLE worktree_lineage;--";
+        let evil_parent = "p'); DELETE FROM worktree_lineage;--";
+
+        db.set_worktree_lineage(evil_child, evil_parent).expect("set hostile paths");
+        let lineage = db.get_all_worktree_lineage().expect("lineage after hostile write");
+        assert_eq!(lineage.get(evil_child), Some(&evil_parent.to_string()));
+
+        // A clean edge still writes after the hostile one, proving the table and
+        // the statement survived.
+        db.set_worktree_lineage("/a", "/b").expect("set clean path");
+        assert_eq!(
+            db.get_all_worktree_lineage().expect("lineage after clean write").get("/a"),
+            Some(&"/b".to_string())
+        );
+    }
+
+    #[test]
+    fn test_delete_sessions_for_project_path_purges_only_that_path() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let doomed = "/srv/worktrees/forgotten";
+        let kept = "/srv/worktrees/kept";
+        for (id, path) in [("s-1", doomed), ("s-2", doomed), ("s-3", kept)] {
+            db.upsert_session(&DbSessionRecord {
+                id: id.to_string(),
+                project_path: path.to_string(),
+                title: id.to_string(),
+                branch: "main".to_string(),
+                agent_name: "bash".to_string(),
+                executable: "bash".to_string(),
+                created_at: 1,
+                updated_at: 1,
+            })
+            .expect("insert session");
+        }
+        db.save_message("s-1", "user", "hello").expect("save message");
+
+        let mut removed = db.delete_sessions_for_project_path(doomed).expect("purge path");
+        removed.sort();
+        assert_eq!(removed, vec!["s-1".to_string(), "s-2".to_string()]);
+
+        let remaining = db.list_sessions(None).expect("list remaining");
+        assert_eq!(remaining.len(), 1);
+        assert_eq!(remaining[0].id, "s-3");
+        assert!(
+            db.list_messages("s-1").expect("messages cascade").is_empty(),
+            "messages of a purged session must not survive"
+        );
+
+        // Idempotent: a second purge removes nothing and still succeeds.
+        assert!(db.delete_sessions_for_project_path(doomed).expect("purge again").is_empty());
+    }
+
+    #[test]
+    fn test_delete_worktree_metadata_is_scoped_and_idempotent() {
+        let db = DatabaseManager::new_in_memory().expect("in-memory db");
+        let doomed = "/srv/worktrees/forgotten";
+        let kept = "/srv/worktrees/kept";
+        db.set_worktree_display_name(doomed, Some("Forgotten")).expect("set doomed");
+        db.set_worktree_display_name(kept, Some("Kept")).expect("set kept");
+
+        assert!(db.delete_worktree_metadata(doomed).expect("delete doomed"));
+        assert!(db.get_worktree_metadata(doomed).expect("query doomed").is_none());
+        assert_eq!(
+            db.get_worktree_metadata(kept)
+                .expect("query kept")
+                .expect("kept row")
+                .display_name
+                .as_deref(),
+            Some("Kept")
+        );
+        assert!(!db.delete_worktree_metadata(doomed).expect("delete missing"));
     }
 }
 

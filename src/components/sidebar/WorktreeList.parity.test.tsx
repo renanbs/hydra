@@ -66,6 +66,8 @@ const BASE_STORE_STATE = {
   // Reset per test: the lane assertions below read both of these from the store.
   workspaceStatuses: cloneDefaultWorkspaceStatuses(),
   worktreesByRepo: {},
+  // D03a-047: the agent-send picker forces its target visible.
+  agentSendPopoverTargetMode: null,
 };
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -398,9 +400,11 @@ describe("WorktreeList row model (Orca parity)", () => {
     expect(
       screen.getByRole("button", { name: "Host actions for Build server" })
     ).toBeInTheDocument();
-    // The local host has no registry row to rename or remove, so it offers no menu at all.
+    // The local host has no registry row, so its menu offers rename/manage but no removal.
     const localHeader = container.querySelector('[data-host-header-id="local"]');
-    expect(localHeader?.querySelector("button")).toBeNull();
+    expect(
+      localHeader?.querySelector('button[aria-label^="Host actions for"]')
+    ).not.toBeNull();
   });
 
   it("applies the menu's Hide sleeping filter on the painted rows", () => {
@@ -599,6 +603,114 @@ describe("WorktreeList row model (Orca parity)", () => {
     });
   });
 
+  // D03a-047 (Orca `use-visible-worktrees.ts`): the painted list consumes the
+  // computed visible id order — the panel's sort epoch flattened into the ordered
+  // id stream — instead of re-deriving candidates per row. The pure
+  // `visible-worktree-selection.parity.test.ts` proves that stream is exactly what
+  // `computeVisibleWorktreeIds` returns; these prove the paint and the Cmd+1–9
+  // publication both follow it, and that the agent-send target survives filters.
+  describe("computed visible order", () => {
+    const C = worktree("/repo/hydra-c", "feat/c");
+    const A = worktree("/repo/hydra-a", "feat/a");
+    const B = worktree("/repo/hydra-b", "feat/b");
+
+    function paintedPaths(container: HTMLElement): (string | null)[] {
+      return [...container.querySelectorAll('[role="option"][data-worktree-path]')].map((row) =>
+        row.getAttribute("data-worktree-path")
+      );
+    }
+
+    it("paints the computed visible id order and publishes it for Cmd+1–9", () => {
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [C, A, B] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none" },
+      });
+
+      expect(paintedPaths(container)).toEqual([C.path, A.path, B.path]);
+      expect(getVisibleWorktreeShortcutTargets().map((target) => target.id)).toEqual([
+        C.path,
+        A.path,
+        B.path,
+      ]);
+    });
+
+    it("drops a menu-filtered row from both the paint and the published order", () => {
+      const automation: GitWorktreeInfo = {
+        ...worktree("/repo/hydra-auto", "feat/auto"),
+        automationProvenanceKind: "created-by-automation",
+      };
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [automation, A] },
+        displayOptions: {
+          ...BASE_DISPLAY_OPTIONS,
+          groupBy: "none",
+          hideAutomationCreated: true,
+        },
+      });
+
+      expect(paintedPaths(container)).toEqual([A.path]);
+      expect(getVisibleWorktreeShortcutTargets().map((target) => target.id)).toEqual([A.path]);
+    });
+
+    it("forces the agent-send target visible through a menu filter", () => {
+      const automation: GitWorktreeInfo = {
+        ...worktree("/repo/hydra-auto", "feat/auto"),
+        automationProvenanceKind: "created-by-automation",
+      };
+      const props = {
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [automation, A] },
+        displayOptions: {
+          ...BASE_DISPLAY_OPTIONS,
+          groupBy: "none" as const,
+          hideAutomationCreated: true,
+        },
+      };
+
+      const hidden = renderList(props);
+      expect(paintedPaths(hidden.container)).toEqual([A.path]);
+      hidden.unmount();
+
+      resetStore({
+        agentSendPopoverTargetMode: {
+          id: "target-1",
+          instanceId: "instance-1",
+          worktreeId: automation.path,
+          status: "ready",
+        },
+      });
+      const forced = renderList(props);
+      expect(paintedPaths(forced.container)).toEqual([automation.path, A.path]);
+    });
+
+    it("keeps a workspace with a live agent under Hide sleeping", () => {
+      const live = worktree("/repo/hydra-live", "feat/live");
+      const idle = worktree("/repo/hydra-idle", "feat/idle");
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [live, idle] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, groupBy: "none", hideSleeping: true },
+        sessions: [
+          {
+            id: "tab-live",
+            project_path: live.path,
+            title: "live",
+            branch: live.branch,
+            state: "working",
+            active: true,
+            agentName: "claude",
+            executable: "claude",
+          },
+        ],
+        liveWorkspacePaths: new Set([live.path]),
+      });
+
+      expect(paintedPaths(container)).toEqual([live.path]);
+    });
+  });
+
   // D01-051: the Clear Filters empty state must not win over live rows. A folder-only
   // account used to lose its workspaces to "No workspaces found" as soon as ANY filter
   // was active, because the gate counted only git worktrees (#15362).
@@ -657,6 +769,157 @@ describe("WorktreeList row model (Orca parity)", () => {
 
       screen.getByRole("button", { name: /clear filters/i }).click();
       expect(onClearSidebarFilters).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // D03a-046 (Orca `worktree-list/listing/use-host-visible-scope.ts`): the PAINTED list
+  // restricts repos, project groups and folder workspaces to the visible host scope and
+  // the paired-device sweep. Before this, those filters only ran in the headless row
+  // pipeline, so the cards leaked rows the Cmd+1–9 order already excluded.
+  describe("visible host + device scope", () => {
+    const GROUP_AND_FOLDERS = {
+      projectGroups: [
+        { id: "grp_1", name: "Clients" },
+        { id: "grp_remote", name: "Remote clients", executionHostId: "ssh:build" },
+      ],
+      projectGroupMap: { repo_a: "grp_1" },
+      folderWorkspaces: [
+        { id: "fw_local", projectGroupId: "grp_1", name: "MalhaClub", folderPath: "/clients/malha" },
+        {
+          id: "fw_remote",
+          projectGroupId: "grp_remote",
+          name: "RemoteClub",
+          folderPath: "/clients/remote",
+          executionHostId: "ssh:build",
+        },
+      ],
+    };
+
+    it("hides repos whose execution host is outside the visible scope", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: ["local"],
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A, PROJECT_B],
+        worktreesByProject: {
+          [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+          [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+        },
+      });
+
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(container.querySelector('[data-repo-header-id="repo_b"]')).toBeNull();
+      expect(container.querySelector('[data-worktree-path="/repo/orca"]')).toBeNull();
+    });
+
+    it("hides project groups and folder workspaces owned by a hidden host", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: ["local"],
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        ...GROUP_AND_FOLDERS,
+      });
+
+      // The visible repo keeps its header; the remote group and its folder row do not paint.
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-section-header-id="project-group:grp_remote"]')
+      ).toBeNull();
+      expect(container.querySelector('[aria-label="RemoteClub"]')).toBeNull();
+      expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+    });
+
+    it("hides folder workspaces created by another paired device", () => {
+      resetStore({
+        repos: [{ id: "repo_a", connectionId: null, executionHostId: "local" }],
+        // No host scope: this isolates the paired-device sweep.
+        visibleWorkspaceHostIds: null,
+        workspaceHostScope: "all",
+        runtimeEnvironments: [{ id: "env-1" }],
+        runtimeStatusByEnvironmentId: {
+          "env-1": { status: { pairedDeviceId: "device-a" } },
+        },
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A],
+        worktreesByProject: { [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)] },
+        displayOptions: { ...BASE_DISPLAY_OPTIONS, hideWorkspacesFromOtherDevices: true },
+        projectGroups: [{ id: "grp_1", name: "Clients" }],
+        projectGroupMap: { repo_a: "grp_1" },
+        folderWorkspaces: [
+          {
+            id: "fw_host",
+            projectGroupId: "grp_1",
+            name: "HostClub",
+            folderPath: "/clients/host",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "host" },
+          },
+          {
+            id: "fw_own_device",
+            projectGroupId: "grp_1",
+            name: "OwnDeviceClub",
+            folderPath: "/clients/own-device",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "paired-device", deviceId: "device-a" },
+          },
+          {
+            id: "fw_other_device",
+            projectGroupId: "grp_1",
+            name: "OtherDeviceClub",
+            folderPath: "/clients/other-device",
+            executionHostId: "runtime:env-1",
+            creatorProvenance: { kind: "paired-device", deviceId: "device-b" },
+          },
+        ],
+      });
+
+      expect(container.querySelector('[aria-label="OwnDeviceClub"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="HostClub"]')).toBeNull();
+      expect(container.querySelector('[aria-label="OtherDeviceClub"]')).toBeNull();
+    });
+
+    it("paints every repo, group and folder when no scope filter is set", () => {
+      resetStore({
+        repos: [
+          { id: "repo_a", connectionId: null, executionHostId: "local" },
+          { id: "repo_b", connectionId: "build", executionHostId: "ssh:build" },
+        ],
+        visibleWorkspaceHostIds: null,
+        workspaceHostScope: "all",
+      });
+
+      const { container } = renderList({
+        projects: [PROJECT_A, PROJECT_B],
+        worktreesByProject: {
+          [PROJECT_A.path]: [worktree("/repo/hydra", "main", true)],
+          [PROJECT_B.path]: [worktree("/repo/orca", "main", true)],
+        },
+        ...GROUP_AND_FOLDERS,
+      });
+
+      expect(container.querySelector('[data-repo-header-id="repo_a"]')).not.toBeNull();
+      expect(container.querySelector('[data-repo-header-id="repo_b"]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-section-header-id="project-group:grp_remote"]')
+      ).not.toBeNull();
+      expect(container.querySelector('[aria-label="MalhaClub"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="RemoteClub"]')).not.toBeNull();
     });
   });
 });

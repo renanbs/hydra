@@ -7,9 +7,10 @@
 //      `onRenameWorktreeTitle`), so renaming from the card was a no-op.
 //   3. `workspace.rename` / `workspace.delete` had no call-site outside the
 //      keybinding module — labels with no keyboard path.
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render as rtlRender, waitFor, within } from "@testing-library/react";
 import { useAppStore } from "@/store";
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
@@ -130,11 +131,15 @@ function cardFor(container: HTMLElement, path: string): HTMLElement {
 }
 
 function titleFor(container: HTMLElement, path: string, branch: string): HTMLElement {
-  // The status lane also paints a titled span; the card title carries the branch.
-  const title = cardFor(container, path).querySelector<HTMLElement>(`span[title="${branch}"]`);
+  // The card title is measured/truncated now (design-system tooltip), so locate it
+  // by its text rather than a native title attribute.
+  const spans = Array.from(cardFor(container, path).querySelectorAll<HTMLElement>("span"));
+  const title = spans.find((span) => (span.textContent ?? "").includes(branch));
   if (!title) throw new Error(`no title for ${path}`);
   return title;
 }
+
+const render = (ui: React.ReactElement) => rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe("WorktreeList card delete overlay (D04a G5)", () => {
   beforeEach(() => resetStore());

@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Components } from 'react-markdown'
 import { isMermaidFence, isMermaidPre, renderMermaidFence } from './comment-mermaid-fence'
+import { NATIVE_CHAT_FILE_HREF_PREFIX } from '../../shared/native-chat-href-routing'
 import {
   GitHubUserAttachmentImage,
   GitHubUserAttachmentVideo,
@@ -46,7 +47,10 @@ function handleMarkdownAnchorClick(
   // images only claim the click when an image handler is wired below.
   event.stopPropagation()
   const trimmedHref = href?.trim()
-  if (trimmedHref?.toLowerCase().startsWith('file:')) {
+  if (
+    trimmedHref?.toLowerCase().startsWith('file:') ||
+    trimmedHref?.startsWith(NATIVE_CHAT_FILE_HREF_PREFIX)
+  ) {
     event.preventDefault()
   }
   onLinkClick?.(event, href)
@@ -233,7 +237,8 @@ export function createCompactCommentMarkdownComponents(
 
 export function createDocumentCommentMarkdownComponents(
   onLinkClick?: CommentMarkdownLinkClickHandler,
-  renderCodeBlock?: DocumentCodeBlockRenderer
+  renderCodeBlock?: DocumentCodeBlockRenderer,
+  expandImages = false
 ): Components {
   return {
     p: ({ children }) => <p className="my-2 first:mt-0 last:mb-0">{children}</p>,
@@ -311,6 +316,15 @@ export function createDocumentCommentMarkdownComponents(
       }
       // Why: Jira/Linear/GitHub document bodies often embed screenshots; open a
       // viewport-centered lightbox so the preview is not trapped in the drawer.
+      if (expandImages) {
+        return (
+          <ExpandableMarkdownImage
+            src={src}
+            alt={alt}
+            className="max-h-96 max-w-full rounded-md object-contain outline outline-1 outline-black/10 dark:outline-white/10"
+          />
+        )
+      }
       if (onLinkClick) {
         const imageClassName = [
           'my-3 max-h-96 max-w-full rounded-md object-contain',

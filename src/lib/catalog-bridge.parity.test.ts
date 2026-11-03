@@ -44,6 +44,36 @@ const ENVELOPE: CatalogEnvelope = {
   ],
 };
 
+describe("catalogToSidebarModel repos", () => {
+  it("keeps the host stamps the row host scope filters on", () => {
+    const envelope: CatalogEnvelope = {
+      ...ENVELOPE,
+      repos: [
+        {
+          id: "r_local",
+          path: "/home/renan/local",
+          displayName: "local",
+          addedAt: 1,
+          connectionId: null,
+          executionHostId: null,
+        },
+        {
+          id: "r_ssh",
+          path: "/srv/remote",
+          displayName: "remote",
+          addedAt: 1,
+          connectionId: "box",
+          executionHostId: "ssh:box",
+        },
+      ],
+    };
+    const [local, remote] = catalogToSidebarModel(envelope).projects;
+    expect(local.executionHostId).toBeNull();
+    expect(remote.executionHostId).toBe("ssh:box");
+    expect(remote.connectionId).toBe("box");
+  });
+});
+
 describe("catalogToSidebarModel folder workspaces", () => {
   it("keeps the host stamps the path-status cache keys on", () => {
     const [local, remote, legacy] = catalogToSidebarModel(ENVELOPE).folderWorkspaces;

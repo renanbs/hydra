@@ -45,6 +45,10 @@ export interface FolderWorkspaceRowProps {
    */
   activationPathStatus?: FolderWorkspacePathStatus | null;
   isActive?: boolean;
+  /** Workspace key the hover/keyboard delete resolves through (default: folder path). */
+  workspaceId?: string;
+  /** Host-qualified identity of the owning host (hover delete never guesses). */
+  hostIdentity?: string;
   /**
    * Geometry from `getFolderWorkspaceRowGeometry` (Orca `folder-row.tsx`). When
    * present it replaces the fixed row padding, so folder-backed groups keep the
@@ -58,6 +62,8 @@ export interface FolderWorkspaceRowProps {
   onActivate?: () => void;
   /** Removes the workspace entry; the folder on disk is untouched (Orca copy). */
   onDelete?: () => void;
+  /** Right-click opens the row's context menu (delete/copy actions). */
+  onContextMenu?: (event: React.MouseEvent) => void;
 }
 
 export function FolderWorkspaceRow({
@@ -69,11 +75,16 @@ export function FolderWorkspaceRow({
   pathStatus,
   activationPathStatus,
   isActive = false,
+  /** Workspace key the hover/keyboard delete resolves through. */
+  workspaceId,
+  /** Host-qualified identity of the owning host (hover delete never guesses). */
+  hostIdentity,
   surfaceInset,
   contentIndent,
   prDisplay = null,
   onActivate,
   onDelete,
+  onContextMenu,
 }: FolderWorkspaceRowProps): React.JSX.Element {
   const resolvedPathStatus: FolderWorkspacePathStatus | null =
     pathStatus !== undefined
@@ -110,7 +121,11 @@ export function FolderWorkspaceRow({
       aria-current={isActive ? "page" : undefined}
       aria-disabled={pathBlocksActivation || undefined}
       data-folder-workspace-path-status={pathStatusState}
+      data-worktree-id={workspaceId ?? folderPath}
+      data-worktree-host-identity={hostIdentity ?? ""}
+      data-worktree-context-menu-scope=""
       onClick={activate}
+      onContextMenu={onContextMenu}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();

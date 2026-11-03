@@ -1,4 +1,5 @@
 import type { WorkspaceStatus } from '../../../../shared/worktree/types'
+import { isPointInWorkspaceBoardPinDropTarget } from '../workspace-board-pin-drop-target'
 import { getWorkspaceBoardVirtualLaneSlots } from '../workspace-board-virtual-lane-layout'
 import {
   getWorkspaceBoardVirtualCardItemCount,
@@ -45,8 +46,6 @@ export type WorkspaceBoardLaneDropRect = {
 export type WorkspaceBoardCardDropRect = {
   top: number
   bottom: number
-  /** The card's index inside its lane; rendered order alone is not lane order. */
-  index?: number
 }
 
 export type WorkspaceBoardLaneBox = {
@@ -131,9 +130,13 @@ export function resolveWorkspaceBoardLaneDropRect<T extends WorkspaceBoardLaneDr
 }
 
 /**
- * The slot the pointer sits above, in the lane's index space: the first card whose
- * midpoint is below the pointer wins, otherwise the end of the lane. Cards carry their
- * own index, so a lane the board renders partially still reports a lane-accurate slot.
+ * The slot the pointer sits above, in the *rendered* index space: the first card
+ * whose midpoint is below the pointer wins, otherwise after the last card.
+ *
+ * Why rendered and not lane space: board search hides non-matching cards, so the
+ * hit test cannot know a hidden card's position. The commit boundary translates
+ * this slot onto the lane's full membership (`resolveWorkspaceBoardFullLaneDropIndex`)
+ * before it reaches manual-order math — see `workspace-board-filtered-drop-index.ts`.
  */
 export function resolveWorkspaceBoardCardDropIndexFromRects(
   rects: readonly WorkspaceBoardCardDropRect[],
@@ -142,11 +145,10 @@ export function resolveWorkspaceBoardCardDropIndexFromRects(
   for (let index = 0; index < rects.length; index++) {
     const rect = rects[index]!
     if (y < (rect.top + rect.bottom) / 2) {
-      return rect.index ?? index
+      return index
     }
   }
-  const last = rects.at(-1)
-  return last?.index !== undefined ? last.index + 1 : rects.length
+  return rects.length
 }
 
 /**
@@ -161,7 +163,7 @@ export function resolveWorkspaceBoardCardDropIndicatorY(
   if (rects.length === 0) {
     return laneTop + EMPTY_LANE_INDICATOR_OFFSET_PX
   }
-  const slot = rects.findIndex((rect, index) => (rect.index ?? index) >= dropIndex)
+  const slot = rects.findIndex((_rect, index) => index >= dropIndex)
   if (slot === -1) {
     return rects.at(-1)!.bottom + 5
   }
@@ -264,16 +266,10 @@ function resolveWorkspaceBoardLaneCardSlot(args: {
     laneElement.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_CARD_SELECTOR)
   ).map((card) => {
     const rect = card.getBoundingClientRect()
-    const index = Number.parseInt(card.dataset.workspaceBoardCardIndex ?? '', 10)
-    return {
-      top: rect.top,
-      bottom: rect.bottom,
-      ...(Number.isInteger(index) ? { index } : {})
-    }
+    return { top: rect.top, bottom: rect.bottom }
   })
   const dropIndex = resolveWorkspaceBoardCardDropIndexFromRects(cardRects, pointerY)
-  const lastPainted = cardRects.at(-1)
-  const lastPaintedIndex = lastPainted?.index ?? cardRects.length - 1
+  const lastPaintedIndex = cardRects.length - 1
   const cardScroller = laneElement.querySelector<HTMLElement>(
     WORKSPACE_BOARD_CARD_SCROLLER_SELECTOR
   )
@@ -304,6 +300,12 @@ export function getWorkspaceBoardCardDropTarget(
   x: number,
   y: number
 ): WorkspaceBoardCardDropTarget {
+  // Why the strip first: it sits above the lane row, outside the board's own hit-test
+  // root, and a release there is a pin — never a lane. Resolving it here keeps every
+  // caller (board drags, sidebar drags, sidebar drop groups) on one hit test.
+  if (isPointInWorkspaceBoardPinDropTarget(x, y)) {
+    return { status: null, dropIndex: 0, isPinDrop: true }
+  }
   const lane = resolveWorkspaceBoardLaneDropRect(getWorkspaceBoardLaneHitRects(board), x, y)
   if (!lane) {
     return { status: null, dropIndex: 0 }

@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 354 | 46.3% |
-| partial | 233 | 30.5% |
-| missing | 169 | 22.1% |
+| parity | 646 | 84.4% |
+| partial | 56 | 7.3% |
+| missing | 54 | 7.1% |
 | not-applicable | 8 | 1.0% |
 | out-of-scope | 1 | 0.1% |
 
@@ -16,21 +16,21 @@
 
 | domínio | capabilities | parity | partial | missing | not-applicable | out-of-scope |
 |---|---|---|---|---|---|---|
-| D01-shell-chrome | 52 | 24 | 3 | 24 | 1 | 0 |
-| D02a-repo-add-wizard | 42 | 2 | 14 | 19 | 6 | 1 |
-| D02b-hosts-ssh-remote | 30 | 2 | 11 | 17 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 5 | 2 | 19 | 0 | 0 |
-| D03a-worktree-list-module | 104 | 97 | 7 | 0 | 0 | 0 |
-| D03b-sidebar-list-orchestration | 50 | 16 | 19 | 15 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 27 | 61 | 22 | 1 | 0 |
-| D04b-worktree-card-controllers | 23 | 1 | 11 | 11 | 0 | 0 |
-| D05-agents-rows | 23 | 3 | 10 | 10 | 0 | 0 |
-| D06-drag-order-keyboard | 35 | 22 | 11 | 2 | 0 | 0 |
-| D07-menus-actions | 45 | 15 | 29 | 1 | 0 | 0 |
-| D08-kanban-board | 45 | 25 | 13 | 7 | 0 | 0 |
-| D09-filters-sort | 31 | 16 | 15 | 0 | 0 | 0 |
-| D10-visibility-inbox-notices | 91 | 81 | 5 | 5 | 0 | 0 |
-| D11-lineage-grouping-model | 17 | 6 | 6 | 5 | 0 | 0 |
-| D12-markdown-inline-render | 14 | 9 | 4 | 1 | 0 | 0 |
-| D15-misc-a | 12 | 2 | 5 | 5 | 0 | 0 |
-| D15-misc-b | 14 | 1 | 7 | 6 | 0 | 0 |
+| D01-shell-chrome | 52 | 38 | 1 | 12 | 1 | 0 |
+| D02a-repo-add-wizard | 42 | 19 | 6 | 10 | 6 | 1 |
+| D02b-hosts-ssh-remote | 30 | 21 | 5 | 4 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 18 | 1 | 7 | 0 | 0 |
+| D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
+| D03b-sidebar-list-orchestration | 50 | 47 | 2 | 1 | 0 | 0 |
+| D04a-worktree-card-surface | 111 | 70 | 28 | 12 | 1 | 0 |
+| D04b-worktree-card-controllers | 23 | 10 | 8 | 5 | 0 | 0 |
+| D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
+| D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |
+| D07-menus-actions | 45 | 45 | 0 | 0 | 0 | 0 |
+| D08-kanban-board | 45 | 41 | 2 | 2 | 0 | 0 |
+| D09-filters-sort | 31 | 31 | 0 | 0 | 0 | 0 |
+| D10-visibility-inbox-notices | 91 | 88 | 3 | 0 | 0 | 0 |
+| D11-lineage-grouping-model | 17 | 17 | 0 | 0 | 0 | 0 |
+| D12-markdown-inline-render | 14 | 14 | 0 | 0 | 0 | 0 |
+| D15-misc-a | 12 | 11 | 0 | 1 | 0 | 0 |
+| D15-misc-b | 14 | 14 | 0 | 0 | 0 | 0 |

@@ -9,6 +9,7 @@ import {
 import type { FolderWorkspacePathStatusRequest } from '../../../../shared/folder-workspace-path-status'
 import type { FolderWorkspace } from '../../../../shared/folder-workspace-types'
 import type { ProjectGroup } from '../../../../shared/project-group-types'
+import type { Repo } from '../../../../shared/repo-types'
 
 /** null means "no host filter" — every host is visible. */
 export function getVisibleSidebarHostIdSet(
@@ -21,8 +22,37 @@ export function getVisibleSidebarHostIdSet(
   return visibleHostIds ? new Set<ExecutionHostId>(visibleHostIds) : null
 }
 
+/**
+ * Orca `useSidebarHostVisibleScope` → `visibleReposForRows`. A repo with no explicit
+ * host ownership belongs to the focused (default) host, not to `local`: an
+ * SSH-focused sidebar must keep its unstamped repos. Explicit stamps still win.
+ */
+export function getRepoExecutionHostIdForRows(
+  repo: Pick<Repo, 'connectionId' | 'executionHostId'>,
+  defaultHostId: ExecutionHostId
+): ExecutionHostId {
+  const executionHostId = normalizeExecutionHostId(repo.executionHostId)
+  if (executionHostId) {
+    return executionHostId
+  }
+  return repo.connectionId ? toSshExecutionHostId(repo.connectionId) : defaultHostId
+}
+
 // Why shared: the sidebar render path and the Cmd+1–9 order must apply the same
 // host filtering, or the numbering drifts from the cards whenever a filter is on.
+export function filterReposForVisibleHosts(
+  repos: readonly Repo[],
+  visibleHostIdSet: ReadonlySet<ExecutionHostId> | null,
+  defaultHostId: ExecutionHostId
+): readonly Repo[] {
+  if (!visibleHostIdSet) {
+    return repos
+  }
+  return repos.filter((repo) =>
+    visibleHostIdSet.has(getRepoExecutionHostIdForRows(repo, defaultHostId))
+  )
+}
+
 export function filterProjectGroupsForVisibleHosts(
   projectGroups: readonly ProjectGroup[],
   visibleHostIdSet: ReadonlySet<ExecutionHostId> | null,

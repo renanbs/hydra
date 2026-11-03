@@ -57,15 +57,12 @@
   },
   {
    "id": "D12-012",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/comment-markdown-element-renderers.tsx:18-30",
-    "src/components/sidebar/comment-markdown-element-renderers.tsx:250-270"
+    "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
    ],
-   "missing_behaviors": [
-    "consumidor que passe renderCodeBlock (nenhuma superfície do Hydra renderiza documento hoje)"
-   ],
-   "note": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet."
+   "missing_behaviors": [],
+   "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
   }
  ]
 }

@@ -10,8 +10,6 @@ import React from 'react'
 
 import type { WorktreeRow } from '../grouping/row-types'
 
-export type LineageToggleHandler = (event: React.MouseEvent<HTMLButtonElement>) => void
-
 /** The descendant nodes of one parent row, or undefined when this branch is a leaf. */
 export function renderWorktreeLineageDescendants(
   descendants: readonly WorktreeRow[],
@@ -69,31 +67,4 @@ export function renderWorktreeLineageDescendants(
  */
 export function stopNestedWorktreeCardBubble(event: React.SyntheticEvent): void {
   event.stopPropagation()
-}
-
-/**
- * One stable toggle handler per lineage group.
- *
- * Why: `WorktreeCard` is memoised; an inline arrow per row would hand `onLineageToggle`
- * a fresh identity every list render and defeat the bail-out for every lineage parent.
- * The cache is bounded by the number of lineage groups, and the handler records the
- * viewport's scroll anchor before collapsing so the rows below do not jump.
- */
-export function createLineageToggleHandlerCache(
-  toggleGroup: (groupKey: string) => void
-): (groupKey: string) => LineageToggleHandler {
-  const handlersByGroupKey = new Map<string, LineageToggleHandler>()
-  return (groupKey: string) => {
-    const cached = handlersByGroupKey.get(groupKey)
-    if (cached) {
-      return cached
-    }
-    const handler: LineageToggleHandler = (event) => {
-      event.preventDefault()
-      event.stopPropagation()
-      toggleGroup(groupKey)
-    }
-    handlersByGroupKey.set(groupKey, handler)
-    return handler
-  }
 }

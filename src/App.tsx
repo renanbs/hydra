@@ -27,6 +27,14 @@ import {
 } from "./components/sidebar/SidebarChrome";
 import type { WorkspaceDisplayOptions } from "./components/sidebar/WorkspaceOptionsMenu";
 import { useFolderWorkspacePathStatuses } from "./hooks/use-folder-workspace-path-statuses";
+import { useWorktreeLineage } from "./hooks/useWorktreeLineage";
+import { requestProjectsRefresh } from "./lib/refresh-projects-awaitable";
+import {
+  buildSshConnectingState,
+  buildSshReconnectConnectionState,
+  sshReconnectFailureMessage,
+} from "./components/sidebar/ssh-reconnect-state";
+import type { SshForgetWorkspaceResult, SshReconnectResult } from "./shared/ssh-types";
 import {
   createWorktreeFlagApplier,
   reconcileProjectFlagSet,
@@ -65,6 +73,33 @@ import {
 } from "./lib/orca-repo-icons";
 import type { CatalogEnvelope } from "./lib/catalog-types";
 import { catalogToSidebarModel } from "./lib/catalog-bridge";
+import {
+  applyProjectIconEvent,
+  PROJECT_ICON_OPTIMISTIC_EVENT,
+} from "./lib/repo-icon-write";
+import {
+  EMPTY_PROJECT_GROUP_HOST_STATE,
+  collectKnownProjectGroupHostIds,
+  createProjectGroupInHost,
+  deleteProjectGroupInHost,
+  flattenProjectGroupHostState,
+  hasProjectGroupHostData,
+  mergeProjectGroupCatalogIntoHostState,
+  moveProjectToGroupInHost,
+  readProjectGroupHostState,
+  removeContainedProjectsForGroup,
+  removeProjectFromGroupInHost,
+  renameProjectGroupInHost,
+  resolveProjectGroupHost,
+  sanitizeLegacyProjectGroupMap,
+  sanitizeLegacyProjectGroups,
+  sanitizeProjectGroupMapByHost,
+  sanitizeProjectGroupsByHost,
+  serializeProjectGroupHostState,
+  updateProjectGroupOrderInHost,
+  type ProjectGroupHostState,
+  type ProjectGroupPrefEntry,
+} from "./lib/project-group-host-state";
 import type { PrDisplay } from "./components/sidebar/pr-display";
 import { StatusBar } from "./components/status-bar/StatusBar";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -73,6 +108,13 @@ import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
 import { buildTerminalQuickCommandItems } from "./components/workbench/TerminalQuickCommandsSubmenu";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
+import { GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID } from "./lib/settings-navigation-types";
+import { applyWorkspaceSidebarLiveWidth } from "./lib/sidebar-live-width";
+import {
+  orderItemsByProjectOrder,
+  persistProjectOrderPreference,
+  readProjectOrderPreference,
+} from "./lib/project-order-preference";
 import {
   findWorktreeForShortcutIndex,
   isWorktreeIndexJumpBlockedByTextEntry,
@@ -82,14 +124,71 @@ import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
+import { PendingWorktreeCreationPanel } from "./components/worktree-creation/PendingWorktreeCreationPanel";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
-import { canHydrateDeleteTargetLocally } from "./components/sidebar/worktree-delete-dispatch";
+import { useDeleteWorktreeStatusHydration } from "./components/sidebar/use-delete-worktree-status-hydration";
 import { installOrcaApiShim } from "./lib/orca-api-shim";
 import { selectDeletableWorktrees } from "./components/sidebar/worktree-delete-selection";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
 import { WorktreeMetaDialog } from "./components/sidebar/WorktreeMetaDialog";
+import {
+  buildHydraSleepActivityMaps,
+  getSleepableWorktrees,
+  getWorkspaceSleepLineage,
+  getWorkspaceSleepMenuState,
+} from "./components/sidebar/workspace-sleep-eligibility";
+import { runSleepWorktrees, scheduleSleepWorktreesAfterMenuClose } from "./components/sidebar/sleep-worktree-flow";
+import {
+  hydrateWorktreeSleepStates,
+  installWorktreeSleepStatePersistence,
+  serializeWorktreeSleepIntentPayload,
+} from "./lib/worktree-sleep-state-persistence";
+import { destroyWorkspaceWebviews } from "./store/slices/browser-webview-cleanup";
+import { forgetWorktreeSleepIntent } from "./lib/worktree-sleep-intent";
+import { wakeEphemeralVmForSleptWorktree } from "./lib/sidebar-worktree-activation";
+import {
+  CLOSE_ALL_CONTEXT_MENUS_EVENT,
+  getWorktreeParentPickerAnchor,
+  getWorktreeParentPickerLabel,
+  isContextWorktreeDeletable,
+  isWorktreeParentPickerDisabled,
+  PARENT_PICKER_EXIT_ANIMATION_MS,
+  preserveDeleteSiblingPosition,
+  shouldUseNativeContextMenu,
+  shouldRevealWorktreeDeveloperMenu,
+} from "./components/sidebar/worktree-context-menu-policy";
+import {
+  createWorktreeContextMenuDeleteIntent,
+  dedupeDeleteIntentTargets,
+  deferWorktreeContextMenuDeleteIntent,
+} from "./components/sidebar/worktree-context-menu-delete-intent";
+import {
+  deleteHoveredWorkspaceImmediately,
+  type HoveredWorkspaceDeleteDependencies,
+} from "./components/sidebar/hovered-workspace-delete";
+import {
+  composeWorktreeHostIdentity,
+  getWorktreeHostIdentity,
+} from "./shared/worktree/host-qualified-identity";
+import {
+  showDeleteWorktreeFailureToast,
+  showNoDeletableWorkspacesToast,
+  showPreservedBranchBatchToast,
+  showPreservedBranchToast,
+  showSkipDeleteConfirmToast,
+  showWorkspaceListChangedToast,
+} from "./components/sidebar/worktree-delete-toasts";
+import {
+  getDeleteWorktreeDirtyChangeCounts,
+} from "./components/sidebar/delete-worktree-dirty-change-counts";
+import { prepareActiveWorktreeFocusAfterDelete } from "./components/sidebar/active-worktree-focus-after-delete";
+import { resolveSshWorkspaceForget, type SshWorkspaceForgetResolution } from "./components/sidebar/ssh-workspace-forget-resolution";
+import { ConfirmRemoveFolderDialog } from "./components/sidebar/ConfirmRemoveFolderDialog";
+import { ForgetSshWorkspaceDialog } from "./components/sidebar/ForgetSshWorkspaceDialog";
+import { getWorkspaceDeleteLineage } from "./components/sidebar/workspace-delete-lineage";
+import { runWorktreeDeletesInParallel, type ParallelDeleteTarget } from "./components/sidebar/worktree-delete-parallel";
 import { SIDEBAR_REVEAL_REQUEST_EVENT } from "./components/sidebar/use-worktree-reveal-body-redirect";
 import { requestVirtualizedScrollAnchorRecord } from "./hooks/requestVirtualizedScrollAnchorRecord";
 import type {
@@ -108,7 +207,14 @@ import {
 import type { Repo } from "./shared/repo-types";
 import { Toaster, toast } from "sonner";
 import { PromptDialog, type PromptDialogProps } from "./components/PromptDialog";
-import { ParentPickerModal, type ParentCandidate } from "./components/sidebar/ParentPickerModal";
+import { WorktreeParentPickerPopover } from "./components/sidebar/WorktreeParentPickerPopover";
+import { selectWorktreeParent } from "./components/sidebar/worktree-parent-picker-actions";
+import type { WorktreeParentPickerAnchorRect } from "./components/sidebar/worktree-parent-picker-placement";
+import { buildWorktreeParentPickerCandidates } from "./components/sidebar/worktree-parent-picker-candidates";
+import {
+  getEligibleWorktreeParents,
+  type WorktreeParentPickerCandidate,
+} from "./components/sidebar/worktree-parent-eligibility";
 import { 
   Copy,
   ClipboardPaste,
@@ -201,12 +307,8 @@ function asStringRecordPref(value: unknown): Record<string, string> | undefined 
   return out;
 }
 
-function asProjectGroupsPref(value: unknown): Array<{ id: string; name: string }> | undefined {
-  if (!Array.isArray(value)) return undefined;
-  return value.filter(
-    (g): g is { id: string; name: string } =>
-      !!g && typeof g === "object" && "id" in g && typeof g.id === "string" && "name" in g && typeof g.name === "string"
-  );
+function asProjectGroupsPref(value: unknown): ProjectGroupPrefEntry[] | undefined {
+  return sanitizeLegacyProjectGroups(value);
 }
 
 function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | undefined {
@@ -216,8 +318,27 @@ function normalizeDisplayOptionsPref(value: unknown): WorkspaceDisplayOptions | 
   // ausente/malformado com [] — mesma guarda do reader antigo do Shell.
   const src = value as Record<keyof WorkspaceDisplayOptions, unknown>;
   const { groupBy, sortBy, hideSleeping, hideDefaultBranch, hideAutomationCreated, hideCliCreated, hideDetachedHead, alwaysShowDefaultBranch, projectsOrder, hideWorkspacesFromOtherDevices } = src;
-  if (groupBy !== "none" && groupBy !== "workspace-status" && groupBy !== "repo") return undefined;
-  if (sortBy !== "agent-activity" && sortBy !== "name" && sortBy !== "recent") return undefined;
+  if (
+    groupBy !== "none" &&
+    groupBy !== "workspace-status" &&
+    groupBy !== "pr-status" &&
+    groupBy !== "repo"
+  ) {
+    return undefined;
+  }
+  // Every mode the menu can write must survive the reload, or picking PR grouping /
+  // Project / Manual sort silently falls back to the default after a restart.
+
+  if (
+    sortBy !== "agent-activity" &&
+    sortBy !== "smart" &&
+    sortBy !== "name" &&
+    sortBy !== "recent" &&
+    sortBy !== "project" &&
+    sortBy !== "manual"
+  ) {
+    return undefined;
+  }
   if (
     typeof hideSleeping !== "boolean" || typeof hideDefaultBranch !== "boolean" ||
     typeof hideAutomationCreated !== "boolean" || typeof hideCliCreated !== "boolean" ||
@@ -269,13 +390,13 @@ function sanitizeSidebarPrefsSnapshot(input: unknown): SidebarPrefsSnapshot {
   if (projectGroupMap) out.projectGroupMap = projectGroupMap;
   const projectGroups = asProjectGroupsPref(src.projectGroups);
   if (projectGroups) out.projectGroups = projectGroups;
+  const projectGroupMapByHost = sanitizeProjectGroupMapByHost(src.projectGroupMapByHost);
+  if (projectGroupMapByHost) out.projectGroupMapByHost = projectGroupMapByHost;
+  const projectGroupsByHost = sanitizeProjectGroupsByHost(src.projectGroupsByHost);
+  if (projectGroupsByHost) out.projectGroupsByHost = projectGroupsByHost;
   const displayOptions = normalizeDisplayOptionsPref(src.displayOptions);
   if (displayOptions) out.displayOptions = displayOptions;
-  if (
-    src.agentsReadFilter === "all" || src.agentsReadFilter === "blocked" ||
-    src.agentsReadFilter === "waiting" || src.agentsReadFilter === "working" ||
-    src.agentsReadFilter === "done" || src.agentsReadFilter === "idle"
-  ) {
+  if (src.agentsReadFilter === "all" || src.agentsReadFilter === "unread") {
     out.agentsReadFilter = src.agentsReadFilter;
   }
   if (src.agentsGroupBy === "state" || src.agentsGroupBy === "project") out.agentsGroupBy = src.agentsGroupBy;
@@ -347,6 +468,35 @@ function getExecutionHostIdForRepoPath(
 }
 
 /**
+ * Normalizes the delete dialog's contained-project payload. The dialog sends ids
+ * (for per-project failure reporting); the path-only detail from older sidebars
+ * stays readable so the event contract is backward compatible.
+ */
+function normalizeContainedProjectRemovals(detail: {
+  removeProjects?: unknown;
+  removeProjectPaths?: unknown;
+}): Array<{ id: string; path: string }> {
+  const projects: Array<{ id: string; path: string }> = [];
+  if (Array.isArray(detail.removeProjects)) {
+    for (const candidate of detail.removeProjects) {
+      if (!candidate || typeof candidate !== "object") continue;
+      const entry = candidate as { id?: unknown; path?: unknown };
+      if (typeof entry.id === "string" && entry.id && typeof entry.path === "string" && entry.path) {
+        projects.push({ id: entry.id, path: entry.path });
+      }
+    }
+  }
+  if (projects.length === 0 && Array.isArray(detail.removeProjectPaths)) {
+    for (const path of detail.removeProjectPaths) {
+      if (typeof path === "string" && path) {
+        projects.push({ id: path, path });
+      }
+    }
+  }
+  return projects;
+}
+
+/**
  * Orca `markWorktreesDeleting`: the entry the sidebar card paints its overlay
  * from while a removal runs. `phase: 'deleting'` — Hydra dispatches the command
  * in the same tick the user confirms, so the row never sits in a queue.
@@ -364,10 +514,16 @@ export default function App() {
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
+  // D03b-009: a folder dropped on the sidebar routes into the Add Project wizard, which
+  // confirms the path before the catalog write (Orca `confirm-add-project-from-folder`).
+  const [droppedAddRepoFolder, setDroppedAddRepoFolder] = useState<string | null>(null);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
-  const [pendingWorktreeCreations, setPendingWorktreeCreations] = useState<
-    Array<{ creationId: string; repoId: string; branchName: string; agentName: string }>
-  >([]);
+  // D03b-021/022: background creates live in the renderer store (Orca parity), so the
+  // sidebar row and the content panel read the same entry the composer published.
+  const pendingWorktreeCreations = useAppStore((s) => s.pendingWorktreeCreations);
+  // D03b-021: the sidebar row routes the create to this surface (Orca `activeView: 'terminal'`
+  // with the creation loader); the panel reads the same store entry.
+  const activePendingCreationId = useAppStore((s) => s.activePendingCreationId);
   /**
    * Lane the workspace board's create button was pressed from (D08-030): the composer
    * seeds its creation request with this status, so the new worktree is born in that lane.
@@ -378,6 +534,9 @@ export default function App() {
   const [isJumpPaletteOpen, setIsJumpPaletteOpen] = useState(false);
   const [recentlyClosedTabs, setRecentlyClosedTabs] = useState<TabItem[]>([]);
   const [settingsSectionRequested, setSettingsSectionRequested] = useState<HydraNavId | null>(null);
+  // Orca `openSettingsTarget({ pane, sectionId })`: the pane and its in-pane
+  // subsection travel together so a deep link lands on the concrete control.
+  const [settingsTargetSectionId, setSettingsTargetSectionId] = useState<string | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Live mirrors of the sidebar open-state: persistence snapshots read these
@@ -394,15 +553,30 @@ export default function App() {
     rightSidebarOpenRef.current = isRightSidebarOpen;
     leftSidebarWidthRef.current = leftSidebarWidth;
   }, [isLeftSidebarOpen, isRightSidebarOpen, leftSidebarWidth]);
+  // D07: the sleep marker's durable half. Install the IPC sink before any sleep
+  // can run, then restore the markers written before this renderer started — a
+  // workspace slept earlier stays cold instead of re-spawning its PTYs on boot.
+  useEffect(() => {
+    installWorktreeSleepStatePersistence();
+    void hydrateWorktreeSleepStates().catch((error) => {
+      console.error("Failed to restore workspace sleep states:", error);
+    });
+  }, []);
   const [previewLanguage, setPreviewLanguage] = useState("rust");
   const [fileTabContents, setFileTabContents] = useState<Record<string, { original: string; modified: string; lang: string }>>({});
   const [availableAgents, setAvailableAgents] = useState<AvailableAgent[]>([]);
   const [projects, setProjects] = useState<HydraProject[]>([]);
   const orcaRepoIcons = useMemo(() => loadBundledOrcaRepoIcons(), []);
+  // Paths already resolved by the bundled-glyph effect below. Clearing a glyph in
+  // the header menu writes `repoIcon: null`; without this the effect would see a
+  // null icon on the next projects commit and resurrect the profile glyph.
+  const repoIconResolutionPathsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     setProjects((prev) => {
       let changed = false;
       const next = prev.map((project) => {
+        if (repoIconResolutionPathsRef.current.has(project.path)) return project;
+        repoIconResolutionPathsRef.current.add(project.path);
         // Folder scan promotes child git dirs into projects. Orca keeps the
         // glyph on the folder the user added, so drop any avatar those children
         // picked up from the profile or from origin.
@@ -513,6 +687,18 @@ export default function App() {
     error: string | null;
   } | null>(null);
   const [deleteStateByWorktreeId, setDeleteStateByWorktreeId] = useState<DeleteWorktreeDialogState>({});
+  /** Orca `confirm-remove-folder`: the primary checkout can only lose the project entry. */
+  const [confirmRemoveFolder, setConfirmRemoveFolder] = useState<{
+    repoPath: string;
+    displayName: string;
+  } | null>(null);
+  /** Orca `forget-ssh-workspace`: disconnected/ghost remote workspaces. */
+  const [forgetSshTarget, setForgetSshTarget] = useState<{
+    resolution: Exclude<SshWorkspaceForgetResolution, { kind: "not-ssh" } | { kind: "connected" }>;
+    repoPath: string;
+    worktreePath: string;
+    displayName: string;
+  } | null>(null);
   /** Folder-workspace removal target (non-destructive copy; folder stays on disk). */
   const [folderDeleteTarget, setFolderDeleteTarget] = useState<{
     id: string;
@@ -524,29 +710,6 @@ export default function App() {
    * removable workspace. A selection that resolves to nothing says so instead of
    * opening an empty dialog.
    */
-  const handleDeleteWorktreeSelection = useCallback(
-    (selected: readonly GitWorktreeInfo[], proj?: HydraProject) => {
-      const project = proj ?? activeProject;
-      if (!project) return;
-      const deletable = selectDeletableWorktrees(selected, project.path);
-      if (deletable.length === 0) {
-        toast.info("No deletable workspaces selected");
-        return;
-      }
-      const hostId =
-        getExecutionHostIdForRepoPath(useAppStore.getState().repos, project.path) ?? undefined;
-      setDeleteWorktreeModal({
-        repoPath: project.path,
-        worktrees: [...deletable],
-        deleteTargets: deletable.map((worktree) => ({
-          id: worktree.id ?? `${project.path}::${worktree.path}`,
-          ...(hostId ? { hostId } : {}),
-        })),
-        error: null,
-      });
-    },
-    [activeProject]
-  );
   const handleDeleteFolderWorkspace = useCallback((folderWorkspaceId: string) => {
     const folders = useAppStore.getState().folderWorkspaces as
       | readonly { id: string; name?: string; folderPath?: string; path?: string }[]
@@ -559,10 +722,12 @@ export default function App() {
       path: folder.folderPath ?? folder.path ?? "",
     });
   }, []);
-  const [dirtyChangeCountsByWorktreeId, setDirtyChangeCountsByWorktreeId] = useState<Record<string, number | null>>({});
   // Orca parity: the store's host-aware catalog is the one source that can name a
   // repo's execution host on the render path (`WorktreeList` reads the same slice).
   const storeRepos = useAppStore((s) => s.repos);
+  // Orca sleep eligibility reads browser activity from the store slice; Hydra's
+  // terminals/sessions are App-owned and folded in by `buildHydraSleepActivityMaps`.
+  const storeBrowserTabsByWorktree = useAppStore((s) => s.browserTabsByWorktree);
   // Orca parity (D01-052): the global shortcut path reads the keybinding registry
   // (definitions + user overrides) instead of hardcoded chords.
   const keybindings = useAppStore((s) => s.keybindings);
@@ -584,6 +749,23 @@ export default function App() {
     }
     return rows;
   }, [storeRepos, worktreesByProject]);
+  // Orca parity (useDeleteWorktreeStatusHydration): the confirmation dialog's
+  // dirty-change counts hydrate in dependency order while it is open. The hook
+  // owns the lifetime, so a cancelled probe cannot write onto the next dialog.
+  const deleteHydrationTargets = useMemo(() => {
+    const identities = deleteWorktreeModal?.deleteTargets ?? [];
+    return (deleteWorktreeModal?.worktrees ?? []).map((wt, index) => ({
+      id: identities[index]?.id ?? wt.path,
+      path: wt.path,
+      hostId: identities[index]?.hostId ?? undefined,
+    }));
+  }, [deleteWorktreeModal]);
+  const dirtyChangeCountsByWorktreeId = useDeleteWorktreeStatusHydration({
+    isOpen: deleteWorktreeModal != null,
+    deleteTargets: deleteHydrationTargets,
+    visibleTargets: deleteLiveTargets,
+    activeWorktreeId: activeWorktreePathRef.current,
+  });
   // Orca `showWorkspaceListChangedToast`: the confirmed row changed or vanished
   // between opening and confirming, so the delete stops instead of guessing.
   const showStaleDeleteNotice = useCallback(() => {
@@ -620,13 +802,97 @@ export default function App() {
   );
   // Non-blocking prompt & picker dialogs (replaces window.prompt to prevent WebKitGTK / Wayland freezes)
   const [promptDialog, setPromptDialog] = useState<Omit<PromptDialogProps, "onOpenChange"> | null>(null);
-  const [parentPickerModal, setParentPickerModal] = useState<{
-    targetName: string;
-    currentParentPath?: string | null;
-    candidates: ParentCandidate[];
-    onSelect: (path: string) => void;
-    onRemoveParent?: () => void;
-  } | null>(null);
+  type ParentPickerState = {
+    child: WorktreeParentPickerCandidate;
+    anchorRect: WorktreeParentPickerAnchorRect;
+    focusRestoreElement: HTMLElement | null;
+    selectParent: (parentPath: string) => Promise<void>;
+    removeParent?: () => void;
+  };
+  const [parentPickerState, setParentPickerState] = useState<ParentPickerState | null>(null);
+  // Orca `useWorktreeParentPickerTransition`: the picker opens only after the menu's
+  // close cycle, so the Radix menu unmount cannot race the popover's first measurement.
+  // `parentPickerOpen` is separate from the retained state so the popover survives its
+  // exit animation instead of vanishing on the first frame of the close.
+  const [parentPickerOpen, setParentPickerOpen] = useState(false);
+  const pendingParentPickerRef = useRef<ParentPickerState | null>(null);
+  const parentPickerFallbackTimerRef = useRef<number | null>(null);
+  const parentPickerUnmountTimerRef = useRef<number | null>(null);
+
+  const clearParentPickerTimer = useCallback(() => {
+    if (parentPickerFallbackTimerRef.current != null) {
+      window.clearTimeout(parentPickerFallbackTimerRef.current);
+      parentPickerFallbackTimerRef.current = null;
+    }
+  }, []);
+
+  const clearParentPickerUnmountTimer = useCallback(() => {
+    if (parentPickerUnmountTimerRef.current != null) {
+      window.clearTimeout(parentPickerUnmountTimerRef.current);
+      parentPickerUnmountTimerRef.current = null;
+    }
+  }, []);
+
+  const openPendingParentPicker = useCallback(() => {
+    const pending = pendingParentPickerRef.current;
+    if (!pending) return;
+    pendingParentPickerRef.current = null;
+    clearParentPickerTimer();
+    clearParentPickerUnmountTimer();
+    setParentPickerState(pending);
+    setParentPickerOpen(true);
+  }, [clearParentPickerTimer, clearParentPickerUnmountTimer]);
+
+  /**
+   * Orca `handleParentPickerOpenChange(false)`: close immediately, unmount only after
+   * the exit animation so the popover can play it. A fresh open cancels the timer.
+   */
+  const closeParentPicker = useCallback(() => {
+    setParentPickerOpen(false);
+    clearParentPickerUnmountTimer();
+    parentPickerUnmountTimerRef.current = window.setTimeout(() => {
+      parentPickerUnmountTimerRef.current = null;
+      setParentPickerState(null);
+    }, PARENT_PICKER_EXIT_ANIMATION_MS);
+  }, [clearParentPickerUnmountTimer]);
+
+  const scheduleParentPickerOpen = useCallback(
+    (request: ParentPickerState) => {
+      pendingParentPickerRef.current = request;
+      clearParentPickerTimer();
+      // Orca's 50ms fallback: the menu's Radix exit may never call back.
+      parentPickerFallbackTimerRef.current = window.setTimeout(openPendingParentPicker, 50);
+    },
+    [clearParentPickerTimer, openPendingParentPicker]
+  );
+
+  /**
+   * Orca anchors the picker to the workspace row that opened the menu; `getWorktreeParentPickerAnchor`
+   * resolves the drag row for a worktree id and falls back to the card scope. Project and
+   * session menus have no single card scope, so their contextmenu point is the fallback.
+   */
+  const getParentPickerAnchorRect = useCallback(
+    (event: React.MouseEvent, worktreeId: string): WorktreeParentPickerAnchorRect => {
+      const target = event.target instanceof Element ? event.target : null;
+      const scope = target?.closest<HTMLElement>("[data-worktree-drag-id]") ?? null;
+      const anchorElement = getWorktreeParentPickerAnchor(scope, worktreeId) ?? scope;
+      const rect = anchorElement?.getBoundingClientRect();
+      return rect
+        ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+        : { left: event.clientX, top: event.clientY, width: 1, height: 1 };
+    },
+    []
+  );
+
+  useEffect(
+    () => () => {
+      clearParentPickerTimer();
+      clearParentPickerUnmountTimer();
+      pendingParentPickerRef.current = null;
+    },
+    [clearParentPickerTimer, clearParentPickerUnmountTimer]
+  );
+
 
 
   // PR-14: pinned/unread/groups migraram do localStorage para o SQLite
@@ -637,10 +903,46 @@ export default function App() {
   const [unreadProjects, setUnreadProjects] = useState<Set<string>>(new Set());
   const [pinnedWorktrees, setPinnedWorktrees] = useState<Set<string>>(new Set());
   const [unreadWorktrees, setUnreadWorktrees] = useState<Set<string>>(new Set());
-  const [projectGroups, setProjectGroups] = useState<
-    Array<{ id: string; name: string; tabOrder?: number }>
-  >([]);
-  const [projectGroupMap, setProjectGroupMap] = useState<Record<string, string>>({});
+  // Groups live per execution host (D03a-021/082/087): one bucket per
+  // `ExecutionHostId`, so a mutation addressed at one host can never touch
+  // another host's groups or memberships — even when a group id repeats.
+  const [projectGroupState, setProjectGroupState] = useState<ProjectGroupHostState>(
+    EMPTY_PROJECT_GROUP_HOST_STATE
+  );
+  const projectGroupStateRef = useRef<ProjectGroupHostState>(EMPTY_PROJECT_GROUP_HOST_STATE);
+  const applyProjectGroupHostState = useCallback((next: ProjectGroupHostState) => {
+    projectGroupStateRef.current = next;
+    setProjectGroupState(next);
+  }, []);
+  const flatProjectGroups = useMemo(
+    () => flattenProjectGroupHostState(projectGroupState),
+    [projectGroupState]
+  );
+  const projectGroups = flatProjectGroups.projectGroups;
+  const projectGroupMap = flatProjectGroups.projectGroupMap;
+  /** Latest authoritative catalog read, merged again when persisted prefs hydrate. */
+  const catalogProjectGroupsRef = useRef<{
+    groups: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
+    memberships: Record<string, string>;
+  } | null>(null);
+  const applyCatalogProjectGroups = useCallback(
+    (model: {
+      projectGroups: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
+      projectGroupMap: Record<string, string>;
+    }) => {
+      catalogProjectGroupsRef.current = {
+        groups: model.projectGroups,
+        memberships: model.projectGroupMap,
+      };
+      applyProjectGroupHostState(
+        mergeProjectGroupCatalogIntoHostState(projectGroupStateRef.current, {
+          groups: model.projectGroups,
+          memberships: model.projectGroupMap,
+        })
+      );
+    },
+    [applyProjectGroupHostState]
+  );
   const [folderWorkspaces, setFolderWorkspaces] = useState<
     Array<{
       id: string;
@@ -652,10 +954,13 @@ export default function App() {
       executionHostId?: string | null;
     }>
   >([]);
-  const [worktreeLineage, setWorktreeLineage] = useState<Record<string, string>>(() => {
-    try { const v = localStorage.getItem("hydra:worktree_lineage"); return v ? JSON.parse(v) : {}; } catch { return {}; }
-  });
-  const persistLineage = (m: Record<string, string>) => { try { localStorage.setItem("hydra:worktree_lineage", JSON.stringify(m)); } catch {} };
+  // D07-023: hydrated once from SQLite; legacy localStorage is migrated through
+  // the IPC on first boot and then retired.
+  const {
+    worktreeLineage,
+    setParents: persistWorktreeLineageParents,
+    clearParents: clearWorktreeLineageParents,
+  } = useWorktreeLineage();
   const [worktreeMetadataByPath, setWorktreeMetadataByPath] = useState<WorktreeMetadataByPath>({});
   const [worktreeMetaDialog, setWorktreeMetaDialog] = useState<{ wt: GitWorktreeInfo } | null>(null);
 
@@ -691,10 +996,15 @@ export default function App() {
     snap.unreadProjects = [...unreadProjects];
     snap.pinnedWorktrees = [...pinnedWorktrees];
     snap.unreadWorktrees = [...unreadWorktrees];
-    snap.projectGroups = projectGroups;
-    snap.projectGroupMap = projectGroupMap;
+    const serializedGroups = serializeProjectGroupHostState(projectGroupState);
+    snap.projectGroupsByHost = serializedGroups.projectGroupsByHost;
+    snap.projectGroupMapByHost = serializedGroups.projectGroupMapByHost;
+    // Why delete: legacy flat fields would re-seed the local bucket on the next
+    // boot and could resurrect a group a host-qualified write removed.
+    delete snap.projectGroups;
+    delete snap.projectGroupMap;
     scheduleSidebarPrefsSave();
-  }, [pinnedProjects, unreadProjects, pinnedWorktrees, unreadWorktrees, projectGroups, projectGroupMap, scheduleSidebarPrefsSave]);
+  }, [pinnedProjects, unreadProjects, pinnedWorktrees, unreadWorktrees, projectGroupState, scheduleSidebarPrefsSave]);
 
   // Fatia Shell-owned (body/collapsed/displayOptions/agents*) sobe por este callback.
   const handleSidebarPrefsChange = useCallback((prefs: SidebarShellPrefs) => {
@@ -731,6 +1041,10 @@ export default function App() {
   const workbenchCheckedRef = useRef(false);
   const tabsRef = useRef(tabs);
   tabsRef.current = tabs;
+  // Orca sleep keeps the persisted tab layout so a wake re-attaches; the teardown
+  // clears the visible tabs, and this one-shot flag keeps that clear from being
+  // written back as the workspace's saved state.
+  const skipWorkbenchPersistenceOnceRef = useRef(false);
   const [activeTabId, setActiveTabId] = useState("");
   const activeTabIdRef = useRef(activeTabId);
   activeTabIdRef.current = activeTabId;
@@ -977,7 +1291,15 @@ export default function App() {
   const onLeftSidebarDraftWidthChange = useCallback((width: number) => {
     leftSidebarWidthRef.current = width;
     leftTitlebarRef.current?.style.setProperty("width", `${width}px`);
+    // Orca `setLiveSidebarWidth` (D03b-001): anchored panels read the drag draft from
+    // the document, so they track the sidebar without a React round-trip on every frame.
+    applyWorkspaceSidebarLiveWidth(width);
   }, []);
+  // Why: a closed sidebar has no width to track; leaving the last draft published would
+  // anchor companion panels to chrome that is no longer on screen.
+  useEffect(() => {
+    if (!isLeftSidebarOpen) applyWorkspaceSidebarLiveWidth(null);
+  }, [isLeftSidebarOpen]);
   const leftSidebar = useSidebarResize<HTMLElement>({
     isOpen: isLeftSidebarOpen,
     width: leftSidebarWidth,
@@ -1042,29 +1364,40 @@ export default function App() {
         // localStorage ainda guarda dados válidos, fazemos o merge aqui; o flush
         // direto abaixo persiste o blob merged (shape intacto) no SQLite e só então
         // aposenta as duas chaves legadas.
+        let recoveredGroupState = readProjectGroupHostState(stored);
         let recoveredLegacyGroups = false;
-        if (migrated) {
-          const storedHasGroups =
-            (stored.projectGroups?.length ?? 0) > 0 ||
-            Object.keys(stored.projectGroupMap ?? {}).length > 0;
-          if (!storedHasGroups) {
-            const legacyGroups = sanitizeSidebarPrefsSnapshot(readLegacyProjectGroupsRaw());
-            const legacyGroupCount = legacyGroups.projectGroups?.length ?? 0;
-            const legacyMappingCount = Object.keys(legacyGroups.projectGroupMap ?? {}).length;
-            if (legacyGroupCount > 0 || legacyMappingCount > 0) {
-              stored = { ...stored };
-              if (legacyGroups.projectGroups) stored.projectGroups = legacyGroups.projectGroups;
-              if (legacyGroups.projectGroupMap) stored.projectGroupMap = legacyGroups.projectGroupMap;
-              recoveredLegacyGroups = true;
-              // Feedback explícito de migração (uma vez por boot): grupos legados
-              // recuperados mesmo com os demais campos em defaults.
-              console.info(
-                `[sidebar] PR-16: recuperados ${legacyGroupCount} grupo(s) e ${legacyMappingCount} mapeamento(s) de projeto do localStorage legado para as prefs SQLite`
-              );
-            }
+        if (migrated && !hasProjectGroupHostData(recoveredGroupState)) {
+          const legacyRaw = readLegacyProjectGroupsRaw();
+          const legacyGroupCount = sanitizeLegacyProjectGroups(legacyRaw.projectGroups)?.length ?? 0;
+          const legacyMappingCount = Object.keys(
+            sanitizeLegacyProjectGroupMap(legacyRaw.projectGroupMap) ?? {}
+          ).length;
+          if (legacyGroupCount > 0 || legacyMappingCount > 0) {
+            recoveredGroupState = readProjectGroupHostState(legacyRaw);
+            recoveredLegacyGroups = true;
+            // Feedback explícito de migração (uma vez por boot): grupos legados
+            // recuperados mesmo com os demais campos em defaults.
+            console.info(
+              `[sidebar] PR-16: recuperados ${legacyGroupCount} grupo(s) e ${legacyMappingCount} mapeamento(s) de projeto do localStorage legado para as prefs SQLite`
+            );
           }
         }
-        const merged = stored;
+        // A catalog read can land before this hydration; fold it back in so the
+        // persisted snapshot never hides groups the runtime already listed.
+        const hydratedGroupState = catalogProjectGroupsRef.current
+          ? mergeProjectGroupCatalogIntoHostState(recoveredGroupState, {
+              groups: catalogProjectGroupsRef.current.groups,
+              memberships: catalogProjectGroupsRef.current.memberships,
+            })
+          : recoveredGroupState;
+        const persistedGroups = serializeProjectGroupHostState(hydratedGroupState);
+        const merged: SidebarPrefsSnapshot = {
+          ...stored,
+          projectGroupsByHost: persistedGroups.projectGroupsByHost,
+          projectGroupMapByHost: persistedGroups.projectGroupMapByHost,
+        };
+        delete merged.projectGroups;
+        delete merged.projectGroupMap;
         // Fast-forward do ref ANTES de liberar a gate: qualquer change posterior
         // (Effects acima ou do Shell) faz merge sobre o blob hidratado.
         sidebarPrefsRef.current = merged;
@@ -1074,8 +1407,7 @@ export default function App() {
         setUnreadProjects(new Set(merged.unreadProjects ?? []));
         setPinnedWorktrees(new Set(merged.pinnedWorktrees ?? []));
         setUnreadWorktrees(new Set(merged.unreadWorktrees ?? []));
-        setProjectGroups(merged.projectGroups ?? []);
-        setProjectGroupMap(merged.projectGroupMap ?? {});
+        applyProjectGroupHostState(hydratedGroupState);
         // Fatia Shell-owned desce como props one-shot (initialSidebarBody etc.).
         setInitialSidebarPrefs(merged);
         // Host scope vive no store; hidrata pelo mesmo blob (chaves ausentes →
@@ -1180,7 +1512,7 @@ export default function App() {
     if (!currentWorkspacePath) return;
     const prevPath = prevProjectPathRef.current;
     // Save current tabs to previous worktree's state before switching
-    if (prevPath && prevPath !== currentWorkspacePath && tabsRef.current.length > 0) {
+    if (!skipWorkbenchPersistenceOnceRef.current && prevPath && prevPath !== currentWorkspacePath && tabsRef.current.length > 0) {
       const prevState: WorkbenchState = {
         tabs_json: JSON.stringify(tabsRef.current),
         active_tab_id: activeTabIdRef.current,
@@ -1319,6 +1651,10 @@ export default function App() {
   }, [leftSidebar.onResizeReset, rightSidebar.width]);
 
   const saveWorkbenchPersistence = useCallback(() => {
+    if (skipWorkbenchPersistenceOnceRef.current) {
+      skipWorkbenchPersistenceOnceRef.current = false;
+      return;
+    }
     const targetPath = activeWorktreePathRef.current || activeProjectRef.current?.path;
     const state: WorkbenchState = {
       tabs_json: JSON.stringify(tabs),
@@ -1427,27 +1763,15 @@ export default function App() {
       .catch(console.error);
 
     invoke<CatalogEnvelope>("catalog_get")
-      .then((envelope) => {
+      .then(async (envelope) => {
         const model = catalogToSidebarModel(envelope);
-        let sorted = model.projects;
-        try {
-          const saved = localStorage.getItem("hydra:projects_order");
-          if (saved) {
-            const order: string[] = JSON.parse(saved);
-            sorted = [...model.projects].sort((a, b) => {
-              const idxA = order.indexOf(a.id);
-              const idxB = order.indexOf(b.id);
-              if (idxA === -1 && idxB === -1) return 0;
-              if (idxA === -1) return 1;
-              if (idxB === -1) return -1;
-              return idxA - idxB;
-            });
-          }
-        } catch {}
+        // D03b-029: the manual project order persists in the SQLite UI prefs (with the
+        // legacy localStorage key as its migration fallback), not only per-webview.
+        const savedOrder = await readProjectOrderPreference();
+        const sorted = orderItemsByProjectOrder(model.projects, savedOrder);
         setProjects(sorted);
-        setProjectGroups(model.projectGroups);
+        applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
-        setProjectGroupMap(model.projectGroupMap);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
           setActiveWorktreePath(sorted[0].path);
@@ -1460,27 +1784,13 @@ export default function App() {
       .catch(console.error);
 
     const handleRefreshProjects = (): Promise<boolean> => {
-      return invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+      return invoke<CatalogEnvelope>("catalog_get").then(async (envelope) => {
         const model = catalogToSidebarModel(envelope);
-        let sorted = model.projects;
-        try {
-          const saved = localStorage.getItem("hydra:projects_order");
-          if (saved) {
-            const order: string[] = JSON.parse(saved);
-            sorted = [...model.projects].sort((a,b) => {
-              const idxA = order.indexOf(a.id);
-              const idxB = order.indexOf(b.id);
-              if (idxA === -1 && idxB === -1) return 0;
-              if (idxA === -1) return 1;
-              if (idxB === -1) return -1;
-              return idxA - idxB;
-            });
-          }
-        } catch {}
+        const savedOrder = await readProjectOrderPreference();
+        const sorted = orderItemsByProjectOrder(model.projects, savedOrder);
         setProjects(sorted);
-        setProjectGroups(model.projectGroups);
+        applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
-        setProjectGroupMap(model.projectGroupMap);
         return refreshAllWorktrees(sorted);
       }).catch(() => false);
     };
@@ -1491,72 +1801,148 @@ export default function App() {
       void handleRefreshProjects().then((ok) => resolve?.(ok));
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjectsEvent);
+    const handleAddProjectFromFolder = (event: Event) => {
+      const path = (event as CustomEvent<{ path?: string }>).detail?.path;
+      if (!path) return;
+      setDroppedAddRepoFolder(path);
+      setIsAddRepoOpen(true);
+    };
+    window.addEventListener("hydra:add-project-from-folder", handleAddProjectFromFolder);
+    // The sidebar's icon picker echoes the chosen glyph before the catalog write
+    // lands (and echoes the previous one back if that write fails). App owns
+    // `projects`, so it applies the echo; the authoritative catalog refresh that
+    // follows replaces the whole list.
+    const handleProjectIconOptimistic = (event: Event) => {
+      setProjects((previous) => applyProjectIconEvent(previous, event) ?? previous);
+    };
+    window.addEventListener(PROJECT_ICON_OPTIMISTIC_EVENT, handleProjectIconOptimistic);
     // PR-12: group-header menu mutations arrive as events (SidebarShell owns the menu UI;
     // App owns group state). PR-14: persistence deixou os updaters — o effect da fatia
     // App-owned observa o estado e grava o blob merged no SQLite (debounced 250ms).
-    const handleCreateProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ name: string; projectId?: string }>).detail;
-      if (!detail?.name || typeof detail.name !== "string" || !detail.name.trim()) return;
-      const id = `grp_${Date.now()}`;
-      const newGroup = { id, name: detail.name.trim(), tabOrder: Date.now() };
-      setProjectGroups((prev) => [...prev, newGroup]);
-      if (detail.projectId) {
-        setProjectGroupMap((prev) => ({ ...prev, [detail.projectId!]: id }));
+    //
+    // D03a-021/082/087: every event is host-qualified. The handler resolves the event's
+    // `hostId` against the hosts the catalog actually owns, mutates only that host's
+    // bucket, and answers with `hydra:refresh-projects` only when it applied something —
+    // a silent no-op would leave the sidebar claiming success it cannot persist.
+    const resolveEventGroupHost = (hostId: unknown) => {
+      const knownHostIds = collectKnownProjectGroupHostIds(useAppStore.getState().repos);
+      // A bucket Hydra already persists is addressable even when no live repo row
+      // names the host (e.g. the repo list has not hydrated yet this boot).
+      for (const persistedHostId of Object.keys(projectGroupStateRef.current.groupsByHost)) {
+        knownHostIds.add(persistedHostId);
       }
+      return resolveProjectGroupHost(hostId, knownHostIds);
+    };
+    const acknowledgeProjectGroupChange = () => {
       window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+    };
+    const handleCreateProjectGroup = (e: Event) => {
+      const detail = (e as CustomEvent<{ name?: unknown; projectId?: unknown; hostId?: unknown }>).detail;
+      if (!detail) return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = createProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        name: typeof detail.name === "string" ? detail.name : "",
+        projectId: typeof detail.projectId === "string" ? detail.projectId : undefined,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleMoveProjectToGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId: string; groupId: string }>).detail;
-      if (!detail?.projectId || !detail?.groupId) return;
-      setProjectGroupMap((prev) => ({ ...prev, [detail.projectId]: detail.groupId }));
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      const detail = (e as CustomEvent<{ projectId?: unknown; groupId?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.projectId !== "string" || typeof detail.groupId !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = moveProjectToGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        projectId: detail.projectId,
+        groupId: detail.groupId,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleRemoveProjectFromGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ projectId: string }>).detail;
-      if (!detail?.projectId) return;
-      setProjectGroupMap((prev) => {
-        const next = { ...prev };
-        delete next[detail.projectId];
-        return next;
+      const detail = (e as CustomEvent<{ projectId?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.projectId !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = removeProjectFromGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        projectId: detail.projectId,
       });
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleRenameProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; name: string }>).detail;
-      if (!detail?.id || typeof detail.name !== "string" || !detail.name.trim()) return;
-      setProjectGroups((prev) => prev.map((g) => (g.id === detail.id ? { ...g, name: detail.name.trim() } : g)));
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      const detail = (e as CustomEvent<{ id?: unknown; name?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.id !== "string" || typeof detail.name !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = renameProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
+        name: detail.name,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleUpdateProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; tabOrder?: number }>).detail;
-      if (!detail?.id || typeof detail.tabOrder !== "number") return;
-      setProjectGroups((prev) =>
-        prev
-          .map((group) =>
-            group.id === detail.id ? { ...group, tabOrder: detail.tabOrder } : group
-          )
-          .sort((left, right) => (left.tabOrder ?? 0) - (right.tabOrder ?? 0))
-      );
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      // Manual order from the group-header drop (D03a-021): the sidebar forwards the
+      // group row's owner host, so the re-sort lands in that bucket only.
+      const detail = (e as CustomEvent<{ id?: unknown; tabOrder?: unknown; hostId?: unknown }>).detail;
+      if (!detail || typeof detail.id !== "string" || typeof detail.tabOrder !== "number") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const result = updateProjectGroupOrderInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
+        tabOrder: detail.tabOrder,
+      });
+      if (!result.ok) return;
+      applyProjectGroupHostState(result.state);
+      acknowledgeProjectGroupChange();
     };
     const handleDeleteProjectGroup = (e: Event) => {
-      const detail = (e as CustomEvent<{ id: string; removeProjectPaths?: string[] }>).detail;
-      if (!detail?.id) return;
-      // Orca `removeContainedProjects`: the checkbox deletes the member projects
-      // too; without it they stay, merely ungrouped.
-      for (const path of detail.removeProjectPaths ?? []) {
-        void invoke("remove_project", { path }).catch((error) =>
-          console.error("Failed to remove contained project:", error)
-        );
-      }
-      setProjectGroups((prev) => prev.filter((g) => g.id !== detail.id));
-      // Delete strips the membership map — member projects render ungrouped again.
-      setProjectGroupMap((prev) => {
-        const entries = Object.entries(prev).filter(([, gid]) => gid !== detail.id);
-        if (entries.length === Object.keys(prev).length) return prev;
-        return Object.fromEntries(entries);
+      const detail = (e as CustomEvent<{
+        id?: unknown;
+        hostId?: unknown;
+        groupName?: unknown;
+        removeProjects?: unknown;
+        removeProjectPaths?: unknown;
+      }>).detail;
+      if (!detail || typeof detail.id !== "string") return;
+      const host = resolveEventGroupHost(detail.hostId);
+      if (!host.ok) return;
+      const removeProjects = normalizeContainedProjectRemovals(detail);
+      const deletion = deleteProjectGroupInHost(projectGroupStateRef.current, {
+        hostId: host.hostId,
+        id: detail.id,
       });
-      window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+      if (!deletion.ok) return;
+      applyProjectGroupHostState(deletion.state);
+      acknowledgeProjectGroupChange();
+      if (removeProjects.length === 0) return;
+      // Orca `removeContainedProjects`: each project reports its own removal, so a
+      // single failed project cannot hide behind a success for the rest.
+      void removeContainedProjectsForGroup({
+        hostId: host.hostId,
+        projects: removeProjects,
+        removeProject: (project) => invoke("remove_project", { path: project.path }),
+      }).then((outcome) => {
+        if (outcome.ok) return;
+        const groupLabel =
+          typeof detail.groupName === "string" && detail.groupName.trim()
+            ? detail.groupName.trim()
+            : detail.id;
+        toast.error("Some projects could not be removed", {
+          description: `${outcome.failedProjectIds.length} of ${removeProjects.length} contained project(s) remained in "${groupLabel}": ${outcome.failedProjectIds.join(", ")}`,
+        });
+      });
     };
     window.addEventListener("hydra:create-project-group", handleCreateProjectGroup);
     window.addEventListener("hydra:move-project-to-group", handleMoveProjectToGroup);
@@ -1628,6 +2014,7 @@ export default function App() {
       window.removeEventListener("hydra:update-project-group", handleUpdateProjectGroup);
       window.removeEventListener("hydra:delete-project-group", handleDeleteProjectGroup);
       window.removeEventListener("hydra:open-settings", handleOpenSettingsPane);
+      window.removeEventListener(PROJECT_ICON_OPTIMISTIC_EVENT, handleProjectIconOptimistic);
       mql.removeEventListener("change", onSystemChange);
     };
   }, []);
@@ -1975,31 +2362,17 @@ export default function App() {
           repoPathByWorktreePath.get(childPath) === parentRepoPath
       );
       if (nestable.length === 0) return;
-      setWorktreeLineage((previous) => {
-        const next = { ...previous };
-        for (const childPath of nestable) next[childPath] = parentWorktreePath;
-        persistLineage(next);
-        return next;
-      });
+      void persistWorktreeLineageParents(nestable, parentWorktreePath).catch(() => {});
     },
-    [worktreesByProject]
+    [persistWorktreeLineageParents, worktreesByProject]
   );
 
-  const handleUnnestWorktrees = useCallback((childWorktreePaths: readonly string[]) => {
-    setWorktreeLineage((previous) => {
-      const next = { ...previous };
-      let changed = false;
-      for (const childPath of childWorktreePaths) {
-        if (next[childPath] !== undefined) {
-          delete next[childPath];
-          changed = true;
-        }
-      }
-      if (!changed) return previous;
-      persistLineage(next);
-      return next;
-    });
-  }, []);
+  const handleUnnestWorktrees = useCallback(
+    (childWorktreePaths: readonly string[]) => {
+      void clearWorktreeLineageParents(childWorktreePaths).catch(() => {});
+    },
+    [clearWorktreeLineageParents]
+  );
 
   const handleRemoveProject = (proj: HydraProject) => {
     invoke("catalog_remove_repo", { path: proj.path })
@@ -2007,9 +2380,8 @@ export default function App() {
         invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
           const model = catalogToSidebarModel(envelope);
           setProjects(model.projects);
-          setProjectGroups(model.projectGroups);
-        setFolderWorkspaces(model.folderWorkspaces);
-          setProjectGroupMap(model.projectGroupMap);
+          applyCatalogProjectGroups(model);
+          setFolderWorkspaces(model.folderWorkspaces);
           if (activeProject?.path === proj.path) {
             if (model.projects.length > 0) {
               handleSelectProject(model.projects[0]);
@@ -2056,6 +2428,10 @@ export default function App() {
 
     // 2. Set active worktree
     setActiveWorktreePath(wt.path);
+    // Why after selection: a failed provider resume keeps the workspace selected;
+    // the wake never rolls activation back (D15a-011). Local/SSH hosts have no
+    // `ephemeralVm` bridge, so this is a no-op there.
+    void wakeEphemeralVmForSleptWorktree(wt.path);
     prevProjectPathRef.current = wt.path;
 
     // 3. Update active session if one exists for this worktree
@@ -2145,146 +2521,664 @@ export default function App() {
       });
   };
 
-  const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
-    // If owning project is provided directly and is a git repo, use it!
-    let repoPath = (owningProj && owningProj.is_git) ? owningProj.path : "";
-    if (!repoPath) {
-      for (const proj of projectsRef.current) {
-        if (!proj.is_git) continue;
-        const list = worktreesByProject[proj.path];
-        if (list && list.some((w) => w.path === wt.path)) {
-          repoPath = proj.path;
-          break;
-        }
-      }
-      if (!repoPath) {
-        repoPath = owningProj?.path || activeProject?.path || "";
-      }
+  /**
+   * Resolves the repo a worktree belongs to. Orca refuses the delete when this
+   * cannot be proven (`isContextWorktreeDeletable`), because the backend needs a
+   * `repoPath`; a silent no-op after the confirmation is not acceptable.
+   */
+  const resolveWorktreeRepoPath = useCallback((worktreePath: string): string | null => {
+    for (const proj of projectsRef.current) {
+      if (!proj.is_git) continue;
+      if (proj.path === worktreePath) return proj.path;
+      const list = worktreesByProject[proj.path];
+      if (list?.some((worktree) => worktree.path === worktreePath)) return proj.path;
     }
-    if (!repoPath) return;
+    return null;
+  }, [worktreesByProject]);
 
+  const findWorktreeByIdentity = useCallback(
+    (identity: WorktreeDeleteIdentity) => {
+      for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+        const worktree = list.find((entry) => (entry.id ?? `${repoPath}::${entry.path}`) === identity.id);
+        if (!worktree) continue;
+        const hostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
+        if (identity.hostId && hostId && identity.hostId !== hostId) continue;
+        return {
+          worktree,
+          repoPath,
+          hostId,
+          isMain: worktree.is_main ?? worktree.isMainWorktree ?? worktree.path === repoPath,
+        };
+      }
+      return null;
+    },
+    [storeRepos, worktreesByProject]
+  );
+
+  const refreshAfterDelete = useCallback((repoPaths: Iterable<string>) => {
+    for (const repoPath of new Set(repoPaths)) {
+      if (repoPath) refreshGitWorktrees(repoPath);
+    }
+    if (activeProject && ![...repoPaths].includes(activeProject.path)) {
+      refreshGitWorktrees(activeProject.path);
+    }
+    window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+  }, [activeProject]);
+
+  /** Orca `viewWorktreeDiff`: land on the pending changes instead of deleting blind. */
+  const viewWorktreeChanges = useCallback(async (worktreePath: string) => {
+    try {
+      const numstat = await invoke<{ path: string }[]>("get_diff_numstat_cmd", {
+        repoPath: worktreePath,
+        staged: false,
+      });
+      const first = numstat[0]?.path;
+      if (!first) {
+        invoke("open_in_file_manager", { path: worktreePath }).catch(console.error);
+        return;
+      }
+      const diff = await invoke<string>("git_diff_cmd", {
+        repoPath: worktreePath,
+        file: first,
+        staged: false,
+      });
+      const tabId = `tab_diff_${first}_wt`;
+      setFileTabContents((prev) => ({ ...prev, [tabId]: { original: "", modified: diff, lang: "diff" } }));
+      setTabs((prev) => (prev.some((tab) => tab.id === tabId) ? prev : [...prev, { id: tabId, title: first, type: "diff" }]));
+      setActiveTabId(tabId);
+    } catch (error) {
+      console.error("Failed to open the workspace diff:", error);
+    }
+  }, []);
+
+  /**
+   * One delete executor for the dialog, the skip-confirm preference and the
+   * recovery toast: parallel across (host, repo) groups, child-first inside each
+   * group, immediate per-row progress, aggregated failure toasts.
+   */
+  const runDeleteIdentitiesNow = useCallback(
+    async (
+      identities: readonly WorktreeDeleteIdentity[],
+      options: { force?: boolean; allowArchiveSkip?: boolean } = {}
+    ) => {
+      const targets: ParallelDeleteTarget[] = [];
+      for (const identity of identities) {
+        const live = deleteLiveTargets.find(
+          (row) =>
+            row.id === identity.id &&
+            row.hostId === identity.hostId &&
+            row.instanceId === identity.instanceId
+        );
+        if (!live) continue;
+        targets.push({
+          id: live.id,
+          instanceId: live.instanceId,
+          hostId: live.hostId,
+          path: live.path,
+          repoPath: live.repoPath ?? resolveWorktreeRepoPath(live.path) ?? "",
+          displayName: live.displayName,
+        });
+      }
+      if (targets.length === 0) {
+        showWorkspaceListChangedToast();
+        return { deletedPaths: [], failures: [], missing: true };
+      }
+      const identitiesByPath = new Map(
+        identities.map((identity) => [identity.id, identity])
+      );
+      const failureByPath = new Map<string, string>();
+      const dirtyByPath = dirtyChangeCountsByWorktreeId;
+      // Why: Hydra keeps `activeWorktreePath` until the next explicit selection,
+      // so a successful delete must clear it before the successor hand-off runs.
+      // `onDeleted` fires before the runner commits focus, which makes this set
+      // the authoritative "the viewed row is gone" signal.
+      const deletedPaths = new Set<string>();
+      const commitFocus = prepareActiveWorktreeFocusAfterDelete({
+        targetPath: activeWorktreePathRef.current ?? "",
+        activeWorktreePath: activeWorktreePathRef.current,
+        getActiveWorktreePath: () => {
+          const current = activeWorktreePathRef.current;
+          if (!current) return null;
+          return deletedPaths.has(current) ? null : current;
+        },
+        pickNextPath: (deletedPath) => {
+          for (const proj of projectsRef.current) {
+            const rows = (worktreesByProject[proj.path] ?? []).filter(
+              (row) => row.path !== deletedPath && !deletedPaths.has(row.path)
+            );
+            if (rows.length === 0) {
+              if (proj.path !== deletedPath) return proj.path;
+              continue;
+            }
+            // Orca preference: another non-primary workspace, most recently
+            // visited first; the project's primary checkout is the fallback.
+            const isMainRow = (row: (typeof rows)[number]): boolean =>
+              Boolean(row.is_main ?? row.isMainWorktree ?? (row.path === proj.path))
+            const others = rows.filter((row) => !isMainRow(row))
+            if (others.length > 0) {
+              return others[0].path;
+            }
+            return rows.find((row) => isMainRow(row))?.path ?? rows[0].path;
+          }
+          return null;
+        },
+        focusPath: (nextPath) => {
+          const row = Object.values(worktreesByProject)
+            .flat()
+            .find((worktree) => worktree.path === nextPath);
+          if (row) handleSelectGitWorktree(row);
+        },
+      });
+      const outcome = await runWorktreeDeletesInParallel(targets, {
+        resolveLiveTarget: (id, hostId) => {
+          const live = deleteLiveTargets.find(
+            (row) => row.id === id && (!hostId || row.hostId === hostId)
+          );
+          return live
+            ? {
+                id: live.id,
+                instanceId: live.instanceId,
+                hostId: live.hostId,
+                path: live.path,
+                repoPath: live.repoPath ?? "",
+                displayName: live.displayName,
+              }
+            : undefined;
+        },
+        deleteOptions: options,
+        deleteTarget: async (target, targetOptions) => {
+          try {
+            const result = await invoke<{
+              path: string;
+              removed: boolean;
+              preserved_branches?: { branch_name: string; head?: string | null }[];
+            } | null>("delete_worktree", {
+              repoPath: target.repoPath,
+              worktreePath: target.path,
+              force: targetOptions.force === true,
+              allowArchiveSkip: targetOptions.allowArchiveSkip === true,
+              // Remote owners route the same command to their host-aware path.
+              ...(target.hostId ? { hostId: target.hostId } : {}),
+            });
+            const preserved = result?.preserved_branches?.[0];
+            return preserved?.branch_name
+              ? {
+                  ok: true,
+                  preservedBranch: {
+                    worktreeId: target.id,
+                    branchName: preserved.branch_name,
+                    ...(preserved.head ? { expectedHead: preserved.head } : {}),
+                    ...(target.hostId ? { hostId: target.hostId } : {}),
+                    ...(target.displayName ? { displayName: target.displayName } : {}),
+                    isMainWorktree: target.path === target.repoPath,
+                  },
+                }
+              : { ok: true };
+          } catch (error) {
+            return { ok: false, error: String(error) };
+          }
+        },
+        markDeleting: (rows) => {
+          publishDeleteStateForTargets(
+            rows
+              .map((row) => identitiesByPath.get(row.id))
+              .filter((identity): identity is WorktreeDeleteIdentity => Boolean(identity)),
+            WORKTREE_DELETE_IN_PROGRESS
+          );
+        },
+        clearDeleting: (row) => {
+          const identity = identitiesByPath.get(row.id);
+          if (identity) publishDeleteStateForTargets([identity], null);
+        },
+        onFailure: (target, error) => {
+          failureByPath.set(target.path, error);
+          const failure = describeWorktreeDeleteFailure(error, target.path);
+          const identity = identitiesByPath.get(target.id);
+          showDeleteWorktreeFailureToast({
+            target: {
+              id: target.id,
+              executionHostId: target.hostId ?? null,
+            },
+            worktreeName: target.displayName ?? target.path,
+            summary: failure.summary,
+            guidance: failure.guidance,
+            canForceDelete: failure.canForce && options.force !== true,
+            hasKnownChanges:
+              (dirtyByPath[target.path] ?? 0) > 0 ||
+              failure.summary.toLowerCase().includes("uncommitted"),
+            // Only the archive-hook refusal has a waiver; Git's dirty/locked
+            // refusals are recovered with Force Delete instead.
+            canDeleteAnyway: failure.canWaiveArchiveHook,
+            onViewChanges: () => {
+              void viewWorktreeChanges(target.path);
+            },
+            onForceDelete: () => {
+              if (identity) void runDeleteIdentitiesNow([identity], { force: true });
+            },
+            onDeleteAnyway: () => {
+              if (identity) void runDeleteIdentitiesNow([identity], { allowArchiveSkip: true });
+            },
+          });
+        },
+        onListChanged: showWorkspaceListChangedToast,
+        showPreservedBranches: (deletedCount, branches) => {
+          // A single preserved branch keeps the focused recovery toast (title
+          // distinguishes the main workspace); a batch opens the review flow.
+          const only = branches.length === 1 ? branches[0] : undefined;
+          if (only && deletedCount === 1) {
+            showPreservedBranchToast(
+              only,
+              { displayName: only.displayName, isMainWorktree: only.isMainWorktree },
+              (branchName, expectedHead) => {
+                void (useAppStore.getState() as unknown as {
+                  forceDeletePreservedBranch: (
+                    worktreeId: string,
+                    branch: string,
+                    head: string,
+                    options?: { hostId?: string }
+                  ) => Promise<unknown>;
+                }).forceDeletePreservedBranch(only.worktreeId, branchName, expectedHead, {
+                  ...(only.hostId ? { hostId: only.hostId } : {}),
+                });
+              }
+            );
+            return;
+          }
+          showPreservedBranchBatchToast(deletedCount, branches);
+        },
+        onDeleted: (rows) => {
+          const repoPaths = rows.map((row) => row.repoPath).filter(Boolean);
+          for (const row of rows) deletedPaths.add(row.path);
+          // A deleted workspace must not leave a durable sleep marker behind: a
+          // later workspace reusing the path would boot asleep.
+          for (const row of rows) forgetWorktreeSleepIntent(row.path);
+          refreshAfterDelete(repoPaths);
+          setDeleteStateByWorktreeId((prev) => {
+            const next = { ...prev };
+            for (const row of rows) {
+              const identity = identitiesByPath.get(row.id);
+              if (identity) delete next[getDeleteStateKeyForWorktreeHost(identity)];
+              delete next[row.path];
+            }
+            return next;
+          });
+        },
+        commitFocus,
+      });
+      // A failed target keeps its recovery toast; everything else is refreshed.
+      if (outcome.failed.length > 0) {
+        refreshAfterDelete(targets.map((target) => target.repoPath));
+      }
+      return {
+        deletedPaths: outcome.deleted.map((target) => target.path),
+        failures: outcome.failed.map((target) => ({
+          path: target.path,
+          error: failureByPath.get(target.path) ?? "Failed to delete workspace",
+        })),
+        missing: outcome.listChanged,
+      };
+    },
+    [
+      activeProject,
+      deleteLiveTargets,
+      dirtyChangeCountsByWorktreeId,
+      handleSelectGitWorktree,
+      projectsRef,
+      publishDeleteStateForTargets,
+      refreshAfterDelete,
+      resolveWorktreeRepoPath,
+      viewWorktreeChanges,
+      worktreesByProject,
+    ]
+  );
+
+  /** Opens the confirmation for one or many confirmed identities. */
+  const openDeleteWorktreeConfirmation = useCallback(
+    (identities: readonly WorktreeDeleteIdentity[]) => {
+      const deduped = dedupeDeleteIntentTargets(identities, {
+        isMainWorktree: (identity) => Boolean(findWorktreeByIdentity(identity)?.isMain),
+        isDeleting: (identity) =>
+          Boolean(deleteStateByWorktreeId[getDeleteStateKeyForWorktreeHost(identity)]?.isDeleting),
+      });
+      if (deduped.length === 0) {
+        showNoDeletableWorkspacesToast();
+        return;
+      }
+      const rows = deduped
+        .map((identity) => findWorktreeByIdentity(identity))
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+      if (rows.length === 0) {
+        showNoDeletableWorkspacesToast();
+        return;
+      }
+      if (rows.length === 1 && rows[0].isMain) {
+        // Orca `confirm-remove-folder`: Git refuses to remove the primary
+        // checkout; offer to remove the project from Hydra instead.
+        setConfirmRemoveFolder({
+          repoPath: rows[0].repoPath,
+          displayName: rows[0].worktree.display_name ?? rows[0].worktree.displayName ?? rows[0].repoPath,
+        });
+        return;
+      }
+      setDeleteWorktreeModal({
+        repoPath: rows[0].repoPath,
+        worktrees: rows.map((row) => row.worktree),
+        deleteTargets: deduped,
+        error: null,
+      });
+    },
+    [deleteStateByWorktreeId, findWorktreeByIdentity]
+  );
+
+  const handleDeleteWorktreeSelection = useCallback(
+    (selected: readonly GitWorktreeInfo[], proj?: HydraProject) => {
+      const project = proj ?? activeProject;
+      if (!project) return;
+      const deletable = selectDeletableWorktrees(selected, project.path);
+      if (deletable.length === 0) {
+        showNoDeletableWorkspacesToast();
+        return;
+      }
+      const hostId =
+        getExecutionHostIdForRepoPath(useAppStore.getState().repos, project.path) ?? undefined;
+      // Orca batch funnel: dedupe by (id, host), drop main checkouts and in-flight
+      // rows, and let the unified confirmation own the modal payload.
+      openDeleteWorktreeConfirmation(
+        deletable.map((worktree) => ({
+          id: worktree.id ?? `${project.path}::${worktree.path}`,
+          ...(hostId ? { hostId } : {}),
+        }))
+      );
+    },
+    [activeProject, openDeleteWorktreeConfirmation]
+  );
+  const handleDeleteGitWorktree = (wt: GitWorktreeInfo, owningProj?: HydraProject) => {
+    // Orca `isContextWorktreeDeletable`: a delete without a resolvable repo has no
+    // `repoPath` to hand the backend, so it must say so instead of no-op'ing.
+    const repoPath = resolveWorktreeRepoPath(wt.path) ?? (owningProj?.is_git ? owningProj.path : null);
+    if (!repoPath) {
+      showWorkspaceListChangedToast();
+      return;
+    }
     const targetHostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
     const deleteTarget: WorktreeDeleteIdentity = {
       id: wt.id ?? `${repoPath}::${wt.path}`,
       ...(targetHostId ? { hostId: targetHostId } : {}),
     };
-
-    if (hydraSettings.skip_delete_worktree_confirm) {
-      setDeleteWorktreeModal(null);
-      // STA-4343: even with the confirmation skipped, the delete runs against the
-      // LIVE row the identity resolves to — a vanished or recreated workspace
-      // yields a stale-list notice instead of removing a namesake.
-      const liveTarget = deleteLiveTargets.find(
-        (row) =>
-          row.id === deleteTarget.id &&
-          row.hostId === deleteTarget.hostId &&
-          row.instanceId === deleteTarget.instanceId
-      );
-      if (!liveTarget) {
-        showStaleDeleteNotice();
-        return;
-      }
-      publishDeleteStateForTargets([deleteTarget], WORKTREE_DELETE_IN_PROGRESS);
-      invoke("delete_worktree", {
-        repoPath: liveTarget.repoPath ?? repoPath,
-        worktreePath: liveTarget.path,
-        force: false,
-        ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
-      })
-        .then(() => {
-          refreshGitWorktrees(repoPath);
-          if (activeProject && activeProject.path !== repoPath) {
-            refreshGitWorktrees(activeProject.path);
-          }
-          window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-        })
-        .catch((err) => {
-          console.error("delete_worktree failed:", err);
-          // Orca `showWorktreeDeleteFailureToast`: the recovery lives in a toast with
-          // a Force Delete action, not in a reopened dialog the user has to dismiss.
-          const failure = describeWorktreeDeleteFailure(String(err), liveTarget.path);
-          toast.error(failure.summary, {
-            description: failure.guidance ?? undefined,
-            duration: Infinity,
-            action: failure.canForce
-              ? {
-                  label: "Force Delete",
-                  onClick: () => {
-                    publishDeleteStateForTargets([deleteTarget], WORKTREE_DELETE_IN_PROGRESS);
-                    invoke("delete_worktree", {
-                      repoPath: liveTarget.repoPath ?? repoPath,
-                      worktreePath: liveTarget.path,
-                      force: true,
-                      ...(liveTarget.hostId ? { hostId: liveTarget.hostId } : {}),
-                    })
-                      .then(() => {
-                        refreshGitWorktrees(repoPath);
-                        if (activeProject && activeProject.path !== repoPath) {
-                          refreshGitWorktrees(activeProject.path);
-                        }
-                        window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
-                        toast.success("Workspace deleted");
-                      })
-                      .catch((forceErr) => {
-                        const retry = describeWorktreeDeleteFailure(
-                          String(forceErr),
-                          liveTarget.path
-                        );
-                        toast.error(retry.summary, {
-                          description: retry.guidance ?? undefined,
-                          duration: Infinity,
-                        });
-                      })
-                      .finally(() => publishDeleteStateForTargets([deleteTarget], null));
-                  },
-                }
-              : undefined,
-          });
-        })
-        .finally(() => {
-          // A refusal must leave the card interactive again; the toast owns the retry.
-          publishDeleteStateForTargets([deleteTarget], null);
-        });
+    const liveTarget = deleteLiveTargets.find(
+      (row) =>
+        row.id === deleteTarget.id &&
+        row.hostId === deleteTarget.hostId &&
+        row.instanceId === deleteTarget.instanceId
+    );
+    if (!liveTarget) {
+      showWorkspaceListChangedToast();
       return;
     }
-    setDeleteWorktreeModal({ repoPath, worktrees: [wt], deleteTargets: [deleteTarget], error: null });
+    const isMain = wt.is_main ?? wt.isMainWorktree ?? wt.path === repoPath;
+    if (isMain) {
+      // Git refuses to remove the primary checkout; offer the project removal the
+      // menu already documents instead of leaving a dead destructive dialog.
+      setConfirmRemoveFolder({
+        repoPath,
+        displayName: liveTarget.displayName ?? repoPath,
+      });
+      return;
+    }
+    // Orca `clearWorktreeDeleteState` before every new attempt.
+    publishDeleteStateForTargets([deleteTarget], null);
+
+    // A disconnected/ghost SSH host cannot run the remote removal; surface the
+    // reconnect/forget decision instead of a backend refusal.
+    const sshRepo = useAppStore.getState().repos.find((repo) => repo.path === repoPath) ?? null;
+    const liveSshState = useAppStore.getState();
+    const sshResolution = resolveSshWorkspaceForget({
+      repo: sshRepo,
+      sshConnectionStates: liveSshState.sshConnectionStates,
+      sshTargetLabels: liveSshState.sshTargetLabels,
+    });
+    if (sshResolution.kind === 'ghost' || sshResolution.kind === 'disconnected') {
+      setForgetSshTarget({
+        resolution: sshResolution,
+        repoPath,
+        worktreePath: wt.path,
+        displayName: liveTarget.displayName ?? wt.branch ?? wt.path,
+      });
+      return;
+    }
+
+    const lineage = getWorkspaceDeleteLineage(
+      {
+        id: wt.path,
+        path: wt.path,
+        ...(isMain ? { isMainWorktree: true } : {}),
+      },
+      lineageWorktreeRows,
+      worktreeLineage
+    );
+    const hasLineageChildren = lineage.descendants.length > 0;
+    if (hydraSettings.skip_delete_worktree_confirm && !hasLineageChildren) {
+      void runDeleteIdentitiesNow([deleteTarget]);
+      return;
+    }
+    setDeleteWorktreeModal({
+      repoPath,
+      worktrees: [wt],
+      deleteTargets: [deleteTarget],
+      error: null,
+    });
   };
 
-  // Orca parity (useDeleteWorktreeStatusHydration): hydrate dirty-change counts
-  // for the dialog targets when it opens.
-  useEffect(() => {
-    if (!deleteWorktreeModal) return;
-    // Why cancelled: a new modal (or dismissal) must not let a stale probe write a
-    // count onto the next dialog's targets.
-    let cancelled = false;
-    const targets = deleteWorktreeModal.deleteTargets ?? [];
-    deleteWorktreeModal.worktrees.forEach((wt, index) => {
-      const hostId = targets[index]?.hostId;
-      // Only the local owner can be probed from this process; a remote target shows
-      // an unknown count instead of a wrong local one.
-      if (!canHydrateDeleteTargetLocally(hostId)) {
-        setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: null }));
-        return;
-      }
-      invoke<{ unstaged_count: number; untracked_count: number; staged_count: number }>(
-        "get_detailed_git_status_cmd",
-        { repoPath: wt.path }
-      )
-        .then((res) => {
-          if (cancelled) return;
-          const dirty = (res?.unstaged_count ?? 0) + (res?.untracked_count ?? 0) + (res?.staged_count ?? 0);
-          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: dirty }));
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setDirtyChangeCountsByWorktreeId((prev) => ({ ...prev, [wt.path]: null }));
-        });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [deleteWorktreeModal]);
+  /** D07-028: local-only forget for a disconnected/ghost SSH workspace. */
+  const handleForgetSshWorkspace = useCallback(async (): Promise<boolean> => {
+    const target = forgetSshTarget;
+    if (!target) return false;
+    try {
+      await invoke<SshForgetWorkspaceResult>("ssh_forget_workspace", {
+        connectionId: target.resolution.targetId,
+        worktreePath: target.worktreePath,
+      });
+      setForgetSshTarget(null);
+      toast.success("Workspace forgotten");
+      await requestProjectsRefresh();
+      return true;
+    } catch (error) {
+      toast.error("Could not forget the SSH workspace", {
+        description: String(error),
+      });
+      return false;
+    }
+  }, [forgetSshTarget]);
 
+  /** D07-028: probe the target, publish the connection state, then retry delete. */
+  const handleReconnectAndDeleteSshWorkspace = useCallback(async (): Promise<boolean> => {
+    const target = forgetSshTarget;
+    if (!target) return false;
+    const connectionId = target.resolution.targetId;
+    const store = useAppStore.getState();
+    store.setSshConnectionState(
+      connectionId,
+      buildSshConnectingState(connectionId, store.sshConnectionStates.get(connectionId))
+    );
+    try {
+      const result = await invoke<SshReconnectResult>("ssh_reconnect_target", {
+        connectionId,
+      });
+      const latest = useAppStore.getState();
+      latest.setSshConnectionState(
+        connectionId,
+        buildSshReconnectConnectionState(
+          result,
+          latest.sshConnectionStates.get(connectionId)
+        )
+      );
+      if (result.status !== "connected") {
+        toast.error("SSH reconnect failed", {
+          description: sshReconnectFailureMessage(result),
+        });
+        return false;
+      }
+      setForgetSshTarget(null);
+      toast.success("SSH host reconnected");
+      await requestProjectsRefresh();
+      const row = (worktreesByProject[target.repoPath] ?? []).find(
+        (worktree) => worktree.path === target.worktreePath
+      );
+      if (row) {
+        handleDeleteGitWorktree(row);
+      } else {
+        toast.info("Host reconnected. Delete the workspace again from the sidebar.");
+      }
+      return true;
+    } catch (error) {
+      const latest = useAppStore.getState();
+      const previous = latest.sshConnectionStates.get(connectionId);
+      latest.setSshConnectionState(connectionId, {
+        ...(previous ?? {
+          targetId: connectionId,
+          status: "disconnected" as const,
+          error: null,
+          reconnectAttempt: 0,
+        }),
+        targetId: connectionId,
+        status: "reconnection-failed",
+        error: String(error),
+      });
+      toast.error("SSH reconnect failed", { description: String(error) });
+      return false;
+    }
+  }, [forgetSshTarget, worktreesByProject]);
+
+  /**
+   * Orca `hovered-workspace-delete`: Option/Alt + Backspace/Delete deletes the
+   * row under the pointer immediately. Guards: no modal, no editable field, no
+   * primary checkout, no in-flight delete, no duplicate folder request.
+   */
+  useEffect(() => {
+    const deps: HoveredWorkspaceDeleteDependencies = {
+      isModalOpen: () =>
+        Boolean(
+          deleteWorktreeModal ||
+            folderDeleteTarget ||
+            parentPickerState ||
+            isSettingsOpen ||
+            isNewWorkspaceOpen ||
+            isAddRepoOpen ||
+            isCommandPaletteOpen ||
+            isJumpPaletteOpen ||
+            isPairingOpen
+        ),
+      deleteWorktree: (row) => {
+        const resolved = findWorktreeByIdentity(row);
+        if (!resolved) {
+          showWorkspaceListChangedToast();
+          return;
+        }
+        handleDeleteGitWorktree(resolved.worktree, projectsRef.current.find((project) => project.path === resolved.repoPath));
+      },
+      deleteFolderWorkspace: async (folderWorkspaceId) => {
+        try {
+          return await (useAppStore.getState() as unknown as {
+            deleteFolderWorkspace: (id: string) => Promise<boolean>;
+          }).deleteFolderWorkspace(folderWorkspaceId);
+        } catch (error) {
+          console.error("Failed to remove folder workspace:", error);
+          return false;
+        }
+      },
+      findWorktree: (workspaceId, hostIdentity) => {
+        for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+          const worktree = list.find(
+            (entry) => (entry.id || entry.path) === workspaceId || entry.path === workspaceId
+          );
+          if (!worktree) continue;
+          const hostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
+          if (
+            hostIdentity &&
+            getWorktreeHostIdentity({ id: workspaceId, hostId }) !== hostIdentity
+          ) {
+            continue;
+          }
+          return {
+            id: worktree.id ?? `${repoPath}::${worktree.path}`,
+            hostId,
+            path: worktree.path,
+            repoPath,
+            isMainWorktree: worktree.is_main ?? worktree.isMainWorktree ?? false,
+            isDeleting: Boolean(
+              deleteStateByWorktreeId[
+                getDeleteStateKeyForWorktreeHost({
+                  id: worktree.id ?? `${repoPath}::${worktree.path}`,
+                  hostId,
+                })
+              ]?.isDeleting
+            ),
+          };
+        }
+        return null;
+      },
+      findFolderWorkspace: (workspaceId, hostIdentity) => {
+        const folder = folderWorkspaces.find((entry) => entry.id === workspaceId);
+        if (!folder) return null;
+        if (
+          hostIdentity &&
+          folder.executionHostId &&
+          composeWorktreeHostIdentity(
+            (folder.executionHostId as ExecutionHostId | null | undefined) ?? undefined,
+            folder.id
+          ) !== hostIdentity
+        ) {
+          return null;
+        }
+        return { id: folder.id, path: folder.folderPath };
+      },
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey || (event.key !== "Backspace" && event.key !== "Delete")) return;
+      if (event.defaultPrevented) return;
+      if (deleteHoveredWorkspaceImmediately(deps)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [
+    deleteStateByWorktreeId,
+    deleteWorktreeModal,
+    findWorktreeByIdentity,
+    folderDeleteTarget,
+    folderWorkspaces,
+    handleDeleteGitWorktree,
+    isAddRepoOpen,
+    isCommandPaletteOpen,
+    isJumpPaletteOpen,
+    isNewWorkspaceOpen,
+    isPairingOpen,
+    isSettingsOpen,
+    parentPickerState,
+    storeRepos,
+    worktreesByProject,
+  ]);
+
+
+  const deleteDialogDirtyCounts = useMemo(() => {
+    if (!deleteWorktreeModal) return {};
+    const identities = deleteWorktreeModal.deleteTargets ?? [];
+    const targets = deleteWorktreeModal.worktrees.map((wt, index) => ({
+      id: identities[index]?.id ?? wt.path,
+      path: wt.path,
+      hostId: identities[index]?.hostId,
+      isMainWorktree: wt.is_main ?? wt.isMainWorktree ?? false,
+    }));
+    return Object.fromEntries(
+      getDeleteWorktreeDirtyChangeCounts({
+        deleteTargets: targets,
+        dirtyChangeCountByPath: dirtyChangeCountsByWorktreeId,
+        deleteStateByWorktreeId,
+      })
+    );
+  }, [deleteStateByWorktreeId, deleteWorktreeModal, dirtyChangeCountsByWorktreeId]);
 
   const handleCreatedWorkspace = (worktreePath: string, branchName: string, agentName: string, executable: string) => {
     // The lane's create path persisted the status through `set_worktree_status`; refresh
@@ -2407,9 +3301,8 @@ export default function App() {
 
   const handleReorderProjects = (newProjects: HydraProject[]) => {
     setProjects(newProjects);
-    try {
-      localStorage.setItem("hydra:projects_order", JSON.stringify(newProjects.map(p => p.id)));
-    } catch {}
+    // D03b-029: one writer for the repo-header drop, persisted through the SQLite prefs.
+    persistProjectOrderPreference(newProjects.map((project) => project.id));
   };
 
   const handleReorderWorktrees = (newWorktrees: GitWorktreeInfo[], projectPath?: string) => {
@@ -2617,6 +3510,62 @@ export default function App() {
           .map((t) => t.cwd as string)
       ),
     [tabs]
+  );
+
+  // ─── Parent picker: candidate universe, eligibility, lineage writers ────────
+  //
+  // Orca's picker computes its own eligibility (`getEligibleWorktreeParents`) from the whole
+  // workspace universe; Hydra's menu used to offer every other project and worktree, so a
+  // cross-repo or already-parented choice could be made and then silently dropped by the
+  // sidebar projection. The universe below is the same one the sidebar paints: each project's
+  // main row plus its scanned worktrees, with the host/repo chrome the picker row shows.
+  const parentPickerCandidates = useMemo(
+    () =>
+      buildWorktreeParentPickerCandidates({
+        projects,
+        worktreesByProject,
+        repos: storeRepos,
+        sessions,
+        liveWorkspacePaths,
+        activeWorktreePath,
+      }),
+    [projects, worktreesByProject, storeRepos, sessions, liveWorkspacePaths, activeWorktreePath]
+  );
+  const parentPickerCandidateByPath = useMemo(
+    () => new Map(parentPickerCandidates.map((candidate) => [candidate.path, candidate])),
+    [parentPickerCandidates]
+  );
+  const getEligibleParentCandidates = useCallback(
+    (childPath: string): WorktreeParentPickerCandidate[] => {
+      const child = parentPickerCandidateByPath.get(childPath);
+      return child
+        ? getEligibleWorktreeParents({
+            child,
+            candidates: parentPickerCandidates,
+            lineageByPath: worktreeLineage,
+          })
+        : [];
+    },
+    [parentPickerCandidateByPath, parentPickerCandidates, worktreeLineage]
+  );
+  /**
+   * Optimistic publish through the persistence hook: state updates immediately,
+   * the IPC write follows, and a rejection rolls the affected edges back with a
+   * toast. Callers may fire-and-forget; the hook owns the failure surface.
+   */
+  const setWorktreeLineageParents = useCallback(
+    async (keys: readonly string[], parentPath: string) => {
+      await persistWorktreeLineageParents(keys, parentPath).catch(() => {});
+    },
+    [persistWorktreeLineageParents]
+  );
+  const unnestWorktreePaths = useCallback(
+    (keys: readonly string[]) => {
+      // One optimistic state update + one persisted batch, so a rejected
+      // un-nest rolls back once and reports one toast.
+      void clearWorktreeLineageParents(keys).catch(() => {});
+    },
+    [clearWorktreeLineageParents]
   );
 
   /** Folder workspaces whose directory is gone: Orca badges those with FolderX
@@ -3015,6 +3964,9 @@ export default function App() {
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalContextMenu = (e: MouseEvent) => {
+      // Orca `shouldUseNativeContextMenu`: terminal/editor surfaces opt out of the
+      // sidebar's menu so their own native/browser menu still opens.
+      if (shouldUseNativeContextMenu(e.target)) return;
       e.preventDefault();
     };
     window.addEventListener("contextmenu", handleGlobalContextMenu);
@@ -3111,6 +4063,14 @@ export default function App() {
       ) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent("hydra:toggle-sleeping-workspaces"));
+        return;
+      }
+      // D08-001: the board toggle is a registry command (`workspace.openBoard`), unbound by
+      // default and remappable. The sidebar's panel hook owns the actual state; the app only
+      // dispatches the same event the footer button's toggle does.
+      if (keybindingMatchesAction("workspace.openBoard", e, getShortcutPlatform(), keybindings)) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("hydra:toggle-workspace-board"));
         return;
       }
       if (keybindingMatchesAction("sidebar.left.toggle", e, getShortcutPlatform(), keybindings)) {
@@ -3692,16 +4652,181 @@ export default function App() {
     });
     return items;
   };
-  const sleepSessionsForPaths = (paths: string[]) => {
-    // Orca `sleep-worktree-flow`: capture the visible-row anchor in the same tick the
-    // rows disappear, so the virtualized restore pins the same workspace instead of
-    // jumping to the top.
-    requestVirtualizedScrollAnchorRecord("[data-worktree-sidebar]");
-    const ids = sessions.filter((s) => paths.some((p) => s.project_path === p || s.project_path.startsWith(p))).map((s) => s.id);
-    // close associated tabs and mark sessions inactive; emulate Orca sleep (close panels)
-    setTabs((prev) => prev.filter((t) => !ids.some((id) => t.id === `tab_${id}` || t.sessionId === id)));
-    setSessions((prev) => prev.map((s) => ids.includes(s.id) ? { ...s, state: "idle" as const } : s));
+  /**
+   * Orca `window.api.ui.writeClipboardText`: prefer the native bridge, fall back to
+   * the web clipboard so the menu command stays observable in every shell.
+   */
+  const copyToClipboard = (text: string) => {
+    const api = (window as unknown as {
+      api?: { ui?: { writeClipboardText?: (value: string) => Promise<void> } };
+    }).api;
+    const write = api?.ui?.writeClipboardText;
+    if (write) {
+      void write.call(api?.ui, text).catch(() => {
+        navigator.clipboard.writeText(text).catch(console.error);
+      });
+      return;
+    }
+    navigator.clipboard.writeText(text).catch(console.error);
   };
+  /**
+   * Orca sleep eligibility: Hydra folds its App-owned sessions/tabs and the
+   * store's browser tabs into Orca's activity maps. A workspace with nothing to
+   * release must show Sleep disabled instead of pretending to free memory.
+   */
+  const sleepActivityMaps = useMemo(
+    () =>
+      buildHydraSleepActivityMaps({
+        sessions: sessions.map((session) => ({
+          id: session.id,
+          project_path: session.project_path,
+          state: session.state,
+        })),
+        tabs: tabs.map((tab) => ({
+          id: tab.id,
+          cwd: tab.cwd,
+          sessionId: tab.sessionId,
+          splitPanes: tab.splitPanes,
+          splitSessionIds: tab.splitSessionIds,
+        })),
+        browserTabsByWorktree: storeBrowserTabsByWorktree,
+      }),
+    [sessions, tabs, storeBrowserTabsByWorktree]
+  );
+
+  /** Every workspace row (visible or hidden) keyed by path, for lineage walks. */
+  const lineageWorktreeRows = useMemo(() => {
+    const rows = new Map<string, { id: string; path: string; isMainWorktree?: boolean }>();
+    for (const list of Object.values(worktreesByProject)) {
+      for (const wt of list) {
+        rows.set(wt.path, {
+          id: wt.path,
+          path: wt.path,
+          ...(wt.is_main ?? wt.isMainWorktree ? { isMainWorktree: true } : {}),
+        });
+      }
+    }
+    for (const wt of gitWorktrees) {
+      if (rows.has(wt.path)) continue;
+      rows.set(wt.path, {
+        id: wt.path,
+        path: wt.path,
+        ...(wt.is_main ?? wt.isMainWorktree ? { isMainWorktree: true } : {}),
+      });
+    }
+    return [...rows.values()];
+  }, [worktreesByProject, gitWorktrees]);
+
+  /**
+   * Orca `sleep-worktree-flow`: ordered teardown (browsers → terminals → VM), sleep
+   * intent + wake, active-workspace clearance and failure rollback. `keepIdentifiers`
+   * keeps the persisted workbench record and marks sessions idle, so wake reloads
+   * the same layout instead of a blank terminal.
+   */
+  const sleepWorktreePaths = useCallback(
+    (paths: readonly string[]) => {
+      const ids = [...new Set(paths.filter(Boolean))];
+      if (ids.length === 0) return;
+      void runSleepWorktrees(ids, {
+        getActiveWorktreeId: () => activeWorktreePathRef.current,
+        setActiveWorktree: (worktreePath) => {
+          setActiveWorktreePath(worktreePath);
+        },
+        getSleepPayload: (worktreePath) => {
+          const keptTabs = tabsRef.current.filter((tab) => {
+            const cwd = tab.cwd ?? "";
+            return cwd === worktreePath || cwd.startsWith(`${worktreePath}/`);
+          });
+          return serializeWorktreeSleepIntentPayload({
+            version: 1,
+            reason: "manual-sleep",
+            tabIds: keptTabs.map((tab) => tab.id),
+            activeTabId:
+              activeWorktreePathRef.current === worktreePath
+                ? activeTabIdRef.current || null
+                : null,
+          });
+        },
+        shutdownWorktreeBrowsers: async (worktreePath) => {
+          // The live store does not compose the browser slice yet, so the guest
+          // teardown cannot depend on its action existing. Destroy by registry
+          // first (idempotent), then let the action clear rows if it is present.
+          const state = useAppStore.getState();
+          const pages = state.browserPagesByWorkspace;
+          const tabs: unknown = state.browserTabsByWorktree[worktreePath] ?? [];
+          if (Array.isArray(tabs)) {
+            for (const tab of tabs) {
+              if (
+                tab !== null &&
+                typeof tab === "object" &&
+                "id" in tab &&
+                typeof tab.id === "string"
+              ) {
+                destroyWorkspaceWebviews(pages, tab.id);
+              }
+            }
+          }
+          // Legacy sessions keyed by the workspace itself own a guest too.
+          destroyWorkspaceWebviews(pages, worktreePath);
+          const shutdown =
+            "shutdownWorktreeBrowsers" in state
+              ? state.shutdownWorktreeBrowsers
+              : undefined;
+          if (typeof shutdown === "function") {
+            await shutdown.call(state, worktreePath);
+          }
+        },
+        shutdownWorktreeTerminals: async (worktreePath) => {
+          const sessionIds = new Set<string>();
+          const targetTabs = tabsRef.current.filter((tab) => {
+            const cwd = tab.cwd ?? "";
+            return cwd === worktreePath || cwd.startsWith(`${worktreePath}/`);
+          });
+          for (const tab of targetTabs) {
+            for (const pane of getPanesForTab(tab)) sessionIds.add(pane.sessionId);
+          }
+          for (const session of sessions) {
+            if (session.project_path === worktreePath) sessionIds.add(session.id);
+          }
+          // keepIdentifiers: close the live PTYs but keep the on-disk records and
+          // the workbench layout, so wake re-spawns the same tabs/history.
+          for (const sessionId of sessionIds) {
+            invoke("close_split_terminal", { sessionId }).catch(() => {});
+          }
+          if (targetTabs.length > 0) {
+            // Why skip-once: this clear is UI only; the persisted tabs are the wake state.
+            skipWorkbenchPersistenceOnceRef.current = true;
+            const targetTabIds = new Set(targetTabs.map((tab) => tab.id));
+            setTabs((prev) => {
+              const remaining = prev.filter((tab) => !targetTabIds.has(tab.id));
+              if (activeTabIdRef.current && targetTabIds.has(activeTabIdRef.current)) {
+                setActiveTabId(remaining[remaining.length - 1]?.id ?? "");
+              }
+              return remaining;
+            });
+          }
+          setSessions((prev) =>
+            prev.map((session) =>
+              sessionIds.has(session.id)
+                ? { ...session, state: "idle" as const, active: false }
+                : session
+            )
+          );
+        },
+        // No `window.api.ephemeralVm.suspendWorkspace` bridge exists in Hydra; the
+        // frontend contract stays optional until the IPC lands.
+        captureScrollAnchor: () => requestVirtualizedScrollAnchorRecord("[data-worktree-sidebar]"),
+      }).then((result) => {
+        if (result.errors.length === 0) return;
+        toast.error(
+          ids.length === 1 ? "Failed to sleep workspace" : "Failed to sleep some workspaces",
+          { description: result.errors.join("\n") }
+        );
+      });
+    },
+    [getPanesForTab, sessions, storeBrowserTabsByWorktree]
+  );
+
 
   const togglePinProject = (id: string) => {
     setPinnedProjects((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
@@ -3769,17 +4894,11 @@ export default function App() {
     const groupName = groupId ? projectGroups.find((g) => g.id === groupId)?.name : undefined;
     void groupName;
     const lineageParent = worktreeLineage[proj.path];
-    const eligibleParents: ParentCandidate[] = projects
-      .filter((p) => p.id !== proj.id)
-      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
-      .concat(
-        gitWorktrees
-          .filter((w) => w.path !== proj.path)
-          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
-      );
+    const eligibleParents = getEligibleParentCandidates(proj.path);
     const developerRevealed = e.altKey;
     const openInChildren = getOpenInItems(proj.path);
 
+    window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
     setContextMenu({
       source: "sidebar",
       x: e.clientX,
@@ -3823,7 +4942,8 @@ export default function App() {
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, onClick: () => togglePinProject(proj.id), separator: true },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadProject(proj.id) },
         { label: "New group from project", icon: <FolderPlus className="w-3.5 h-3.5" />, separator: true, onClick: () => {
-            window.dispatchEvent(new CustomEvent("hydra:open-new-group-dialog", { detail: { projectId: proj.id, defaultName: `${proj.name} group` } }));
+            const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path);
+            window.dispatchEvent(new CustomEvent("hydra:open-new-group-dialog", { detail: { projectId: proj.id, defaultName: `${proj.name} group`, ...(hostId ? { hostId } : {}) } }));
           }
         },
         ...(projectGroups.length > 0 ? [{
@@ -3834,14 +4954,13 @@ export default function App() {
             icon: undefined,
             disabled: projectGroupMap[proj.id] === g.id,
             onClick: () => {
-              const nextMap = { ...projectGroupMap, [proj.id]: g.id };
-              setProjectGroupMap(nextMap);
-              window.dispatchEvent(new CustomEvent("hydra:refresh-projects"));
+              const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path);
+              window.dispatchEvent(new CustomEvent("hydra:move-project-to-group", { detail: { projectId: proj.id, groupId: g.id, ...(hostId ? { hostId } : {}) } }));
             },
           })),
           onClick: () => {},
         } as ContextMenuItem] : []),
-        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const m = { ...projectGroupMap }; delete m[proj.id]; setProjectGroupMap(m); window.dispatchEvent(new CustomEvent("hydra:refresh-projects")); } } as ContextMenuItem] : []),
+        ...(groupId ? [{ label: "Remove from group", icon: <X className="w-3.5 h-3.5" />, onClick: () => { const hostId = getExecutionHostIdForRepoPath(storeRepos, proj.path); window.dispatchEvent(new CustomEvent("hydra:remove-project-from-group", { detail: { projectId: proj.id, ...(hostId ? { hostId } : {}) } })); } } as ContextMenuItem] : []),
         {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
@@ -3849,30 +4968,19 @@ export default function App() {
           disabled: eligibleParents.length === 0,
           title: eligibleParents.length === 0 ? "No eligible parents" : undefined,
           onClick: () => {
-            if (eligibleParents.length === 0) return;
-            const candidates: ParentCandidate[] = eligibleParents.map(
-              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
-                id: p.id || p.path || "",
-                name: p.name || p.id || "",
-                path: p.path || p.id || "",
-                branch: p.branch,
-              })
-            );
-            setParentPickerModal({
-              targetName: proj.name,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = { ...worktreeLineage, [proj.path]: selectedPath };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[proj.path];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(proj.path);
+            if (!child || eligibleParents.length === 0) return;
+            // Orca `handleOpenParentPicker`: dismiss the menu first and open the anchored
+            // picker after the close cycle.
+            window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+            setContextMenu(null);
+            scheduleParentPickerOpen({
+              child,
+              anchorRect: getParentPickerAnchorRect(e, proj.path),
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              selectParent: (selectedPath) => setWorktreeLineageParents([proj.path], selectedPath),
+              removeParent: () => unnestWorktreePaths([proj.path]),
             });
           },
         },
@@ -3880,9 +4988,9 @@ export default function App() {
               const parentProj = projects.find((p) => p.path === lineageParent);
               if (parentProj) handleSelectProject(parentProj);
               else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[proj.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([proj.path]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Path: ${proj.path}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(proj.path).catch(console.error) } as ContextMenuItem, { label: `Is Git: ${proj.is_git ? "yes" : "no"} · Branch: ${proj.current_branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
-        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([proj.path]) },
+        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepWorktreePaths([proj.path]) },
         { label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", onClick: () => {}, separator: true },
         { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) },
       ]
@@ -3925,6 +5033,57 @@ export default function App() {
     [assignWorktreeStatuses]
   );
 
+  /** Orca folder-row context: the entry removal travels as a typed `folder` intent. */
+  const handleFolderWorkspaceContextMenu = (
+    e: React.MouseEvent,
+    folder: { id: string; name: string; folderPath: string }
+  ) => {
+    window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+    setContextMenu({
+      source: "sidebar",
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        { label: "Workspace", isLabel: true, onClick: () => {} },
+        {
+          label: "Open in",
+          icon: <FolderOpen className="w-3.5 h-3.5" />,
+          children: getOpenInItems(folder.folderPath),
+          onClick: () => {},
+        },
+        {
+          label: "Copy Path",
+          icon: <Copy className="w-3.5 h-3.5" />,
+          onClick: () => copyToClipboard(folder.folderPath),
+        },
+        {
+          label: "Remove Workspace...",
+          icon: <Trash2 className="w-3.5 h-3.5" />,
+          danger: true,
+          separator: true,
+          onClick: () => {
+            const intent = createWorktreeContextMenuDeleteIntent({
+              worktree: { id: folder.id },
+              batchDeleteWorktrees: [],
+              isMultiContext: false,
+              folderWorkspaceId: folder.id,
+            });
+            // Why deferred: the confirmation must open after this menu closes, so
+            // Escape/outside-click handling cannot dismiss both at once.
+            deferWorktreeContextMenuDeleteIntent(intent, {
+              openDelete: () => {},
+              deleteFolderWorkspace: async (folderWorkspaceId) => {
+                handleDeleteFolderWorkspace(folderWorkspaceId);
+                return true;
+              },
+            });
+            setContextMenu(null);
+          },
+        },
+      ],
+    });
+  };
+
   const handleWorktreeContextMenu = (
     e: React.MouseEvent,
     wt: GitWorktreeInfo,
@@ -3937,17 +5096,116 @@ export default function App() {
     const isPinned = pinnedWorktrees.has(wt.path);
     const isUnread = unreadWorktrees.has(wt.path);
     const lineageParent = worktreeLineage[wt.path];
-    const eligibleParents: ParentCandidate[] = projects
-      .filter((p) => p.path !== wt.path)
-      .map((p) => ({ id: p.id, name: p.name, path: p.path, branch: p.current_branch }))
-      .concat(
-        gitWorktrees
-          .filter((w) => w.path !== wt.path)
-          .map((w) => ({ id: w.path, name: w.branch || w.path, path: w.path, branch: w.branch }))
-      );
-    const developerRevealed = e.altKey;
+    const eligibleParents = getEligibleParentCandidates(wt.path);
+    const contextPaths =
+      targetWorktreePaths && targetWorktreePaths.length > 0 ? [...targetWorktreePaths] : [wt.path];
+    const isMultiContext = contextPaths.length > 1;
+    // Orca `shouldRevealWorktreeDeveloperMenu`: Option/Alt at open time reveals the
+    // developer rows, and a multi-context menu never does.
+    const developerRevealed = shouldRevealWorktreeDeveloperMenu({
+      developerMenuRevealed: e.altKey,
+      isMultiContext,
+    });
+
     const openInChildren = getOpenInItems(wt.path);
-    const descendantCount = Object.values(worktreeLineage).filter((parent) => parent === wt.path).length;
+    const contextRows = contextPaths
+      .map((path) => lineageWorktreeRows.find((row) => row.path === path))
+      .filter((row): row is NonNullable<typeof row> => Boolean(row));
+    // Orca sleep: recursive descendants (not one level), eligibility-filtered
+    // targets, and a dedicated subtree row.
+    const sleepLineage = isMultiContext
+      ? { descendants: [], targets: [], sleepableTargets: [] }
+      : getWorkspaceSleepLineage(
+          { id: wt.path, path: wt.path },
+          lineageWorktreeRows,
+          worktreeLineage,
+          sleepActivityMaps
+        );
+    const sleepMenu = getWorkspaceSleepMenuState({
+      isMultiContext,
+      activeContextWorktrees: contextRows,
+      lineageDescendantCount: sleepLineage.descendants.length,
+      sleepableTargets: sleepLineage.targets,
+      activity: sleepActivityMaps,
+    });
+    const sleepOncePaths = isMultiContext
+      ? getSleepableWorktrees(contextRows, sleepActivityMaps).map((row) => row.id)
+      : [wt.path];
+    const subtreeSleepPaths = sleepLineage.sleepableTargets.map((row) => row.id);
+    // Delete policy: only rows whose repo resolves and that are not in-flight can
+    // be deleted; an unresolved repo would silently no-op after confirmation.
+    const contextIdentities: WorktreeDeleteIdentity[] = [];
+    for (const path of contextPaths) {
+      for (const [repoPath, list] of Object.entries(worktreesByProject)) {
+        const row = list.find((entry) => entry.path === path);
+        if (!row) continue;
+        const rowHostId = getExecutionHostIdForRepoPath(storeRepos, repoPath);
+        contextIdentities.push({
+          id: row.id ?? `${repoPath}::${row.path}`,
+          ...(rowHostId ? { hostId: rowHostId } : {}),
+        });
+        break;
+      }
+    }
+    const isContextDeleting = contextIdentities.some((identity) =>
+      Boolean(deleteStateByWorktreeId[getDeleteStateKeyForWorktreeHost(identity)]?.isDeleting)
+    );
+    const singleRepoResolved = resolveWorktreeRepoPath(wt.path) !== null;
+    const deleteAllowed = isMultiContext
+      ? contextIdentities.length > 0 && !isContextDeleting
+      : isContextWorktreeDeletable(
+          { isMainWorktree: isMain },
+          singleRepoResolved ? { id: proj.id } : null
+        ) && !isContextDeleting;
+    const groupId = projectGroupMap[proj.id];
+    const hostIdForGroups = getExecutionHostIdForRepoPath(storeRepos, proj.path);
+    const groupSubmenuItems: ContextMenuItem[] = [
+      {
+        label: "New group from project",
+        icon: <FolderPlus className="w-3.5 h-3.5" />,
+        onClick: () => {
+          window.dispatchEvent(
+            new CustomEvent("hydra:open-new-group-dialog", {
+              detail: {
+                projectId: proj.id,
+                defaultName: proj.displayName || proj.name,
+                ...(hostIdForGroups ? { hostId: hostIdForGroups } : {}),
+              },
+            })
+          );
+        },
+      },
+      ...projectGroups.map((group) => ({
+        label: `Move to ${group.name}`,
+        icon: <FolderInput className="w-3.5 h-3.5" />,
+        disabled: group.id === groupId,
+        onClick: () => {
+          window.dispatchEvent(
+            new CustomEvent("hydra:move-project-to-group", {
+              detail: {
+                projectId: proj.id,
+                groupId: group.id,
+                ...(hostIdForGroups ? { hostId: hostIdForGroups } : {}),
+              },
+            })
+          );
+        },
+      })),
+      ...(groupId
+        ? [{
+            label: "Remove from group",
+            icon: <X className="w-3.5 h-3.5" />,
+            separator: true,
+            onClick: () => {
+              window.dispatchEvent(
+                new CustomEvent("hydra:remove-project-from-group", {
+                  detail: { projectId: proj.id, ...(hostIdForGroups ? { hostId: hostIdForGroups } : {}) },
+                })
+              );
+            },
+          } as ContextMenuItem]
+        : []),
+    ];
 
     const handleAssignWorktreeStatus = async (status: string | null) => {
       await assignWorktreeStatuses(
@@ -3958,6 +5216,7 @@ export default function App() {
       );
     };
 
+    window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
     setContextMenu({
       source: "sidebar",
       x: e.clientX,
@@ -4045,9 +5304,9 @@ export default function App() {
           },
         },
         { label: "Open in", icon: <FolderOpen className="w-3.5 h-3.5" />, children: openInChildren, onClick: () => {} },
-        { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.path).catch(console.error) },
-        { label: `Copy Branch: ${wt.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.branch).catch(console.error) },
-        { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) },
+        { label: "Copy Path", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.path) },
+        { label: `Copy Branch: ${wt.branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.branch) },
+        { label: "Copy Commit", icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.head_commit) },
         { label: isPinned ? "Unpin" : "Pin", icon: isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />, separator: true, onClick: () => togglePinWorktree(wt.path) },
         { label: isUnread ? "Mark Read" : "Mark Unread", icon: isUnread ? <BellOff className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />, onClick: () => toggleUnreadWorktree(wt.path) },
         buildWorktreeStatusMenuItems({
@@ -4062,35 +5321,37 @@ export default function App() {
           ),
         }),
         {
-          label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
+          label: getWorktreeParentPickerLabel(lineageParent ?? null),
           icon: <FolderTree className="w-3.5 h-3.5" />,
           separator: true,
-          disabled: eligibleParents.length === 0,
+          // Orca `isWorktreeParentPickerDisabled`: an in-flight delete owns the row.
+          disabled: isWorktreeParentPickerDisabled({
+            isDeleting: isContextDeleting,
+            eligibleParentCount: eligibleParents.length,
+          }),
+          title: isContextDeleting
+            ? "This workspace is being deleted"
+            : eligibleParents.length === 0
+              ? "No eligible parents"
+              : undefined,
           onClick: () => {
-            if (eligibleParents.length === 0) return;
-            const candidates: ParentCandidate[] = eligibleParents.map(
-              (p: { id?: string; name?: string; path?: string; branch?: string }) => ({
-                id: p.id || p.path || "",
-                name: p.name || p.branch || p.id || "",
-                path: p.path || p.id || "",
-                branch: p.branch,
-              })
-            );
-            setParentPickerModal({
-              targetName: wt.branch || wt.path,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = { ...worktreeLineage, [wt.path]: selectedPath };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[wt.path];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(wt.path);
+            if (!child || eligibleParents.length === 0 || isContextDeleting) return;
+            // Orca anchors the picker to the right-clicked card: the card scope's own
+            // rectangle, or the contextmenu point when the row is not a drag card.
+            window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+            setContextMenu(null);
+            scheduleParentPickerOpen({
+              child,
+              anchorRect: getParentPickerAnchorRect(e, wt.id ?? wt.path),
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              // Orca removes/assigns the relation for every workspace in the
+              // current context (multi-selection included).
+              selectParent: (selectedPath) =>
+                setWorktreeLineageParents(contextPaths, selectedPath),
+              removeParent: () => unnestWorktreePaths(contextPaths),
+
             });
           },
         },
@@ -4102,27 +5363,87 @@ export default function App() {
                 if (wtParent) handleSelectGitWorktree(wtParent);
                 else invoke("open_in_file_manager", { path: lineageParent }).catch(console.error);
               }
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[wt.path]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
-        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(wt.head_commit).catch(console.error) } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths(contextPaths) } as ContextMenuItem] : []),
+        // Orca `ProjectGroup` submenu on the CARD context: create/move/remove in one place.
+        { label: "Project Group", icon: <FolderTree className="w-3.5 h-3.5" />, children: groupSubmenuItems, onClick: () => {}, disabled: isMultiContext },
+        ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Head: ${wt.head_commit.slice(0,7)} · Bare: ${wt.is_bare ? "yes":"no"}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => copyToClipboard(wt.head_commit) } as ContextMenuItem] : []),
+
         {
-          label:
-            targetWorktreePaths && targetWorktreePaths.length > 1
-              ? `Sleep ${targetWorktreePaths.length} Workspaces`
-              : "Sleep",
+          label: sleepMenu.sleepLabel,
           icon: <Moon className="w-3.5 h-3.5" />,
           separator: true,
+          // Orca `WorkspaceSleepMenuItems`: nothing to release ⇒ disabled with an
+          // explanation instead of a no-op that claims memory was freed.
+          disabled: sleepMenu.sleepDisabled,
+          title: sleepMenu.sleepDisabled
+            ? "No active panels to close"
+            : isMultiContext
+              ? "Close all active panels in the selected workspaces to free up memory and CPU."
+              : "Close all active panels in this workspace to free up memory and CPU.",
+          // Orca `sleepWorktreesAfterMenuClose`: close the menu, sleep 50ms later.
           onClick: () =>
-            sleepSessionsForPaths(
-              targetWorktreePaths && targetWorktreePaths.length > 1
-                ? [...targetWorktreePaths]
-                : [wt.path]
+            scheduleSleepWorktreesAfterMenuClose(
+              sleepOncePaths,
+              sleepWorktreePaths,
+              () => setContextMenu(null)
             ),
         },
-        ...(descendantCount > 0 ? [{ label: `Sleep with Descendants (${descendantCount})`, icon: <Moon className="w-3.5 h-3.5" />, onClick: () => {
-              const subtree = Object.entries(worktreeLineage).filter(([, parent]) => parent === wt.path).map(([child]) => child);
-              sleepSessionsForPaths([wt.path, ...subtree]);
-            } } as ContextMenuItem] : []),
-        ...(isMain ? [{ label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", separator: true, onClick: () => {} } as ContextMenuItem, { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) } as ContextMenuItem] : [{ label: descendantCount > 0 ? `Delete with Descendants…` : "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, separator: true, onClick: () => handleDeleteGitWorktree(wt) } as ContextMenuItem]),
+        ...(sleepMenu.descendantCount > 0
+          ? [{
+              label: `Sleep with Descendants (${sleepMenu.descendantCount})`,
+              icon: <Moon className="w-3.5 h-3.5" />,
+              disabled: sleepMenu.subtreeSleepDisabled,
+              title: sleepMenu.subtreeSleepDisabled
+                ? "No active panels in this subtree"
+                : "Close active panels in this workspace and every nested descendant to free up memory and CPU.",
+              onClick: () =>
+                scheduleSleepWorktreesAfterMenuClose(
+                  subtreeSleepPaths,
+                  sleepWorktreePaths,
+                  () => setContextMenu(null)
+                ),
+            } as ContextMenuItem]
+          : []),
+        ...(isMain
+          ? [{ label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", separator: true, onClick: () => {} } as ContextMenuItem,
+             { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) } as ContextMenuItem]
+          : [{
+              label: isMultiContext
+                ? `Delete ${contextIdentities.length} Workspace${contextIdentities.length === 1 ? "" : "s"}`
+                : sleepLineage.descendants.length > 0
+                  ? "Delete with Descendants…"
+                  : "Delete Worktree",
+              icon: <Trash2 className="w-3.5 h-3.5" />,
+              danger: true,
+              separator: true,
+              disabled: !deleteAllowed,
+              title: !deleteAllowed
+                ? isContextDeleting
+                  ? "A selected workspace is already being deleted"
+                  : "This workspace is not attached to a resolvable repository"
+                : undefined,
+              onClick: () => {
+                if (!deleteAllowed) return;
+                // Orca `handleDelete`: capture sibling position, record the scroll
+                // anchor, build a typed intent and defer it so the menu closes first.
+                const restoreSidebarPosition = preserveDeleteSiblingPosition(e.currentTarget as HTMLElement | null);
+                requestVirtualizedScrollAnchorRecord("[data-worktree-sidebar]");
+                const intent = createWorktreeContextMenuDeleteIntent({
+                  worktree: contextIdentities[0] ?? { id: `${proj.path}::${wt.path}` },
+                  batchDeleteWorktrees: contextIdentities,
+                  isMultiContext,
+                });
+                deferWorktreeContextMenuDeleteIntent(
+                  intent,
+                  {
+                    openDelete: openDeleteWorktreeConfirmation,
+                    deleteFolderWorkspace: async () => false,
+                  },
+                  restoreSidebarPosition
+                );
+                setContextMenu(null);
+              },
+            } as ContextMenuItem]),
       ]
     });
   };
@@ -4131,8 +5452,10 @@ export default function App() {
     const isPinned = pinnedWorktrees.has(session.id) || pinnedWorktrees.has(session.project_path);
     const isUnread = unreadWorktrees.has(session.id);
     const lineageParent = worktreeLineage[session.project_path] || worktreeLineage[session.id];
+    const eligibleParents = getEligibleParentCandidates(session.project_path);
     const openInChildren = getOpenInItems(session.project_path);
     const developerRevealed = e.altKey;
+    window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
     setContextMenu({
       source: "sidebar",
       x: e.clientX,
@@ -4190,43 +5513,36 @@ export default function App() {
           label: lineageParent ? "Change Parent Worktree..." : "Set Parent Worktree...",
           icon: <FolderTree className="w-3.5 h-3.5" />,
           separator: true,
-          disabled: projects.length === 0,
+          disabled: eligibleParents.length === 0,
+          title: eligibleParents.length === 0 ? "No eligible parents" : undefined,
           onClick: () => {
-            const candidates: ParentCandidate[] = projects.map((p) => ({
-              id: p.id,
-              name: p.name,
-              path: p.path,
-              branch: p.current_branch,
-            }));
-            setParentPickerModal({
-              targetName: session.title,
-              currentParentPath: lineageParent,
-              candidates,
-              onSelect: (selectedPath) => {
-                const next = {
-                  ...worktreeLineage,
-                  [session.project_path]: selectedPath,
-                  [session.id]: selectedPath,
-                };
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
-              onRemoveParent: () => {
-                const next = { ...worktreeLineage };
-                delete next[session.project_path];
-                delete next[session.id];
-                setWorktreeLineage(next);
-                persistLineage(next);
-              },
+            const child = parentPickerCandidateByPath.get(session.project_path);
+            if (!child || eligibleParents.length === 0) return;
+            window.dispatchEvent(new Event(CLOSE_ALL_CONTEXT_MENUS_EVENT));
+            setContextMenu(null);
+            scheduleParentPickerOpen({
+              child,
+              anchorRect: getParentPickerAnchorRect(e, session.id),
+              focusRestoreElement:
+                document.activeElement instanceof HTMLElement ? document.activeElement : null,
+              // A fleet session records its lineage under both the workspace path and its own
+              // id; the picker edits the workspace, so both keys move together.
+              selectParent: (selectedPath) =>
+                setWorktreeLineageParents(
+                  [session.project_path, session.id],
+                  selectedPath
+                ),
+              removeParent: () =>
+                unnestWorktreePaths([session.project_path, session.id]),
             });
           },
         },
         ...(lineageParent ? [{ label: "Open Parent Worktree", icon: <Workflow className="w-3.5 h-3.5" />, onClick: () => {
               const parentProj = projects.find((p) => p.path === lineageParent);
               if (parentProj) handleSelectProject(parentProj);
-            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => { const m = { ...worktreeLineage }; delete m[session.project_path]; delete m[session.id]; setWorktreeLineage(m); persistLineage(m); } } as ContextMenuItem] : []),
+            } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([session.project_path, session.id]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `ID: ${session.id}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(session.id).catch(console.error) } as ContextMenuItem, { label: `Agent: ${session.agentName} · ${session.executable}`, icon: <MoreHorizontal className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
-        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepSessionsForPaths([session.project_path]) },
+        { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepWorktreePaths([session.project_path]) },
         { label: "Close / Delete Fleet Session", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, separator: true, onClick: () => handleDeleteSession(session.id) },
       ]
     });
@@ -4293,11 +5609,19 @@ export default function App() {
                 onDeleteGitWorktree={handleDeleteGitWorktree}
                 onDeleteWorktreeSelection={handleDeleteWorktreeSelection}
                 onDeleteFolderWorkspace={handleDeleteFolderWorkspace}
+                onFolderWorkspaceContextMenu={handleFolderWorkspaceContextMenu}
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenSettingsSection={(section) => {
+                  // D01-036: the help menu's Keyboard Shortcuts item lands on the
+                  // settings pane instead of the last visited section.
+                  setSettingsSectionRequested(section);
+                  setIsSettingsOpen(true);
+                }}
                 onOpenGlobalSettings={() => {
                   setSettingsSectionRequested("general");
+                  setSettingsTargetSectionId(GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID);
                   setIsSettingsOpen(true);
                 }}
                 onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
@@ -4316,7 +5640,14 @@ export default function App() {
                 onReorderWorktrees={handleReorderWorktrees}
                 lineageByPath={worktreeLineage}
                 worktreeMetadataByPath={worktreeMetadataByPath}
-                pendingWorktreeCreations={pendingWorktreeCreations}
+                pendingWorktreeCreations={Object.values(pendingWorktreeCreations).map(
+                  (entry) => ({
+                    creationId: entry.creationId,
+                    repoId: entry.request.repoId,
+                    branchName: entry.request.branchNameOverride ?? entry.request.name,
+                    agentName: (entry.request.agent as string | null) ?? "",
+                  })
+                )}
                 onEditWorktreeMetadata={(wt) => setWorktreeMetaDialog({ wt })}
                 onAssignWorktreeParent={handleAssignWorktreeParent}
                 onUnnestWorktrees={handleUnnestWorktrees}
@@ -4343,6 +5674,11 @@ export default function App() {
                 initialAgentsGroupBy={initialSidebarPrefs?.agentsGroupBy}
                 initialAgentsIntroShown={initialSidebarPrefs?.agentsSidebarIntroShown}
                 onSidebarPrefsChange={handleSidebarPrefsChange}
+                onUpdateSettings={(patch) => {
+                  const next = { ...hydraSettings, ...patch } as HydraSettings;
+                  setHydraSettings(next);
+                  invoke("save_settings", { settings: next }).catch(console.error);
+                }}
                 compactCards={Boolean(hydraSettings.compact_worktree_cards)}
                 settings={hydraSettings}
                 leftSidebarStyle={leftSidebarStyle}
@@ -4353,6 +5689,14 @@ export default function App() {
 
         {/* Central Workspace: Multi-Tab Workbench Surface */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative" style={{ background: "var(--app-bg)" }}>
+          {activePendingCreationId ? (
+            <div
+              className="absolute inset-0 z-10 flex flex-col"
+              style={{ background: "var(--app-bg)" }}
+            >
+              <PendingWorktreeCreationPanel />
+            </div>
+          ) : null}
           {tabs.length > 0 ? (
             <>
               <WorkbenchTabBar 
@@ -4588,26 +5932,31 @@ export default function App() {
         />
       )}
 
-      {/* Non-blocking Parent Picker Modal */}
-      {parentPickerModal && (
-        <ParentPickerModal
-          open={true}
-          targetName={parentPickerModal.targetName}
-          currentParentPath={parentPickerModal.currentParentPath}
-          candidates={parentPickerModal.candidates}
+      {/* Anchored parent picker (Orca `WorktreeParentPickerPopover`) */}
+      {parentPickerState && (
+        <WorktreeParentPickerPopover
+          open={parentPickerOpen}
+          child={parentPickerState.child}
+          candidates={getEligibleParentCandidates(parentPickerState.child.path)}
+          getAnchorRect={() => parentPickerState.anchorRect}
+          focusRestoreElement={parentPickerState.focusRestoreElement}
           onOpenChange={(open) => {
-            if (!open) setParentPickerModal(null);
+            // Why delayed: the component stays mounted through its exit animation.
+            if (!open) closeParentPicker();
           }}
-          onSelect={(parentPath) => {
-            parentPickerModal.onSelect(parentPath);
-            setParentPickerModal(null);
-          }}
+          // One path for every rejection: close, then report a translated toast if the
+          // lineage write fails (`selectWorktreeParent`).
+          onSelect={(candidate) =>
+            selectWorktreeParent({
+              childPath: parentPickerState.child.path,
+              parentPath: candidate.path,
+              assignWorktreeParent: parentPickerState.selectParent,
+              close: closeParentPicker,
+            })
+          }
           onRemoveParent={
-            parentPickerModal.onRemoveParent
-              ? () => {
-                  parentPickerModal.onRemoveParent?.();
-                  setParentPickerModal(null);
-                }
+            parentPickerState.removeParent
+              ? () => parentPickerState.removeParent?.()
               : undefined
           }
         />
@@ -4672,23 +6021,40 @@ export default function App() {
       {/* Orca 100% Add Project Dialog (Clone / Create / Browse Folder) */}
       <AddRepoDialog
         isOpen={isAddRepoOpen}
-        onClose={() => setIsAddRepoOpen(false)}
-        onProjectAdded={() => {
+        initialFolderPath={droppedAddRepoFolder}
+        onClose={() => {
+          setIsAddRepoOpen(false);
+          setDroppedAddRepoFolder(null);
+        }}
+        onProjectAdded={(addedPath, addedKind) => {
           invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
             const model = catalogToSidebarModel(envelope);
             setProjects(model.projects);
-            setProjectGroups(model.projectGroups);
-        setFolderWorkspaces(model.folderWorkspaces);
-            setProjectGroupMap(model.projectGroupMap);
-            if (model.projects.length > 0) {
-              handleSelectProject(model.projects[0]);
+            applyCatalogProjectGroups(model);
+            setFolderWorkspaces(model.folderWorkspaces);
+            // D02a-028: select the project that was actually added (its main
+            // checkout path) instead of list order; folder/group adds activate the
+            // folder workspace the catalog created for that path.
+            if (addedPath && addedKind === "folder") {
+              if (isNewWorkspaceOpen) {
+                closeNewWorkspaceComposer();
+              }
+              handleActivateFolderWorkspace(addedPath);
+              return;
+            }
+            const addedProject = addedPath
+              ? model.projects.find((project) => project.path === addedPath)
+              : undefined;
+            if (addedProject || model.projects.length > 0) {
+              const selected = addedProject ?? model.projects[0];
+              handleSelectProject(selected);
               if (tabsRef.current.length === 0) {
                 const tabId = `tab_${Date.now().toString().slice(-4)}`;
                 const initialTab: TabItem = {
                   id: tabId,
-                  title: `${model.projects[0].name} (main)`,
+                  title: `${selected.name} (main)`,
                   type: "terminal",
-                  cwd: model.projects[0].path,
+                  cwd: selected.path,
                 };
                 setTabs([initialTab]);
                 setActiveTabId(tabId);
@@ -4701,6 +6067,7 @@ export default function App() {
       {/* Orca 100% New Workspace Composer Modal */}
       <NewWorkspaceComposer
         isOpen={isNewWorkspaceOpen}
+        nestedDialogOpen={isAddRepoOpen}
         activeProject={activeProject}
         projects={projects}
         availableAgents={availableAgents}
@@ -4709,14 +6076,6 @@ export default function App() {
         onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={closeNewWorkspaceComposer}
-        onCreateStart={(creation) =>
-          setPendingWorktreeCreations((previous) => [...previous, creation])
-        }
-        onCreateSettled={(creationId) =>
-          setPendingWorktreeCreations((previous) =>
-            previous.filter((creation) => creation.creationId !== creationId)
-          )
-        }
         onCreated={handleCreatedWorkspace}
       />
 
@@ -4742,12 +6101,82 @@ export default function App() {
         onStaleTargets={showStaleDeleteNotice}
         onDeleteStart={(targets) => publishDeleteStateForTargets(targets, WORKTREE_DELETE_IN_PROGRESS)}
         onDeleteSettled={(targets) => publishDeleteStateForTargets(targets, null)}
+        executeDelete={(targets, options) => runDeleteIdentitiesNow(targets, options)}
         deleteStateByWorktreeId={deleteStateByWorktreeId}
-        dirtyChangeCountsByWorktreeId={dirtyChangeCountsByWorktreeId}
+        dirtyChangeCountsByWorktreeId={deleteDialogDirtyCounts}
         onPersistSkipConfirmPreference={() => {
           const next = { ...hydraSettings, skip_delete_worktree_confirm: true } as HydraSettings;
           setHydraSettings(next);
           invoke("save_settings", { settings: next }).catch(console.error);
+          // Orca `persistDeleteWorktreeConfirmSkipPreference`: confirm the saved
+          // preference and deep-link to the exact toggle.
+          showSkipDeleteConfirmToast(() => {
+            window.dispatchEvent(
+              new CustomEvent("hydra:open-settings", {
+                detail: { section: "general" as HydraNavId },
+              })
+            );
+          });
+        }}
+        onForceDelete={(targets) => {
+          // Orca `runDialogForceDelete`: close immediately, run the retry, and
+          // transfer focus once it settles.
+          const liveTargets = targets
+            .map((identity) => findWorktreeByIdentity(identity))
+            .filter((row): row is NonNullable<typeof row> => Boolean(row));
+          const forceIdentity = targets[0];
+          setDeleteWorktreeModal(null);
+          setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
+          if (!forceIdentity || liveTargets.length === 0) {
+            showWorkspaceListChangedToast();
+            return;
+          }
+          void runDeleteIdentitiesNow([forceIdentity], { force: true });
+        }}
+        onDeleteFailed={(failures) => {
+          for (const failure of failures) {
+            const described = describeWorktreeDeleteFailure(failure.error, failure.path);
+            showDeleteWorktreeFailureToast({
+              target: { id: failure.path, executionHostId: null },
+              worktreeName: failure.path,
+              summary: described.summary,
+              guidance: described.guidance,
+              canForceDelete: described.canForce,
+              hasKnownChanges: described.summary.toLowerCase().includes("uncommitted"),
+              canDeleteAnyway: described.canWaiveArchiveHook,
+              onViewChanges: () => {
+                void viewWorktreeChanges(failure.path);
+              },
+              onForceDelete: () => {
+                const identity = deleteWorktreeModal?.deleteTargets.find(
+                  (target) => findWorktreeByIdentity(target)?.worktree.path === failure.path
+                );
+                if (!identity) {
+                  showWorkspaceListChangedToast();
+                  return;
+                }
+                // Orca retry-from-toast: close the confirmation, run the forced
+                // removal, and let the executor's onDeleted refresh the sidebar.
+                setDeleteWorktreeModal(null);
+                setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
+                void runDeleteIdentitiesNow([identity], { force: true });
+              },
+              onDeleteAnyway: () => {
+                // Same retry shape as Force Delete, with the archive waiver instead
+                // of force: the backend runs the hook again and deletes on failure.
+                const identity = deleteWorktreeModal?.deleteTargets.find(
+                  (target) => findWorktreeByIdentity(target)?.worktree.path === failure.path
+                );
+                if (!identity) {
+                  showWorkspaceListChangedToast();
+                  return;
+                }
+                setDeleteWorktreeModal(null);
+                setDeleteStateByWorktreeId((prev) => pruneClosedDeleteStates(prev));
+                void runDeleteIdentitiesNow([identity], { allowArchiveSkip: true });
+              },
+            });
+          }
         }}
         onClose={() => {
           // Orca `handleOpenChange`: dismissing the confirmation releases any
@@ -4793,6 +6222,34 @@ export default function App() {
         repoPath={deleteWorktreeModal?.repoPath ?? ""}
       />
 
+      {/* Orca `confirm-remove-folder`: primary checkout → remove the project only. */}
+      <ConfirmRemoveFolderDialog
+        open={confirmRemoveFolder != null}
+        displayName={confirmRemoveFolder?.displayName ?? ""}
+        folderPath={confirmRemoveFolder?.repoPath ?? ""}
+        onOpenChange={(open) => {
+          if (!open) setConfirmRemoveFolder(null);
+        }}
+        onRemoveProject={() => {
+          const target = confirmRemoveFolder;
+          if (!target) return;
+          const project = projectsRef.current.find((entry) => entry.path === target.repoPath);
+          if (project) handleRemoveProject(project);
+        }}
+      />
+
+      {/* Orca `forget-ssh-workspace`: disconnected/ghost remote workspaces. */}
+      <ForgetSshWorkspaceDialog
+        open={forgetSshTarget != null}
+        displayName={forgetSshTarget?.displayName ?? ""}
+        resolution={forgetSshTarget?.resolution ?? { kind: "ghost", targetId: "" }}
+        onOpenChange={(open) => {
+          if (!open) setForgetSshTarget(null);
+        }}
+        onReconnectAndDelete={handleReconnectAndDeleteSshWorkspace}
+        onForgetWorkspace={handleForgetSshWorkspace}
+      />
+
       {/* Folder workspace removal: same confirmation surface, non-destructive copy. */}
       <DeleteWorktreeDialog
         open={folderDeleteTarget != null}
@@ -4819,6 +6276,20 @@ export default function App() {
 
       <WorktreeMetaDialog
         open={worktreeMetaDialog != null}
+        worktreeId={
+          worktreeMetaDialog
+            ? (worktreeMetaDialog.wt.id ?? worktreeMetaDialog.wt.path)
+            : undefined
+        }
+        ownerRepoId={
+          worktreeMetaDialog
+            ? (projects.find(
+                (project) =>
+                  project.path === worktreeMetaDialog.wt.path ||
+                  worktreeMetaDialog.wt.path.startsWith(project.path + "/")
+              )?.id ?? null)
+            : null
+        }
         worktreeName={
           worktreeMetaDialog?.wt.display_name ||
           worktreeMetaDialog?.wt.branch ||
@@ -4915,10 +6386,11 @@ export default function App() {
       {/* Settings Modal */}
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); }} 
+        onClose={() => { setIsSettingsOpen(false); setSettingsSectionRequested(null); setSettingsTargetSectionId(null); }} 
         onLiveChange={(live) => { const n = normalizeHydraSettings(live); setHydraSettings(n); applyDocumentTheme(n.theme); }}
         onSaved={handleSettingsSaved}
         initialSection={settingsSectionRequested ?? undefined}
+        initialSectionId={settingsTargetSectionId ?? undefined}
       />
     </div>
     {/* Orca parity: sonner is the project's toast surface; without a mounted

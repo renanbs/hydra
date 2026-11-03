@@ -5730,6 +5730,12 @@
           "groupRenameFailedDesc": "Hydra could not confirm the new name with the group's host. Recheck the group after reconnecting.",
           "groupCreateFailed": "Failed to create group",
           "groupCreateFailedDesc": "Hydra could not create the group. Check the sidebar after reconnecting.",
+          "projectIconFailed": "Could not change the project icon",
+          "projectIconRefreshFailed": "Project icon saved, but the sidebar could not reload it",
+          "groupOrderFailed": "Failed to reorder group",
+          "groupOrderFailedDesc": "Hydra could not save the new group order on the group's host. Reorder it again after reconnecting.",
+          "groupMoveFailed": "Failed to move project",
+          "groupMoveFailedDesc": "Hydra could not confirm the move with the project's host. Recheck the group after reconnecting.",
           "failedNestWorkspace": "Failed to nest workspace",
           "sidebarRowMissing": "Target no longer exists",
           "failedUnnestWorkspace": "Failed to unnest workspace"
@@ -6127,7 +6133,10 @@
           "current": "Current",
           "searchPlaceholder": "Search worktrees...",
           "empty": "No matching eligible worktrees.",
-          "setParentFor": "Set parent for"
+          "setParentFor": "Set parent for",
+          "searchLabel": "Search workspaces",
+          "listLabel": "Eligible parent workspaces",
+          "removeParent": "Remove parent link"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "Branch"

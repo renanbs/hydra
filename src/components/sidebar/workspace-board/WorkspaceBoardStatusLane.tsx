@@ -10,6 +10,7 @@ import {
   WORKSPACE_BOARD_COLUMN_WIDTH_MIN
 } from '../../../shared/workspace-statuses'
 import { getWorkspaceStatusVisualMeta } from '../workspace-status'
+import { serializeWorkspaceLaneFullIds } from './workspace-board-filtered-drop-index'
 import type { GitWorktreeInfo } from '../types'
 import WorkspaceBoardStatusLaneCardList from './WorkspaceBoardStatusLaneCardList'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
@@ -27,6 +28,12 @@ type WorkspaceBoardStatusLaneProps = {
    * "Empty" when it is only still loading.
    */
   renderCards: boolean
+  /**
+   * The lane's full membership as worktree ids, published on the DOM under an
+   * active query only. Board search hides cards, so a sidebar drop cannot read the
+   * full lane from the painted cards; this channel is what translates its slot.
+   */
+  fullWorktreeIds?: readonly string[]
   columnWidth: number
   /** True while this board owns the width gesture; the handle paints its active state. */
   isResizingColumn: boolean
@@ -72,6 +79,7 @@ function WorkspaceBoardStatusLane({
   totalCount,
   hasQuery,
   renderCards,
+  fullWorktreeIds,
   columnWidth,
   isResizingColumn,
   compactCards,
@@ -103,11 +111,18 @@ function WorkspaceBoardStatusLane({
   // Why: a lane that is empty on its own merits is still "Empty" under a query —
   // only a lane whose cards were filtered away has anything to say about matches.
   const isFiltered = hasQuery && totalCount > 0
+  // Why only under a query: without search the painted cards ARE the full lane, and
+  // an always-on attribute would ship a large string for no reader.
+  const fullLaneIdsAttribute =
+    hasQuery && fullWorktreeIds
+      ? serializeWorkspaceLaneFullIds(fullWorktreeIds) ?? undefined
+      : undefined
   return (
     <section
       data-workspace-status={status.id}
       data-workspace-status-drop-target=""
       data-workspace-board-lane-drop-target={isDropTarget ? '' : undefined}
+      data-workspace-lane-full-ids={fullLaneIdsAttribute}
       className={cn(
         'group/lane relative flex h-full min-h-0 min-w-0 shrink-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border',
         meta.border,

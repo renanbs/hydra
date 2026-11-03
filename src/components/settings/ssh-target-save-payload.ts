@@ -1,11 +1,19 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/settings/ssh-target-save-payload.ts
-// Parity with Orca `components/settings/ssh-target-save-payload.ts`, reduced to the fields
-// the Hydra registry persists today: label, host, port, username, identity file. Orca's
-// relay-timeout / GSSAPI / proxy / jump payload fields land with the Advanced PR.
-import type { SshTargetCreateInput, SshTargetUpdateInput } from '../../shared/ssh-types'
+// Parity with Orca `components/settings/ssh-target-save-payload.ts`: label, host, port,
+// username, identity file plus the Advanced relay/proxy/jump/reuse fields.
+import {
+  MAX_SSH_RELAY_GRACE_PERIOD_SECONDS,
+  type SshTargetCreateInput,
+  type SshTargetUpdateInput
+} from '../../shared/ssh-types'
 import { translate } from '@/i18n/i18n'
-import { getSshTargetDraftConnectionFields, type EditingTarget } from './ssh-target-draft'
+import {
+  getSshTargetDraftConnectionFields,
+  isRelayGracePeriodValid,
+  parseRelayGracePeriodSeconds,
+  type EditingTarget
+} from './ssh-target-draft'
 
 type SshTargetSavePayload = {
   target: SshTargetCreateInput
@@ -35,7 +43,21 @@ export function buildSshTargetSavePayload(form: EditingTarget): SshTargetSavePay
     }
   }
 
+  const graceSeconds = parseRelayGracePeriodSeconds(form)
+  if (!isRelayGracePeriodValid(form, graceSeconds)) {
+    return {
+      ok: false,
+      error: translate(
+        'auto.components.sidebar.AddRemoteHostDialog.sshRelayGraceInvalid',
+        'Terminal timeout must be between 60 and {{value0}} seconds.',
+        { value0: MAX_SSH_RELAY_GRACE_PERIOD_SECONDS }
+      )
+    }
+  }
+
   const identityFile = form.identityFile.trim() || undefined
+  const proxyCommand = form.proxyCommand.trim() || undefined
+  const jumpHost = form.jumpHost.trim() || undefined
 
   const target: SshTargetCreateInput = {
     label: form.label.trim() || (username ? `${username}@${host}` : configHost),
@@ -43,7 +65,13 @@ export function buildSshTargetSavePayload(form: EditingTarget): SshTargetSavePay
     host,
     port,
     username,
-    ...(identityFile ? { identityFile } : {})
+    ...(identityFile ? { identityFile } : {}),
+    ...(form.gssapiAuthentication ? { gssapiAuthentication: true } : {}),
+    ...(proxyCommand ? { proxyCommand } : {}),
+    ...(jumpHost ? { jumpHost } : {}),
+    // Why: main treats an absent flag as enabled, so only the explicit opt-out is stored.
+    ...(form.systemSshConnectionReuse ? {} : { systemSshConnectionReuse: false }),
+    relayGracePeriodSeconds: graceSeconds
   }
 
   return {
@@ -53,8 +81,10 @@ export function buildSshTargetSavePayload(form: EditingTarget): SshTargetSavePay
       updates: {
         ...target,
         // Why: `ssh_update_target` merges partially, so an explicit undefined is what
-        // clears an identity file the user emptied instead of leaving the stored one.
+        // clears a field the user emptied instead of leaving the stored one.
         identityFile,
+        proxyCommand,
+        jumpHost,
         source: 'manual'
       }
     }

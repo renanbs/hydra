@@ -12,6 +12,7 @@ import { getSystemPrefersDark } from "../lib/terminal-theme";
 import { resolveEffectiveTerminalAppearance } from "../lib/terminal-theme";
 import { DEFAULT_HYDRA_SETTINGS, normalizeHydraSettings, type HydraSettings } from "../shared/settings-types";
 import { normalizeTerminalCustomThemes } from "../shared/terminal-custom-themes";
+import { GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID } from "../lib/settings-navigation-types";
 import { AppearancePane } from "./settings/AppearancePane";
 import { SshPane } from "./settings/SshPane";
 
@@ -63,11 +64,13 @@ interface SettingsModalProps {
   onLiveChange?: (settings: HydraSettings) => void;
   // Orca parity (openSettingsPage): section the modal should land on when opened.
   initialSection?: HydraNavId;
+  /** Deep-link target inside `initialSection` (Orca `openSettingsTarget().sectionId`). */
+  initialSectionId?: string;
 }
 
 export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh";
 
-export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection, initialSectionId }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
   const [settings, setSettings] = useState<HydraSettings>(DEFAULT_HYDRA_SETTINGS);
   const [savedFeedback, setSavedFeedback] = useState(false);
@@ -115,6 +118,18 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
       setActiveId(initialSection);
     }
   }, [isOpen, initialSection]);
+
+  // Orca `scrollSubsectionIntoView`: a deep link opened from a modal lands on the
+  // concrete control, not just the pane that owns it. The pane swaps in a render
+  // after `activeId` changes, so the scroll waits for the next frame.
+  useEffect(() => {
+    if (!isOpen || !initialSectionId) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(initialSectionId);
+      target?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen, initialSection, initialSectionId]);
 
   const refreshTerminalSessions = () => {
     setTerminalSessionsLoading(true);
@@ -417,8 +432,13 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                     <p className="text-[11px] text-muted-foreground">Root directory where workspace folders are created. Relative (e.g. .orca/worktrees) for per-project, or absolute for a shared folder. Hydra uses this path — not a hardcoded orca/workspaces — to discover worktrees.</p>
                   </div>
 
-                  {/* Sources — Orca Settings → General */}
-                  <div className="rounded-xl border bg-card p-6 space-y-3">
+                  {/* Sources — Orca Settings → General. The id is the deep-link
+                      target the visibility dialog's "Manage in Global Settings" opens. */}
+                  <div
+                    id={GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID}
+                    data-settings-section={GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID}
+                    className="rounded-xl border bg-card p-6 space-y-3"
+                  >
                     <h4 className="text-[13px] font-semibold">Sources</h4>
                     <p className="text-[12px] text-muted-foreground">Shown sources include current and future worktrees in the sidebar.</p>
                     <div className="overflow-hidden rounded-lg border bg-muted/30">

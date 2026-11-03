@@ -10,6 +10,7 @@ import { getFullDropIndexForWorktreeDragUnit } from '../../worktree-drag-units'
 import { isWorkspaceBoardPinDropTarget } from '../../workspace-board/drag/workspace-board-card-drag-dom'
 import {
   getWorkspaceBoardSidebarDropTarget,
+  resolveWorkspaceBoardSidebarFullLaneDropIndex,
   type WorkspaceBoardSidebarDropTarget
 } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
@@ -19,7 +20,12 @@ import {
   findWorktreeNestingTarget,
   isWorktreeNestingCardPainted
 } from './nesting'
-import { clearSidebarSectionDropVisual, findSidebarSectionDropTarget } from './section-drop'
+import {
+  clearSidebarSectionDropVisual,
+  findSidebarSectionDropTarget,
+  resolveSidebarSectionDropCommitTarget,
+  type SidebarTrackedSectionDropTarget
+} from './section-drop'
 
 export type WorktreeDropPoint = { x: number; y: number }
 
@@ -73,6 +79,12 @@ export type WorktreeDropCommitArgs = {
   requireInsideSidebarBand?: boolean
   /** Bookkeeping for the board preview the pointer path opened (D03a-012). */
   onBoardTarget?: (target: WorkspaceBoardSidebarDropTarget) => void
+  /**
+   * The last pin/status header this gesture hovered (D03b-045). A release can arrive
+   * before the frame that would hit-test its final position, so a few pixels of drift
+   * still commits to the header the user saw highlighted.
+   */
+  latestSectionDropTarget?: SidebarTrackedSectionDropTarget | null
 }
 
 /** What a release resolved to, so each path can report the same commit it made. */
@@ -103,13 +115,31 @@ export function commitWorktreeDropAtPoint(
   }
   // A section header under the release is a membership write: pinning or moving to
   // the status lane, exactly as the board's own targets do.
-  const sectionTarget = findSidebarSectionDropTarget(point.x, point.y)
+  const sectionTarget = resolveSidebarSectionDropCommitTarget({
+    currentTarget: findSidebarSectionDropTarget(point.x, point.y),
+    latestTrackedTarget: args.latestSectionDropTarget ?? null,
+    x: point.x,
+    y: point.y
+  })
   if (sectionTarget) {
     clearSidebarSectionDropVisual()
     if (sectionTarget.kind === 'pin') {
       ctx.onPinWorktrees(draggedIds, args.executionHostId)
     } else {
-      ctx.onAssignWorktreesStatus(draggedIds, sectionTarget.status, args.executionHostId)
+      // The pointer knows where inside the lane it released; the native header path
+      // appends. Manual sort mode commits that slot, other modes are status-only.
+      const preview = ctx.computeWorktreeStatusDrop({
+        pointerY: point.y,
+        status: sectionTarget.status,
+        draggedIds
+      })
+      ctx.onStatusLaneDrop({
+        status: sectionTarget.status,
+        draggedIds,
+        dropIndex: preview ? preview.dropIndex : null,
+        sourceGroupKey,
+        executionHostId: args.executionHostId
+      })
     }
     ctx.clearWorktreeDrag()
     return 'section'
@@ -142,7 +172,19 @@ export function commitWorktreeDropAtPoint(
     if (isWorkspaceBoardPinDropTarget(boardTarget)) {
       ctx.onPinWorktrees(draggedIds, args.executionHostId)
     } else {
-      ctx.onAssignWorktreesStatus(draggedIds, boardTarget.status, args.executionHostId)
+      // Why translate here: the target counts rendered cards (a board query hides
+      // members), while the manual-order write runs against the full lane. This is
+      // the one commit boundary, so a tracked target that outlived the lane still
+      // lands in the right slot.
+      ctx.onAssignWorktreesStatus(
+        draggedIds,
+        boardTarget.status,
+        args.executionHostId,
+        resolveWorkspaceBoardSidebarFullLaneDropIndex(
+          boardTarget.status,
+          boardTarget.dropIndex
+        )
+      )
     }
     ctx.clearWorktreeDrag()
     return 'board'

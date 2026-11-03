@@ -4,18 +4,14 @@
  "rows": [
   {
    "id": "D03b-018",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/reveal-target-resolution.ts:1-25",
-    "src/components/sidebar/WorktreeSidebar.tsx:560-580",
-    "src/components/sidebar/reveal-target-resolution.parity.test.ts:14-28"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
-   "missing_behaviors": [
-    "reabertura de escopo de host e do filtro de sleeping antes de revelar",
-    "beginRename/highlight do pedido (hoje só rola e destaca)",
-    "fila por rowKey (pendingRevealSidebarRow)"
-   ],
-   "note": "A fila pendingRevealWorktree é consumida no sidebar: id é resolvido para path, filtros bloqueantes relaxados, rolagem+flash e clear. RowKey queue e host/sleeping seguem pendentes."
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   }
  ]
 }

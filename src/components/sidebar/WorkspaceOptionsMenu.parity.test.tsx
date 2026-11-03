@@ -46,6 +46,7 @@ function seedStore(overrides: Record<string, unknown> = {}) {
     sshTargetLabels: new Map([["srv", "Build server"]]),
     sshConnectionStates: new Map(),
     runtimeEnvironments: [],
+    runtimeEnvironmentCatalogHydrated: false,
     settings: null,
     visibleWorkspaceHostIds: null,
     workspaceHostScope: "all",
@@ -171,11 +172,11 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
     expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, hideSleeping: true });
   });
 
-  it("clears every filter and opens Add project from the footer", () => {
-    const onOptionsChange = vi.fn();
+  it("resets filters through the shell writer and opens Add project from the footer", () => {
+    const onClearFilters = vi.fn();
     const onAddProject = vi.fn();
     renderMenu({
-      onOptionsChange,
+      onClearFilters,
       onAddProject,
       options: {
         ...OPTIONS,
@@ -186,21 +187,34 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
       },
     });
 
-    fireEvent.click(screen.getByText("Clear filters"));
-    expect(onOptionsChange).toHaveBeenCalledWith({
-      ...OPTIONS,
-      hideSleeping: false,
-      hideDefaultBranch: false,
-      hideAutomationCreated: false,
-      hideCliCreated: false,
-      hideDetachedHead: false,
-      alwaysShowDefaultBranch: false,
-      hideWorkspacesFromOtherDevices: false,
-      filterProjectIds: [],
-    });
+    // D09-020: the footer runs the SAME `computeClearFilterActions` plan the shell
+    // owns, so the menu never forks the reset logic into a second writer.
+    fireEvent.click(screen.getByText("Reset filters"));
+    expect(onClearFilters).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByText("+ Add project"));
     expect(onAddProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the shared clear plan when no shell writer is supplied", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({
+      onOptionsChange,
+      options: {
+        ...OPTIONS,
+        hideSleeping: true,
+        alwaysShowDefaultBranch: true,
+        filterProjectIds: ["repo_a"],
+      },
+    });
+
+    fireEvent.click(screen.getByText("Reset filters"));
+    expect(onOptionsChange).toHaveBeenCalledWith({
+      ...OPTIONS,
+      hideSleeping: false,
+      alwaysShowDefaultBranch: true,
+      filterProjectIds: [],
+    });
   });
 
   it("moves the project highlight with the arrows and toggles it on Enter", () => {
@@ -208,7 +222,7 @@ describe("WorkspaceOptionsMenu filter rows (Orca parity)", () => {
     const { container } = renderMenu({ onOptionsChange });
 
     fireEvent.click(screen.getByText("Projects"));
-    const input = screen.getByPlaceholderText("Add project...");
+    const input = screen.getByPlaceholderText("Filter projects...");
     fireEvent.keyDown(input, { key: "ArrowDown" });
 
     expect(container.querySelector('[data-active-project="true"]')?.textContent).toContain("orca");
@@ -303,5 +317,147 @@ describe("WorkspaceOptionsMenu project order (Orca parity)", () => {
     expect(screen.getByText("Recent")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Project order"));
     expect(screen.getAllByText("Most recent workspace activity").length).toBeGreaterThan(0);
+  });
+});
+
+describe("WorkspaceOptionsMenu grouping and filters (D09-011/017)", () => {
+  beforeEach(() => seedStore());
+  afterEach(() => {
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
+  });
+
+  it("offers exactly Orca's grouping modes with a pressed state", () => {
+    const { container } = renderMenu();
+    const values = [...container.querySelectorAll("[data-group-by-option]")].map((node) =>
+      node.getAttribute("data-group-by-option")
+    );
+    expect(values).toEqual(["none", "workspace-status", "pr-status", "repo"]);
+    expect(
+      container
+        .querySelector('[data-group-by-option="repo"]')
+        ?.getAttribute("aria-pressed")
+    ).toBe("true");
+  });
+
+  it("commits the pointer-down intent before focus can swallow the click", () => {
+    const onOptionsChange = vi.fn();
+    const { container } = renderMenu({ onOptionsChange });
+    const prOption = container.querySelector(
+      '[data-group-by-option="pr-status"]'
+    ) as HTMLElement;
+
+    // Pointerdown alone commits (Orca SidebarGroupByToggle); the click is a no-op.
+    fireEvent.pointerDown(prOption);
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, groupBy: "pr-status" });
+    onOptionsChange.mockClear();
+    // A real pointer click carries a click count; only that form is swallowed.
+    fireEvent.click(prOption, { detail: 1 });
+    expect(onOptionsChange).not.toHaveBeenCalled();
+  });
+
+  it("commits a keyboard activation through the click", () => {
+    const onOptionsChange = vi.fn();
+    const { container } = renderMenu({ onOptionsChange });
+    const prOption = container.querySelector(
+      '[data-group-by-option="pr-status"]'
+    ) as HTMLElement;
+    // detail 0 is the DOM's marker for a keyboard-triggered click.
+    fireEvent.click(prOption, { detail: 0 });
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, groupBy: "pr-status" });
+  });
+
+  it("hides the other-client toggle only after hydration proves no other client", () => {
+    seedStore({ runtimeEnvironmentCatalogHydrated: true, runtimeEnvironments: [] });
+    renderMenu();
+    expect(screen.queryByRole("switch", { name: /other Hydra clients/i })).toBeNull();
+  });
+
+  it("keeps the other-client toggle while its sweep is applied", () => {
+    seedStore({ runtimeEnvironmentCatalogHydrated: true, runtimeEnvironments: [] });
+    renderMenu({ options: { ...OPTIONS, hideWorkspacesFromOtherDevices: true } });
+    expect(
+      screen.getByRole("switch", { name: /other Hydra clients/i })
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("shows the other-client toggle before the catalog hydrates", () => {
+    renderMenu();
+    expect(
+      screen.getByRole("switch", { name: /other Hydra clients/i })
+    ).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("persists the other-client toggle through the options writer", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+    fireEvent.click(screen.getByRole("switch", { name: /other Hydra clients/i }));
+    expect(onOptionsChange).toHaveBeenCalledWith({
+      ...OPTIONS,
+      hideWorkspacesFromOtherDevices: true,
+    });
+  });
+});
+
+describe("WorkspaceOptionsMenu display controls (Orca parity)", () => {
+  beforeEach(() => {
+    seedStore({
+      worktreeCardProperties: ["status", "pr"],
+      setWorktreeCardProperties: vi.fn(),
+      agentActivityDisplayMode: "compact",
+      setAgentActivityDisplayMode: vi.fn(),
+      projectGroups: [],
+      settings: { compact_worktree_cards: false },
+    });
+  });
+  afterEach(() => {
+    useAppStore.setState({ visibleWorkspaceHostIds: null, workspaceHostScope: "all" });
+  });
+
+  it("keeps the workspace board open from the menu and its submenus", () => {
+    renderMenu({ options: { ...OPTIONS, groupBy: "repo" } });
+    expect(document.querySelector("[data-workspace-board-preserve-open]")).not.toBeNull();
+
+    fireEvent.click(screen.getByText("Sort by"));
+    expect(document.querySelector('[data-sort-by-option="manual"]')).not.toBeNull();
+    fireEvent.click(screen.getByText("Project order"));
+    expect(document.querySelector('[data-project-order-option="recent"]')).not.toBeNull();
+  });
+
+  it("exposes the four group-by modes with Orca identifiers", () => {
+    renderMenu();
+    expect(document.querySelector('[data-group-by-option="none"]')).toHaveAttribute(
+      "data-option-id",
+      "c2c7a45cda"
+    );
+    expect(document.querySelector('[data-group-by-option="pr-status"]')).toHaveTextContent("PR");
+    expect(document.querySelector('[data-group-by-option="repo"]')).toHaveAttribute(
+      "data-option-id",
+      "2170d553cf"
+    );
+  });
+
+  it("keeps the Sort submenu open while choosing a mode", () => {
+    const onOptionsChange = vi.fn();
+    renderMenu({ onOptionsChange });
+    fireEvent.click(screen.getByText("Sort by"));
+    fireEvent.click(document.querySelector('[data-sort-by-option="repo"]') as HTMLElement);
+    expect(onOptionsChange).toHaveBeenCalledWith({ ...OPTIONS, sortBy: "repo" });
+    // The panel is still mounted, so the remaining modes stay clickable.
+    expect(document.querySelector('[data-sort-by-option="manual"]')).not.toBeNull();
+  });
+
+  it("writes the card layout preset and agent activity mode", () => {
+    const onUpdateSettings = vi.fn();
+    renderMenu({ onUpdateSettings });
+    fireEvent.click(screen.getByText("Card display"));
+    fireEvent.click(
+      document.querySelector('[data-card-layout-option="compact"]') as HTMLElement
+    );
+    expect(onUpdateSettings).toHaveBeenCalledWith({ compact_worktree_cards: true });
+    expect(screen.getByText("Agent activity layout")).toBeInTheDocument();
+    fireEvent.click(
+      document.querySelector('[data-agent-activity-option="full"]') as HTMLElement
+    );
+    expect(useAppStore.getState().setAgentActivityDisplayMode).toHaveBeenCalledWith("full");
   });
 });

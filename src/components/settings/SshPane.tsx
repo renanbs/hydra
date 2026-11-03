@@ -179,6 +179,7 @@ export function SshPane(): React.JSX.Element {
             }
           }}
           targetId={removing.id}
+          hostId={`ssh:${removing.id}` as const}
           label={removing.label}
         />
       ) : null}

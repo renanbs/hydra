@@ -1,10 +1,15 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/settings/ssh-target-draft.ts
-// Parity with Orca `components/settings/ssh-target-draft.ts`, reduced to the fields the
-// Add-host dialog exposes today: label, host, port, username, identity file. Orca's draft
-// also carries the GSSAPI/proxy/jump/relay-timeout knobs behind its `Advanced` section;
-// those land with that section's PR instead of sitting here inert.
-import type { SshConfigHostResolution, SshTarget } from '../../shared/ssh-types'
+// Parity with Orca `components/settings/ssh-target-draft.ts`, including the Advanced
+// section's GSSAPI/proxy/jump/relay-timeout knobs.
+import {
+  DEFAULT_BOUNDED_SSH_RELAY_GRACE_PERIOD_SECONDS,
+  DEFAULT_SSH_RELAY_GRACE_PERIOD_SECONDS,
+  MAX_SSH_RELAY_GRACE_PERIOD_SECONDS,
+  MIN_SSH_RELAY_GRACE_PERIOD_SECONDS,
+  type SshConfigHostResolution,
+  type SshTarget
+} from '../../shared/ssh-types'
 
 export type EditingTarget = {
   label: string
@@ -14,6 +19,12 @@ export type EditingTarget = {
   port: string
   username: string
   identityFile: string
+  gssapiAuthentication: boolean
+  proxyCommand: string
+  jumpHost: string
+  systemSshConnectionReuse: boolean
+  relayGracePeriodSeconds: string
+  relayKeepAliveUntilReset: boolean
 }
 
 export const EMPTY_FORM: EditingTarget = {
@@ -22,7 +33,13 @@ export const EMPTY_FORM: EditingTarget = {
   host: '',
   port: '22',
   username: '',
-  identityFile: ''
+  identityFile: '',
+  gssapiAuthentication: false,
+  proxyCommand: '',
+  jumpHost: '',
+  systemSshConnectionReuse: true,
+  relayGracePeriodSeconds: String(DEFAULT_BOUNDED_SSH_RELAY_GRACE_PERIOD_SECONDS),
+  relayKeepAliveUntilReset: DEFAULT_SSH_RELAY_GRACE_PERIOD_SECONDS === 0
 }
 
 /** Prefill the add-host form from a `~/.ssh/config` Host entry (does not save). */
@@ -38,7 +55,10 @@ export function getEditingTargetFromSshConfigHost(host: SshConfigHostResolution)
     port: String(host.port),
     username: host.username,
     // Why: no scalar override lets connection-time `ssh -G` retain every IdentityFile.
-    identityFile: ''
+    identityFile: '',
+    gssapiAuthentication: host.gssapiAuthentication === true,
+    proxyCommand: host.proxyCommand ?? '',
+    jumpHost: host.jumpHost ?? ''
   }
 }
 
@@ -53,7 +73,18 @@ export function getEditingTargetForSshTarget(target: SshTarget): EditingTarget {
     host: target.host,
     port: String(target.port),
     username: target.username,
-    identityFile: target.identityFile ?? ''
+    identityFile: target.identityFile ?? '',
+    gssapiAuthentication: target.gssapiAuthentication === true,
+    proxyCommand: target.proxyCommand ?? '',
+    jumpHost: target.jumpHost ?? '',
+    systemSshConnectionReuse: target.systemSshConnectionReuse !== false,
+    relayGracePeriodSeconds: String(
+      target.relayGracePeriodSeconds === 0
+        ? DEFAULT_BOUNDED_SSH_RELAY_GRACE_PERIOD_SECONDS
+        : (target.relayGracePeriodSeconds ?? DEFAULT_BOUNDED_SSH_RELAY_GRACE_PERIOD_SECONDS)
+    ),
+    relayKeepAliveUntilReset:
+      (target.relayGracePeriodSeconds ?? DEFAULT_SSH_RELAY_GRACE_PERIOD_SECONDS) === 0
   }
 }
 
@@ -242,4 +273,48 @@ function parsePort(value: string): number | undefined {
 function isDefaultPortDraft(value: string): boolean {
   const trimmed = value.trim()
   return trimmed === '' || trimmed === '22'
+}
+
+/**
+ * Whether a form carries values that only live behind the Advanced disclosure, so a
+ * config pick can expand it instead of hiding a resolved proxy/jump/reuse change.
+ */
+export function hasAdvancedConnectionValues(form: EditingTarget): boolean {
+  return (
+    form.proxyCommand.trim().length > 0 ||
+    form.jumpHost.trim().length > 0 ||
+    !form.systemSshConnectionReuse
+  )
+}
+
+/** Grace period the target is persisted with; `0` means "until reset". */
+export function parseRelayGracePeriodSeconds(draft: EditingTarget): number {
+  return draft.relayKeepAliveUntilReset ? 0 : Number.parseInt(draft.relayGracePeriodSeconds, 10)
+}
+
+export function isRelayGracePeriodValid(draft: EditingTarget, graceSeconds: number): boolean {
+  return (
+    draft.relayKeepAliveUntilReset ||
+    (!Number.isNaN(graceSeconds) &&
+      graceSeconds >= MIN_SSH_RELAY_GRACE_PERIOD_SECONDS &&
+      graceSeconds <= MAX_SSH_RELAY_GRACE_PERIOD_SECONDS)
+  )
+}
+
+/** Fields that make two drafts the same edit, so a cancel can discard without saving. */
+export function isSshTargetFormDirty(current: EditingTarget, baseline: EditingTarget): boolean {
+  return (
+    current.label !== baseline.label ||
+    current.configHost !== baseline.configHost ||
+    current.host !== baseline.host ||
+    current.port !== baseline.port ||
+    current.username !== baseline.username ||
+    current.identityFile !== baseline.identityFile ||
+    current.gssapiAuthentication !== baseline.gssapiAuthentication ||
+    current.proxyCommand !== baseline.proxyCommand ||
+    current.jumpHost !== baseline.jumpHost ||
+    current.systemSshConnectionReuse !== baseline.systemSshConnectionReuse ||
+    current.relayGracePeriodSeconds !== baseline.relayGracePeriodSeconds ||
+    current.relayKeepAliveUntilReset !== baseline.relayKeepAliveUntilReset
+  )
 }

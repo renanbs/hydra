@@ -417,17 +417,14 @@
     "components/sidebar/DeleteWorktreeDialogDescription.tsx:24"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:145-148"
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "childTargetLabel de lineage",
-     "classe de destaque do targetLabel"
-    ],
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-56"
@@ -1111,18 +1108,14 @@
     "components/sidebar/WorktreeVisibilityGlobalSettingsLink.tsx:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeVisibilityDialog.tsx:528",
-     "src/App.tsx:3662"
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "navegar para a seção de visibilidade de worktrees (Hydra abre 'general')",
-     "closeModal + openSettingsTarget({pane:'general',repoId:null,sectionId})"
-    ],
-    "note": "Sem mudanca de comportamento; veredito mantido.",
-    "notes": "Sem mudanca de comportamento; veredito mantido."
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1700,10 +1693,14 @@
     "components/sidebar/use-feedback-image-drop.ts:55"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+    ],
     "backend": [],
-    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1716,10 +1713,14 @@
     "components/sidebar/use-feedback-image-drop.ts:90"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+    ],
     "backend": [],
-    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1731,10 +1732,14 @@
     "components/sidebar/use-sidebar-feedback-environment-prefill.ts:53"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+    ],
     "backend": [],
-    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1747,10 +1752,14 @@
     "components/sidebar/use-sidebar-feedback-images.ts:90"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+    ],
     "backend": [],
-    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1762,10 +1771,14 @@
     "components/sidebar/use-sidebar-feedback-images.ts:103"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+    ],
     "backend": [],
-    "notes": "não localizado: sem dialog/hooks de feedback do sidebar (use-feedback-image-drop, use-sidebar-feedback-environment-prefill, use-sidebar-feedback-images). Buscas em src/components/sidebar e App.tsx: 'feedback' só em comentários/keyboard-cycle."
+    "notes": "Implemented per the D10 port report and integrated in the mounted sidebar.",
+    "missing_behaviors": [],
+    "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
    }
   },
   {

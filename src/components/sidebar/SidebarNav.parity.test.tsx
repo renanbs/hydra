@@ -1,15 +1,32 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useAppStore } from "@/store";
 import { formatShortcutKeyComboDetails } from "@/hooks/useShortcutLabel";
+import { DEFAULT_HYDRA_SETTINGS, type HydraSettings } from "@/shared/settings-types";
 import { SidebarNav } from "./SidebarNav";
 
-function renderNav() {
+function settings(overrides: Partial<HydraSettings> = {}): HydraSettings {
+  return { ...DEFAULT_HYDRA_SETTINGS, ...overrides };
+}
+
+function renderNav(overrides: Partial<HydraSettings> = {}) {
   const onOpenWorktreePalette = vi.fn();
-  const utils = render(<SidebarNav onOpenWorktreePalette={onOpenWorktreePalette} />);
-  return { onOpenWorktreePalette, ...utils };
+  const onUpdateSettings = vi.fn();
+  const utils = render(
+    <SidebarNav
+      settings={settings(overrides)}
+      onUpdateSettings={onUpdateSettings}
+      onOpenWorktreePalette={onOpenWorktreePalette}
+    />
+  );
+  return { onOpenWorktreePalette, onUpdateSettings, ...utils };
 }
 
 describe("SidebarNav search entry (D01-016)", () => {
+  beforeEach(() => {
+    useAppStore.setState({ activeView: "terminal" });
+  });
+
   it("opens the worktree palette on click", () => {
     const { onOpenWorktreePalette } = renderNav();
 
@@ -35,5 +52,79 @@ describe("SidebarNav search entry (D01-016)", () => {
     }
 
     expect(screen.queryByText("⌘P")).toBeNull();
+  });
+});
+
+describe("SidebarNav view entries (D01-018/D01-021..D01-025)", () => {
+  beforeEach(() => {
+    useAppStore.setState({ activeView: "terminal" });
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    useAppStore.setState({ activeView: "terminal" });
+  });
+
+  it("renders Tasks enabled with zero repositories and highlights the active view", () => {
+    useAppStore.setState({ activeView: "tasks" });
+    renderNav({ showTasksButton: true });
+
+    const tasks = screen.getByRole("button", { name: "Tasks" });
+    expect(tasks).toHaveAttribute("aria-current", "page");
+    expect(tasks).toHaveAttribute("data-contextual-tour-target", "sidebar-tasks");
+    expect(useAppStore.getState().repos).toEqual([]);
+  });
+
+  it("keeps Artifacts and Skills hidden by default and shows Automations/Mobile", () => {
+    renderNav();
+
+    expect(screen.queryByRole("button", { name: "Artifacts" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Skills" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Automations" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Orca Mobile/ })).toBeInTheDocument();
+  });
+
+  it("opens each configured page and marks it current", () => {
+    renderNav({
+      showArtifactsButton: true,
+      showSkillsButton: true,
+      showAutomationsButton: true,
+      showMobileButton: true,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Artifacts" }));
+    expect(useAppStore.getState().activeView).toBe("artifacts");
+    expect(screen.getByRole("button", { name: "Artifacts" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Skills" }));
+    expect(useAppStore.getState().activeView).toBe("skills");
+
+    fireEvent.click(screen.getByRole("button", { name: "Automations" }));
+    expect(useAppStore.getState().activeView).toBe("automations");
+  });
+
+  it("shows the one-time New badge on mobile and dismisses it on first view", async () => {
+    renderNav({ showMobileButton: true });
+
+    expect(screen.getByText("New")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Orca Mobile/ }));
+
+    expect(useAppStore.getState().activeView).toBe("mobile");
+    await waitFor(() => expect(screen.queryByText("New")).toBeNull());
+    expect(window.localStorage.getItem("hydra.mobile.sidebar-onboarding-dismissed")).toBe("1");
+  });
+
+  it("hides an entry through the shared context menu writer", async () => {
+    const { onUpdateSettings } = renderNav({ showAutomationsButton: true });
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: "Automations" }));
+    const hideItem = await screen.findByRole("menuitem", { name: "Hide from sidebar" });
+    fireEvent.click(hideItem);
+
+    expect(onUpdateSettings).toHaveBeenCalledWith({ showAutomationsButton: false });
+    expect(hideItem).toHaveTextContent("Hide from sidebar");
   });
 });

@@ -2,6 +2,9 @@
 // Source: components/sidebar/WorktreeList.tsx
 import React, { useMemo, useCallback, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store";
+import { useShallow } from "zustand/react/shallow";
+import type { AppState } from "@/store/types";
+import type { WorktreeCardProperty } from "../../shared/ui-chrome-types";
 import { AlertTriangle, ChevronDown, FolderPlus, Loader2, Plus, Server, ServerOff } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { reuseArrayIfEqual } from "../../lib/reuse-array-if-equal";
@@ -20,11 +23,9 @@ import { getDeleteStateForWorktreeHost } from "./worktree-delete-state-host-matc
 import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-state-types";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
-import {
-  buildSidebarLiveActivityIndex,
-  isVisibleUnderSidebarMenuFilters,
-} from "./visible-worktree-filters";
-import { sidebarHasActiveFilters } from "./sidebar-filter-actions";
+import { selectWorktreeAgentActivitySummary } from "./worktree-agent-activity-summary";
+import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
+import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import type { SidebarFilterState } from "./visible-worktree-kinds";
 import { shouldFiltersHideAllRows } from "./sidebar-empty-state-gate";
 import { WorktreeListEmptyState } from "./worktree-list/listing/WorktreeListEmptyState";
@@ -35,10 +36,11 @@ import {
   normalizeVisibleExecutionHostIds,
 } from "../../shared/execution-host";
 import type { Repo } from "../../shared/repo-types";
-import type { FolderWorkspace } from "../../shared/folder-workspace-types";
+import type { FolderWorkspace, WorkspaceKey } from "../../shared/folder-workspace-types";
 import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
-import type { WorktreeLineage } from "../../shared/worktree/lineage-types";
+import type { Row } from "./worktree-list/grouping/row-types";
+import type { WorkspaceLineage, WorktreeLineage } from "../../shared/worktree/lineage-types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
 import { RepoScanUnavailableIndicator } from "./RepoScanUnavailableIndicator";
@@ -60,6 +62,7 @@ import {
   computeSidebarRows,
   type SidebarRowsState,
 } from "./rendered-sidebar-worktree-order";
+import { getEmptyProjectPlaceholderRepoIds } from "./empty-project-placeholder-repos";
 import { NewExternalWorktreesInboxLine } from "./worktree-list/rows/NewExternalWorktreesInboxLine";
 import { ImportedWorktreesVisibilityLine } from "./worktree-list/rows/ImportedWorktreesVisibilityLine";
 import {
@@ -71,11 +74,12 @@ import {
   type ExternalWorktreeCardActionState,
 } from "./worktree-list/rows/external-worktree-card-actions";
 import { getFolderWorkspaceCardPrDisplay } from "./worktree-list/rows/folder-workspace-card-pr-display";
+import { getProjectedWorkspaceLineageByChildKey } from "./worktree-list/rows/workspace-lineage-projection";
 import { getWorktreeItemRowGeometry } from "./worktree-list/rows/item-row-geometry";
 import {
   createLineageToggleHandlerCache,
-  renderWorktreeLineageDescendants,
-} from "./worktree-list/rows/item-row";
+} from "./worktree-lineage-toggle-handler-cache";
+import { renderWorktreeLineageDescendants } from "./worktree-list/rows/item-row";
 import { getLineageChildrenInlineStyle } from "./worktree-list/rows/indentation";
 import type { LineageGroupRow, RenderRow } from "./worktree-list/listing/render-row";
 import { buildRenderableRows } from "./worktree-list/listing/renderable-rows";
@@ -103,12 +107,23 @@ import type {
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import { toWorktreeRow } from "../../shared/worktree/worktree-row";
 import { getWorktreeHostIdentity, composeWorktreeHostIdentity } from "../../shared/worktree/host-qualified-identity";
-import { getRepoExecutionHostId, getWorktreeExecutionHostId } from "../../shared/execution-host";
-import { getVisibleSidebarHostIdSet } from "./worktree-list/listing/host-filtering";
 import {
+  filterFolderWorkspacesForVisibleHosts,
+  filterProjectGroupsForVisibleHosts,
+  filterReposForVisibleHosts,
+  getVisibleSidebarHostIdSet,
+} from "./worktree-list/listing/host-filtering";
+import {
+  filterFolderWorkspacesFromOtherDevices,
   getPairedDeviceIdsByEnvironment,
-  isWorkspaceFromOtherDevice,
 } from "./workspace-creator-visibility";
+import { folderWorkspaceKey } from "../../shared/workspace-scope";
+import { selectVisibleSidebarWorktrees } from "./worktree-list/listing/visible-worktree-selection";
+import { getPinnedSectionWorktrees } from "./pinned-section-worktrees";
+import {
+  getVisibleWorktreeBrowserActivityTabs,
+  getVisibleWorktreeTerminalActivityTabs,
+} from "./visible-worktree-activity-inputs";
 import { toPipelineRepo } from "./worktree-list/grouping/to-pipeline-repo";
 import { markSidebarWorktreeActiveImmediately } from "./worktree-list/rows/sidebar-worktree-active-dom";
 import { buildHostLabelById } from "../../shared/worktree/host-context-labels";
@@ -131,17 +146,32 @@ import {
   resolvePrimaryActiveRowKey,
 } from "./worktree-list/navigation/active-row";
 import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pending-worktree-creation-keys";
+import { getEffectiveCollapsedGroups } from "./worktree-list/listing/effective-collapsed-groups";
 import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
-import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
+import {
+  buildManualOrderUpdatesForGroupDrop,
+  buildManualOrderUpdatesForVisibleGroups,
+  shouldWriteManualOrderForGroupDrop,
+} from "./worktree-manual-order";
+import { buildWorktreeManualOrderCatalog } from "./worktree-manual-order-catalog";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
+import { getWorktreeDragGroups } from "./worktree-list/drag/groups";
+import { DEFAULT_WORKSPACE_STATUS_ID, getWorkspaceStatusGroupKey } from "./workspace-status";
+import { getWorkspaceBoardSidebarDropGroups } from "./workspace-board/workspace-board-sidebar-drop";
 import { buildLineageParentIdByChildId } from "./worktree-list/drag/nesting";
 import {
   WorktreeDragDropIndicator,
   WorktreeDragRow,
 } from "./worktree-list/drag/worktree-drag-surface";
 import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
-import { useWorktreeSidebarHeaderDrag } from "./worktree-list/drag/use-header-drag";
+import { useRepoHeaderPointerDrag } from "./worktree-list/drag/repo-header-pointer-drag";
+import {
+  getProjectGroupHeaderDragBucketKey,
+  useProjectGroupHeaderPointerDrag,
+} from "./worktree-list/drag/project-group-header-pointer-drag";
+import { useHostHeaderPointerDrag } from "./worktree-list/drag/host-header-pointer-drag";
+import { getProjectHeaderDragBucketKey } from "./project-header-drop";
 import { WorktreeSidebarDropIndicator } from "./WorktreeSidebarDropIndicator";
 import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
 import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
@@ -181,9 +211,12 @@ export function pipelineCollapsedKeys(
 /** Stable empty map: the store seeds no delete state, and a fresh `{}` would thrash memos. */
 /** No paired devices: the other-device sweep is off. */
 const EMPTY_OTHER_DEVICE_IDS: ReadonlyMap<string, string> = new Map();
+/** No mounted terminal pages: the shell omits the prop on a cold sidebar. */
+const EMPTY_LIVE_WORKSPACE_PATHS: ReadonlySet<string> = new Set();
 const EMPTY_SCAN_FAILURES: Record<string, string> = {};
 
 const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
+const EMPTY_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [];
 
 export type WorkspaceSidebarShortcutAction = "workspace.rename" | "workspace.delete";
 
@@ -238,8 +271,29 @@ export function resolveWorkspaceShortcutTarget(
   return null;
 }
 
+/**
+ * The painted list's group and folder props, plus the Orca catalog host/creator
+ * stamps when the caller carries them. The catalog→sidebar bridge drops them today,
+ * so every field is optional; the render-time host/device scope filters read them
+ * (Orca `useSidebarHostVisibleScope`).
+ */
+type SidebarProjectGroupForRows = ProjectGroup & {
+  connectionId?: string | null;
+  executionHostId?: string | null;
+};
+
+type SidebarFolderWorkspaceForRows = {
+  id: string;
+  projectGroupId: string;
+  name: string;
+  folderPath: string;
+  connectionId?: string | null;
+  executionHostId?: FolderWorkspace['executionHostId'];
+  creatorProvenance?: FolderWorkspace['creatorProvenance'];
+};
+
 function toPipelineProjectGroup(
-  group: ProjectGroup,
+  group: SidebarProjectGroupForRows,
   folderWorkspacePath: string | undefined
 ): SharedProjectGroup {
   return {
@@ -251,25 +305,29 @@ function toPipelineProjectGroup(
     parentPath: folderWorkspacePath ?? null,
     parentGroupId: null,
     createdFrom: "manual",
-    tabOrder: 0,
+    tabOrder: group.tabOrder ?? 0,
     isCollapsed: group.isCollapsed ?? false,
     color: null,
     createdAt: 0,
     updatedAt: 0,
+    connectionId: group.connectionId ?? null,
+    executionHostId: group.executionHostId ?? null,
   };
 }
 
-function toPipelineFolderWorkspace(workspace: {
-  id: string;
-  projectGroupId: string;
-  name: string;
-  folderPath: string;
-}): FolderWorkspace {
+function toPipelineFolderWorkspace(
+  workspace: SidebarFolderWorkspaceForRows
+): FolderWorkspace {
   return {
     id: workspace.id,
     projectGroupId: workspace.projectGroupId,
     name: workspace.name,
     folderPath: workspace.folderPath,
+    connectionId: workspace.connectionId ?? null,
+    executionHostId: workspace.executionHostId ?? null,
+    ...(workspace.creatorProvenance
+      ? { creatorProvenance: workspace.creatorProvenance }
+      : {}),
     linkedTask: null,
     comment: "",
     isArchived: false,
@@ -280,6 +338,27 @@ function toPipelineFolderWorkspace(workspace: {
     createdAt: 0,
     updatedAt: 0,
   };
+}
+
+/**
+ * A forced workspace (the agent-send target) outranks the other-device sweep, exactly
+ * like the worktree loop above: the user asked for this row, so a scope filter must not
+ * swallow it. Folder workspaces are addressed by both their raw id and their
+ * `folder:` workspace key, so both spellings match.
+ */
+function keepForcedVisibleFolderWorkspaces(
+  candidates: readonly FolderWorkspace[],
+  kept: readonly FolderWorkspace[],
+  forcedWorkspaceId: string | null
+): readonly FolderWorkspace[] {
+  if (!forcedWorkspaceId) return kept;
+  const keptIds = new Set(kept.map((workspace) => workspace.id));
+  return candidates.filter(
+    (workspace) =>
+      keptIds.has(workspace.id) ||
+      workspace.id === forcedWorkspaceId ||
+      folderWorkspaceKey(workspace.id) === forcedWorkspaceId
+  );
 }
 
 /** `prByPath` (Hydra's review display) → the Orca `prCache` shape PR lanes read. */
@@ -321,6 +400,11 @@ interface SidebarRowModel {
   worktrees: Worktree[];
   /** Projected worktree by bare id, for the folder card's attached-worktree walk. */
   worktreeById: Map<string, Worktree>;
+  /**
+   * Workspace lineage keyed by child workspace key, for the folder card's synthetic
+   * review walk (D03a-077). Derived from the lineage this model already projects.
+   */
+  workspaceLineageByChildKey: Record<WorkspaceKey, WorkspaceLineage>;
   /** Folder workspaces the pipeline painted, in the shared shape reveal lookups read. */
   pipelineFolderWorkspaces: readonly FolderWorkspace[];
   /**
@@ -338,6 +422,13 @@ interface SidebarRowModel {
   lineageParentIdByChildId: Map<string, string>;
   /** Host-qualified workspace identity → label, only for repos visible on >1 host. */
   hostContextLabelByIdentity: Map<string, string>;
+  /**
+   * Host-qualified identities the Pinned section paints. A descendant of a pinned
+   * ancestor belongs here even when its own `isPinned` flag is false (D11-003).
+   */
+  pinnedSectionIdentities: ReadonlySet<string>;
+  /** Repos still painting a section without visible cards (empty scan or filtered group member). */
+  placeholderRepoCount: number;
 }
 
 export interface WorktreeListProps {
@@ -354,9 +445,9 @@ export interface WorktreeListProps {
   unreadProjects?: ReadonlySet<string> | Set<string>;
   pinnedWorktrees?: ReadonlySet<string> | Set<string>;
   unreadWorktrees?: ReadonlySet<string> | Set<string>;
-  projectGroups?: ProjectGroup[];
+  projectGroups?: SidebarProjectGroupForRows[];
   projectGroupMap?: Record<string, string>;
-  folderWorkspaces?: Array<{ id: string; projectGroupId: string; name: string; folderPath: string }>;
+  folderWorkspaces?: SidebarFolderWorkspaceForRows[];
   liveWorkspacePaths?: ReadonlySet<string>;
   missingFolderPaths?: ReadonlySet<string>;
   /** Rich folder path status, when the shell probed it (confirmed stale vs ambiguous). */
@@ -373,6 +464,10 @@ export interface WorktreeListProps {
   onActivateFolderWorkspace?: (folderPath: string) => void;
   /** Removes a folder workspace entry (folder on disk stays). */
   onDeleteFolderWorkspace?: (folderWorkspaceId: string) => void;
+  onFolderWorkspaceContextMenu?: (
+    event: React.MouseEvent,
+    folderWorkspace: { id: string; name: string; folderPath: string }
+  ) => void;
   /** Review display per worktree path (populated by the host PR lookup). */
   prByPath?: Record<string, PrDisplay>;
   collapsedProjects: Set<string>;
@@ -459,6 +554,11 @@ export interface WorktreeListProps {
   onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
   /** Orca `handleReorderHostSections`: persist the host-section order after a drag. */
   onReorderHostSections?: (orderedHostIds: ExecutionHostId[]) => void;
+  /**
+   * Persists a repo-header reorder (D03b-028/029). The ids are the logical project order,
+   * with every host-qualified occurrence of a repo moving as one block.
+   */
+  onReorderRepoHeaders?: (orderedRepoIds: string[]) => void;
   /** Project-group tier writer: the drop reports the group's new tab order. */
   onUpdateProjectGroup?: (groupId: string, updates: { tabOrder: number }) => void;
   /**
@@ -467,6 +567,11 @@ export interface WorktreeListProps {
    * board and the context menu share one writer (D08-002/D08-040).
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
+  /**
+   * Switches the sidebar sort to Manual when a board drop writes a manual order, so
+   * the placement stays visible instead of being re-sorted away (D08-040/D08-042).
+   */
+  onSwitchToManualSort?: () => void;
   /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
   lineageByPath?: Readonly<Record<string, string>>;
   /** Persisted notes/linked work items, keyed by checkout path. */
@@ -514,7 +619,11 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
   row: GroupHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onAssignStatusDrop: (worktreeIds: readonly string[], status: string) => void;
+  onAssignStatusDrop: (
+    worktreeIds: readonly string[],
+    status: string,
+    dropIndex: number | null
+  ) => void;
   onPinDrop: (worktreeIds: readonly string[]) => void;
 }): React.JSX.Element {
   const Icon = row.icon;
@@ -551,7 +660,7 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
               if (isPinDropTarget) {
                 onPinDrop(worktreeIds);
               } else if (workspaceStatusId) {
-                onAssignStatusDrop(worktreeIds, workspaceStatusId);
+                onAssignStatusDrop(worktreeIds, workspaceStatusId, null);
               }
             }
           : undefined
@@ -615,20 +724,18 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
   row,
   isCollapsed,
   onToggleCollapse,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  onDragEnd,
-  isDropTarget,
+  isDragged = false,
+  isDropTarget = false,
+  onHeaderPointerDown,
 }: {
   row: HostHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onDragStart?: (event: React.DragEvent) => void;
-  onDragOver?: (event: React.DragEvent) => void;
-  onDrop?: (event: React.DragEvent) => void;
-  onDragEnd?: () => void;
+  /** This card is the one being reordered by the pointer session (D03b-034). */
+  isDragged?: boolean;
   isDropTarget?: boolean;
+  /** Arms the host-tier pointer drag; actions inside the card never arm it. */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
 }): React.JSX.Element {
   const isDisconnected =
     row.health === "disconnected" || row.health === "error" || row.health === "blocked";
@@ -643,14 +750,12 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
         aria-label={row.label}
         data-host-header-id={row.hostId}
         data-host-header-drag-id={row.hostId}
-        draggable={Boolean(onDragStart)}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onDragEnd={onDragEnd}
+        data-host-header-drag-handle=""
+        onPointerDown={onHeaderPointerDown}
+        aria-grabbed={isDragged || undefined}
         className={cn(
           "group/host-header flex h-8 w-full items-center gap-2 rounded-md border px-2 text-left transition-all cursor-pointer select-none",
-          onDragStart && "cursor-grab active:cursor-grabbing",
+          onHeaderPointerDown && "cursor-grab active:cursor-grabbing",
           isBlocked
             ? "border-destructive/40 bg-destructive/10"
             : isDisconnected
@@ -711,6 +816,7 @@ export function WorktreeList({
   activeWorktreePath,
   highlightedRevealPath,
   sessions,
+  worktreesByProject = {},
   hiddenWorktreesByProject,
   pinnedWorktrees,
   unreadWorktrees,
@@ -724,6 +830,7 @@ export function WorktreeList({
   scanFailuresByProject = EMPTY_SCAN_FAILURES,
   onActivateFolderWorkspace,
   onDeleteFolderWorkspace,
+  onFolderWorkspaceContextMenu,
   prByPath,
   collapsedProjects,
   collapsedGroups,
@@ -764,32 +871,37 @@ export function WorktreeList({
   scrollRef,
   onReorderWorktreesInGroup,
   onReorderHostSections,
+  onReorderRepoHeaders,
   onUpdateProjectGroup,
   onAssignWorktreeStatus,
+  onSwitchToManualSort,
   lineageByPath,
   worktreeMetadataByPath,
   onEditWorktreeMetadata,
   onAssignWorktreeParent,
   onUnnestWorktrees,
   onPinWorktreePaths,
-  draggedProjectId,
-  projectDropTarget,
-  groupDropTargetId,
   onWorktreeDragStart,
   onWorktreeDragOver,
   onWorktreeDrop,
   onWorktreeDragEnd,
-  onProjectDragStart,
-  onProjectDragOver,
-  onProjectDrop,
-  onProjectDragEnd,
-  onGroupDragOver,
-  onGroupDragLeave,
-  onGroupDrop,
   className = "",
 }: WorktreeListProps): React.JSX.Element {
   const query = filter.trim().toLowerCase();
-  const livePaths = liveWorkspacePaths ?? new Set<string>();
+  // Why a memo: the snapshot below and the painted-card liveness reads must share
+  // one set identity, and an inline `new Set()` re-keys them every render.
+  const livePaths = useMemo(
+    () => liveWorkspacePaths ?? EMPTY_LIVE_WORKSPACE_PATHS,
+    [liveWorkspacePaths]
+  );
+  // D03a-047: one live-activity sample per render pass. The visible pipeline and
+  // the status filters below read the SAME Set — re-deriving it between two calls
+  // would let a status write keep one row and hide its sibling mid-paint.
+  const liveActivity = useMemo(
+    () => buildSidebarLiveActivityIndex(sessions, livePaths),
+    [sessions, livePaths]
+  );
+  const liveAgentWorktreeIds = liveActivity.worktreeIdsWithLiveAgent;
   const missingPaths = missingFolderPaths ?? new Set<string>();
   const pinnedSet = pinnedWorktrees ?? new Set<string>();
   const unreadSet = unreadWorktrees ?? new Set<string>();
@@ -806,15 +918,85 @@ export function WorktreeList({
   const storeWorkspaceHostScope = useAppStore((s) => s.workspaceHostScope);
   const storeVisibleWorkspaceHostIds = useAppStore((s) => s.visibleWorkspaceHostIds);
   const storeWorktreeLineageById = useAppStore((s) => s.worktreeLineageById);
+  // D05-013: per-worktree status summary (flags + pane ids), cached by agentStatusEpoch.
+  const agentActivityState = useAppStore(
+    useShallow((s) => ({
+      agentStatusEpoch: s.agentStatusEpoch,
+      agentStatusByPaneKey: s.agentStatusByPaneKey,
+      migrationUnsupportedByPtyId: s.migrationUnsupportedByPtyId,
+      retainedAgentsByPaneKey: s.retainedAgentsByPaneKey,
+      runtimeAgentOrchestrationByPaneKey: (
+        s as unknown as {
+          runtimeAgentOrchestrationByPaneKey?: Record<
+            string,
+            import('../../shared/agent-status-types').AgentStatusOrchestrationContext
+          >
+        }
+      ).runtimeAgentOrchestrationByPaneKey,
+      tabsByWorktree: s.tabsByWorktree,
+    }))
+  );
   const storeWorkspaceStatuses = useAppStore((s) => s.workspaceStatuses);
+  // D11-006: the store's tab records are the real activity inputs. Their id-only
+  // projections keep a title/URL/favicon write from invalidating the visible pipeline.
+  const storeSidebarTabsByWorktree = useAppStore((s) => s.tabsByWorktree);
+  const storeSidebarBrowserTabsByWorktree = useAppStore((s) => s.browserTabsByWorktree);
+  const storeSidebarPtyIdsByTabId = useAppStore(
+    (s) => s.ptyIdsByTabId as Record<string, string[]>
+  );
+  // Why two memos: the projection returns the SAME record when only tab metadata changed,
+  // so the merge below keeps its identity and the row pipeline skips the recompute.
+  const projectedTerminalActivityTabs = useMemo(
+    () => getVisibleWorktreeTerminalActivityTabs(storeSidebarTabsByWorktree ?? {}),
+    [storeSidebarTabsByWorktree]
+  );
+  const projectedBrowserActivityTabs = useMemo(
+    () => getVisibleWorktreeBrowserActivityTabs(storeSidebarBrowserTabsByWorktree ?? {}),
+    [storeSidebarBrowserTabsByWorktree]
+  );
+  const sidebarActivityInputs = useMemo(() => {
+    // Why merge with the session sample instead of replacing it: the session pass also
+    // carries a live-agent hint a PTY gap must not erase, and both sources key by path.
+    const tabsByWorktree: Record<string, { id: string }[]> = {
+      ...liveActivity.tabsByWorktree,
+    };
+    for (const [worktreeId, tabs] of Object.entries(projectedTerminalActivityTabs)) {
+      if (tabs.length === 0) continue;
+      const existing = tabsByWorktree[worktreeId] ?? [];
+      tabsByWorktree[worktreeId] = existing.length === 0 ? tabs : [...existing, ...tabs];
+    }
+    const browserKeys = Object.keys(projectedBrowserActivityTabs);
+    return {
+      tabsByWorktree,
+      ptyIdsByTabId: {
+        ...(storeSidebarPtyIdsByTabId ?? {}),
+        ...liveActivity.ptyIdsByTabId,
+      },
+      browserTabsByWorktree:
+        browserKeys.length > 0 ? projectedBrowserActivityTabs : undefined,
+    };
+  }, [
+    liveActivity,
+    projectedTerminalActivityTabs,
+    projectedBrowserActivityTabs,
+    storeSidebarPtyIdsByTabId,
+  ]);
   // The persisted host-section tier order feeds the row pipeline, so a host drag
   // repaints the sections it just moved (D03a-020).
   const storeWorkspaceHostOrder = useAppStore((s) => s.workspaceHostOrder);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
-  // Why: the live store's UI slice is still an auto-stub, so these keys are not in
-  // `AppState` yet; the review-cache selector gets Orca's defaults until they are.
-  const storeWorktreeCardProperties: never[] = [];
-  const storeHostedReviewCache = null;
+  // D03b-010: the review-cache inputs come from ONE shallow selector, so a store tick
+  // that did not change these slices keeps its identity and the row memo stays intact.
+  const { storeWorktreeCardProperties, storeHostedReviewCache } = useAppStore(
+    useShallow((state) => ({
+      storeWorktreeCardProperties:
+        (state as unknown as { worktreeCardProperties?: WorktreeCardProperty[] })
+          .worktreeCardProperties ?? EMPTY_WORKTREE_CARD_PROPERTIES,
+      storeHostedReviewCache:
+        (state as unknown as { hostedReviewCache?: AppState['hostedReviewCache'] })
+          .hostedReviewCache ?? null,
+    }))
+  );
   const pendingRevealSidebarRow = useAppStore((s) => s.pendingRevealSidebarRow);
   // Orca `use-agent-send-target`: the worktree the send picker targets is forced
   // visible even when a filter would otherwise hide it (D03a-048).
@@ -871,6 +1053,63 @@ export function WorktreeList({
     ]
   );
 
+  // Orca `useSidebarHostVisibleScope` → `visibleReposForRows`: the host set narrows the
+  // repo tier the list paints. Shared with the Cmd+1–9 order (`visible-worktrees`), so a
+  // numbered shortcut never targets a repo the cards hid.
+  const visibleReposForRows = useMemo(
+    () => filterReposForVisibleHosts(storeRepos as Repo[], visibleHostIdSet, focusedHostId),
+    [storeRepos, visibleHostIdSet, focusedHostId]
+  );
+  // The group tier needs its shared shape before the host filter can read the group's
+  // own ownership stamp. Built from the *unfiltered* folder props so a folder-backed
+  // group keeps its `parentPath` even when the folder row itself is filtered out.
+  const pipelineProjectGroups = useMemo(
+    () =>
+      projectGroups.map((group) =>
+        toPipelineProjectGroup(
+          group,
+          folderWorkspaces.find((workspace) => workspace.projectGroupId === group.id)?.folderPath
+        )
+      ),
+    [projectGroups, folderWorkspaces]
+  );
+  const visibleProjectGroupsForRows = useMemo(
+    () =>
+      filterProjectGroupsForVisibleHosts(pipelineProjectGroups, visibleHostIdSet, focusedHostId),
+    [pipelineProjectGroups, visibleHostIdSet, focusedHostId]
+  );
+  const pipelineFolderWorkspaces = useMemo(
+    () => folderWorkspaces.map(toPipelineFolderWorkspace),
+    [folderWorkspaces]
+  );
+  // Orca `useSidebarHostVisibleScope` → `visibleFolderWorkspacesForRows`: host scope
+  // first, then the paired-device sweep the worktree rows already run. The agent-send
+  // target stays forced visible, in both its raw-id and `folder:` key spellings.
+  const visibleFolderWorkspacesForRows = useMemo(() => {
+    const hostVisible = filterFolderWorkspacesForVisibleHosts(
+      pipelineFolderWorkspaces,
+      pipelineProjectGroups,
+      visibleHostIdSet,
+      focusedHostId
+    );
+    const deviceVisible =
+      pairedDeviceIdsByEnvironment.size > 0
+        ? filterFolderWorkspacesFromOtherDevices(hostVisible, pairedDeviceIdsByEnvironment)
+        : hostVisible;
+    return keepForcedVisibleFolderWorkspaces(
+      pipelineFolderWorkspaces,
+      deviceVisible,
+      agentSendTargetWorktreeId
+    );
+  }, [
+    agentSendTargetWorktreeId,
+    focusedHostId,
+    pairedDeviceIdsByEnvironment,
+    pipelineFolderWorkspaces,
+    pipelineProjectGroups,
+    visibleHostIdSet,
+  ]);
+
   // Filter projects by search query (project identity or a matching workspace).
   const visibleProjectsRef = useRef<HydraProject[]>([]);
   const visibleProjects = useMemo(() => {
@@ -883,28 +1122,31 @@ export function WorktreeList({
           const wts = getFilteredAndSortedWorktrees(proj);
           return wts.length > 0;
         });
-    let filtered = searched;
-    if (visibleHostIdSet) {
-      const repoByProject = new Map(
-        (storeRepos as Repo[]).flatMap((repo) => [
-          [repo.id, repo] as const,
-          [repo.path, repo] as const,
-        ])
-      );
-      filtered = searched.filter((proj) => {
-        if (
-          agentSendTargetWorktreeId &&
-          getFilteredAndSortedWorktrees(proj).some(
-            (worktree) => worktree.id === agentSendTargetWorktreeId
-          )
-        ) {
-          return true;
-        }
-        const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
-        const hostId = repo ? getRepoExecutionHostId(repo) : focusedHostId;
-        return visibleHostIdSet.has(hostId);
-      });
-    }
+    // Orca `useSidebarHostVisibleScope` → `visibleReposForRows`: a project paints only
+    // when its repo row survived the host scope. A project without a store repo follows
+    // the focused host, the same default the repo filter gives an unstamped repo.
+    const repoByProject = new Map(
+      (storeRepos as Repo[]).flatMap((repo) => [
+        [repo.id, repo] as const,
+        [repo.path, repo] as const,
+      ])
+    );
+    const visibleRepoIds = new Set(visibleReposForRows.map((repo) => repo.id));
+    const filtered = searched.filter((proj) => {
+      if (
+        agentSendTargetWorktreeId &&
+        getFilteredAndSortedWorktrees(proj).some(
+          (worktree) => worktree.id === agentSendTargetWorktreeId
+        )
+      ) {
+        return true;
+      }
+      const repo = repoByProject.get(proj.id) ?? repoByProject.get(proj.path);
+      if (!repo) {
+        return visibleHostIdSet ? visibleHostIdSet.has(focusedHostId) : true;
+      }
+      return visibleRepoIds.has(repo.id);
+    });
     // D03a-051: a recompute that kept the same project objects keeps the previous
     // array identity, so memoized sections do not invalidate.
     const stable = reuseArrayIfEqual(visibleProjectsRef.current, filtered);
@@ -914,6 +1156,7 @@ export function WorktreeList({
     displayProjects,
     query,
     getFilteredAndSortedWorktrees,
+    visibleReposForRows,
     visibleHostIdSet,
     storeRepos,
     focusedHostId,
@@ -923,6 +1166,40 @@ export function WorktreeList({
   // Host ownership per repo, shared by the row pipeline and the delete-state
   // resolution below: a card's delete state is keyed by host-qualified identity.
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos as Repo[]), [storeRepos]);
+
+  /**
+   * The durable Manual sequence a reorder interpolates against.
+   *
+   * Built from every scanned workspace (not the painted slice) plus the folder workspaces, so a
+   * drag in a filtered or collapsed list never erases the rank of a row it cannot see, and a
+   * folder workspace keeps its place beside the git rows. Hydra persists manual order as the
+   * project's array order rather than a per-row rank, so each row's position in that array is
+   * handed to the catalog as its `sortOrder`; multi-host clusters still collapse to one id.
+   */
+  const manualOrderCatalog = useMemo(() => {
+    const projectByPath = new Map(projects.map((project) => [project.path, project]));
+    const allWorktrees: Worktree[] = [];
+    for (const [projectPath, list] of Object.entries(worktreesByProject ?? {})) {
+      const project = projectByPath.get(projectPath);
+      if (!project) continue;
+      list.forEach((worktree, index) => {
+        const row = toWorktreeRow(worktree, {
+          repoId: project.id,
+          hostId: hostIdByRepoId.get(project.id),
+        });
+        // Descending like Orca's rank: the first painted row has the highest value.
+        allWorktrees.push({ ...row, sortOrder: list.length - index });
+      });
+    }
+    return buildWorktreeManualOrderCatalog({
+      worktrees: allWorktrees,
+      folderWorkspaces: [...pipelineFolderWorkspaces],
+    });
+  }, [hostIdByRepoId, pipelineFolderWorkspaces, projects, worktreesByProject]);
+
+  // Host-tier pointer drag state lives above the row model: a host drag force-collapses
+  // every host section, so the pipeline must read the flag while it builds rows.
+  const [hostDragActive, setHostDragActive] = useState(false);
 
   const pendingCreationRefs = useMemo(() => {
     const pending = pendingWorktreeCreations ?? [];
@@ -937,7 +1214,6 @@ export function WorktreeList({
   }, [pendingWorktreeCreations]);
 
   const rowModel = useMemo<SidebarRowModel>(() => {
-    const repoById = new Map((storeRepos as Repo[]).map((repo) => [repo.id, repo]));
     const pipelineRepos = visibleProjects.map((project) =>
       toPipelineRepo({
         project,
@@ -945,15 +1221,8 @@ export function WorktreeList({
         hostId: hostIdByRepoId.get(project.id),
       })
     );
-    const pipelineGroups = projectGroups.map((group) =>
-      toPipelineProjectGroup(
-        group,
-        folderWorkspaces.find((workspace) => workspace.projectGroupId === group.id)?.folderPath
-      )
-    );
-    const pipelineFolderWorkspaces = folderWorkspaces.map(toPipelineFolderWorkspace);
-
-    const liveActivity = buildSidebarLiveActivityIndex(sessions, livePaths);
+    const pipelineGroups = visibleProjectGroupsForRows;
+    const pipelineFolderWorkspaces = visibleFolderWorkspacesForRows;
 
     const propWorktreeByPath = new Map<string, GitWorktreeInfo>();
     const propProjectById = new Map<string, HydraProject>();
@@ -969,14 +1238,22 @@ export function WorktreeList({
         persistedStatusByPath.set(row.path, row.workspaceStatus);
       }
     }
-    const worktreesByRepo: Record<string, Worktree[]> = {};
-    const candidates: { project: HydraProject; worktree: GitWorktreeInfo }[] = [];
+
+    // Step 1 — project every candidate row. The array a project contributes is
+    // already in the panel's filter + sort epoch order, so the flat id stream
+    // below is that same order: the rank index the visible pipeline sorts by and
+    // the numbering Cmd+1–9 publishes.
+    const projectedByRepo: Record<string, Worktree[]> = {};
+    const orderedIds: string[] = [];
+    const candidateById = new Map<
+      string,
+      { project: HydraProject; worktree: GitWorktreeInfo }
+    >();
     for (const project of visibleProjects) {
       propProjectById.set(project.id, project);
       const hostId = hostIdByRepoId.get(project.id);
       const projectedForRepo: Worktree[] = [];
       for (const worktree of getFilteredAndSortedWorktrees(project)) {
-        const forcedVisible = worktree.id === agentSendTargetWorktreeId;
         const status =
           persistedStatusByPath.get(worktree.path) ??
           (worktree.id ? persistedStatusById.get(worktree.id) : undefined) ??
@@ -1000,60 +1277,30 @@ export function WorktreeList({
               : null;
           })(),
         });
-        if (
-          !forcedVisible &&
-          pairedDeviceIdsByEnvironment.size > 0 &&
-          isWorkspaceFromOtherDevice(projected, pairedDeviceIdsByEnvironment)
-        ) {
-          continue;
-        }
-        if (
-          !forcedVisible &&
-          visibleHostIdSet &&
-          !visibleHostIdSet.has(
-            getWorktreeExecutionHostId(projected, repoById.get(project.id), focusedHostId)
-          )
-        ) {
-          continue;
-        }
-        // Menu filters (Orca's ported predicates, never a re-derived rule). Shared
-        // with the workspace board so both surfaces hide the same workspaces.
-        if (
-          !forcedVisible &&
-          !isVisibleUnderSidebarMenuFilters({
-            worktree: projected,
-            displayOptions,
-            liveActivity,
-          })
-        ) {
-          continue;
-        }
         propWorktreeByPath.set(worktree.path, worktree);
-        candidates.push({ project, worktree });
         projectedForRepo.push(projected);
+        orderedIds.push(projected.id);
+        candidateById.set(projected.id, { project, worktree });
       }
-      if (projectedForRepo.length > 0) worktreesByRepo[project.id] = projectedForRepo;
+      projectedByRepo[project.id] = projectedForRepo;
     }
 
     // The app's path lineage is the single writer the row menus and delete use;
     // project it into the rich records the row pipeline validates, so a nest drag
-    // and the context menu paint the same tree.
+    // and the context menu paint the same tree. Built over the whole candidate
+    // universe: the visible pipeline below re-adds an ancestor its filters hid.
     const projectedLineageById: Record<string, WorktreeLineage> = {
       ...storeWorktreeLineageById,
     }
-    const worktreeByPath = new Map<string, Worktree>()
-    const worktreeById = new Map<string, Worktree>()
-    const pathByWorktreeId = new Map<string, string>()
-    for (const list of Object.values(worktreesByRepo)) {
+    const candidateWorktreeByPath = new Map<string, Worktree>()
+    for (const list of Object.values(projectedByRepo)) {
       for (const worktree of list) {
-        worktreeByPath.set(worktree.path, worktree)
-        worktreeById.set(worktree.id, worktree)
-        pathByWorktreeId.set(worktree.id, worktree.path)
+        candidateWorktreeByPath.set(worktree.path, worktree)
       }
     }
     for (const [childPath, parentPath] of Object.entries(lineageByPath ?? {})) {
-      const child = worktreeByPath.get(childPath)
-      const parent = worktreeByPath.get(parentPath)
+      const child = candidateWorktreeByPath.get(childPath)
+      const parent = candidateWorktreeByPath.get(parentPath)
       if (!child || !parent || child.repoId !== parent.repoId) {
         continue
       }
@@ -1067,6 +1314,77 @@ export function WorktreeList({
         createdAt: 0,
       }
     }
+
+    const repoMap = new Map(pipelineRepos.map((repo) => [repo.id, repo]))
+
+    // Step 2 — the ONE visible derivation (D03a-047). Device, host-scope,
+    // provenance and sleeping filters run there against the live-agent sample
+    // taken for this pass, and `agentSendTargetWorktreeId` is force-visible so the
+    // send picker can target a workspace a filter would otherwise hide. The row
+    // pipeline then paints exactly this order instead of re-deriving candidates.
+    const selection = selectVisibleSidebarWorktrees({
+      worktreesByRepo: projectedByRepo,
+      sortedIds: orderedIds,
+      options: {
+        // Project membership was already narrowed upstream (search + Show filter),
+        // so this only sharpens per-row; kept for parity with the shortcut path.
+        filterRepoIds: displayOptions.filterProjectIds ?? [],
+        showSleepingWorkspaces: !displayOptions.hideSleeping,
+        tabsByWorktree: sidebarActivityInputs.tabsByWorktree,
+        ptyIdsByTabId: sidebarActivityInputs.ptyIdsByTabId,
+        browserTabsByWorktree: sidebarActivityInputs.browserTabsByWorktree,
+        worktreeIdsWithLiveAgent: liveAgentWorktreeIds,
+        // Why false for the two branch filters: `getFilteredAndSortedWorktrees`
+        // already applied them with the active workspace spared, and re-applying
+        // them here would drop the workspace the user is looking at.
+        hideDefaultBranchWorkspace: false,
+        hideDetachedHeadWorkspaces: false,
+        hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
+        hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
+        hideWorkspacesFromOtherDevices: displayOptions.hideWorkspacesFromOtherDevices === true,
+        pairedDeviceIdsByEnvironment,
+        alwaysShowDefaultBranchWorkspace: displayOptions.alwaysShowDefaultBranch,
+        repoMap,
+        workspaceHostScope: pipelineHostScope,
+        visibleWorkspaceHostIds: pipelineVisibleHostIds,
+        defaultHostId: focusedHostId,
+        worktreeLineageById: projectedLineageById,
+        forcedVisibleWorktreeIds: agentSendTargetWorktreeId
+          ? [agentSendTargetWorktreeId]
+          : undefined,
+      },
+    })
+    const worktreesByRepo = selection.visibleWorktreesByRepo
+    const visibleWorktrees = selection.visibleWorktrees
+    // PR/hosted-review candidates read the prop rows the painted cards belong to.
+    const candidates = visibleWorktrees.flatMap((worktree) => {
+      const candidate = candidateById.get(worktree.id)
+      return candidate ? [candidate] : []
+    })
+    const worktreeById = new Map<string, Worktree>()
+    const pathByWorktreeId = new Map<string, string>()
+    for (const worktree of visibleWorktrees) {
+      worktreeById.set(worktree.id, worktree)
+      pathByWorktreeId.set(worktree.id, worktree.path)
+    }
+    // D11-003: a visible descendant of a pinned ancestor paints as pinned too. The row
+    // pipeline already relocates it into the Pinned section; the card needs the same
+    // fact, so derive it from the one resolver instead of the path set alone.
+    const pinnedSectionIdentities = new Set<string>(
+      getPinnedSectionWorktrees(visibleWorktrees, projectedLineageById, worktreeById).map(
+        getWorktreeHostIdentity
+      )
+    )
+
+    // D03a-077: the folder card's synthetic review walks workspace lineage, which the
+    // live store never composes; project the lineage above into the workspace-keyed
+    // records, so a worktree nested under a folder workspace reaches that card.
+    const workspaceLineageByChildKey = getProjectedWorkspaceLineageByChildKey({
+      lineageById: projectedLineageById,
+      lineageByPath,
+      worktreeById,
+      folderWorkspaces: pipelineFolderWorkspaces,
+    })
 
     // D03a-056: the row model reads the PR/hosted-review caches only when the painted
     // cards actually need them (PR grouping or synthetic folder-card reviews) instead
@@ -1082,6 +1400,30 @@ export function WorktreeList({
       storeWorktreeCardProperties
     );
 
+    // D03b-012 (Orca `useEffectiveCollapsedGroups`): while the agent send picker targets
+    // a workspace, every collapsed section that hides it paints open. The persisted set is
+    // untouched; the pipeline receives the derived set for this render only.
+    const effectiveCollapsedGroups = getEffectiveCollapsedGroups({
+      collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
+      agentSendTargetWorktreeId,
+      groupBy: displayOptions.groupBy,
+      // Hydra has no "pinned rows in groups" toggle, so the policy resolves to the
+      // single-location default; the cast names the one Orca field the helper reads.
+      pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(
+        storeSettings as unknown as { showPinnedWorktreesInGroups?: boolean } | null
+      ),
+      worktrees: visibleWorktrees,
+      worktreeMap: worktreeById,
+      worktreeLineageById: projectedLineageById,
+      folderWorkspaces: pipelineFolderWorkspaces,
+      projectGroups: pipelineGroups,
+      repoMap,
+      prCache: reviewCaches.prCache ?? null,
+      workspaceStatuses: storeWorkspaceStatuses,
+      settings: storeSettings,
+      pinnedWorktreePaths: pinnedSet,
+    });
+
     const pipelineState: SidebarRowsState = {
       settings: storeSettings,
       visibleWorkspaceHostIds: pipelineVisibleHostIds,
@@ -1092,7 +1434,7 @@ export function WorktreeList({
       worktreeCardProperties: storeWorktreeCardProperties,
       repos: pipelineRepos,
       worktreesByRepo,
-      collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
+      collapsedGroups: effectiveCollapsedGroups,
       worktreeLineageById: projectedLineageById,
       folderWorkspaces: pipelineFolderWorkspaces,
       sshTargetLabels: storeSshTargetLabels,
@@ -1103,11 +1445,13 @@ export function WorktreeList({
       projectOrderBy: displayOptions.projectsOrder ?? "manual",
       workspaceHostOrder: storeWorkspaceHostOrder,
       hostedReviewCache: reviewCaches.hostedReviewCache,
+      // A host-header drag force-collapses every section so the bound is the header itself.
+      hostDragActive,
+      filterRepoIds: displayOptions.filterProjectIds ?? [],
     };
 
     // Mixed-host labels: one repo visible on more than one host needs the card
     // chip the same way its notice rows do (Orca `getMixedWorktreeHostContextLabels`).
-    const repoMap = new Map(pipelineRepos.map((repo) => [repo.id, repo]));
     const hostContextLabelByIdentity = new Map<string, string>();
     for (const rows of Object.values(worktreesByRepo)) {
       const labels = getMixedWorktreeHostContextLabels(rows, repoMap, hostLabelById, focusedHostId);
@@ -1115,9 +1459,20 @@ export function WorktreeList({
       for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
     }
 
+    // Why the raw scan: a repo whose only worktree is hidden by a menu filter is
+    // not an empty repo, so it must not keep a header alive over the Clear Filters
+    // empty state.
+    const placeholderRepoIds = getEmptyProjectPlaceholderRepoIds({
+      groupBy: displayOptions.groupBy,
+      repos: pipelineRepos,
+      worktreesByRepo: storeWorktreesByRepo,
+      visibleWorktrees,
+      filterRepoIds: displayOptions.filterProjectIds ?? [],
+    });
+
     const rows = computeSidebarRows(
       pipelineState,
-      Object.values(worktreesByRepo).flat(),
+      visibleWorktrees,
       buildExternalWorktreeNoticeCandidates({
         repos: pipelineRepos,
         hiddenWorktreesByProjectPath: hiddenWorktreesByProject ?? {},
@@ -1128,8 +1483,9 @@ export function WorktreeList({
     return {
       rows,
       renderedSidebarRowKeys: collectRenderedSidebarRowKeys(rows),
-      worktrees: Object.values(worktreesByRepo).flat(),
+      worktrees: visibleWorktrees,
       worktreeById,
+      workspaceLineageByChildKey,
       pipelineFolderWorkspaces,
       pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(pipelineState.settings),
       hostContextLabelByIdentity,
@@ -1137,30 +1493,36 @@ export function WorktreeList({
       propProjectById,
       pathByWorktreeId,
       lineageParentIdByChildId: buildLineageParentIdByChildId(projectedLineageById),
+      pinnedSectionIdentities,
+      placeholderRepoCount: placeholderRepoIds.size,
     };
   }, [
     visibleProjects,
-    projectGroups,
-    folderWorkspaces,
+    visibleProjectGroupsForRows,
+    visibleFolderWorkspacesForRows,
     projectGroupMap,
-    sessions,
-    livePaths,
+    liveActivity,
+    liveAgentWorktreeIds,
+    sidebarActivityInputs,
     pinnedSet,
     unreadSet,
     hiddenWorktreesByProject,
     displayOptions.groupBy,
     displayOptions.projectsOrder,
+    displayOptions.filterProjectIds,
+    displayOptions.alwaysShowDefaultBranch,
+    displayOptions.hideWorkspacesFromOtherDevices,
     storeWorkspaceHostOrder,
     displayOptions.hideAutomationCreated,
     displayOptions.hideCliCreated,
     displayOptions.hideSleeping,
     pairedDeviceIdsByEnvironment,
+    agentSendTargetWorktreeId,
     getFilteredAndSortedWorktrees,
     prByPath,
     collapsedProjects,
     collapsedGroups,
     hostIdByRepoId,
-    storeRepos,
     storeSettings,
     pipelineHostScope,
     pipelineVisibleHostIds,
@@ -1175,10 +1537,11 @@ export function WorktreeList({
     hostLabelById,
     focusedHostId,
     storeWorktreesByRepo,
+    hostDragActive,
     pendingCreationRefs,
   ]);
 
-  const { rows, hostContextLabelByIdentity } = rowModel;
+  const { rows, hostContextLabelByIdentity, placeholderRepoCount } = rowModel;
   // Why: the painted model folds each visible lineage subtree into one virtual slot
   // (D03a-080); every other consumer (drag groups, reveal keys, selection) keeps the
   // flat row model it always used.
@@ -1186,30 +1549,16 @@ export function WorktreeList({
   // The menu filters (display options + host scope) reduce the row model before it is
   // painted, so both the reveal path (D03a-052) and the empty-state gate (#15362) read
   // the same "are filters active" answer.
+  // Why the shared projection: the badge, the empty-state gate and Clear Filters
+  // must agree on what counts as "filtered", so this reads the same mapping the
+  // shell's Clear Filters plan uses instead of listing flags locally.
   const sidebarFilterState = useMemo<SidebarFilterState>(
-    () => ({
-      showSleepingWorkspaces: !displayOptions.hideSleeping,
-      filterRepoIds: displayOptions.filterProjectIds ?? [],
-      hideDefaultBranchWorkspace: displayOptions.hideDefaultBranch,
-      hideAutomationGeneratedWorkspaces: displayOptions.hideAutomationCreated,
-      hideCliCreatedWorkspaces: displayOptions.hideCliCreated,
-      hideDetachedHeadWorkspaces: displayOptions.hideDetachedHead,
-      // Hydra's sidebar has no per-device filter; false mirrors Orca's default so the
-      // gate's contract is unchanged.
-      hideWorkspacesFromOtherDevices: false,
-      visibleWorkspaceHostIds: pipelineVisibleHostIds,
-      workspaceHostScope: pipelineHostScope,
-    }),
-    [
-      displayOptions.hideSleeping,
-      displayOptions.filterProjectIds,
-      displayOptions.hideDefaultBranch,
-      displayOptions.hideAutomationCreated,
-      displayOptions.hideCliCreated,
-      displayOptions.hideDetachedHead,
-      pipelineVisibleHostIds,
-      pipelineHostScope,
-    ]
+    () =>
+      toSidebarFilterState(displayOptions, {
+        visibleWorkspaceHostIds: pipelineVisibleHostIds,
+        workspaceHostScope: pipelineHostScope,
+      }),
+    [displayOptions, pipelineVisibleHostIds, pipelineHostScope]
   );
   const hasFilters = useMemo(
     () => sidebarHasActiveFilters(sidebarFilterState),
@@ -1475,8 +1824,6 @@ export function WorktreeList({
     [dragWorktreeEntriesById]
   );
 
-  const dragWorktreeIds = useMemo(() => [...dragWorktreeById.keys()], [dragWorktreeById]);
-
   // ─── Multi-selection → the batch a press drags (D03a-002) ───────────────────
   //
   // The rows address their workspace by the same host-qualified identity the board's cards use
@@ -1547,21 +1894,11 @@ export function WorktreeList({
     [dragMultiSelectionInput, selectedWorktreeIdentities]
   );
 
-  const handlePointerGroupReorder = useCallback(
-    (dragArgs: WorktreeGroupReorderArgs) => {
+  // Writes one ordered id stream back through the panel's single reorder writer,
+  // bucketed per project (the writer speaks repo + worktrees).
+  const applyManualOrderedIds = useCallback(
+    (orderedIds: readonly string[]) => {
       if (!onReorderWorktreesInGroup) return;
-      // The manual-order module owns the reorder: it replays the group through
-      // `buildSparseManualOrderUpdates` and reports whether anything moved.
-      const { changed, orderedIds } = buildManualOrderUpdatesForVisibleGroups({
-        groups: dragArgs.groups,
-        sourceGroupKey: dragArgs.sourceGroupKey,
-        draggedIds: dragArgs.draggedIds,
-        dropIndex: dragArgs.dropIndex,
-        now: Date.now(),
-        allWorktreeIds: dragWorktreeIds,
-      });
-      if (!changed) return;
-
       const orderedByProject = new Map<
         string,
         { project: HydraProject; worktrees: GitWorktreeInfo[] }
@@ -1583,12 +1920,29 @@ export function WorktreeList({
         );
       }
     },
-    [
-      dragWorktreeById,
-      dragWorktreeIds,
-      getFilteredAndSortedWorktrees,
-      onReorderWorktreesInGroup,
-    ]
+    [dragWorktreeById, getFilteredAndSortedWorktrees, onReorderWorktreesInGroup]
+  );
+
+  const handlePointerGroupReorder = useCallback(
+    (dragArgs: WorktreeGroupReorderArgs) => {
+      if (!onReorderWorktreesInGroup) return;
+      // The manual-order module owns the reorder: it replays the group through
+      // `buildSparseManualOrderUpdates` and reports whether anything moved.
+      const { changed, orderedIds } = buildManualOrderUpdatesForVisibleGroups({
+        groups: dragArgs.groups,
+        sourceGroupKey: dragArgs.sourceGroupKey,
+        draggedIds: dragArgs.draggedIds,
+        dropIndex: dragArgs.dropIndex,
+        now: Date.now(),
+        // Why the catalog: the written sequence is every known row, not just the painted
+        // slice — a filtered/collapsed workspace and a folder workspace keep their place.
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (!changed) return;
+      applyManualOrderedIds(orderedIds);
+    },
+    [applyManualOrderedIds, manualOrderCatalog]
   );
 
   // ─── Pointer-drag board drop → the panel's status writer ───────────────────
@@ -1597,18 +1951,107 @@ export function WorktreeList({
   // ONE bridge for a card dropped on an open board, and it commits through the same
   // `onAssignWorktreeStatus` the context menu and the board's own card drop use.
   const handleAssignWorktreesStatus = useCallback(
-    (worktreeIds: readonly string[], status: string, executionHostId?: ExecutionHostId) => {
-      for (const entry of resolveDragWorktreeEntries(worktreeIds, executionHostId)) {
+    (
+      worktreeIds: readonly string[],
+      status: string,
+      executionHostId?: ExecutionHostId,
+      dropIndex?: number
+    ) => {
+      const entries = resolveDragWorktreeEntries(worktreeIds, executionHostId);
+      for (const entry of entries) {
         void onAssignWorktreeStatus(entry.worktree.path, status);
       }
+      if (dropIndex === undefined) return;
+      // Why the board's own groups: the sidebar list's rows are grouped by section,
+      // while the slot came from a lane. Manual order must be computed against the
+      // lane order the user dropped into.
+      const groups = getWorkspaceBoardSidebarDropGroups();
+      if (groups.length === 0) return;
+      if (
+        !shouldWriteManualOrderForGroupDrop({
+          sortBy: displayOptions.sortBy,
+          sourceGroupKeys: entries.map(
+            (entry) => entry.worktree.status ?? DEFAULT_WORKSPACE_STATUS_ID
+          ),
+          targetGroupKey: status,
+        })
+      ) {
+        return;
+      }
+      const { changed, orderedIds } = buildManualOrderUpdatesForGroupDrop({
+        groups,
+        targetGroupKey: status,
+        draggedIds: worktreeIds,
+        dropIndex,
+        now: Date.now(),
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (!changed) return;
+      onSwitchToManualSort?.();
+      applyManualOrderedIds(orderedIds);
     },
-    [onAssignWorktreeStatus, resolveDragWorktreeEntries]
+    [
+      applyManualOrderedIds,
+      displayOptions.sortBy,
+      manualOrderCatalog,
+      onAssignWorktreeStatus,
+      onSwitchToManualSort,
+      resolveDragWorktreeEntries,
+    ]
   );
 
   // ─── Pointer-drag pin-strip drop → the panel's pin writer ──────────────────
   //
   // The same id→path bridge, for the board's pin strip: the drag speaks row ids, the app's
   // pin writer speaks workspace paths. One writer for both the strip and the row menu.
+  // D06-019: a release on a status lane assigns the status and, only when the panel
+  // sorts manually, commits the drop slot through the same manual-order writer.
+  const handleStatusLaneDrop = useCallback(
+    (args: {
+      status: string;
+      draggedIds: readonly string[];
+      dropIndex: number | null;
+      sourceGroupKey?: string;
+      executionHostId?: ExecutionHostId;
+    }) => {
+      for (const entry of resolveDragWorktreeEntries(args.draggedIds, args.executionHostId)) {
+        void onAssignWorktreeStatus(entry.worktree.path, args.status);
+      }
+      const targetGroupKey = getWorkspaceStatusGroupKey(args.status);
+      if (
+        !shouldWriteManualOrderForGroupDrop({
+          sortBy: displayOptions.sortBy,
+          sourceGroupKeys: args.sourceGroupKey ? [args.sourceGroupKey] : [],
+          targetGroupKey,
+        })
+      ) {
+        return;
+      }
+      const groups = getWorktreeDragGroups(rows);
+      const targetGroup = groups.find((group) => group.key === targetGroupKey);
+      if (!targetGroup) return;
+      const { changed, orderedIds } = buildManualOrderUpdatesForGroupDrop({
+        groups,
+        targetGroupKey,
+        draggedIds: args.draggedIds,
+        dropIndex: args.dropIndex ?? targetGroup.worktreeIds.length,
+        now: Date.now(),
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (changed) applyManualOrderedIds(orderedIds);
+    },
+    [
+      applyManualOrderedIds,
+      displayOptions.sortBy,
+      manualOrderCatalog,
+      onAssignWorktreeStatus,
+      resolveDragWorktreeEntries,
+      rows,
+    ]
+  );
+
   const handlePinWorktrees = useCallback(
     (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => {
       const worktreePaths = resolveDragWorktreeEntries(worktreeIds, executionHostId).map(
@@ -1775,7 +2218,7 @@ export function WorktreeList({
         <WorktreeDragRow
           key={row.rowKey}
           rowKey={row.rowKey}
-          worktreeId={row.worktree.id}
+          worktreeId={row.worktree.id || row.worktree.path}
           worktreePath={wt.path}
           optionId={slot.optionId}
           hostIdentity={getWorktreeHostIdentity({
@@ -1792,6 +2235,7 @@ export function WorktreeList({
             status={workspaceStatusFrom({
               sessions: wtSessions,
               hasLiveTerminal: livePaths.has(wt.path),
+              agentSummary: selectWorktreeAgentActivitySummary(agentActivityState, wt.path),
             })}
             prDisplay={prByPath?.[wt.path] ?? null}
             review={((): WorktreeReviewStatus | undefined => {
@@ -1832,7 +2276,7 @@ export function WorktreeList({
             }
             lineageChildren={options?.lineageChildren}
             lineageChildrenStyle={lineageChildrenStyle}
-            isPinned={pinnedSet.has(wt.path)}
+            isPinned={pinnedSet.has(wt.path) || rowModel.pinnedSectionIdentities.has(identity)}
             isUnread={unreadSet.has(wt.path)}
             isMultiSelected={isMultiSelected}
             hostContextLabel={hostContextLabelByIdentity.get(identity)}
@@ -1977,61 +2421,91 @@ export function WorktreeList({
     [activeRowKey, activeWorktreePath, renderWorktreeRow]
   );
 
-  // ─── Header-tier drag reorder (D03a-020 / D03a-092) ───────────────────────
+  // ─── Header-tier pointer drag (D03b-025…037) ─────────────────────────────
   //
-  // Three header tiers reorder in place: host section cards, project groups and repo
-  // headers. The tier gates live in the drag module (`groupBy === "repo"` for the
-  // repo/group tiers, manual project order for repos), and each commit persists its
-  // own order — host order in the UI prefs, a group's tab order on its host, and the
-  // repo manual order host-split.
-  const headerDrag = useWorktreeSidebarHeaderDrag({
-    rows,
-    groupBy: displayOptions.groupBy,
-    projectOrderBy: displayOptions.projectsOrder ?? "manual",
-    scrollRef: viewportScrollRef,
-    projectGroups,
-    onReorderHostSections,
-    onUpdateProjectGroup,
-    onProjectDragStart,
-    onProjectDragOver,
-    onProjectDrop,
-    onProjectDragEnd,
-    onGroupDragOver,
-    onGroupDragLeave,
-    onGroupDrop,
-  });
-
-  // A drop fires the header's click on its way out; swallow exactly that click so
-  // reordering a host section never collapses it.
-  const headerCommitClickGuardRef = useRef(false);
-  const headerHandlersFor = useCallback(
-    (tier: "host" | "repo" | "project-group", id: string) => {
-      const handlers =
-        tier === "host"
-          ? headerDrag.hostHandlers(id as ExecutionHostId)
-          : tier === "repo"
-            ? headerDrag.repoHandlers(id)
-            : headerDrag.groupHandlers(id);
-      if (!handlers) return undefined;
-      if (tier !== "host") return handlers;
-      // Why host-only: the guard exists for the host header's own collapse click; a
-      // repo/group drop must not swallow a later, unrelated host click.
-      return {
-        ...handlers,
-        onDrop: handlers.onDrop
-          ? (event: React.DragEvent) => {
-              headerCommitClickGuardRef.current = true;
-              handlers.onDrop?.(event);
-            }
-          : undefined,
-        onDragEnd: () => {
-          headerCommitClickGuardRef.current = true;
-          handlers.onDragEnd?.();
-        },
-      };
-    },
-    [headerDrag]
+  // Three tiers reorder by pointer session: a 4px threshold, pointer capture, edge
+  // autoscroll, Escape/blur cancel, click suppression after a promoted drop, and (host
+  // tier) a floating clone of the pressed header. Each tier commits its own writer:
+  // a group rank/tabOrder, the logical repo order, or the host-section order.
+  const projectGroupByIdForDrag = useMemo(() => {
+    const byId = new Map<string, SharedProjectGroup>();
+    for (const group of projectGroups) {
+      byId.set(group.id, group as SharedProjectGroup);
+    }
+    return byId;
+  }, [projectGroups]);
+  const repoByIdForDrag = useMemo(
+    () => new Map((storeRepos as Repo[]).map((repo) => [repo.id, repo])),
+    [storeRepos]
   );
+  const orderedRepoIdsForDrag = useMemo(
+    () => projects.map((project) => project.id),
+    [projects]
+  );
+  // Why the header-only slice: the tier hooks key buckets off header rows; host cards are
+  // a different tier and would only be filtered out again inside each helper.
+  const headerRowModel = useMemo(
+    () => rows.filter((row) => row.type !== "host-header") as unknown as Row[],
+    [rows]
+  );
+  const repoHeaderDragMetaByRowKey = useMemo(() => {
+    const counters = new Map<string, number>();
+    const meta = new Map<string, { bucket: string; index: number }>();
+    for (const row of rows) {
+      if (row.type !== "header" || !row.repo) continue;
+      const bucket = getProjectHeaderDragBucketKey(row.repo);
+      const index = counters.get(bucket) ?? 0;
+      counters.set(bucket, index + 1);
+      meta.set(row.key, { bucket, index });
+    }
+    return meta;
+  }, [rows]);
+  const groupHeaderDragMetaByRowKey = useMemo(() => {
+    const counters = new Map<string, number>();
+    const meta = new Map<string, { bucket: string; index: number }>();
+    for (const row of rows) {
+      if (row.type !== "header") continue;
+      const group = row.projectGroup;
+      if (!group || typeof group.id !== "string") continue;
+      const bucket = getProjectGroupHeaderDragBucketKey(
+        group as SharedProjectGroup,
+        projectGroupByIdForDrag
+      );
+      const index = counters.get(bucket) ?? 0;
+      counters.set(bucket, index + 1);
+      meta.set(row.key, { bucket, index });
+    }
+    return meta;
+  }, [projectGroupByIdForDrag, rows]);
+
+  const repoHeaderDrag = useRepoHeaderPointerDrag({
+    rows: headerRowModel,
+    repoById: repoByIdForDrag,
+    orderedRepoIds: orderedRepoIdsForDrag,
+    usesProjectGroupOrdering: displayOptions.groupBy === "repo",
+    onCommitRepoOrder: (orderedIds) => onReorderRepoHeaders?.(orderedIds),
+    onCommitProjectGroupOrder: (_repoId, projectGroupId, order) => {
+      // The group writer speaks the bucket group id; the repo inside it is implicit.
+      if (projectGroupId) onUpdateProjectGroup?.(projectGroupId, { tabOrder: order });
+    },
+    scrollRef: viewportScrollRef,
+  });
+  const groupHeaderDrag = useProjectGroupHeaderPointerDrag({
+    rows: headerRowModel,
+    projectGroupById: projectGroupByIdForDrag,
+    onCommitProjectGroupTabOrder: (groupId, tabOrder) =>
+      onUpdateProjectGroup?.(groupId, { tabOrder }),
+    scrollRef: viewportScrollRef,
+  });
+  const hostHeaderDrag = useHostHeaderPointerDrag({
+    orderedHostIds: useMemo(
+      () => rows.filter((row) => row.type === "host-header").map((row) => row.hostId),
+      [rows]
+    ),
+    onCommit: (orderedIds) => onReorderHostSections?.(orderedIds),
+    onHostDragActiveChange: setHostDragActive,
+    scrollRef: viewportScrollRef,
+  });
 
   const renderRepoHeader = useCallback(
     (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
@@ -2042,11 +2516,15 @@ export function WorktreeList({
       const storeRepo = storeRepos.find(
         (repo) => repo.id === proj.id || repo.path === proj.path
       );
-      // The drag module owns the tier gate (`groupBy === "repo"` + manual project
-      // order) and wraps the panel's order writer; without it the header is inert.
-      const dragHandlers = headerHandlersFor("repo", proj.id);
+      // Pointer session (D03b-025…029): pressing the icon/title column arms a reorder;
+      // actions inside the header stay clickable and never arm.
+      const dragMeta = repoHeaderDragMetaByRowKey.get(row.key);
+      const isDragging = repoHeaderDrag.state.draggingRepoId === proj.id;
       const isDropTarget =
-        headerDrag.isDropTarget("repo", proj.id) || projectDropTarget?.id === proj.id;
+        dragMeta !== undefined &&
+        repoHeaderDrag.state.draggingRepoId !== null &&
+        repoHeaderDrag.state.dropIndex === dragMeta.index &&
+        repoHeaderDrag.state.draggingRepoId !== proj.id;
       return (
         <SectionHeader
           key={row.key}
@@ -2065,12 +2543,12 @@ export function WorktreeList({
           onContextMenu={onProjectContextMenu}
           isDropTarget={isDropTarget}
           sectionEnd={headerSectionBounds.repoSectionEndByRepoId.get(proj.id)}
-          dropPosition={projectDropTarget?.position}
-          isDragged={draggedProjectId === proj.id}
-          onDragStart={dragHandlers?.onDragStart}
-          onDragOver={dragHandlers?.onDragOver}
-          onDrop={dragHandlers?.onDrop}
-          onDragEnd={dragHandlers?.onDragEnd}
+          isDragged={isDragging}
+          dragBucket={dragMeta?.bucket}
+          dragIndex={dragMeta?.index}
+          onHeaderPointerDown={(event) =>
+            repoHeaderDrag.onHandlePointerDown(event, proj.id)
+          }
         />
       );
     },
@@ -2083,16 +2561,10 @@ export function WorktreeList({
       onOpenNewWorkspaceModal,
       createStateByProjectId,
       onProjectContextMenu,
-      projectDropTarget,
-      draggedProjectId,
-      onProjectDragStart,
-      onProjectDragOver,
-      onProjectDrop,
-      onProjectDragEnd,
       storeRepos,
       scanFailuresByProject,
-      headerDrag,
-      headerHandlersFor,
+      repoHeaderDrag,
+      repoHeaderDragMetaByRowKey,
     ]
   );
 
@@ -2125,16 +2597,16 @@ export function WorktreeList({
           ? (getFolderWorkspaceCreateDisabledReason(groupGateStatus) ??
             `Folder not found: ${groupFolderPath}`)
           : undefined;
-      const dragHandlers = headerHandlersFor("project-group", group.id);
+      const dragMeta = groupHeaderDragMetaByRowKey.get(row.key);
+      const isDragging = groupHeaderDrag.state.draggingGroupId === group.id;
+      const isDropTarget =
+        dragMeta !== undefined &&
+        groupHeaderDrag.state.draggingGroupId !== null &&
+        groupHeaderDrag.state.dropIndex === dragMeta.index &&
+        groupHeaderDrag.state.draggingGroupId !== group.id;
       return (
-        // Why the wrapper: the shared header component is a drop target, not a drag
-        // source, so the group tier's draggable wrapper supplies the source.
-        <div
-          key={row.key}
-          draggable={Boolean(dragHandlers?.onDragStart)}
-          onDragStart={dragHandlers?.onDragStart}
-          onDragEnd={dragHandlers?.onDragEnd}
-        >
+        // The shared header is the pointer target; no HTML5 wrapper (Orca parity).
+        <div key={row.key} data-header-drag-active={isDragging ? "" : undefined}>
           <SectionHeader
             variant="group"
             group={group}
@@ -2148,16 +2620,16 @@ export function WorktreeList({
                 ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
                 : undefined
             }
-            isDropTarget={
-              headerDrag.isDropTarget("project-group", group.id) || groupDropTargetId === group.id
-            }
+            isDropTarget={isDropTarget}
             sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
             badgeColor={groupBadgeColorById.get(group.id as string)}
             createWorkspaceDisabledReason={createWorkspaceDisabledReason}
             folderPathStatus={groupPathStatus ?? null}
-            onDragOver={dragHandlers?.onDragOver}
-            onDragLeave={dragHandlers?.onDragLeave}
-            onDrop={dragHandlers?.onDrop}
+            dragBucket={dragMeta?.bucket}
+            dragIndex={dragMeta?.index}
+            onHeaderPointerDown={(event) =>
+              groupHeaderDrag.onHandlePointerDown(event, group.id as string)
+            }
           />
         </div>
       );
@@ -2167,9 +2639,8 @@ export function WorktreeList({
       headerSectionBounds,
       groupBadgeColorById,
       onGroupContextMenu,
-      groupDropTargetId,
-      headerDrag,
-      headerHandlersFor,
+      groupHeaderDrag,
+      groupHeaderDragMetaByRowKey,
       folderWorkspaces,
       missingPaths,
       folderPathStatusByPath,
@@ -2196,7 +2667,7 @@ export function WorktreeList({
       });
       const folderPrDisplay = getFolderWorkspaceCardPrDisplay({
         folderWorkspaceId: row.folderWorkspace.id,
-        workspaceLineageByChildKey: null,
+        workspaceLineageByChildKey: rowModel.workspaceLineageByChildKey,
         worktreeLineageById: storeWorktreeLineageById,
         worktreeById: rowModel.worktreeById,
         prByPath,
@@ -2209,9 +2680,15 @@ export function WorktreeList({
           id={slot.optionId}
           name={row.folderWorkspace.name}
           folderPath={folderPath}
+          workspaceId={row.folderWorkspace.id}
+          hostIdentity={composeWorktreeHostIdentity(
+            row.folderWorkspace.executionHostId ?? undefined,
+            row.folderWorkspace.id
+          )}
           status={workspaceStatusFrom({
             sessions: folderSessions,
             hasLiveTerminal: livePaths.has(folderPath),
+            agentSummary: selectWorktreeAgentActivitySummary(agentActivityState, folderPath),
           })}
           pathMissing={missingPaths.has(folderPath)}
           pathStatus={folderPathStatusByPath?.get(folderPath)}
@@ -2228,6 +2705,16 @@ export function WorktreeList({
               ? () => onDeleteFolderWorkspace(row.folderWorkspace.id)
               : undefined
           }
+          onContextMenu={
+            onFolderWorkspaceContextMenu
+              ? (event) =>
+                  onFolderWorkspaceContextMenu(event, {
+                    id: row.folderWorkspace.id,
+                    name: row.folderWorkspace.name,
+                    folderPath,
+                  })
+              : undefined
+          }
         />
       );
     },
@@ -2240,11 +2727,13 @@ export function WorktreeList({
       storeSettings,
       storeWorktreeLineageById,
       rowModel.worktreeById,
+      rowModel.workspaceLineageByChildKey,
       prByPath,
       folderPathStatusByPath,
       getFreshFolderPathStatus,
       onActivateFolderWorkspace,
       onDeleteFolderWorkspace,
+      onFolderWorkspaceContextMenu,
     ]
   );
 
@@ -2381,16 +2870,10 @@ export function WorktreeList({
     ]
   );
 
-  // ─── Host-section drag reorder (D03a-020) ──────────────────────────────────
-  //
-  // The drag module owns the host tier's order and persistence; the list keeps the
-  // ghost-click guard, because a drop fires the header's own click on its way out.
+  // The host tier's pointer session swallows the click that follows a promoted drop
+  // (Orca `swallowNextClickOnDragHandle`), so the collapse handler stays a plain toggle.
   const toggleHostCollapse = useCallback(
     (hostId: ExecutionHostId) => {
-      if (headerCommitClickGuardRef.current) {
-        headerCommitClickGuardRef.current = false;
-        return;
-      }
       onToggleGroupCollapse(hostId);
     },
     [onToggleGroupCollapse]
@@ -2405,18 +2888,17 @@ export function WorktreeList({
     (row: RenderRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
       switch (row.type) {
         case "host-header": {
-          const dragHandlers = headerHandlersFor("host", row.hostId);
           return (
             <HostSectionHeader
               key={row.key}
               row={row}
               isCollapsed={collapsedGroups.has(row.key)}
               onToggleCollapse={() => toggleHostCollapse(row.hostId)}
-              onDragStart={dragHandlers?.onDragStart}
-              onDragOver={dragHandlers?.onDragOver}
-              onDrop={dragHandlers?.onDrop}
-              onDragEnd={dragHandlers?.onDragEnd}
-              isDropTarget={headerDrag.isDropTarget("host", row.hostId)}
+              isDragged={hostHeaderDrag.state.draggingHostId === row.hostId}
+              isDropTarget={hostHeaderDrag.isDropTarget(row.hostId)}
+              onHeaderPointerDown={(event) =>
+                hostHeaderDrag.onHandlePointerDown(event, row.hostId)
+              }
             />
           );
         }
@@ -2433,7 +2915,14 @@ export function WorktreeList({
               row={row}
               isCollapsed={isCollapsedKey(row.key)}
               onToggleCollapse={slot.toggleCollapse}
-              onAssignStatusDrop={handleAssignWorktreesStatus}
+              onAssignStatusDrop={(worktreeIds, status, dropIndex) =>
+                handleStatusLaneDrop({
+                  status,
+                  draggedIds: worktreeIds,
+                  dropIndex,
+                  sourceGroupKey: `workspace-status:${status}`,
+                })
+              }
               onPinDrop={handlePinWorktrees}
             />
           );
@@ -2452,8 +2941,6 @@ export function WorktreeList({
             <PendingWorktreeCreationRow
               key={row.key}
               creationId={row.creationId}
-              branchName={row.branchName}
-              agentName={row.agentName}
               repoName={row.repo?.displayName}
             />
           );
@@ -2461,8 +2948,7 @@ export function WorktreeList({
     },
     [
       collapsedGroups,
-      headerDrag,
-      headerHandlersFor,
+      hostHeaderDrag,
       isCollapsedKey,
       renderRepoHeader,
       renderGroupHeader,
@@ -2483,9 +2969,9 @@ export function WorktreeList({
     hasFilters,
     visibleWorktreeCount: rows.filter((row) => row.type === "item").length,
     visibleFolderWorkspaceCount: rows.filter((row) => row.type === "folder-workspace").length,
-    // Hydra's row union has no empty-project placeholder rows (Orca's
-    // `placeholderRepoIds`), so this term is structurally zero.
-    placeholderRepoCount: 0,
+    // Empty repos and filtered project-group members still paint a section, so a
+    // filter is not what hid every row (Orca `placeholderRepoIds`).
+    placeholderRepoCount,
     importedWorktreeCardCount: rows.filter((row) => row.type === "imported-worktrees-card").length,
   });
 
@@ -2539,6 +3025,7 @@ export function WorktreeList({
       scrollRef={viewportScrollRef}
       onReorderWorktrees={handlePointerGroupReorder}
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
+      onStatusLaneDrop={handleStatusLaneDrop}
       onPinWorktrees={handlePinWorktrees}
       lineageParentIdByChildId={rowModel.lineageParentIdByChildId}
       workspaceBoardOpen={workspaceBoardOpen}
@@ -2574,16 +3061,16 @@ export function WorktreeList({
         dropIndicator={
           <>
             <WorktreeDragDropIndicator />
-            {headerDrag.indicator?.tier === "repo" ? (
-              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            {repoHeaderDrag.state.dropIndicatorY !== null ? (
+              <WorktreeSidebarDropIndicator y={repoHeaderDrag.state.dropIndicatorY} />
             ) : null}
-            {headerDrag.indicator?.tier === "project-group" ? (
-              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            {groupHeaderDrag.state.dropIndicatorY !== null ? (
+              <WorktreeSidebarDropIndicator y={groupHeaderDrag.state.dropIndicatorY} />
             ) : null}
             {/* The host tier is the outer card; its line floats above the sticky stack. */}
-            {headerDrag.indicator?.tier === "host" ? (
+            {hostHeaderDrag.state.dropIndicatorY !== null ? (
               <div className="pointer-events-none absolute inset-0 z-40">
-                <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+                <WorktreeSidebarDropIndicator y={hostHeaderDrag.state.dropIndicatorY} />
               </div>
             ) : null}
           </>

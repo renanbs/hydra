@@ -18,6 +18,7 @@ import { getRepoMapFromState, getWorktreeMapFromState } from '@/store/selectors'
 import { getProjectHostSetupProjectionFromState } from '@/store/project-host-setup-selector'
 import type { ProjectHostSetupProjection } from '../../shared/project-host-setup-projection'
 import { buildRows } from './worktree-list/grouping/build-rows'
+import { getEmptyProjectPlaceholderRepoIds } from './empty-project-placeholder-repos'
 import { getPinnedWorktreeDisplayPolicy } from './worktree-list/grouping/row-types'
 import type {
   ImportedWorktreesCardCandidate,
@@ -35,6 +36,7 @@ import { selectWorktreeListReviewCacheInputs } from './worktree-list/listing/rev
 import {
   filterFolderWorkspacesForVisibleHosts,
   filterProjectGroupsForVisibleHosts,
+  filterReposForVisibleHosts,
   getVisibleSidebarHostIdSet
 } from './worktree-list/listing/host-filtering'
 
@@ -144,7 +146,7 @@ export interface SidebarRowsState {
   worktreeCardProperties: readonly WorktreeCardProperty[]
   repos: Repo[]
   worktreesByRepo: Record<string, Worktree[]>
-  collapsedGroups: Set<string>
+  collapsedGroups: ReadonlySet<string>
   worktreeLineageById: Readonly<Record<string, WorktreeLineage>>
   folderWorkspaces: readonly FolderWorkspace[]
   prCache: AppState['prCache']
@@ -165,6 +167,10 @@ export interface SidebarRowsState {
   workspaceStatuses?: readonly WorkspaceStatusDefinition[]
   /** Optional: the live store does not carry it; the default is Orca's. */
   projectOrderBy?: ProjectOrderBy
+  /** True while a host-header drag force-collapses every host section (D03b-034). */
+  hostDragActive?: boolean
+  /** Workspace project filter; keeps filtered project-group members as placeholder sections. */
+  filterRepoIds?: readonly string[]
   /** Optional: the live store does not carry it; the default is Orca's. */
   workspaceHostOrder?: readonly ExecutionHostId[]
 }
@@ -205,7 +211,18 @@ export function computeSidebarRows(
   // covers the same repos). Already-grouped repos ignore the id.
   const noticeRepoIds = new Set([
     ...importedWorktreesByRepo.keys(),
-    ...newExternalWorktreesInboxByRepo.keys()
+    ...newExternalWorktreesInboxByRepo.keys(),
+    // Why: the placeholder calculation covers empty repos and filtered project-group
+    // members; their sections carry the notice row that is the only way back in.
+    ...getEmptyProjectPlaceholderRepoIds({
+      groupBy: state.groupBy,
+      // Host-hidden repos must not paint an empty section, or the Cmd+1–9 order
+      // would number sections the sidebar does not show.
+      repos: filterReposForVisibleHosts(state.repos, visibleHostIdSet, defaultHostId),
+      worktreesByRepo: state.worktreesByRepo,
+      visibleWorktrees,
+      filterRepoIds: state.filterRepoIds ?? []
+    })
   ])
 
   const rows = buildRows(
@@ -267,7 +284,7 @@ export function computeSidebarRows(
         visibleWorkspaceHostIds: state.visibleWorkspaceHostIds,
         defaultHostId,
         collapsedHostKeys: state.collapsedGroups,
-        forceCollapseHosts: false,
+        forceCollapseHosts: state.hostDragActive === true,
         preferProjectGrouping: true
       })
     : rows

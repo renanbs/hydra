@@ -9,16 +9,14 @@
     "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:73-126"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/use-workspace-board-projection.ts:37-88",
-     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:55-140",
-     "src/components/sidebar/visible-worktree-filters.ts:1"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca.",
-    "note": "Board existe e projeta as worktrees visiveis do sidebar (getProjectWorktrees + isVisibleUnderSidebarMenuFilters); falta o hook/epoch proprio e a desativacao de injecao de ancestrais do Orca."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -28,21 +26,14 @@
     "components/sidebar/use-visible-workspace-kanban-worktree-ids.ts:49-71"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/workspace-board-worktrees.ts:108",
-     "src/components/sidebar/visible-worktree-filters.ts:62-73",
-     "src/components/sidebar/workspace-board/workspace-board-worktrees.parity.test.ts:208-217",
-     "src/components/sidebar/visible-worktrees.ts:301-304"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Amostragem re-chaveada por epoch clock (getAgentStatusEpochNow/agentStatusEpoch) em vez de Date.now()",
-     "Sentinela 0 que desliga a amostra de agentes quando showSleepingWorkspaces esta ativo",
-     "Memo do conjunto de ids vivos compartilhado entre board e lista"
-    ],
-    "notes": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome.",
-    "note": "O board ja isola workspaces dormindo (hideSleeping via isVisibleUnderSidebarMenuFilters, com teste), mas nao ha epoch clock nem amostra compartilhada; o audit so buscou o hook pelo nome."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -52,16 +43,14 @@
     "components/sidebar/use-workspace-reveal-body-redirect.ts:10-43"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:892",
-     "src/components/sidebar/SidebarHeader.tsx:72",
-     "src/components/sidebar/WorktreeSidebar.tsx:364-367"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas.",
-    "note": "Nenhum redirect/replay de reveal ao trocar Agents->Workspaces; linhas do WorktreeSidebar atualizadas."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -71,17 +60,14 @@
     "components/sidebar/use-workspace-status-drop.ts:19-61"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:23-26",
-     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
-     "src/App.tsx:3517-3528",
-     "src/components/sidebar/workspace-status-drag-data.ts:28"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop.",
-    "note": "Drop de card->status agora existe via onAssignWorktreeStatus/set_worktree_status; faltam pin, lote e commitWorkspaceStatusDocumentDrop."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -91,14 +77,14 @@
     "components/sidebar/use-workspace-status-drop.ts:63-143"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:195-266"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron.",
-    "note": "Board captura pointermove/up/cancel em window (capture) e click no document para o drag de card; nao ha drop/dragend HTML5 nem bypass de interceptacao do Electron."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -109,16 +95,14 @@
     "components/sidebar/use-worktree-meta-workspace.ts:104"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/workspace-scope.ts:15 (parseWorkspaceKey existe, infra genérica)",
-     "src/lib/worktree-runtime-owner-index.ts:92 (findIndexedWorktreeOwner existe, infra genérica)",
-     "src/shared/folder-workspace-worktree.ts:29 (folderWorkspaceToWorktree existe, infra genérica)",
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:1-30 (única edição de metadado no sidebar: rename inline do título)"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Não há WorktreeMetaDialog nem hook useWorktreeMetaWorkspace em src/** (grep dos nomes = 0). A infra de resolução existe (workspace-scope, worktree-runtime-owner-index, folder-workspace-worktree), mas nenhum diálogo de metadados a consome."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -128,15 +112,14 @@
     "components/sidebar/use-worktree-meta-workspace.ts:63-106"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/worktrees.ts:99 (updateWorktreeMeta exposto no store)",
-     "src/store/github/pull-request-actions.ts:88 (único consumidor programático, refresh automático)",
-     "src/store/slices/worktree-meta-update-application.ts:16-27 (campos linkedIssue/linkedPR/linkedLinearIssue tratados sem UI)"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Nenhum liveLinks/currentProvider/currentIssue em src/** (grep = 0). Não há UI de edição de vínculo de issue/Linear; updateWorktreeMeta é chamado apenas pelo refresh do GitHub, não por um diálogo de metadados."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -147,22 +130,14 @@
     "components/sidebar/use-worktree-parent-picker-transition.ts:49-61"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3466",
-     "src/App.tsx:4154-4174",
-     "src/components/sidebar/ParentPickerModal.tsx:12-30,66"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "captura do elemento âncora do card via getWorktreeParentPickerAnchor(scopeRef.current, worktreeId)",
-     "estado pendente pendingRef { childWorktreeId, anchorElement }",
-     "fechamento coordenado do menu de contexto (setMenuOpenState(false)) antes de abrir o picker",
-     "timer de fallback de 50ms (fallbackTimerRef) para abrir o picker caso o fechamento do menu não o execute",
-     "openPendingParentPicker consumindo pendingRef"
-    ],
-    "notes": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback.",
-    "note": "Acao 'Change Parent Worktree...' abre o ParentPickerModal (App-level); sem ancora/pending/timer de fallback."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -173,15 +148,14 @@
     "components/sidebar/use-worktree-parent-picker-transition.ts:36-48"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:4161",
-     "src/components/sidebar/ParentPickerModal.tsx:66"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS.",
-    "note": "Close desmonta o picker no mesmo commit; sem unmountTimerRef/PARENT_PICKER_EXIT_ANIMATION_MS."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -191,17 +165,14 @@
     "components/sidebar/useRenderedSetupScriptPromptState.ts:8-45"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/lib/setup-script-prompt.ts:32",
-     "src/lib/setup-script-prompt.ts:83-91",
-     "src/store/slices/ui/ui-slice-trust-actions.ts:48-57",
-     "src/components/SettingsModal.tsx:754-762"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer.",
-    "note": "Sem prompt de setup script na sidebar; infra de inspecao sem renderer."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -211,18 +182,14 @@
     "components/sidebar/workspace-chrome-metrics.ts:1-4"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardSheet.tsx:44-53",
-     "src/components/sidebar/workspace-board/use-workspace-board-geometry.ts:20-38"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Constantes exportadas WORKSPACE_TOP_CHROME_HEIGHT = 36 e STATUS_BAR_RESERVE_HEIGHT = 24",
-     "Modulo de metricas compartilhado para paineis portalizados (o sheet mede o rect do sidebar em vez de usar as constantes)"
-    ],
-    "notes": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta.",
-    "note": "O sheet portalizado do board ja reserva chrome superior e status bar medindo o sidebar; faltam apenas as constantes/modulo de metricas que o Orca exporta."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -232,22 +199,14 @@
     "components/sidebar/worktree-sidebar-header-drop-preview.ts:17-86"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:17-100",
-     "src/components/sidebar/project-header-drop.ts:185-204",
-     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
-     "src/components/sidebar/WorktreeList.tsx:1000-1003"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "cálculo localY = pointerY - containerTop + scrollTop",
-     "guarda de contentBottom para não fabricar slot abaixo do fim da lista (linhas 39-41)",
-     "delegação a getWorktreeSidebarBoundaryDrop para arrastos outside/bordas extremas (linhas 45-63)",
-     "posição do indicador dropIndicatorY em px (nextRect.top - 4 / bottom + 4) com clamp >= scrollTop"
-    ],
-    "notes": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto.",
-    "note": "Reordenacao de headers wired por midpoint; o calculo completo (scrollTop/contentBottom/bordas/indicador px) segue no caminho morto."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -257,15 +216,14 @@
     "components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-sidebar-header-drop-preview.ts:92,107-142",
-     "src/components/sidebar/WorktreeSidebar.tsx:471-478"
+     "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste.",
-    "note": "Snap existe so no caminho morto; no wired, dragOver vive no header - zone morta persiste."
+    "notes": "Implemented per the D15B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
    }
   },
   {

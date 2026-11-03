@@ -4,6 +4,7 @@
 // fields Hydra's catalog carries. Pure functions only: the dialog renders them, the Rust
 // catalog persists them, and tests pin the precedence without mounting anything.
 import { normalizeRuntimePathForComparison } from "@/shared/cross-platform-path";
+import { translate } from "@/i18n/i18n";
 
 export type ExternalWorktreeVisibility = "show" | "hide";
 
@@ -366,6 +367,83 @@ export function getWorktreeVisibilitySourceProvenance(
   return { kind: overridden ? "project-override" : "global", globalVisibility };
 }
 
+/**
+ * Sources whose value this project inherits from Global Settings, with what each is set to.
+ *
+ * Why exclude `project-source`: a root the project added itself has no global setting behind
+ * it, so listing it here would advertise an override that does not exist.
+ */
+export function listInheritedWorktreeVisibilitySources(
+  config: WorktreeVisibilityRepoConfig | null | undefined,
+  defaults: WorktreeVisibilityDefaults | undefined
+): { source: WorktreeVisibilitySourceRow; globalVisibility: ExternalWorktreeVisibility }[] {
+  const repoCustomSourceIds = new Set(
+    normalizeCustomWorktreeVisibilitySources(config?.customWorktreeVisibilitySources)?.map(
+      (source) => source.id
+    ) ?? []
+  );
+  const sources: WorktreeVisibilitySourceRow[] = [
+    ...BUILT_IN_WORKTREE_VISIBILITY_SOURCES.map(
+      (source) => ({ kind: "built-in", id: source.id }) as WorktreeVisibilitySourceRow
+    ),
+    ...(normalizeCustomWorktreeVisibilitySources(defaults?.customSources) ?? []).map(
+      (source) => ({ kind: "custom", source }) as WorktreeVisibilitySourceRow
+    ),
+    { kind: "other" },
+  ];
+
+  return sources.flatMap((source) => {
+    const provenance = getWorktreeVisibilitySourceProvenance(
+      config,
+      source,
+      defaults,
+      repoCustomSourceIds
+    );
+    return !provenance || provenance.kind === "project-source"
+      ? []
+      : [{ source, globalVisibility: provenance.globalVisibility }];
+  });
+}
+
+/** The one spelling of a visibility value in the dialog's labels. */
+export function worktreeVisibilityValueLabel(
+  visibility: ExternalWorktreeVisibility
+): string {
+  return visibility === "show"
+    ? translate("auto.components.sidebar.WorktreeVisibilitySourceList.show", "Show")
+    : translate("auto.components.sidebar.WorktreeVisibilitySourceList.hide", "Hide");
+}
+
+/**
+ * Names the global value a project is ignoring — only where the two genuinely disagree, so an
+ * override that happens to match Global Settings stays quiet.
+ */
+export function getWorktreeVisibilityOverrideNotice(
+  provenance: WorktreeVisibilitySourceProvenance | null,
+  visibility: ExternalWorktreeVisibility
+): string | null {
+  if (provenance?.kind !== "project-override" || provenance.globalVisibility === visibility) {
+    return null;
+  }
+  return translate(
+    "auto.components.sidebar.WorktreeVisibilitySourceList.overridingGlobal",
+    "Overriding global setting: {{value0}}",
+    { value0: worktreeVisibilityValueLabel(provenance.globalVisibility) }
+  );
+}
+
+/** Marks a custom root the project added itself, which Global Settings knows nothing about. */
+export function getWorktreeVisibilitySourceNote(
+  provenance: WorktreeVisibilitySourceProvenance | null
+): string | null {
+  return provenance?.kind === "project-source"
+    ? translate(
+        "auto.components.sidebar.WorktreeVisibilitySourceList.projectOnly",
+        "Added in this project only."
+      )
+    : null;
+}
+
 // ─── Source classification + counts ─────────────────────────────────────────
 
 /** Orca `createWorktreeVisibilitySourceMatcher`, local-repo only (no worktree base paths). */
@@ -413,15 +491,27 @@ export function worktreeVisibilitySourceRowKey(row: WorktreeVisibilitySourceRow)
   return "other";
 }
 
-/** Counts hidden worktrees per row key (`N found` badges). */
+/** The fields the source counter reads; Orca's detected row carries both. */
+export type WorktreeVisibilityCountRow = {
+  path: string
+  selectedCheckout?: boolean
+  ownership?: string
+}
+
+/**
+ * Counts hidden worktrees per row key (`N found` badges). Orca skips the
+ * checkout the user explicitly selected and anything Orca itself manages:
+ * neither is an external worktree the source setting governs.
+ */
 export function countWorktreesByVisibilitySource(
-  worktrees: readonly { path: string }[],
+  worktrees: readonly WorktreeVisibilityCountRow[],
   repoPath: string | null | undefined,
   customSources: readonly CustomWorktreeVisibilitySource[],
   configuredBasePaths: readonly string[] = []
 ): Map<string, number> {
   const counts = new Map<string, number>();
   for (const worktree of worktrees) {
+    if (worktree.selectedCheckout || worktree.ownership === "orca-managed") continue
     const match = classifyWorktreeVisibilitySource(
       worktree.path,
       repoPath,

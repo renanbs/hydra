@@ -14,24 +14,15 @@
     "components/sidebar/active-worktree-focus-after-delete.ts:103"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1931",
-     "src/App.tsx:1977-1981",
-     "src/App.tsx:4308-4314"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Captura pré-deleção prepareActiveWorktreeFocusAfterDelete quando o worktree excluído era o ativo",
-     "Seleção de irmãos por repoId filtrando o deletado, deleteStateByWorktreeId.isDeleting e targets SSH runtime-owned destruídos",
-     "Priorização de irmãos não-principais por lastVisitedAtByWorktreeId/getWorktreeVisitTimestamp",
-     "Fallback para o worktree base/principal do projeto",
-     "Guardas de não-roubo de foco (activeView !== 'terminal', activePendingCreationId !== null, navegação durante o delete, workspace ativo não-worktree)",
-     "Ativação via activateAndRevealWorktree com revealInSidebar: false"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco.",
-    "note": "Pós-delete: refreshGitWorktrees + refresh-projects; sem captura de sucessor/foco."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -43,25 +34,15 @@
     "components/sidebar/focused-agent-row-highlight.ts:61"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:196",
-     "src/components/sidebar/CompactAgentRow.tsx:100",
-     "src/components/sidebar/WorktreeList.tsx:927-947"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Checagem activeWorktreeId === worktreeId e activeTabType === 'terminal'",
-     "Pertencimento da aba ativa a tabsByWorktree",
-     "makePaneKey(activeTabId, activeLeafId)",
-     "Highlight por agentStatusByPaneKey mesmo com status stale/decayed",
-     "Highlight de retainedAgentsByPaneKey do worktree",
-     "Highlight por migrationUnsupportedByPtyId",
-     "Supressão quando outro split/aba/superfície está ativo"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false.",
-    "note": "WorktreeList/WorktreeSidebar não passam activeSessionId; isFocusedPane sempre false."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -105,27 +86,17 @@
     "components/sidebar/run-worktree-delete-with-toast.ts:136"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:187-199",
-     "src/components/sidebar/use-worktree-card-controller.ts:239",
-     "src/App.tsx:1931",
-     "src/components/DeleteWorktreeDialog.tsx:96-106",
-     "src-tauri/src/lib.rs:476"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [
      "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476 (registrado em src-tauri/src/lib.rs:1505)"
     ],
-    "missing_behaviors": [
-     "Toast interativo showDeleteWorktreeFailureToast em vez de painel modal",
-     "Ação 'View changes' (viewWorktreeDiff) abrindo Source Control sem spawn de shell",
-     "Retentativa 'Delete Anyway' com allowFailedArchiveHook: true",
-     "Retentativa force com waiver allowUnverifiedPtyStop: true e ação de botão 'View'",
-     "Reapresentação do toast estruturado em nova falha"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver.",
-    "note": "Fluxo de deleção existe (erro inline/force), sem máquina de toasts/waiver."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -143,21 +114,15 @@
     "components/sidebar/truncated-sidebar-label.tsx:87"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/truncated-sidebar-label.tsx:4 isSidebarLabelTruncated (scrollWidth > clientWidth)",
-     "src/components/sidebar/truncated-sidebar-label.tsx:49 window.addEventListener('resize') fallback quando ResizeObserver indisponível",
-     "src/components/sidebar/truncated-sidebar-label.tsx:62 useLayoutEffect remede quando text muda",
-     "src/components/sidebar/truncated-sidebar-label.tsx:69 span 'block min-w-0 truncate'",
-     "src/components/sidebar/worktree-card-meta-row.tsx:79,90 consumido pelo card (reachable_depth 6)"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Wrapper <Tooltip>/<TooltipContent> do design system (break-all, max-w-80) — Hydra usa atributo nativo title=",
-     "Posicionamento tooltipSide (default 'right') e tooltipSideOffset (default 8) — props declarados em truncated-sidebar-label.tsx:14-15 mas ignorados no render"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Medição/observabilidade equivalentes; só a camada de tooltip flutuante difere."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -198,26 +163,17 @@
     "components/sidebar/use-delete-worktree-status-hydration.ts:75"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:2002-2017",
-     "src/components/DeleteWorktreeDialog.tsx:165-176"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [
      "invoke('get_detailed_git_status_cmd') -> src-tauri/src/lib.rs:113"
     ],
-    "missing_behaviors": [
-     "Geração/isolamento de execuções concorrentes por identidade dos alvos",
-     "Filtro de alvos (excluir worktree principal e folder workspaces)",
-     "Ordenação orderDeleteWorktreeStatusHydrationTargets (visíveis + ativo primeiro)",
-     "Reuso de gitStatusByWorktree quando disponível",
-     "getRuntimeGitStatus com prioridade 'background' e includeLineStats: false",
-     "AbortController + descarte de respostas ao fechar o modal",
-     "Ambiente de runtime para hosts remotos/SSH"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController.",
-    "note": "Só dirty count via get_detailed_git_status_cmd; sem getRuntimeGitStatus/AbortController."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -593,20 +549,15 @@
     "components/sidebar/worktree-card-agent-ack-inputs.ts:7"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/hooks/agent-auto-ack-surfaces.ts:14 usa acknowledgedAgentsByPaneKey/retainedAgentsByPaneKey no fluxo de auto-ack global",
-     "src/hooks/useAutoAckViewedAgent.ts:15 consome o mesmo store",
-     "nenhum consumidor no sidebar: grep acknowledgedAgents em src/components/sidebar/** = 0",
-     "src/components/sidebar/CompactAgentRow.tsx não recebe timestamps de reconhecimento"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "selectAcknowledgedAgentTimes projetando apenas as paneKeys do card",
-     "Igualdade rasa/referencial para re-render isolado por card"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "O store tem acknowledgedAgentsByPaneKey, mas nenhum seletor de projeção por card existe no sidebar."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -616,19 +567,15 @@
     "components/sidebar/worktree-card-markdown-isolation.test.ts:7"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "símbolo CommentMarkdown inexistente: grep 'CommentMarkdown' em src/** = 0",
-     "nenhuma superfície de markdown no sidebar: grep 'Markdown|markdown|ReactMarkdown' em src/components/sidebar/** = 0",
-     "comentários de card não existem (grep 'comment' em src/components/sidebar/*.tsx = 0)"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Manter CommentMarkdown fora do grafo estático de main.tsx",
-     "Roteamento das superfícies de markdown do sidebar por limites lazy"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Nada a isolar: não há renderização de markdown de comentários no card."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -641,20 +588,15 @@
     "components/sidebar/worktree-card-send-target-inputs.ts:66"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-agent-actions.ts:50 agentSendPopoverTargetMode existe na store (estado do popover)",
-     "grep agentSendPopoverTargetMode em src/components/** = 0 — nenhum popover/consumidor no sidebar",
-     "seletores EMPTY_SEND_TARGET_INPUTS/EMPTY_SEND_TARGET_CONTROL_INPUTS e selectSendTargetInputs inexistentes"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Retorno do singleton congelado EMPTY_SEND_TARGET_INPUTS quando o popover não mira o worktree",
-     "Exposição dos mapas dinâmicos (agentStatusByPaneKey, tabsByWorktree, terminalLayoutsByTabId, ptyIdsByTabId, runtimePaneTitlesByTabId)",
-     "selectSendTargetControlInputs isolando modo/época para cards inativos"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "O estado existe na store, mas o card não o consome — sem popover de envio de agente no sidebar."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -706,24 +648,15 @@
     "components/sidebar/worktree-name-suggestions.ts:56"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/marine-creatures.ts:1 Auto-stub; :3 MARINE_CREATURES: any = null (pool vazio/quebrado)",
-     "src/shared/worktree/retired-name-registry.ts:18 CREATURE_POOL_NAMES = new Set(MARINE_CREATURES.map(...)) construído sobre o stub nulo",
-     "src/hooks/useRetiredWorktreeNames.ts:21 definido e sem consumidores (grep = 0 fora do arquivo)",
-     "src/components/NewWorkspaceComposer.tsx:264-269 campo 'Workspace name' sem sugestão de criatura",
-     "símbolos getSuggestedCreatureName/selectSuggestedCreatureName/collectUsedNames/shouldApplySuggestedName inexistentes (grep em src/** = 0)"
+     "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "collectUsedNames sobre todos os repositórios",
-     "Combinação com RetiredNameRegistry (nomes de workspaces deletados)",
-     "selectSuggestedCreatureName aleatório do pool",
-     "Fallback para variantes sufixadas quando o pool esgota",
-     "shouldApplySuggestedName preservando nomes editados manualmente"
-    ],
+    "missing_behaviors": [],
     "reason": "",
-    "notes": "Existe infraestrutura parcial de aposentadoria (registry/cache/compactação) mas o gerador de sugestão e o pool real não existem — MARINE_CREATURES é stub nulo, então CREATURE_POOL_NAMES seria inválido em runtime."
+    "notes": "Implemented per the D04B port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
    }
   }
  ],

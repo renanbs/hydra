@@ -5795,7 +5795,10 @@
           "current": "Actuel",
           "searchPlaceholder": "Rechercher des worktrees...",
           "empty": "Aucun worktree éligible correspondant.",
-          "setParentFor": "Définir le parent pour"
+          "setParentFor": "Définir le parent pour",
+          "searchLabel": "Rechercher des espaces de travail",
+          "listLabel": "Espaces de travail éligibles comme parent",
+          "removeParent": "Supprimer le lien parent"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "Branche"

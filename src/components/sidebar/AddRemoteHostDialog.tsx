@@ -1,11 +1,14 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/AddRemoteHostDialog.tsx
-// Parity with Orca `components/sidebar/AddRemoteHostDialog.tsx`, reduced to the SSH mode:
-// `~/.ssh/config` picker + manual form, with the picker's search generation-guarded so a
-// slow response cannot overwrite a newer keystroke or a resolve the user backed out of.
-// Orca's `server` mode (Orca-server pairing, D02b-008..010) is a separate PR, so it is
-// absent here instead of being a dead branch and an inert prop.
-import { useRef, useState } from 'react'
+// Parity with Orca's Add-host dialog: SSH mode (`~/.ssh/config` picker + manual form with an
+// Advanced section) and the Orca-server pairing mode (access link + loopback override).
+//
+// The dialog latches `renderMode` so the last mode keeps rendering while the closing
+// animation runs after `mode` goes null, and aggregates its busy state so the close path
+// cannot leave a resolve or an import writing into a dismissed form.
+//
+// Server pairing is BLOCKED on the backend: see `src/store/runtime-environment-bridge.ts`.
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { translate } from '@/i18n/i18n'
@@ -16,25 +19,33 @@ import {
   listSshConfigHosts,
   resolveSshConfigHost
 } from '@/store/ssh-bridge'
+import {
+  RuntimePairingUnavailableError,
+  listRuntimeEnvironments,
+  verifyAndAddRuntimeEnvironmentFromPairingCode
+} from '@/store/runtime-environment-bridge'
+import { useAppStore } from '@/store'
 import type {
   SshConfigHostListArgs,
   SshConfigHostListResult,
   SshConfigHostResolution,
-  SshConfigHostSummary,
-  SshTargetCreateInput
+  SshConfigHostSummary
 } from '../../shared/ssh-types'
+import { parseHostAccessLink, type ParseHostAccessLinkResult } from '../../shared/remote-pairing-address'
+import { translateHostAccessLinkError } from '@/lib/remote-pairing-copy'
 import {
   EMPTY_FORM,
   getEditingTargetFromSshConfigHost,
-  getSshTargetDraftConnectionFields,
+  hasAdvancedConnectionValues,
   type EditingTarget
 } from '../settings/ssh-target-draft'
+import { buildSshTargetSavePayload } from '../settings/ssh-target-save-payload'
+import { AddRemoteHostServerFormPanel } from './AddRemoteHostServerFormPanel'
 import { AddRemoteHostSshConfigPicker } from './AddRemoteHostSshConfigPicker'
 import { AddRemoteHostSshFormPanel } from './AddRemoteHostSshFormPanel'
+import { isDuplicateSshTargetAlias } from './ssh-target-duplicate'
 
-/** Non-null while the dialog is open. Orca's `server` mode joins this union in the
- *  pairing PR; the dialog switches on it there, not here. */
-export type AddRemoteHostMode = 'ssh'
+export type AddRemoteHostMode = 'ssh' | 'server'
 
 type AddRemoteHostDialogProps = {
   mode: AddRemoteHostMode | null
@@ -63,59 +74,10 @@ async function loadSshConfigHostsForPicker(
   }
 }
 
-async function saveNewSshHostFromForm(
-  form: EditingTarget
-): Promise<'saved' | 'validation-failed' | 'failed'> {
-  const { host, configHost, username, port } = getSshTargetDraftConnectionFields(form)
-  if (!host) {
-    toast.error(
-      translate(
-        'auto.components.sidebar.AddRemoteHostDialog.sshHostRequired',
-        'Host or SSH config alias is required.'
-      )
-    )
-    return 'validation-failed'
-  }
-  if (Number.isNaN(port) || port < 1 || port > 65535) {
-    toast.error(
-      translate(
-        'auto.components.sidebar.AddRemoteHostDialog.sshPortInvalid',
-        'Port must be between 1 and 65535.'
-      )
-    )
-    return 'validation-failed'
-  }
-
-  const identityFile = form.identityFile.trim() || undefined
-  const target: SshTargetCreateInput = {
-    label: form.label.trim() || (username ? `${username}@${host}` : configHost || host),
-    configHost,
-    host,
-    port,
-    username,
-    ...(identityFile ? { identityFile } : {})
-  }
-
-  try {
-    await addSshTarget(target)
-    // Why: one re-read of the registry, so the new host shows up in the sidebar's
-    // Hosts subtree without a reload. Same read the boot path uses.
-    await hydrateSshTargets()
-    toast.success(
-      translate('auto.components.sidebar.AddRemoteHostDialog.sshSaved', 'SSH host added.')
-    )
-    return 'saved'
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : translate(
-            'auto.components.sidebar.AddRemoteHostDialog.sshSaveFailed',
-            'Failed to add SSH host.'
-          )
-    )
-    return 'failed'
-  }
+/** A preload/IPC surface that predates the picker only recovers on a restart. */
+function isStalePreloadError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /is not a function|unknown command|not found/i.test(message)
 }
 
 export function AddRemoteHostDialog({
@@ -123,6 +85,9 @@ export function AddRemoteHostDialog({
   onOpenChange
 }: AddRemoteHostDialogProps): React.JSX.Element {
   const open = mode !== null
+  // Why latch: `mode` goes null when closing, but the exit animation must keep painting the
+  // mode the user was in instead of flashing the SSH form.
+  const [renderMode, setRenderMode] = useState<AddRemoteHostMode>('ssh')
   const [sshForm, setSshForm] = useState<EditingTarget>(EMPTY_FORM)
   const [sshView, setSshView] = useState<SshDialogView>('form')
   const [configHosts, setConfigHosts] = useState<SshConfigHostSummary[]>([])
@@ -135,9 +100,24 @@ export function AddRemoteHostDialog({
   const [configHostsError, setConfigHostsError] = useState<string | null>(null)
   const [configFilledAlias, setConfigFilledAlias] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [serverName, setServerName] = useState('')
+  const [pairingCode, setPairingCode] = useState('')
+  const [allowLoopback, setAllowLoopback] = useState(false)
   const configSearchGeneration = useRef(0)
   const configSearchQuery = useRef('')
   const configResolveGeneration = useRef(0)
+
+  useEffect(() => {
+    if (mode !== null) {
+      setRenderMode(mode)
+    }
+  }, [mode])
+
+  const parsedLink: ParseHostAccessLinkResult = parseHostAccessLink(pairingCode)
+  const loopbackRequiresOverride =
+    parsedLink.ok && parsedLink.value.endpointKind === 'loopback' && !allowLoopback
+  const isBusy = isSaving || isBulkImporting || resolvingConfigAlias !== null
+  const preferAdvancedOpen = hasAdvancedConnectionValues(sshForm)
 
   const reset = () => {
     setSshForm(EMPTY_FORM)
@@ -147,9 +127,14 @@ export function AddRemoteHostDialog({
     setNewConfigHostCount(0)
     setConfigHostMatchesTruncated(false)
     setConfigHostsError(null)
+    setServerName('')
+    setPairingCode('')
+    setAllowLoopback(false)
     configSearchQuery.current = ''
-    // Why: a pending resolve must never write into a form the dialog has moved on from.
+    // Why: a pending resolve must never write into a form the dialog has moved on from,
+    // and a pending search must not repaint a dismissed picker.
     configResolveGeneration.current += 1
+    configSearchGeneration.current += 1
     setResolvingConfigAlias(null)
     setConfigFilledAlias(null)
     setIsBulkImporting(false)
@@ -165,13 +150,104 @@ export function AddRemoteHostDialog({
   }
 
   const saveSshHost = async () => {
+    const payload = buildSshTargetSavePayload(sshForm)
+    if (!payload.ok) {
+      toast.error(payload.error)
+      return
+    }
     setIsSaving(true)
     try {
-      const outcome = await saveNewSshHostFromForm(sshForm)
-      if (outcome === 'saved') {
-        reset()
-        onOpenChange(null)
+      // Why: duplicates have no other guard — `ssh_add_target` accepts them, and two rows
+      // for one machine are indistinguishable in the sidebar.
+      const existing = await hydrateSshTargets()
+      if (isDuplicateSshTargetAlias(payload.payload.target, existing)) {
+        toast.error(
+          translate(
+            'auto.components.sidebar.AddRemoteHostDialog.sshAlreadyExists',
+            'That SSH host is already in Orca.'
+          )
+        )
+        return
       }
+      await addSshTarget(payload.payload.target)
+      // Why: one re-read of the registry, so the new host shows up in the sidebar's Hosts
+      // subtree without a reload. Repo readoption (`SshRepoReadoption` → repo rows) needs
+      // the repo catalog slice, which the live store does not compose yet.
+      await hydrateSshTargets()
+      useAppStore.getState().recordFeatureInteraction?.('ssh')
+      toast.success(
+        translate('auto.components.sidebar.AddRemoteHostDialog.sshSaved', 'SSH host added.')
+      )
+      reset()
+      onOpenChange(null)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : translate(
+              'auto.components.sidebar.AddRemoteHostDialog.sshSaveFailed',
+              'Failed to add SSH host.'
+            )
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const saveRemoteServer = async () => {
+    if (!serverName.trim() || !pairingCode.trim()) {
+      toast.error(
+        translate(
+          'auto.components.sidebar.AddRemoteHostDialog.serverFieldsRequired',
+          'Server name and pairing code are required.'
+        )
+      )
+      return
+    }
+    if (!parsedLink.ok) {
+      toast.error(translateHostAccessLinkError(parsedLink.kind))
+      return
+    }
+    if (loopbackRequiresOverride) {
+      toast.error(
+        translate(
+          'auto.components.sidebar.AddRemoteHostDialog.loopbackBlocked',
+          'Enable the SSH tunnel override or create a new link using the other host’s Tailscale or LAN address.'
+        )
+      )
+      return
+    }
+    setIsSaving(true)
+    try {
+      await verifyAndAddRuntimeEnvironmentFromPairingCode({
+        name: serverName.trim(),
+        pairingCode: pairingCode.trim(),
+        allowLoopback
+      })
+      const environments = await listRuntimeEnvironments()
+      useAppStore.getState().setRuntimeEnvironments(
+        environments.map((environment) => ({
+          id: environment.id,
+          name: environment.name
+        })) as never
+      )
+      useAppStore.getState().recordFeatureInteraction?.('ssh')
+      toast.success(
+        translate('auto.components.sidebar.AddRemoteHostDialog.serverSaved', 'Remote server added.')
+      )
+      reset()
+      onOpenChange(null)
+    } catch (error) {
+      toast.error(
+        error instanceof RuntimePairingUnavailableError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : translate(
+                'auto.components.sidebar.AddRemoteHostDialog.serverSaveFailed',
+                'Failed to add remote server.'
+              )
+      )
     } finally {
       setIsSaving(false)
     }
@@ -229,12 +305,17 @@ export function AddRemoteHostDialog({
       }
       setResolvingConfigAlias(null)
       toast.error(
-        error instanceof Error
-          ? error.message
-          : translate(
-              'auto.components.sidebar.AddRemoteHostDialog.sshConfigPickerResolveFailed',
-              'Failed to resolve that SSH config host.'
+        isStalePreloadError(error)
+          ? translate(
+              'auto.components.sidebar.AddRemoteHostDialog.sshConfigPickerRestartRequired',
+              'Restart Orca to finish applying the SSH config picker update.'
             )
+          : error instanceof Error
+            ? error.message
+            : translate(
+                'auto.components.sidebar.AddRemoteHostDialog.sshConfigPickerResolveFailed',
+                'Failed to resolve that SSH config host.'
+              )
       )
       return
     }
@@ -280,6 +361,7 @@ export function AddRemoteHostDialog({
         return
       }
       await hydrateSshTargets()
+      useAppStore.getState().recordFeatureInteraction?.('ssh')
       toast.success(
         translate(
           'auto.components.sidebar.AddRemoteHostDialog.sshImportSynced',
@@ -303,7 +385,7 @@ export function AddRemoteHostDialog({
     }
   }
 
-  const showSshConfigPicker = sshView === 'config-picker'
+  const showSshConfigPicker = renderMode === 'ssh' && sshView === 'config-picker'
 
   return (
     <Dialog
@@ -321,7 +403,31 @@ export function AddRemoteHostDialog({
             : 'scrollbar-sleek max-h-[min(90vh,560px)] overflow-y-auto sm:max-w-xl'
         }
       >
-        {showSshConfigPicker ? (
+        {renderMode === 'server' ? (
+          <AddRemoteHostServerFormPanel
+            name={serverName}
+            pairingCode={pairingCode}
+            parsedLink={parsedLink}
+            allowLoopback={allowLoopback}
+            disabled={isBusy}
+            canSubmit={
+              serverName.trim() !== '' &&
+              parsedLink.ok &&
+              !loopbackRequiresOverride &&
+              !isBusy
+            }
+            onNameChange={setServerName}
+            onPairingCodeChange={(value) => {
+              setPairingCode(value)
+              // Why: the override belongs to the specific local address that was pasted; a
+              // new link must earn the override again instead of inheriting it.
+              setAllowLoopback(false)
+            }}
+            onAllowLoopbackChange={setAllowLoopback}
+            onSubmit={() => void saveRemoteServer()}
+            onCancel={close}
+          />
+        ) : showSshConfigPicker ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <AddRemoteHostSshConfigPicker
               hosts={configHosts}
@@ -342,8 +448,9 @@ export function AddRemoteHostDialog({
         ) : (
           <AddRemoteHostSshFormPanel
             form={sshForm}
-            disabled={isSaving}
+            disabled={isBusy}
             configIdentityAlias={configFilledAlias}
+            preferAdvancedOpen={preferAdvancedOpen}
             onFormChange={setSshForm}
             onSubmit={() => void saveSshHost()}
             onCancel={close}

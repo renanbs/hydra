@@ -9,10 +9,11 @@ import { toWorktreeRow } from '../shared/worktree/worktree-row'
 import type { CreateWorktreeCallOptions } from './slices/worktrees/create/worktree-create-payload'
 import type { GitWorktreeInfo } from '../components/sidebar/types'
 import type { TabItem } from '../components/workbench/WorkbenchTabBar'
-import type { AgentStatusEntry } from './agent-status-types'
+import type { AgentStatusEntry } from '../shared/agent-status-types'
 import type { ProjectHostSetupProjection } from '../shared/project-host-setup-projection'
 import type { ProviderRateLimits } from '../shared/rate-limit-types'
 import type { HydraSettings } from '../shared/settings-types'
+import type { WorktreeVisibilityDefaultsByHost } from './worktree-visibility-defaults-by-host'
 import type { KeybindingActionId } from '../shared/keybindings/keybindings-module'
 import type {
   VisibleWorkspaceHostIds,
@@ -28,6 +29,13 @@ import { createDiffCommentsSlice, type DiffCommentsSlice } from './slices/diffCo
 import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
+import type { WorktreeSlice as WorktreeSliceMembers } from './slices/worktree-helpers'
+import {
+  beginPendingCreation,
+  removePendingCreation,
+  setActivePendingCreation,
+  updatePendingCreation
+} from '../lib/pending-worktree-creation-state'
 
 export const EMPTY_TABS: TabItem[] = [];
 /**
@@ -46,6 +54,17 @@ export const EMPTY_TABS: TabItem[] = [];
  * source for every ssh* key.
  */
 export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
+  /**
+   * Renderer-only background worktree creates (D03b-021/022). The values are supplied by
+   * `createWorktreeSlice` at runtime; they are declared here because the live store shape
+   * is this interface, not the ported `store/types.ts` intersection.
+   */
+  pendingWorktreeCreations: WorktreeSliceMembers['pendingWorktreeCreations']
+  activePendingCreationId: WorktreeSliceMembers['activePendingCreationId']
+  beginPendingWorktreeCreation: WorktreeSliceMembers['beginPendingWorktreeCreation']
+  updatePendingWorktreeCreation: WorktreeSliceMembers['updatePendingWorktreeCreation']
+  removePendingWorktreeCreation: WorktreeSliceMembers['removePendingWorktreeCreation']
+  setActivePendingWorktreeCreation: WorktreeSliceMembers['setActivePendingWorktreeCreation']
   /** Tabs grouped by workspace (worktree path) */
   tabsByWorktree: Record<string, TabItem[]>
   /** The currently active tab id for each workspace */
@@ -105,6 +124,12 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   refreshRateLimits: () => Promise<void>
   /** App settings snapshot (HydraSettings) */
   settings: HydraSettings | null
+  /**
+   * Per-execution-host worktree visibility defaults (Orca
+   * `worktreeVisibilityDefaultsByHost`). Hydrated by the runtime repo catalog writers;
+   * absent until the first host snapshot lands, so readers must treat it as optional.
+   */
+  worktreeVisibilityDefaultsByHost: WorktreeVisibilityDefaultsByHost
   openSettingsTarget: (target: string | null) => void
   openSettingsPage: (page: string) => void
   /** 'used' | 'remaining' | 'percentage' */
@@ -428,6 +453,7 @@ export const useAppStore = create<AppState>()(
     rateLimits: {},
     refreshRateLimits: () => Promise.resolve(),
     settings: null,
+    worktreeVisibilityDefaultsByHost: {},
     detectedAgentIds: [],
     ensureDetectedAgents: () => Promise.resolve(),
     refreshDetectedAgents: () => Promise.resolve([]),
@@ -499,6 +525,10 @@ export const useAppStore = create<AppState>()(
     browserUrlHistory: [],
     detectedWorktreesByRepo: null,
     folderWorkspaces: null,
+    // Renderer-only background creates (D03b-021/022). Session-ephemeral: nothing here is
+    // persisted, and a reload reconciles any finished worktree through the normal scan.
+    pendingWorktreeCreations: {},
+    activePendingCreationId: null,
     linearStatus: null,
     linearStatusContextKey: null,
     openFiles: {},
@@ -548,6 +578,14 @@ export const useAppStore = create<AppState>()(
     markTerminalTabUnread: () => {},
     markUnverifiedPtyLoss: () => {},
     markWorktreeUnread: () => {},
+    beginPendingWorktreeCreation: (entry) =>
+      set((state) => beginPendingCreation(state, entry)),
+    updatePendingWorktreeCreation: (creationId, patch) =>
+      set((state) => updatePendingCreation(state, creationId, patch)),
+    removePendingWorktreeCreation: (creationId) =>
+      set((state) => removePendingCreation(state, creationId)),
+    setActivePendingWorktreeCreation: (creationId) =>
+      set((state) => setActivePendingCreation(state, creationId)),
     markWorktreeVisited: () => {},
     createBrowserPage: () => {},
     createBrowserTab: () => {},

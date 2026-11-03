@@ -28,31 +28,6 @@
    "note": "Numeric issue field with positive-integer validation and an inline alert is wired."
   },
   {
-   "id": "D04a-096",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeMetaDialog.tsx:166-182"
-   ],
-   "missing_behaviors": [
-    "Rótulo/placeholder por provedor (GH PR vs GitLab MR)",
-    "Ajuda contextual por provedor"
-   ],
-   "note": "The review field validates a positive number; provider-specific copy is not derived."
-  },
-  {
-   "id": "D04a-097",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/WorktreeMetaDialog.tsx:184-194",
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:300-310"
-   ],
-   "missing_behaviors": [
-    "Auto-resize do textarea",
-    "Atalho de submit (Cmd/Ctrl+Enter)"
-   ],
-   "note": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord."
-  },
-  {
    "id": "D04a-098",
    "status": "partial",
    "evidence": [
@@ -104,17 +79,31 @@
    "note": "Notes render as compact inline markdown (bold/em/code/lists/safe links, raw HTML inert) with an edit action in the section header."
   },
   {
-   "id": "D04a-111",
-   "status": "partial",
+   "id": "D04a-096",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-model.ts:85-94",
-    "src/shared/worktree/worktree-row.ts:45-58",
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:19-39"
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
    ],
-   "missing_behaviors": [
-    "Campo Jira no contrato de metadados"
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-097",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
    ],
-   "note": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent."
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-111",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
   }
  ]
 }

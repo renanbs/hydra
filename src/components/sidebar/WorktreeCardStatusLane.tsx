@@ -10,6 +10,7 @@ import React from "react";
 import { GitBranch } from "lucide-react";
 
 import { cn } from "../../lib/utils";
+import { translate } from "@/i18n/i18n";
 import type { WorktreeStatus } from "../../lib/worktree-status";
 import { WorktreeStatusIndicator } from "./WorktreeStatusIndicator";
 import { ReviewIcon, reviewStatusLabel, type PrDisplay } from "./pr-display";
@@ -65,6 +66,10 @@ export function WorktreeCardStatusLane({
   const showBranch = quiet && !showReview && hasBranchIdentity;
   const showUnreadOverlay =
     newCardStyle && isUnread && status !== "working" && status !== "permission";
+  // Why: the unread dot is decorative; without this the lane's accessible name
+  // never mentions the unread state the card is emphasising.
+  const withUnreadSuffix = (label: string): string =>
+    isUnread ? `${label}${translate('auto.components.sidebar.WorktreeCard.unread', ' (unread)')}` : label;
   const withUnread = (node: React.JSX.Element): React.JSX.Element =>
     showUnreadOverlay ? withUnreadOverlay(node) : node;
   if (showReview && prDisplay) {
@@ -72,7 +77,7 @@ export function WorktreeCardStatusLane({
       <span
         data-worktree-status-lane="review"
         className={cn("inline-flex size-5 shrink-0 items-center justify-center p-0.5", className)}
-        aria-label={reviewStatusLabel(prDisplay)}
+        aria-label={withUnreadSuffix(reviewStatusLabel(prDisplay))}
         title={reviewStatusLabel(prDisplay)}
       >
         <ReviewIcon review={prDisplay} className="size-[13px] translate-x-px" />
@@ -85,7 +90,7 @@ export function WorktreeCardStatusLane({
       <span
         data-worktree-status-lane="branch"
         className={cn("inline-flex size-5 shrink-0 items-center justify-center p-0.5", className)}
-        aria-label="Branch"
+        aria-label={withUnreadSuffix("Branch")}
         title="Branch"
       >
         <GitBranch className="size-[13px] translate-x-px text-muted-foreground/70" aria-hidden="true" />

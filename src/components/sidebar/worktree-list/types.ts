@@ -11,6 +11,8 @@ export type SidebarStatusState = "blocked" | "waiting" | "working" | "done" | "i
 export interface ProjectGroup {
   id: string;
   name: string;
+  /** Manual rank inside the group's owner host bucket (D03a-021); absent = 0. */
+  tabOrder?: number;
   /** Orca persists collapse on the group record; Hydra keeps it in SQLite sidebar_prefs (PR-14). */
   isCollapsed?: boolean;
 }

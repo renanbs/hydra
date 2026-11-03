@@ -5182,7 +5182,10 @@
           "current": "Actual",
           "searchPlaceholder": "Buscar worktrees...",
           "empty": "No hay worktrees elegibles que coincidan.",
-          "setParentFor": "Establecer padre para"
+          "setParentFor": "Establecer padre para",
+          "searchLabel": "Buscar espacios de trabajo",
+          "listLabel": "Espacios de trabajo elegibles como padre",
+          "removeParent": "Quitar vínculo de padre"
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "Rama"

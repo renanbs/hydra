@@ -1,12 +1,124 @@
-// Auto-stub so the Orca port typechecks. Replace with the real module when this subsystem is wired.
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: lib/worktree-sleep-intent.ts
+// Why: a slept workspace keeps its panes mounted with only dead PTYs behind them.
+// Any pane connect that runs while the marker is set waits here, and the clear
+// that marks the workspace awake resumes every waiting connect. Hydra's sleep
+// pipeline keeps the same contract so a wake (explicit or by activating the row)
+// is observable instead of implicit.
+//
+// D07: the marker's durable half lives in SQLite (`workspace_sleep_state`), so a
+// workspace slept before a restart stays asleep after it. This module stays
+// synchronous for the hot path (`hasWorktreeSleepIntent` is read from PTY
+// binding) and mirrors every transition through an injected sink.
+const sleepingWorktreeIds = new Set<string>()
+const tearingDownWorktreeIds = new Set<string>()
+const wakeListenersByWorktreeId = new Map<string, Set<() => void>>()
 
-export const TerminalStoreGet: any = null
-export type TerminalStoreGet = any
-export const clearWorktreeSleepIntent: any = null
-export type clearWorktreeSleepIntent = any
-export const getPendingActivationSpawnCount: any = null
-export type getPendingActivationSpawnCount = any
-export const isCurrentDirectSshAuthority: any = null
-export type isCurrentDirectSshAuthority = any
-export const hasWorktreeSleepIntent: any = null
-export type hasWorktreeSleepIntent = any
+/**
+ * Durable projection of the sleep intent. Injected once at app boot so this
+ * module never imports Tauri (pure tests and non-Tauri surfaces keep working).
+ * Failures are logged, never thrown: an unpersisted marker degrades the next
+ * boot, it must not break the sleep or the wake.
+ */
+export type WorktreeSleepIntentSink = {
+  persist: (worktreeId: string, payload?: string) => Promise<unknown>
+  clear: (worktreeId: string) => Promise<unknown>
+}
+
+let intentSink: WorktreeSleepIntentSink | null = null
+
+export function setWorktreeSleepIntentSink(sink: WorktreeSleepIntentSink | null): void {
+  intentSink = sink
+}
+
+function runSink(operation: () => Promise<unknown>, event: string, worktreeId: string): void {
+  try {
+    void operation().catch((error) => {
+      console.error(`[sleep-intent] ${event} failed`, { worktreeId, error })
+    })
+  } catch (error) {
+    console.error(`[sleep-intent] ${event} threw`, { worktreeId, error })
+  }
+}
+
+export function markWorktreeSleepIntent(worktreeId: string, payload?: string): void {
+  sleepingWorktreeIds.add(worktreeId)
+  if (intentSink) {
+    runSink(() => intentSink!.persist(worktreeId, payload), 'persist sleep intent', worktreeId)
+  }
+}
+
+/**
+ * Re-adds a marker restored from the database without writing it back. Used by
+ * boot hydration: persisting on restore would refresh `suspended_at` for a
+ * workspace that never slept again.
+ */
+export function restoreWorktreeSleepIntent(worktreeId: string): void {
+  sleepingWorktreeIds.add(worktreeId)
+}
+
+/**
+ * Why: a spawn that resolves while the sleep teardown is still awaiting its host
+ * would bind a PTY and clear the marker, waking every waiting pane mid-sleep.
+ * Binds during the teardown window are not wakes.
+ */
+export async function withWorktreeSleepTeardown<T>(
+  worktreeId: string,
+  teardown: () => Promise<T>
+): Promise<T> {
+  tearingDownWorktreeIds.add(worktreeId)
+  try {
+    return await teardown()
+  } finally {
+    tearingDownWorktreeIds.delete(worktreeId)
+  }
+}
+
+export function clearWorktreeSleepIntent(worktreeId: string | null): void {
+  if (!worktreeId || tearingDownWorktreeIds.has(worktreeId)) {
+    return
+  }
+  if (!sleepingWorktreeIds.delete(worktreeId)) {
+    return
+  }
+  if (intentSink) {
+    runSink(() => intentSink!.clear(worktreeId), 'clear sleep intent', worktreeId)
+  }
+  const listeners = wakeListenersByWorktreeId.get(worktreeId)
+  wakeListenersByWorktreeId.delete(worktreeId)
+  for (const listener of listeners ?? []) {
+    try {
+      listener()
+    } catch (error) {
+      // Why: one pane's connect failure must not strand its siblings or throw out of a store action.
+      console.error('[sleep-intent] wake listener failed', { worktreeId, error })
+    }
+  }
+}
+
+// Why: a purged worktree must not wake its panes; they are being unmounted. Its
+// persisted row must go too, or a future workspace reusing the path starts asleep.
+export function forgetWorktreeSleepIntent(worktreeId: string): void {
+  const hadMarker = sleepingWorktreeIds.delete(worktreeId)
+  tearingDownWorktreeIds.delete(worktreeId)
+  wakeListenersByWorktreeId.delete(worktreeId)
+  if (hadMarker && intentSink) {
+    runSink(() => intentSink!.clear(worktreeId), 'forget sleep intent', worktreeId)
+  }
+}
+
+export function hasWorktreeSleepIntent(worktreeId: string | null): boolean {
+  return worktreeId !== null && sleepingWorktreeIds.has(worktreeId)
+}
+
+export function onWorktreeSleepIntentCleared(worktreeId: string, listener: () => void): () => void {
+  const listeners = wakeListenersByWorktreeId.get(worktreeId) ?? new Set<() => void>()
+  listeners.add(listener)
+  wakeListenersByWorktreeId.set(worktreeId, listeners)
+  return () => {
+    listeners.delete(listener)
+    if (listeners.size === 0 && wakeListenersByWorktreeId.get(worktreeId) === listeners) {
+      wakeListenersByWorktreeId.delete(worktreeId)
+    }
+  }
+}

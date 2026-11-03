@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAppStore } from '@/store'
 import { useWorkspaceBoardDrawerLingering } from './use-workspace-board-drawer-lingering'
 import { isWorkspaceBoardTextEntryTarget } from './workspace-board-keyboard'
 
@@ -25,65 +26,74 @@ export const TOGGLE_WORKSPACE_BOARD_EVENT = 'hydra:toggle-workspace-board'
 export type WorkspaceBoardPanelState = {
   /** Whether the user has the board open — drives the sheet's `open` prop. */
   workspaceBoardOpen: boolean
-  /** The board was opened by a card drag, not by the user; a cancelled drag closes it. */
-  workspaceBoardDragPreviewOpen: boolean
   /**
-   * Whether the drawer may stay mounted. Outlives `workspaceBoardOpen` by the
-   * close animation, so the sheet does not flicker on its way out.
+   * Whether the drawer may stay mounted: a drag preview or the close animation.
+   * Orca opens the board as a *preview* while a card is dragged, without
+   * counting it as a user open.
    */
   workspaceBoardRenderedOpen: boolean
+  /** A card drag opened the board; it is not a user open until the drag commits. */
+  workspaceBoardDragPreviewOpen: boolean
+  /**
+   * A board-owned menu/popover is open. The outside dismiss and Escape must leave
+   * the board alone while a menu owns the interaction.
+   */
+  workspaceBoardMenuOpen: boolean
+  openWorkspaceBoard: () => void
+  closeWorkspaceBoard: () => void
   toggleWorkspaceBoard: () => void
   handleWorkspaceBoardOpenChange: (open: boolean) => void
+  setWorkspaceBoardMenuOpen: (open: boolean) => void
   previewWorkspaceBoardFromDrag: () => void
   solidifyWorkspaceBoardFromDrag: () => void
   cancelWorkspaceBoardDragPreview: () => void
 }
 
 /**
- * Ported from Orca `useWorkspaceBoardPanel` (the board menu is not part of this
- * increment, so its state is absent rather than inert).
+ * Ported from Orca `useWorkspaceBoardPanel`.
+ *
+ * Why the preview is not `workspaceBoardOpen`: the board is rendered during a
+ * sidebar drag so its lanes are a visible destination, but a cancelled drag must
+ * close it without ever having counted as a user open — and only the solidify
+ * records the feature interaction.
  */
 export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
   const [workspaceBoardOpen, setWorkspaceBoardOpen] = useState(false)
   const [workspaceBoardDragPreviewOpen, setWorkspaceBoardDragPreviewOpen] = useState(false)
+  const [workspaceBoardMenuOpen, setWorkspaceBoardMenuOpenState] = useState(false)
   const workspaceBoardOpenRef = useRef(workspaceBoardOpen)
+  const workspaceBoardDragPreviewOpenRef = useRef(workspaceBoardDragPreviewOpen)
   workspaceBoardOpenRef.current = workspaceBoardOpen
-  const renderedOpen = useWorkspaceBoardDrawerLingering(workspaceBoardOpen)
+  workspaceBoardDragPreviewOpenRef.current = workspaceBoardDragPreviewOpen
+  const renderedOpen = useWorkspaceBoardDrawerLingering(
+    workspaceBoardOpen || workspaceBoardDragPreviewOpen
+  )
 
   const openWorkspaceBoard = useCallback(() => {
-    setWorkspaceBoardDragPreviewOpen(false)
     if (workspaceBoardOpenRef.current) {
+      // A user open replaces a preview: the board stays, the preview flag clears.
+      if (workspaceBoardDragPreviewOpenRef.current) {
+        workspaceBoardDragPreviewOpenRef.current = false
+        setWorkspaceBoardDragPreviewOpen(false)
+      }
       return
     }
     workspaceBoardOpenRef.current = true
+    workspaceBoardDragPreviewOpenRef.current = false
+    // Why here, not in a drawer effect: opening is the user action, and recording
+    // it here is the only place that knows a preview was not one.
+    useAppStore.getState().recordFeatureInteraction('workspace-board')
     setWorkspaceBoardOpen(true)
-  }, [])
-
-  // Orca `previewWorkspaceBoardFromDrag`: a card drag opens the board so its lanes are a
-  // visible destination from the first frame; the preview is not a user-open.
-  const previewWorkspaceBoardFromDrag = useCallback(() => {
-    if (workspaceBoardOpenRef.current) {
-      return
-    }
-    workspaceBoardOpenRef.current = true
-    setWorkspaceBoardDragPreviewOpen(true)
-    setWorkspaceBoardOpen(true)
-  }, [])
-
-  const solidifyWorkspaceBoardFromDrag = useCallback(() => {
     setWorkspaceBoardDragPreviewOpen(false)
-  }, [])
-
-  const cancelWorkspaceBoardDragPreview = useCallback(() => {
-    setWorkspaceBoardDragPreviewOpen(false)
-    workspaceBoardOpenRef.current = false
-    setWorkspaceBoardOpen(false)
   }, [])
 
   const closeWorkspaceBoard = useCallback(() => {
     workspaceBoardOpenRef.current = false
-    setWorkspaceBoardDragPreviewOpen(false)
+    workspaceBoardDragPreviewOpenRef.current = false
     setWorkspaceBoardOpen(false)
+    setWorkspaceBoardDragPreviewOpen(false)
+    // Why: a menu that portals to body would otherwise outlive the board it edits.
+    setWorkspaceBoardMenuOpenState(false)
   }, [])
 
   const handleWorkspaceBoardOpenChange = useCallback(
@@ -105,6 +115,45 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
     openWorkspaceBoard()
   }, [closeWorkspaceBoard, openWorkspaceBoard])
 
+  // Orca `previewWorkspaceBoardFromDrag`: a card drag opens the board so its lanes are a
+  // visible destination from the first frame; the preview is not a user-open.
+  const previewWorkspaceBoardFromDrag = useCallback(() => {
+    if (workspaceBoardOpenRef.current || workspaceBoardDragPreviewOpenRef.current) {
+      return
+    }
+    workspaceBoardDragPreviewOpenRef.current = true
+    setWorkspaceBoardDragPreviewOpen(true)
+  }, [])
+
+  const solidifyWorkspaceBoardFromDrag = useCallback(() => {
+    if (workspaceBoardOpenRef.current) {
+      if (workspaceBoardDragPreviewOpenRef.current) {
+        workspaceBoardDragPreviewOpenRef.current = false
+        setWorkspaceBoardDragPreviewOpen(false)
+      }
+      return
+    }
+    workspaceBoardOpenRef.current = true
+    workspaceBoardDragPreviewOpenRef.current = false
+    // Why telemetry here: a drag that reaches the board IS a user open, including
+    // the one the preview already rendered.
+    useAppStore.getState().recordFeatureInteraction('workspace-board')
+    setWorkspaceBoardOpen(true)
+    setWorkspaceBoardDragPreviewOpen(false)
+  }, [])
+
+  const cancelWorkspaceBoardDragPreview = useCallback(() => {
+    if (!workspaceBoardDragPreviewOpenRef.current) {
+      return
+    }
+    workspaceBoardDragPreviewOpenRef.current = false
+    setWorkspaceBoardDragPreviewOpen(false)
+  }, [])
+
+  const setWorkspaceBoardMenuOpen = useCallback((open: boolean) => {
+    setWorkspaceBoardMenuOpenState(open)
+  }, [])
+
   useEffect(() => {
     if (!workspaceBoardOpen) {
       return
@@ -112,6 +161,9 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
 
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape') {
+        return
+      }
+      if (workspaceBoardMenuOpen) {
         return
       }
       // Why: this listener is capture-phase on document, so it runs before React's handlers
@@ -132,7 +184,7 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
     // outside the sheet when Escape should still dismiss it.
     document.addEventListener('keydown', handleKeyDown, true)
     return () => document.removeEventListener('keydown', handleKeyDown, true)
-  }, [closeWorkspaceBoard, workspaceBoardOpen])
+  }, [closeWorkspaceBoard, workspaceBoardMenuOpen, workspaceBoardOpen])
 
   useEffect(() => {
     window.addEventListener(TOGGLE_WORKSPACE_BOARD_EVENT, toggleWorkspaceBoard)
@@ -141,12 +193,17 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
 
   return {
     workspaceBoardOpen,
-    workspaceBoardDragPreviewOpen,
     workspaceBoardRenderedOpen: renderedOpen,
+    // Why: a preview the user then opened is the user's open, not a preview.
+    workspaceBoardDragPreviewOpen: workspaceBoardDragPreviewOpen && !workspaceBoardOpen,
+    workspaceBoardMenuOpen,
+    openWorkspaceBoard,
+    closeWorkspaceBoard,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
+    setWorkspaceBoardMenuOpen,
     previewWorkspaceBoardFromDrag,
     solidifyWorkspaceBoardFromDrag,
-    cancelWorkspaceBoardDragPreview,
+    cancelWorkspaceBoardDragPreview
   }
 }

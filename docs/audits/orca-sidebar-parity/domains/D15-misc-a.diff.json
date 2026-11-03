@@ -9,15 +9,14 @@
     "components/sidebar/comment-mermaid-fence.tsx:21"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Verifica via regex /\\blanguage-mermaid\\b/ se o elemento code possui a classe de linguagem mermaid gerada pelo react-markdown",
-     "Inspeciona o primeiro filho do container <pre>, valida se é um elemento React válido e detecta a classe language-mermaid",
-     "Permite desempacotar o container <pre> para evitar HTML inválido gerado pelo <div> interno do MermaidBlock"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
-    "notes": "Não localizado após busca em 5 passos: (1) homônimos comment-mermaid-fence/CommentMermaidBlock inexistentes em src/components/sidebar/**; (2) strings 'mermaid'/'language-mermaid' em src/components/sidebar/** → 0 hits; (3) react-markdown/remark-gfm/rehype ausentes de package.json e de src/components/sidebar/** (nenhum renderer de Markdown existe no sidebar); (4) sem contrato de backend; (5) os únicos resquícios de Mermaid são a chave i18n 'MermaidBlock' em src/i18n/locales/en.json:14974 e a extensão '.mmd'/'.mermaid' em src/lib/language-detect.ts:32, ambos sem componente. Nada alcançável a partir do mount (src/App.tsx:3636 → WorktreeSidebar.tsx:705 → WorktreeList.tsx)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -31,15 +30,14 @@
     "components/sidebar/CommentMermaidBlock.tsx:11"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Converte nós filhos para string de código Mermaid aplicando trimEnd() no conteúdo",
-     "Instancia CommentMermaidBlock com conteúdo sanitizado e repassa className opcional",
-     "Reutiliza MermaidBlock do editor com resolução de tema escuro via app store e htmlLabels desabilitado para compatibilidade entre plataformas"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
-    "notes": "Não localizado após busca em 5 passos: (1) CommentMermaidBlock/MermaidBlock inexistentes em src/components/** (grep case-sensitive e case-insensitive por 'mermaid' em .tsx/.ts → 0 hits fora de i18n/lib); (2) 'language-mermaid' → 0 hits; (3) nenhum hook/store de tema consumido por renderer de diagrama no sidebar; (4) sem backend; (5) dependência 'mermaid' ausente de package.json. O sidebar do Hidra não renderiza Markdown (nem mermaid nem GFM) em comentários/notas — ver D12-markdown-inline-render, também missing."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -104,16 +102,14 @@
     "components/sidebar/project-order-manual-default-notice-visibility.ts:1"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Avalia a conjunção de 5 condições: UI persistida pronta, aviso não dispensado, agrupamento por repo, ordenação manual e contagem de repositórios > 0",
-     "Oculta o aviso se o usuário já o dispensou explicitamente",
-     "Oculta o aviso para novos perfis criados ou quando a ordenação recente já tiver sido selecionada explicitamente",
-     "Exibe o aviso em perfis atualizados que não possuem preferência explícita gravada"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
-    "notes": "Não localizado após busca em 5 passos: (1) project-order-manual-default-notice-visibility.ts / resolveProjectOrderManualDefaultNoticeDismissed / shouldShowProjectOrderManualDefaultNotice inexistentes; (2) strings 'notice'/'banner'/'dismiss' em src/components/sidebar/** só atingem os avisos de worktrees descobertas (ImportedWorktreesVisibilityLine / NewExternalWorktreesInboxLine), não ordenação; (3) projectOrderBy existe e é consumido (src/components/sidebar/worktree-list/grouping/build-rows.ts:56,211; section-order.ts:181-184; WorkspaceOptionsMenu.tsx:346-360 exibe o submenu 'projectOrder'), mas nenhuma função decide exibir aviso; (4) persistedUIReady existe no store (src/store/slices/ui/ui-slice-hydration-actions.ts:289) e é usado só por contextual tours e usage-percentage notice (src/shared/usage-percentage-display-change-notice.ts:32-39); (5) sem backend."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -124,23 +120,14 @@
     "components/sidebar/use-sidebar-host-scope-options.ts:14"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/sidebar-host-options.ts:39",
-     "src/components/sidebar/sidebar-host-options.ts:97",
-     "src/components/sidebar/sidebar-host-options.ts:101",
-     "src/components/sidebar/sidebar-host-options.ts:120",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:96",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:103"
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Consumo da lista SidebarHostScopeOption por barra de escopo/menu de workspace: buildSidebarHostScopeOptions (sidebar-host-options.ts:101), shouldShowHostScopeControls (:97) e getSidebarHostVisibilityLabel (:120) não têm callsites; nenhum componente em src/components/** referencia ExecutionHostId/opções de escopo de host",
-     "Memoização reativa (hook) compartilhada entre barra de escopo e menus de workspace: a derivação ocorre inline em computeRenderedSidebarWorktrees, sem hook/useMemo equivalente a useSidebarHostScopeOptions",
-     "Superfície de UI do sidebar que exiba as opções derivadas: as opções só alimentam addHostSectionRows (modelo de ordenação Cmd+1–9), que não é renderizado"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -152,26 +139,14 @@
     "components/sidebar/host-section-folder-workspace-counts.test.ts:104"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/host-section-rows.ts:205",
-     "src/components/sidebar/host-section-rows.ts:211",
-     "src/components/sidebar/host-section-rows.ts:290",
-     "src/components/sidebar/host-section-rows.ts:300",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:204",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:229",
-     "src/components/sidebar/folder-workspace-host-id.ts:16",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:105",
-     "src/components/sidebar/worktree-list/grouping/group-sections.ts:134",
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:165"
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Cabeçalhos de seção de host renderizados no sidebar: nenhum renderer consome rows `type: 'host-header'` (host-section-rows.ts:19,290-306); em src/components/** o único consumidor é worktree-sidebar-row-preference.ts:48, acionado por computeRenderedSidebarWorktreeOrder (visible-worktrees.ts:377) para numeração Cmd+1–9",
-     "Contagem de workspace de pasta observável por host no cabeçalho de seção (o usuário não vê a contagem; WorktreeList.tsx, corpo renderizado do sidebar, não tem nenhuma referência a host nem props de host)"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -184,15 +159,14 @@
     "components/sidebar/project-group-header-dom.test.ts:20"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Renderiza atributos semânticos de drag no cabeçalho (data-project-group-header-id, data-project-group-header-index, data-project-group-header-bucket, data-project-group-header-drag-handle)",
-     "Restringe o cursor grab à superfície do título enquanto a alça de drag cobre a linha e o título",
-     "Comita a ordenação manual via updateProjectGroup(groupId, { tabOrder }, { hostId }) propagando o ID do host proprietário"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
-    "notes": "Não localizado após busca em 5 passos: (1) nenhum homônimo de use-header-drag/project-group-header-* em src/components/sidebar/**; (2) 'data-project-group-header' → 0 hits em src; (3) GroupSectionHeader (SectionHeader.tsx:69-200) não tem draggable/onDragStart/onDragEnd e não é alvo de reordenação — só recebe onDragOver/onDragLeave/onDrop como destino (WorktreeList.tsx:476-509 isDropTarget; props em :138-140/:562); (4) updateProjectGroup/tabOrder-update inexistente: ProjectGroup.tabOrder é apenas lido para ordenar (worktree-list/grouping/project-group-sections.ts:82) e o drag de repo usa índice posicional (WorktreeSidebar.tsx:485-501), não rank persistido de grupo; (5) o módulo de drop de cabeçalho existe (project-header-drop.ts) mas é código morto: consulta '[data-repo-header-id]' (:136-160), atributo que nenhum componente renderiza (verificado: só aparecem data-repo-header-actions em ProjectHeaderActions.tsx:26 e data-repo-header-collapse-affordance em SectionHeader.tsx:160,340)."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -205,24 +179,14 @@
     "components/sidebar/project-header-action-selector-lockstep.test.ts:11"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/ProjectHeaderActions.tsx:26",
-     "src/components/sidebar/SectionHeader.tsx:154",
-     "src/components/sidebar/SectionHeader.tsx:335",
-     "src/components/sidebar/SectionHeader.tsx:265",
-     "src/components/sidebar/SectionHeader.tsx:293",
-     "src/components/sidebar/SectionHeader.tsx:168",
-     "src/components/sidebar/SectionHeader.tsx:88",
-     "src/components/sidebar/WorktreeSidebar.tsx:471-492"
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Constante REPO_HEADER_ACTION_SELECTOR e predicados isRepoHeaderActionTarget/isProjectGroupHeaderActionTarget: inexistentes (0 hits em src); o atributo data-repo-header-actions é renderizado (ProjectHeaderActions.tsx:26) mas nenhum guard o consulta",
-     "Bloqueio do início de drag quando o clique nasce no overlay de ações: o cabeçalho de repo é draggable (SectionHeader.tsx:265) e handleProjectDragStart (WorktreeSidebar.tsx:470-475) não inspeciona e.target, então arrastar a partir de .../+ /chevron ainda inicia o drag do cabeçalho; pointer-drag-dom.ts:21 (isSidebarPointerDragBlocked) existe mas não tem callsites"
-    ],
-    "notes": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas.",
-    "note": "Sem mudanca de comportamento; linhas do WorktreeSidebar atualizadas."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -234,22 +198,14 @@
     "components/sidebar/sidebar-resize-handle.test.ts:16"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3705",
-     "src/App.tsx:3709",
-     "src/App.tsx:737",
-     "src/hooks/useSidebarResize.ts:51",
-     "src/hooks/useSidebarResize.ts:185",
-     "src/components/sidebar/WorktreeSidebar.tsx:695-720"
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Área de toque de 12px (w-3) sobreposta à emenda: o Hidra usa w-2.5 (10px) com -ml-1.5/-mr-1.5 e z-20 (App.tsx:3705), não o w-3 com -right-1.5/top-0/z-10 do Orca",
-     "Linha interna fina de 1px com transição de cores no hover/ativo (group-hover:bg-ring/50, group-active:bg-ring): o Hidra desenha 2px (w-[2px]) com emerald-500/400 (App.tsx:3714-3715)"
-    ],
-    "notes": "Sem mudanca de comportamento; veredito mantido.",
-    "note": "Sem mudanca de comportamento; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": []
   },
@@ -284,22 +240,14 @@
     "components/sidebar/use-visible-workspace-kanban-worktree-ids.test.tsx:22"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/shared/worktree/host-qualified-identity.ts:30",
-     "src/components/sidebar/visible-worktrees.ts:147",
-     "src/components/sidebar/visible-worktrees.ts:155",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:171",
-     "src/components/sidebar/worktree-list/grouping/host-labels.ts:184",
-     "src/components/sidebar/pinned-section-worktrees.ts:13",
-     "src/components/sidebar/pinned-section-worktrees.ts:26"
+     "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Hook useVisibleWorkspaceKanbanWorktreeIds e aplicação do filtro no quadro Kanban do sidebar: não existe quadro Kanban (grep 'kanban' em src/components/sidebar/** → 0 hits); o dashboard experimental é apenas entrada de settings/atalho (src/components/settings/experimental-search.ts:57, src/hooks/ipc-events/agent-dashboard-command.ts:3), sem board renderizado"
-    ],
-    "notes": "Sem mudanca no arquivo de evidencia; veredito mantido.",
-    "note": "Sem mudanca no arquivo de evidencia; veredito mantido."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D15A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-14"

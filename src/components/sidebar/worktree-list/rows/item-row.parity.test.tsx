@@ -7,10 +7,8 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render } from "@testing-library/react";
 import { toWorktreeRow } from "../../../../shared/worktree/worktree-row";
 import type { WorktreeRow } from "../grouping/row-types";
-import {
-  createLineageToggleHandlerCache,
-  renderWorktreeLineageDescendants,
-} from "./item-row";
+import { createLineageToggleHandlerCache } from "../../worktree-lineage-toggle-handler-cache";
+import { renderWorktreeLineageDescendants } from "./item-row";
 
 function itemRow(path: string, depth: number, isLastLineageChild = true): WorktreeRow {
   const worktree = toWorktreeRow(

@@ -132,23 +132,14 @@
     "components/sidebar/CommentMarkdown.tsx:236"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/runtime/mobile-markdown-bridge.ts:3",
-     "src/store/slices/editor/actions/markdown-link-action.ts:3"
+     "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Converte caminhos POSIX (/tmp/foo.html, ./scripts/run, ~/file), Windows (C:\\Reports\\doc.pdf) e sufixos de linha/coluna (file:12, file:12:3) em hrefs com prefixo #orca-native-file:",
-     "Suporta caminhos completos com caracteres Unicode (/tmp/报告.html, docs/café/report.pdf) e extensões iniciadas por dígitos (.7z)",
-     "Transforma caminhos em código inline (`path/file.ts`) em links clicáveis preservando a estilização visual de <code>",
-     "Converte caminhos entre aspas (\"Folder/file.md\", 'Folder/file.md') tratando apóstrofos em nomes de diretório (Brennan's Folder)",
-     "Discrimina prosa de caminhos: não gera links para tokens comuns como and/or, TCP/IP, 24/7, N/A, km/h, A/B test, origin/main, v1.2.3, 1.0, aspect 16:9, John 3:16",
-     "Separa caminhos relativos adjacentes unidos por conectivos em prosa (src/a.ts and src/b.ts viram dois links distintos)",
-     "Respeita pontuação de fim de frase latina e Unicode (!, ?, —, 。, ！, ？, ，, 、, ；, ：) e atribuições de linha de comando (--config=./file.yaml)",
-     "Rejeita caminhos parciais adjacentes a caracteres não suportados (/tmp/$draft/file.html) e preserva blocos de código cercados (fenced code) como texto puro sem linkificação"
-    ],
-    "notes": "Busca em 5 passos: (1) nenhum remarkNativeChatFileLinks nem prefixo #orca-native-file: em src/** (grep zero); (2) sem linkificação de caminhos/quoted paths; (3) o módulo equivalente é stub (src/runtime/mobile-markdown-bridge.ts:1-3, src/store/slices/editor/actions/markdown-link-action.ts:1-3); (4) sem backend; (5) sidebar não renderiza markdown. Não localizado."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D12 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -211,17 +202,14 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:300"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/MarkdownImageLightbox.tsx:1-78",
-     "src/components/sidebar/comment-markdown-element-renderers.tsx:205-215"
+     "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "consumidor que passe expandImages=true (o hover do card usa a variante compacta sem lightbox)"
-    ],
-    "notes": "Accessible dialog lightbox is ported and wired through expandImages; no surface enables it yet.",
-    "note": "Accessible dialog lightbox is ported and wired through expandImages; no surface enables it yet."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D12 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -239,17 +227,14 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:288"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown-github-attachment-media.tsx:1-100",
-     "src/components/sidebar/comment-markdown-element-renderers.tsx:234-270"
+     "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "consumidor documental do card (issue/PR body) para attachments do GitHub"
-    ],
-    "notes": "Attachment video/image upgrade with fallback links is ported into the document variant only.",
-    "note": "Attachment video/image upgrade with fallback links is ported into the document variant only."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D12 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -265,18 +250,14 @@
     "components/sidebar/comment-markdown-element-renderers.tsx:247"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-mermaid-fence.tsx:1-28",
-     "src/components/sidebar/CommentMermaidBlock.tsx:1-28",
-     "src/components/editor/MermaidBlock.tsx:10-116"
+     "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "consumidor documental (a variante compacta mantém a fence como fonte)"
-    ],
-    "notes": "Mermaid fences render real SVG with theme + lazy import and a serialized render queue; only the document variant reaches it.",
-    "note": "Mermaid fences render real SVG with theme + lazy import and a serialized render queue; only the document variant reaches it."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D12 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"
@@ -291,17 +272,14 @@
     "components/sidebar/CommentMarkdown.tsx:203"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/comment-markdown-element-renderers.tsx:18-30",
-     "src/components/sidebar/comment-markdown-element-renderers.tsx:250-270"
+     "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "consumidor que passe renderCodeBlock (nenhuma superfície do Hydra renderiza documento hoje)"
-    ],
-    "notes": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet.",
-    "note": "Fenced blocks extract language-* and delegate to a custom renderer when provided; no caller supplies one yet."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D12 port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-39"

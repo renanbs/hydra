@@ -8,9 +8,12 @@ import type { Worktree } from "../../shared/worktree/types";
 import {
   buildWorktreeComparator,
   buildWorktreeSortLabels,
+  compareWorktreeSortLabel,
   type SortBy,
 } from "./smart-sort";
-import type { WorktreeAttention } from "./smart-attention";
+import { hasFreshAttributedAgentStatus, type WorktreeAttention } from "./smart-attention";
+import { tabHasLivePty } from "@/lib/tab-has-live-pty";
+import type { AgentStatusEntry } from "../../shared/agent-status-types";
 
 /** Values the display options may carry; `smart` is accepted from persisted prefs. */
 export type SidebarSortMode =
@@ -75,6 +78,27 @@ export function applyPersistedWorktreeOrder(
 }
 
 /**
+ * Orca `sortWorktreesSmart` cold-start gate: until a live PTY or a fresh
+ * hook-attributed agent status exists, the agent snapshot has not landed, so the
+ * attention map is all-idle and sorting by it would reshuffle the sidebar on every
+ * launch. The persisted `sortOrder` snapshot holds the pre-quit order instead.
+ */
+export function isSidebarSortColdStart(args: {
+  tabsByWorktree: Record<string, readonly { id: string }[]> | null | undefined;
+  ptyIdsByTabId: Record<string, string[]> | null | undefined;
+  agentStatusByPaneKey: Record<string, AgentStatusEntry> | undefined;
+  now: number;
+}): boolean {
+  const ptyIdsByTabId = args.ptyIdsByTabId ?? {};
+  const tabsByWorktree = args.tabsByWorktree ?? {};
+  const hasAnyLivePty = Object.values(tabsByWorktree).some((tabs) =>
+    tabs.some((tab) => tabHasLivePty(ptyIdsByTabId, tab.id))
+  );
+  if (hasAnyLivePty) return false;
+  return !hasFreshAttributedAgentStatus(args.agentStatusByPaneKey, args.now, tabsByWorktree);
+}
+
+/**
  * Sort one project's worktrees for the painted list.
  *
  * `attentionByWorktree` is keyed by worktree id and only read for the smart modes; pass
@@ -87,6 +111,8 @@ export function sortSidebarWorktrees(args: {
   repoMap: Map<string, Repo>;
   now: number;
   attentionByWorktree?: ReadonlyMap<string, WorktreeAttention>;
+  /** Orca cold start: rank the smart modes by the persisted snapshot instead. */
+  coldStart?: boolean;
 }): Worktree[] {
   const { worktrees, mode, repoMap, now } = args;
   const rows = [...worktrees];
@@ -94,8 +120,15 @@ export function sortSidebarWorktrees(args: {
     return rows;
   }
   const labels = buildWorktreeSortLabels(rows);
+  const comparatorSortBy = resolveComparatorSortBy(mode);
+  if (args.coldStart && comparatorSortBy === "smart") {
+    return rows.sort(
+      (left, right) =>
+        right.sortOrder - left.sortOrder || compareWorktreeSortLabel(left, right, labels)
+    );
+  }
   const attention = args.attentionByWorktree ?? new Map<string, WorktreeAttention>();
   return rows.sort(
-    buildWorktreeComparator(resolveComparatorSortBy(mode), repoMap, now, new Map(attention), labels)
+    buildWorktreeComparator(comparatorSortBy, repoMap, now, new Map(attention), labels)
   );
 }

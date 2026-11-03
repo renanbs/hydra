@@ -119,6 +119,29 @@ export type SshConfigImportResult = {
   repoReadoptions: SshRepoReadoption[]
 }
 
+/** Outcome classes `ssh_reconnect_target` can report. */
+export type SshProbeStatus =
+  | 'connected'
+  | 'auth-failed'
+  | 'host-key-verification'
+  | 'unreachable'
+  | 'error'
+
+export type SshReconnectResult = {
+  connectionId: string
+  status: SshProbeStatus
+  latencyMs: number
+  error?: string | null
+}
+
+export type SshForgetWorkspaceResult = {
+  connectionId: string
+  worktreePath: string
+  closedSessions: number
+  purgedWorktreeMetadata: boolean
+  removedCatalogWorkspaces: number
+}
+
 /** Concrete Host entry from ~/.ssh/config, for pickers that prefill the add-host form. */
 export type SshConfigHostSummary = {
   alias: string

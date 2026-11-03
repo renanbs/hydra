@@ -1,18 +1,21 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/worktree-card-meta-row.tsx
 import React from 'react'
-import { GitMerge } from 'lucide-react'
+import { GitCommitHorizontal, GitMerge } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { getDetachedHeadTooltip } from '@/lib/worktree-git-identity-display'
 import { CacheTimer } from './CacheTimer'
 import { WorktreeHostContextBadge } from './WorktreeHostContextBadge'
 import { CONFLICT_OPERATION_LABELS } from './WorktreeCardHelpers'
 import { TruncatedSidebarLabel } from './truncated-sidebar-label'
 import { getDirectoryName } from './worktree-card-model'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
-import type { WorktreeCardController } from './use-worktree-card-controller'
+import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
 
 export interface WorktreeCardMetaRowProps {
-  card: WorktreeCardController
+  card: WorktreeCardWithExtras
   presentation: WorktreeCardPresentation
 }
 
@@ -46,15 +49,15 @@ export function WorktreeCardMetaRow({
   } = presentation
 
   return (
-    <div className="flex items-center gap-1.5 min-w-0" data-worktree-card-meta-row="">
+    <div className="flex min-w-0 items-center gap-1.5" data-worktree-card-meta-row="">
       <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
         {showRepoBadgeInMetaRow && repo && (
-          <div className="flex items-center gap-1.5 shrink-0 px-1.5 py-0.5 rounded-[4px] bg-accent border border-border dark:bg-accent/50 dark:border-border/60">
+          <div className="flex shrink-0 items-center gap-1.5 rounded-[4px] border border-border bg-accent px-1.5 py-0.5 dark:border-border/60 dark:bg-accent/50">
             <span
-              className="size-2 rounded-full shrink-0"
+              className="size-2 shrink-0 rounded-full"
               style={{ backgroundColor: repo.color || 'hsl(var(--worktree-sidebar-foreground))' }}
             />
-            <span className="text-[10px] font-semibold text-foreground truncate max-w-[6rem] leading-none lowercase">
+            <span className="max-w-[6rem] truncate text-[10px] leading-none font-semibold text-foreground lowercase">
               {repo.displayName || repo.name}
             </span>
           </div>
@@ -67,7 +70,7 @@ export function WorktreeCardMetaRow({
         {showIdentityInNewCard ? (
           <TruncatedSidebarLabel
             text={identityDisplay || ''}
-            className="text-[11px] text-muted-foreground leading-none"
+            className="text-[11px] leading-none text-muted-foreground"
             tooltipEnabled={!hasHoverDetails}
           />
         ) : isFolder && !newCardStyle ? (
@@ -80,21 +83,38 @@ export function WorktreeCardMetaRow({
         ) : showBranch ? (
           <TruncatedSidebarLabel
             text={branch}
-            className="text-[11px] text-muted-foreground leading-none"
+            className="text-[11px] leading-none text-muted-foreground"
             // Why: whole-card details hover already shows full identity; a nested tooltip would compete for it.
             tooltipEnabled={!hasHoverDetails}
           />
         ) : showDetachedHeadInMetaRow && detachedHeadDisplay ? (
-          <span className="h-[16px] px-1.5 text-[10px] font-mono rounded bg-accent text-muted-foreground inline-flex items-center">
-            {detachedHeadDisplay}
-          </span>
+          // Orca `DetachedHeadBadge`: a detached checkout is a warning, not an
+          // identity — amber tint, commit glyph, and a tooltip that says so.
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                aria-label={getDetachedHeadTooltip(detachedHeadDisplay)}
+                className="h-[16px] max-w-[9rem] shrink-0 gap-1 rounded border-amber-500/30 bg-amber-500/10 px-1.5 text-[10px] leading-none font-medium text-amber-700 dark:text-amber-300"
+              >
+                <GitCommitHorizontal className="size-2.5" />
+                <span className="min-w-0 truncate">Detached HEAD @ {detachedHeadDisplay}</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {getDetachedHeadTooltip(detachedHeadDisplay)}
+            </TooltipContent>
+          </Tooltip>
         ) : null}
 
         {showConflictOperationBadge && conflictOperation && (
-          <span className="h-[16px] px-1.5 text-[10px] font-medium rounded shrink-0 gap-1 text-amber-600 border border-amber-500/30 bg-amber-500/5 dark:text-amber-400 dark:border-amber-400/30 dark:bg-amber-400/5 leading-none inline-flex items-center">
+          <Badge
+            variant="outline"
+            className="inline-flex h-[16px] shrink-0 items-center gap-1 rounded border-amber-500/30 bg-amber-500/5 px-1.5 text-[10px] leading-none font-medium text-amber-600 dark:border-amber-400/30 dark:bg-amber-400/5 dark:text-amber-400"
+          >
             <GitMerge className="size-2.5" />
             <span>{CONFLICT_OPERATION_LABELS[conflictOperation] || conflictOperation}</span>
-          </span>
+          </Badge>
         )}
 
         {cacheStartedAt != null && <CacheTimer startedAt={cacheStartedAt} ttlMs={cacheTtlMs} />}

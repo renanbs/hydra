@@ -12,21 +12,17 @@
     "components/sidebar/workspace-lineage-menu-actions.ts:20"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3284",
-     "src/App.tsx:3487",
-     "src/components/sidebar/WorktreeContextMenu.tsx:21"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Item desabilitado quando não há abas com PTY ativa nem abas de navegador (Hydra mostra Sleep sempre habilitado — src/App.tsx:3487)",
-     "Teardown real de navegadores/webviews antes dos terminais (Hydra não toca PTY: só remove abas React e marca a sessão 'idle' — src/App.tsx:3122-3127)",
-     "Marca de sleep intent persistente e wake explícito",
-     "Disparo com delay de 50ms após o fechamento do menu"
-    ],
-    "notes": "Sleep individual parcial.",
-    "note": "Sleep individual parcial."
+    "missing_behaviors": [],
+    "notes": "Sleep eligibility, real webview/guest destruction, terminal teardown, durable sleep intent/wake and 50ms delay are wired; Hydra has no ephemeral VM, so the suspend contract persists via workspace_sleep_state.",
+    "note": "Sleep eligibility, real webview/guest destruction, terminal teardown, durable sleep intent/wake and 50ms delay are wired; Hydra has no ephemeral VM, so the suspend contract persists via workspace_sleep_state."
    },
    "par": [
     "PAR-21"
@@ -41,20 +37,14 @@
     "components/sidebar/use-worktree-context-menu-model.tsx:173"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:975-987",
-     "src/components/sidebar/WorktreeList.tsx:1248-1258",
-     "src/components/sidebar/WorktreeSidebar.tsx:892-903",
-     "src/App.tsx:3900-3918"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Tooltip multi-contexto além do label pluralizado",
-     "Filtro de elegibilidade (apenas workspaces com painéis sleepable) antes de montar a ação"
-    ],
-    "notes": "Right-clicking a row inside a multi-selection passes the selected paths to the app, which offers 'Sleep N Workspaces' and sleeps them in one call.",
-    "note": "Right-clicking a row inside a multi-selection passes the selected paths to the app, which offers 'Sleep N Workspaces' and sleeps them in one call."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-21",
@@ -72,19 +62,14 @@
     "components/sidebar/workspace-lineage-menu-actions.ts:50"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3299",
-     "src/App.tsx:3488-3490"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Descida recursiva completa: Hydra conta e coleta apenas 1 nível (Object.values(worktreeLineage).filter(parent === wt.path) — src/App.tsx:3299,3489-3490)",
-     "Tooltip explicando fechamento de painéis no pai e nos descendentes aninhados",
-     "Filtro de elegibilidade (subtreeSleepableWorktrees) e estado disabled (subtreeSleepDisabled)"
-    ],
-    "notes": "Sleep de árvore parcial.",
-    "note": "Sleep de árvore parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-21"
@@ -101,20 +86,17 @@
     "components/sidebar/sleep-worktree-flow.ts:191"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3122-3126"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "shutdownWorktreeBrowsers antes de shutdownWorktreeTerminals (destruição de persistent webviews)",
-     "shutdownWorktreeTerminals com keepIdentifiers:true (preservar histórico/layout em disco)",
-     "Suspensão da VM efêmera (window.api.ephemeralVm.suspendWorkspace) — não há IPC equivalente no caminho",
-     "markWorktreeSleepIntent e limpeza de activeWorktreeId antes do teardown",
-     "Guarda de re-ativação: se o usuário reativar o workspace durante o lote, mantê-lo acordado"
-    ],
-    "notes": "Pipeline sequencial de sleep parcial.",
-    "note": "Pipeline sequencial de sleep parcial."
+    "missing_behaviors": [],
+    "notes": "Ordered pipeline: webviews destroyed before terminals (keepIdentifiers), durable suspend state written/restored, active-row clearance and re-activation guard; no VM runtime to suspend.",
+    "note": "Ordered pipeline: webviews destroyed before terminals (keepIdentifiers), durable suspend state written/restored, active-row clearance and re-activation guard; no VM runtime to suspend."
    },
    "par": [
     "PAR-21"
@@ -131,18 +113,14 @@
     "components/sidebar/sleep-worktree-flow.ts:209"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3505-3515",
-     "src/hooks/requestVirtualizedScrollAnchorRecord.ts:1-18",
-     "src/components/sidebar/worktree-list/viewport/VirtualizedWorktreeViewport.tsx:156-162"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Reversão da limpeza do workspace ativo e toast consolidado quando o teardown falha (o sleep local não tem teardown assíncrono)"
-    ],
-    "notes": "Sleep snapshots the virtual scroll anchor before mutating sessions, so the restore keeps the same visible row.",
-    "note": "Sleep snapshots the virtual scroll anchor before mutating sessions, so the restore keeps the same visible row."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -284,18 +262,14 @@
     "components/sidebar/workspace-options-menu-items.tsx:127"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:140",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:243"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Controles de escopo/visibilidade de host (SidebarHostScopeMenuSection e label dinâmico de hosts visíveis)",
-     "Atributo data-workspace-board-preserve-open no menu de opções (existe apenas no botão de delete rápido do card — worktree-card-header.tsx:190)"
-    ],
-    "notes": "Seção 'Show' parcial (sem escopo de host completo).",
-    "note": "Seção 'Show' parcial (sem escopo de host completo)."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-26"
@@ -310,18 +284,14 @@
     "components/sidebar/workspace-options-menu-items.tsx:136"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:278",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:293"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Modo de agrupamento 'PR' (Orca 0f9b959b31) — GroupByMode no Hydra é 'none'|'workspace-status'|'repo'",
-     "Identificadores de opção equivalentes (c2c7a45cda / e029a2d775 / 2170d553cf)"
-    ],
-    "notes": "Toggle de agrupamento parcial (sem modo PR).",
-    "note": "Toggle de agrupamento parcial (sem modo PR)."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -334,20 +304,14 @@
     "components/sidebar/workspace-options-menu-items.tsx:162"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:315",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:330"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Opções 'Project' (por repositório) e 'Manual' (arraste dentro do grupo)",
-     "Tooltips explicativos de Smart/Manual",
-     "Rótulo do valor atual com os 5 valores do Orca (Hydra mostra Agent Activity / Name / Recent)",
-     "Manter o menu aberto na seleção (onSelect preventDefault): Hydra fecha o submenu com setOpenSubmenu(null)"
-    ],
-    "notes": "Submenu Sort by parcial (rótulos/valores divergem).",
-    "note": "Submenu Sort by parcial (rótulos/valores divergem)."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -359,19 +323,14 @@
     "components/sidebar/workspace-options-menu-items.tsx:206"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:346",
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:352"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Opção 'Recent' (atividade mais recente do projeto)",
-     "Persistência da escolha (setProjectOrderBy): o botão 'Manual' apenas fecha o submenu e o valor exibido é hardcoded 'Manual' (WorkspaceOptionsMenu.tsx:352)",
-     "Tooltips por modalidade"
-    ],
-    "notes": "Project order parcial (valor hardcoded).",
-    "note": "Project order parcial (valor hardcoded)."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -385,20 +344,14 @@
     "components/sidebar/workspace-options-menu-items.tsx:227"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:370",
-     "src/App.tsx:3696"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Alternância de layout no menu: o item 'Detailed' só fecha o submenu e o compacto vem de settings.compact_worktree_cards (App.tsx:3696), fora do menu",
-     "Opções de exibição de atividade de agentes (Compact / Full list)",
-     "Opções dinâmicas de propriedades do card (getWorktreeCardPropertyOptions: Status, Notes, Automation, Orca CLI, Ports, Agent statuses, Branch name/Folder path, Tasks/Issues)",
-     "Adaptação de labels (split GitHub/Linear/Jira e 'Branch / folder path' com grupos de pastas)"
-    ],
-    "notes": "Exibição de cards parcial.",
-    "note": "Exibição de cards parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -413,21 +366,14 @@
     "components/sidebar/use-worktree-context-menu-model.tsx:280"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:393",
-     "src/App.tsx:3294",
-     "src/components/sidebar/use-worktree-card-controller.ts:214"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Abertura para o conjunto selecionado (selectedWorktrees/effectiveSelectedWorktrees): não há store de seleção (isMultiSelected default false, sem setter)",
-     "Listener global CLOSE_ALL_CONTEXT_MENUS_EVENT para fechar quando outro menu abre (fechamento é por outside-click/Escape do Radix)",
-     "Callback onLifecycleComplete agendado por setTimeout(0) somente após fechar menu principal e sub-diálogos/pickers",
-     "Transição para o picker de pai com pendingParentPickerRef e limpeza de timers no unmount"
-    ],
-    "notes": "Modelo do menu de contexto parcial.",
-    "note": "Modelo do menu de contexto parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-08"
@@ -445,16 +391,14 @@
     "components/sidebar/use-worktree-context-menu-model.tsx:340"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Sentinelas de módulo (EMPTY_TABS_BY_WORKTREE, EMPTY_PTY_IDS_BY_TAB_ID, EMPTY_BROWSER_TABS_BY_WORKTREE, EMPTY_DELETE_STATE_BY_WORKTREE_ID, EMPTY_WORKTREE_LINEAGE_BY_ID, EMPTY_WORKSPACE_LINEAGE_BY_CHILD_KEY, EMPTY_CYCLIC_LINEAGE_IDS) e selectMenuScopedMap",
-     "shouldUseNativeContextMenu / data-worktree-native-context-menu",
-     "shouldIgnoreNestedWorktreeContextMenuScope para previews aninhados de filhos",
-     "handleCloseAutoFocus focando [data-worktree-sidebar] com preventScroll"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
-    "notes": "Buscas: os nomes EMPTY_* e selectMenuScopedMap → 0 ocorrências; 'worktree-context-menu-policy' → arquivo inexistente (nenhum módulo de policy no sidebar); 'data-worktree-native-context-menu' e 'shouldIgnoreNestedWorktreeContextMenuScope' → 0. O menu é construído imperativamente no handler do App a cada abertura, sem subscrições de store com escopo de menu. Obs.: RadixContextMenu.tsx:101 tem onCloseAutoFocus preventDefault, mas sem foco compensatório em [data-worktree-sidebar]."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -513,23 +457,16 @@
     "components/sidebar/use-worktree-context-menu-commands.ts:121"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3402",
-     "src/App.tsx:3135",
-     "src/App.tsx:3329"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('set_worktree_display_name') -> src/App.tsx:3344 -> src-tauri/src/lib.rs:505 -> src-tauri/src/db.rs:1180"
     ],
-    "missing_behaviors": [
-     "Mark Read/Unread persistido como metadado (Orca updateWorktreeMeta com executionHostId): Hydra só faz toggle de Set em memória (App.tsx:3138) — não sobrevive a reload",
-     "Pin/Unpin com reveal + persistência (Orca setWorktreesPinnedAndReveal): Hydra só faz toggle de Set em memória (App.tsx:3135)",
-     "Copy Path pela API de clipboard do preload (window.api.ui.writeClipboardText): Hydra usa navigator.clipboard (App.tsx:3402) — observável equivalente, backend diferente",
-     "Modal 'edit-meta' com foco no displayName carregando repoId/executionHostId/issue/PR/comentários: Hydra abre PromptDialog com título simples (App.tsx:3332)"
-    ],
-    "notes": "Comandos de clipboard/metadados parciais.",
-    "note": "Comandos de clipboard/metadados parciais."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-73",
@@ -546,18 +483,14 @@
     "components/sidebar/use-worktree-context-menu-commands.ts:89"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3217",
-     "src/components/sidebar/WorktreeSidebar.tsx:992-1031"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Entrada 'New group from project' no menu de contexto do CARD (census-v4 topLevel.2 item 6): no Hydra as ações de grupo vivem no menu do header de projeto (App.tsx:3217 e WorktreeSidebar.tsx:992)",
-     "Submenu único 'Project Group' agrupando Create/Move/Remove"
-    ],
-    "notes": "Gestão de grupos parcial.",
-    "note": "Gestão de grupos parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -596,20 +529,16 @@
     "components/sidebar/worktree-context-menu-policy.ts:98"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3445",
-     "src/components/sidebar/ParentPickerModal.tsx:125"
+     "src-tauri/src/db.rs",
+     "src-tauri/src/lib.rs",
+     "src/hooks/useWorktreeLineage.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Desabilitar a ação quando isDeleting: Hydra só considera eligibleParents.length === 0 (App.tsx:3449)",
-     "Picker flutuante ancorado no card: Hydra abre ParentPickerModal como modal central",
-     "Remoção da relação para todos os workspaces do contexto atual: Hydra apaga só a chave do worktree clicado (App.tsx:3485)",
-     "Persistência da linhagem em store/backend (Orca unnestWorktrees/updateWorktreeLineage): Hydra usa localStorage 'hydra:worktree_lineage' (App.tsx:434)"
-    ],
-    "notes": "Hierarquia/linhagem no menu parcial.",
-    "note": "Hierarquia/linhagem no menu parcial."
+    "missing_behaviors": [],
+    "notes": "Lineage persists through the new worktree_lineage table + get/set commands; the anchored picker applies/removes parents for all selected workspaces, and the menu disables the action while deleting.",
+    "note": "Lineage persists through the new worktree_lineage table + get/set commands; the anchored picker applies/removes parents for all selected workspaces, and the menu disables the action while deleting."
    },
    "par": [
     "PAR-43"
@@ -626,20 +555,14 @@
     "components/sidebar/workspace-delete-quick-action.ts:94"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:111",
-     "src/components/sidebar/worktree-card-header.tsx:187",
-     "src/components/sidebar/worktree-card-header.tsx:192",
-     "src/components/sidebar/worktree-card-header.tsx:196"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Gate pela tecla Option/Alt: canShowWorkspaceDeleteQuickAction exige Alt pressionado; o Hydra exibe o botão sempre no hover/focus do card",
-     "Hook reativo de modificador global (useSyncExternalStore) com listeners capture:true de keydown/keyup",
-     "Limpeza do estado em blur da janela e visibilitychange"
-    ],
-    "notes": "O botão de delete rápido existe e respeita a exclusão do worktree principal (worktree-card-presentation.tsx:111), mas sem a semântica de modificador."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -651,20 +574,14 @@
     "components/sidebar/hovered-workspace-delete.ts:86"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1756",
-     "src/components/sidebar/FolderWorkspaceRow.tsx:14"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Resolução da linha sob hover e atalho de deleção por teclado (buscas 'Backspace'/'Delete' em src/App.tsx e sidebar → 0)",
-     "Guarda contra modal ativo e elemento editável (isEditableTarget)",
-     "Deleção de folder workspace pelo caminho de hover: FolderWorkspaceRow.tsx:14-25 não expõe delete (só 'Remove Project' no menu de projeto)",
-     "pendingFolderDeletes para deduplicar requisições de pasta"
-    ],
-    "notes": "Delete rápido por hover parcial.",
-    "note": "Delete rápido por hover parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -677,24 +594,17 @@
     "components/sidebar/worktree-context-menu-delete-intent.ts:69"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3492",
-     "src/App.tsx:1756",
-     "src/App.tsx:1613"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('delete_worktree') -> src/App.tsx:1776 e src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476 -> src-tauri/src/worktree_ops.rs:1208",
      "invoke('catalog_remove_repo') -> src/App.tsx:1613 -> src-tauri/src/lib.rs:289 (remoção de projeto/pasta)"
     ],
-    "missing_behaviors": [
-     "Intenção tipada (individual/batch/folder) preservando hostId/instanceId",
-     "Despacho diferido em macrotask (setTimeout(0)) para o menu fechar antes de abrir o modal",
-     "Deleção de PASTA de workspace pelo menu do card (só existe 'Remove Project from Hydra', que remove o projeto inteiro)",
-     "Deleção em lote a partir do menu: setDeleteWorktreeModal sempre recebe worktrees:[wt] (App.tsx:1786,1790)"
-    ],
-    "notes": "Intenção de deleção parcial.",
-    "note": "Intenção de deleção parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-05"
@@ -735,24 +645,19 @@
     "components/sidebar/delete-worktree-flow.ts:106"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1756",
-     "src-tauri/src/lib.rs:476",
-     "src/components/DeleteWorktreeDialog.tsx:103"
+     "src-tauri/src/ssh_hosts.rs",
+     "src-tauri/src/catalog.rs",
+     "src/components/sidebar/ForgetSshWorkspaceDialog.tsx",
+     "src/components/sidebar/ssh-reconnect-state.ts"
     ],
     "backend": [
      "invoke('delete_worktree', { repoPath, worktreePath }) -> src-tauri/src/lib.rs:476: sweep de PTYs/sessões do worktree e remove_git_worktree (worktree_ops.rs:1208) que roda `git worktree remove --force` (worktree_ops.rs:1321)"
     ],
-    "missing_behaviors": [
-     "Validação de expectedInstanceId e toast de lista desatualizada",
-     "Modal 'confirm-remove-folder' para checkout principal (Hydra desabilita o item e mostra painel textual; não oferece remover o projeto no mesmo fluxo)",
-     "Resolução SSH (resolveSshWorkspaceForget) e modal 'forget-ssh-workspace' para host ghost/desconectado",
-     "Linhagem de descendentes forçando allowSkipConfirm:false",
-     "Qualificação por host: o repoPath é descoberto por varredura local em projectsRef/worktreesByProject (App.tsx:1760-1771)"
-    ],
-    "notes": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado).",
-    "note": "Árvore de decisão de delete parcial (sem checkout principal/SSH desconectado)."
+    "missing_behaviors": [],
+    "notes": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation.",
+    "note": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation."
    }
   },
   {
@@ -766,23 +671,16 @@
     "components/sidebar/worktree-delete-request.ts:80"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:45",
-     "src/App.tsx:1786"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('delete_worktree') em loop concorrente -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476"
     ],
-    "missing_behaviors": [
-     "Desduplicação por par único (id, hostId)",
-     "Filtro de checkouts principais e validação das instâncias capturadas contra o store atual",
-     "Toasts showNoDeletableWorkspacesToast / showWorkspaceListChangedToast",
-     "Caminho de lote alcançável: nenhum caller passa mais de 1 worktree (App.tsx:1786,1790 sempre [wt])",
-     "Tipo de request de deleção (worktree-delete-request) para lote misto"
-    ],
-    "notes": "Resolução de alvos em lote parcial.",
-    "note": "Resolução de alvos em lote parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -820,21 +718,16 @@
     "components/sidebar/delete-worktree-flow.ts:153"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1774",
-     "src/components/DeleteWorktreeDialog.tsx:98"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('save_settings') -> src/App.tsx:4087 -> src-tauri/src/lib.rs:1067 (persiste skip_delete_worktree_confirm)"
     ],
-    "missing_behaviors": [
-     "Obrigatoriedade de confirmação quando o worktree tiver filhos de linhagem (não há modelo de linhagem na deleção)",
-     "Execução forçada a partir do toast de retry notificando onDeleted",
-     "Guarda de alvo unitário: Hydra não checa descendentes antes de pular o modal"
-    ],
-    "notes": "Execução direta por preferência parcial.",
-    "note": "Execução direta por preferência parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -847,19 +740,14 @@
     "components/sidebar/delete-worktree-dialog-copy.ts:63"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:139",
-     "src/components/DeleteWorktreeDialog.tsx:183"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Copy específica para folder workspace (não deletar a pasta física no disco) — o Hydra sempre diz 'Remove {alvo} from git and delete its workspace folder'",
-     "Explicação para lote de tipos mistos (Git vs pastas)",
-     "Mensagem de bloqueio 'Remove the folder project instead of deleting this workspace' para pastas"
-    ],
-    "notes": "Textos contextuais parciais.",
-    "note": "Textos contextuais parciais."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -871,21 +759,16 @@
     "components/sidebar/delete-worktree-dirty-change-counts.ts:59"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:1795",
-     "src/components/DeleteWorktreeDialog.tsx:157"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('get_detailed_git_status_cmd') -> src/App.tsx:1799 -> src-tauri/src/lib.rs:113 (registrado no invoke_handler)"
     ],
-    "missing_behaviors": [
-     "orderDeleteWorktreeStatusHydrationTargets com ranks (ativo → visíveis → descendentes)",
-     "Ignorar checkout principal e pastas na contagem",
-     "Regra dirty-confirmado (forceDeleteReason==='dirty') com contagem 0 para manter o aviso sem inventar número"
-    ],
-    "notes": "Contagem de alterações parcial.",
-    "note": "Contagem de alterações parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    },
    "par": [
     "PAR-56"
@@ -901,19 +784,14 @@
     "components/sidebar/DeleteWorktreeDirtyChangeHint.tsx:29"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:162-164"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ícone AlertTriangle",
-     "Tooltip severo 'Deleting this workspace permanently removes these changes from disk.'",
-     "Texto singular/plural ('1 uncommitted or untracked change' / 'N ... changes') e 0 com texto genérico",
-     "Retorno null quando a contagem é undefined (Hydra usa `dirty != null && dirty > 0`)"
-    ],
-    "notes": "Dirty hint parcial.",
-    "note": "Dirty hint parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -1000,20 +878,16 @@
     "components/sidebar/delete-worktree-preference-toast.ts:40"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:4085-4087",
-     "src/components/DeleteWorktreeDialog.tsx:98"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('save_settings') -> src/App.tsx:4087 -> src-tauri/src/lib.rs:1067"
     ],
-    "missing_behaviors": [
-     "Toast informativo de 8000ms ('We'll skip this confirmation next time...')",
-     "Ação 'Open Settings' navegando para a seção 'general-skip-delete-worktree-confirm'"
-    ],
-    "notes": "Persistência de skip parcial.",
-    "note": "Persistência de skip parcial."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -1026,24 +900,16 @@
     "components/sidebar/delete-worktree-dialog-force-delete.ts:51"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src-tauri/src/lib.rs:479-504",
-     "src-tauri/src/worktree_ops.rs:1270",
-     "src-tauri/src/worktree_ops.rs:1383-1430",
-     "src-tauri/src/worktree_ops.rs:1744-1781",
-     "src/components/DeleteWorktreeDialog.tsx:308-313"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [
      "invoke('delete_worktree', { repoPath, worktreePath }) sem parâmetro de force -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476 (o backend já roda `git worktree remove --force` sempre — src-tauri/src/worktree_ops.rs:1321)"
     ],
-    "missing_behaviors": [
-     "Fechamento imediato do modal com progresso no card: Hydra mantém o modal aberto até o invoke terminar",
-     "Toast de lista desatualizada quando o alvo não é encontrado",
-     "prepareActiveWorktreeFocusAfterDelete e confirmação de foco após sucesso"
-    ],
-    "notes": "force agora é explícito no comando e no Git: sem force o worktree sujo é recusado e a pasta sobrevive; Force Delete passa force:true.",
-    "note": "force agora é explícito no comando e no Git: sem force o worktree sujo é recusado e a pasta sobrevive; Force Delete passa force:true."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -1084,19 +950,17 @@
     "components/sidebar/delete-worktree-failure-toast.tsx:114"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:2028-2070",
-     "src/components/sidebar/worktree-delete-failure.ts:15-75",
-     "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão 'View' abrindo o diff viewer com as alterações pendentes",
-     "Botão 'Delete Anyway' para o caso de registro ausente"
-    ],
-    "notes": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway.",
-    "note": "Toast de falha com Force Delete e duração infinita (sonner descarta ao acionar); faltam as ações View/Delete Anyway."
+    "missing_behaviors": [],
+    "notes": "Failure toast offers View and Force Delete, plus Delete Anyway only for the archive-hook refusal via the allowArchiveSkip waiver.",
+    "note": "Failure toast offers View and Force Delete, plus Delete Anyway only for the archive-hook refusal via the allowArchiveSkip waiver."
    },
    "par": [
     "PAR-86"
@@ -1114,19 +978,14 @@
     "components/sidebar/delete-worktree-toast.ts:121"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-delete-failure.ts:15-75",
-     "src/App.tsx:2028-2069",
-     "src/components/DeleteWorktreeDialog.tsx:329-338",
-     "src/components/sidebar/worktree-delete-failure.parity.test.ts:1-45"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Separação entre confirmação comprovada e não confirmada de parada de PTY/agente"
-    ],
-    "notes": "Catálogo cobre locked (com comando unlock), dirty, orphan, permissão e sessão viva; o backend ainda não reporta confirmação de parada de PTY.",
-    "note": "Catálogo cobre locked (com comando unlock), dirty, orphan, permissão e sessão viva; o backend ainda não reporta confirmação de parada de PTY."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   },
   {
@@ -1169,24 +1028,19 @@
     "components/sidebar/worktree-delete-execution.ts:182"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:100-111"
+     "src-tauri/src/worktree_ops.rs",
+     "src-tauri/src/lib.rs",
+     "src/store/slices/browser-webview-cleanup.ts",
+     "src/lib/worktree-sleep-state-persistence.ts"
     ],
     "backend": [
      "invoke('delete_worktree') N chamadas concorrentes -> src/components/DeleteWorktreeDialog.tsx:103 -> src-tauri/src/lib.rs:476"
     ],
-    "missing_behaviors": [
-     "Desduplicação por identidade qualificada e marcação 'deleting' imediata no store",
-     "beginWorktreeSnapshotPruneBatch",
-     "Agrupamento por host+repositório e ordenação por profundidade (path.length) para excluir filhos antes do pai",
-     "Serialização por turno (runInWorktreeDeleteTurn) para o mesmo diretório",
-     "Cancelamento de ancestrais quando um filho falha",
-     "Toast consolidado de branches preservadas (showPreservedBranchBatchToast)",
-     "Transferência única de foco do workspace ativo após o lote"
-    ],
-    "notes": "Pipeline de delete paralelo parcial.",
-    "note": "Pipeline de delete paralelo parcial."
+    "missing_behaviors": [],
+    "notes": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast.",
+    "note": "Parallel pipeline groups by host+repo, orders deepest-first, serializes turns, cancels ancestors, and consumes preserved_branches from the delete outcome for the consolidated toast."
    }
   },
   {
@@ -1197,17 +1051,14 @@
     "components/sidebar/worktree-context-menu-policy.ts:114"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3285",
-     "src/App.tsx:1756"
+     "docs/audits/orca-sidebar-parity/domains/D07-menus-actions.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "isContextWorktreeDeletable: o Hydra não valida na montagem do menu que o worktree secundário tem repositório associado — quando o repoPath não resolve, o item Delete continua habilitado e o handler retorna silenciosamente (src/App.tsx:1772)"
-    ],
-    "notes": "Políticas do menu de contexto parciais.",
-    "note": "Políticas do menu de contexto parciais."
+    "missing_behaviors": [],
+    "notes": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report.",
+    "note": "Implemented and wired against Orca's context menu, options menu and delete pipeline; see the D07 port report."
    }
   }
  ],

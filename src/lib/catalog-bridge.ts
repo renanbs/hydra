@@ -1,5 +1,6 @@
 import type { CatalogEnvelope, CatalogProjectGroup, CatalogRepo } from "./catalog-types";
 import type { HydraProject } from "../components/sidebar/types";
+import { normalizeExecutionHostId, toSshExecutionHostId } from "../shared/execution-host";
 
 /**
  * Converte o envelope do catálogo para o modelo que a sidebar atual consome.
@@ -9,11 +10,19 @@ import type { HydraProject } from "../components/sidebar/types";
  * - `Repo{kind:git}` vira `HydraProject{is_git:true}`.
  * - `Repo{kind:folder}` ou sem kind vira `HydraProject{is_git:false}`.
  * - `projectGroupId` do repo vira entrada em `projectGroupMap`.
- * - Grupos completos do Orca viram `{id,name}` simplificado da sidebar atual.
+ * - Grupos completos do Orca viram a projeção `{id,name,tabOrder,hostId}` da sidebar.
+ * - `hostId` é o stamp do host dono do grupo (D03a-021/082/087); sem stamp = local.
  */
+function catalogGroupHostId(group: CatalogProjectGroup): string | undefined {
+  const executionHostId = normalizeExecutionHostId(group.executionHostId);
+  if (executionHostId) return executionHostId;
+  const connectionId = group.connectionId?.trim();
+  return connectionId ? toSshExecutionHostId(connectionId) : undefined;
+}
+
 export function catalogToSidebarModel(envelope: CatalogEnvelope): {
   projects: HydraProject[];
-  projectGroups: Array<{ id: string; name: string }>;
+  projectGroups: Array<{ id: string; name: string; tabOrder?: number; hostId?: string }>;
   projectGroupMap: Record<string, string>;
   folderWorkspaces: Array<{
     id: string;
@@ -24,10 +33,10 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
     executionHostId?: string | null;
   }>;
 } {
-  const projectGroups = (envelope.projectGroups ?? []).map((g: CatalogProjectGroup) => ({
-    id: g.id,
-    name: g.name,
-  }));
+  const projectGroups = (envelope.projectGroups ?? []).map((g: CatalogProjectGroup) => {
+    const hostId = catalogGroupHostId(g);
+    return { id: g.id, name: g.name, tabOrder: g.tabOrder, ...(hostId ? { hostId } : {}) };
+  });
   const projectGroupMap: Record<string, string> = {};
   const projects: HydraProject[] = (envelope.repos ?? []).map((r: CatalogRepo) => {
     const id = `repo_${r.id}`;
@@ -52,6 +61,11 @@ export function catalogToSidebarModel(envelope: CatalogEnvelope): {
       customWorktreeVisibilitySources: r.customWorktreeVisibilitySources ?? null,
       worktreeVisibilitySourcePreferences: r.worktreeVisibilitySourcePreferences ?? null,
       repo_icon: (r.repoIcon as HydraProject["repo_icon"]) ?? null,
+      // Host stamps must survive the bridge or the row host scope reads a remote
+      // repo as local (D03a-046).
+      connectionId: r.connectionId ?? null,
+      executionHostId:
+        (r.executionHostId as HydraProject["executionHostId"]) ?? null,
     };
   });
   const folderWorkspaces = (envelope.folderWorkspaces ?? []).map((w) => ({
