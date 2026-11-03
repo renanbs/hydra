@@ -1,440 +1,839 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { toast } from "sonner";
+import { AlertCircle, X } from "lucide-react";
 import { NonGitFolderDialog } from "./NonGitFolderDialog";
 import { useAppStore } from "../../store";
 import { getDefaultCloneParent } from "./clone-defaults";
-import { 
-  X, 
-  FolderOpen, 
-  Globe, 
-  Plus, 
-  AlertCircle, 
-  ChevronRight,
-  ArrowLeft
-} from "lucide-react";
+import { AddRepoStepIndicator } from "./AddRepoStepIndicator";
+import { AddRepoHostSelector } from "./AddRepoHostSelector";
+import { AddRepoStartStep } from "./AddRepoStartStep";
+import { AddRepoCloneStep } from "./AddRepoCloneStep";
+import { AddRepoCreateStep } from "./AddRepoCreateStep";
+import { AddRepoNestedImportStep } from "./AddRepoNestedImportStep";
+import { AddProjectFromFolderDialog } from "./AddProjectFromFolderDialog";
+import { useAddRepoHostSelection } from "./useAddRepoHostSelection";
+import { useAddRepoHostChangeReset } from "./useAddRepoHostChangeReset";
+import {
+  createNestedRepoScanId,
+  defaultProjectGroupNameForPath,
+  type AddRepoDialogStep
+} from "./add-repo-dialog-types";
+import { routeAddRepoBrowse } from "./add-repo-browse-authority";
+import { getAddRepoLocalStartActions } from "./add-repo-local-start-actions";
+import {
+  cancelLocalNestedRepoScan,
+  getSelectedNestedRepoPathsInScanOrder,
+  scanNestedReposLocal
+} from "./nested-repo-scan-local";
+import type { GitAvailability } from "./create-project-defaults";
+import type { NestedRepoScanResult } from "../../shared/project-group-types";
+import { extractIpcErrorMessage } from "../../lib/ipc-error";
+
+export type AddRepoProjectAddedKind = "project" | "folder";
 
 interface AddRepoDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onProjectAdded: () => void;
   /**
-   * Orca `confirm-add-project-from-folder`: a folder dropped on the sidebar routes here
-   * instead of being added silently, so the user still confirms the project.
+   * Orca `onGitRepoReady`: `path` names the added project (or folder workspace)
+   * so the caller can select it instead of guessing from list order.
+   */
+  onProjectAdded: (path?: string, kind?: AddRepoProjectAddedKind) => void;
+  /**
+   * Orca `confirm-add-project-from-folder`: a folder dropped on the sidebar routes
+   * here instead of being added silently, so the user still confirms the project.
    */
   initialFolderPath?: string | null;
+}
+
+type NestedReviewContext = {
+  parentPath: string;
+  scanId: string;
+};
+
+type PickedFolder = string | string[] | null;
+
+function normalizePickedFolders(picked: PickedFolder): string[] {
+  if (typeof picked === "string") return picked ? [picked] : [];
+  return Array.isArray(picked) ? picked.filter((path): path is string => Boolean(path)) : [];
 }
 
 export function AddRepoDialog({
   isOpen,
   onClose,
   onProjectAdded,
-  initialFolderPath = null,
+  initialFolderPath = null
 }: AddRepoDialogProps) {
   const settings = useAppStore((state) => state.settings);
+  const repoCount = useAppStore((state) => state.repos.length);
   // Orca `useAddRepoLocalFolderFlow`: clone/create land in the configured workspace
   // directory, not a baked-in path. Empty until the settings hydrate.
   const workspaceDir = settings?.workspace_dir?.trim() ?? "";
-  const [step, setStep] = useState<"start" | "clone" | "create" | "folder">("start");
+  const hostSelection = useAddRepoHostSelection({ isOpen });
+  const selectedHostKind = hostSelection.selectedParsedHost?.kind ?? null;
+  const isLocalHost = selectedHostKind === "local";
+  const isRemoteHost = !isLocalHost;
+  const hostLabel = hostSelection.selectedHostOption?.label ?? null;
+  const [step, setStep] = useState<AddRepoDialogStep>("add");
+  const [isAdding, setIsAdding] = useState(false);
+  const [busyLabel, setBusyLabel] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [gitAvailability, setGitAvailability] = useState<GitAvailability>("unknown");
+  // Why: monotonic id so stale async folders/clone/create results cannot close or
+  // overwrite the dialog after Back/close/host switch. Orca's generation ref.
+  const addGenRef = useRef(0);
+
   const [cloneUrl, setCloneUrl] = useState("");
   // Orca `getDefaultCloneParent`: clones sit beside the "workspaces" tree, so a
   // workspace dir ending in /workspaces clones into its parent.
-  const defaultCloneParent = getDefaultCloneParent(workspaceDir);
-  const [cloneDest, setCloneDest] = useState(defaultCloneParent);
+  const [cloneDest, setCloneDest] = useState(getDefaultCloneParent(workspaceDir));
+  const [cloneError, setCloneError] = useState<string | null>(null);
+  const [isCloning, setIsCloning] = useState(false);
+
   const [createName, setCreateName] = useState("");
   const [createParent, setCreateParent] = useState(workspaceDir);
-  const [gitInstalled, setGitInstalled] = useState<boolean | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
   const [nonGitFolder, setNonGitFolder] = useState<string | null>(null);
   const [droppedFolder, setDroppedFolder] = useState<string | null>(null);
+  const [droppedFolderError, setDroppedFolderError] = useState<string | null>(null);
 
-  const handleClose = () => {
-    setStep("start");
+  const [nestedScan, setNestedScan] = useState<NestedRepoScanResult | null>(null);
+  const [nestedSelectedPaths, setNestedSelectedPaths] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
+  const [nestedGroupName, setNestedGroupName] = useState("");
+  const [scanInProgress, setScanInProgress] = useState(false);
+  const [nestedReview, setNestedReview] = useState<NestedReviewContext | null>(null);
+  // Why a ref: reset must cancel the active scan without its identity feeding
+  // every callback that depends on reset (which would retrigger the open effect).
+  const activeNestedScanIdRef = useRef<string | null>(null);
+
+  const resetNestedReview = useCallback(() => {
+    if (activeNestedScanIdRef.current) {
+      cancelLocalNestedRepoScan(activeNestedScanIdRef.current);
+      activeNestedScanIdRef.current = null;
+    }
+    setNestedScan(null);
+    setNestedSelectedPaths(new Set());
+    setNestedGroupName("");
+    setScanInProgress(false);
+    setNestedReview(null);
+  }, []);
+
+  const resetHostScopedState = useCallback(() => {
+    addGenRef.current += 1;
+    setIsAdding(false);
+    setBusyLabel(null);
+    setError(null);
+    setCloneUrl("");
+    setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
+    setCloneError(null);
+    setIsCloning(false);
+    setCreateName("");
+    setCreateParent(isLocalHost ? workspaceDir : "");
+    setCreateError(null);
+    setIsCreating(false);
+    setDroppedFolderError(null);
+    resetNestedReview();
+    setStep("add");
+  }, [isLocalHost, resetNestedReview, workspaceDir]);
+
+  const resetOnClose = useCallback(() => {
+    addGenRef.current += 1;
+    setStep("add");
     setError(null);
     setNonGitFolder(null);
     setDroppedFolder(null);
-    onClose();
-  };
+    setDroppedFolderError(null);
+    setBusyLabel(null);
+    setIsAdding(false);
+    resetNestedReview();
+  }, [resetNestedReview]);
 
-  const addFolder = async (path: string) => {
-    await invoke("catalog_add_folder", { path });
-    onProjectAdded();
-    handleClose();
-  };
+  useAddRepoHostChangeReset({
+    isOpen,
+    selectedHostId: hostSelection.selectedHostId,
+    onResetClosed: resetOnClose,
+    onResetHostScopedState: resetHostScopedState
+  });
+
+  // Clone progress: Orca subscribes to `window.api.repos.onCloneProgress`; Hydra's
+  // `clone_project` command streams nothing yet, so the dialog passes no progress
+  // and the step shows its indeterminate bar instead of a fabricated percentage.
+  const cloneProgress = null as { phase: string; percent: number } | null;
 
   useEffect(() => {
     if (!isOpen) return;
     // Why reset: the dialog stays mounted between invocations, so a half-typed
-    // clone URL or project name must not survive into the next open (Orca resets
-    // every form state scoped to the dialog).
-    setStep("start");
+    // clone URL or project name must not survive into the next open.
+    setStep(initialFolderPath ? "folder" : "add");
     setError(null);
-    setCloneUrl("");
-    setCreateName("");
-    setCloneDest(getDefaultCloneParent(workspaceDir));
-    setCreateParent(workspaceDir);
+    setNonGitFolder(null);
     setDroppedFolder(initialFolderPath);
-    setStep(initialFolderPath ? "folder" : "start");
+    setDroppedFolderError(null);
+    setCloneUrl("");
+    setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
+    setCloneError(null);
+    setIsCloning(false);
+    setCreateName("");
+    setCreateParent(isLocalHost ? workspaceDir : "");
+    setCreateError(null);
+    setIsCreating(false);
+    resetNestedReview();
+    setStep(initialFolderPath ? "folder" : "add");
+
     let cancelled = false;
     // Why probe on open: without git, clone and create cannot work — say so before
     // the user types a URL instead of failing after submit.
+    setGitAvailability("checking");
     void invoke<{ git_installed: boolean }>("check_preflight_tools_cmd")
       .then((status) => {
-        if (!cancelled) setGitInstalled(status.git_installed);
+        if (!cancelled) setGitAvailability(status.git_installed ? "available" : "unavailable");
       })
       .catch(() => {
-        if (!cancelled) setGitInstalled(null);
+        if (!cancelled) setGitAvailability("unknown");
       });
     return () => {
       cancelled = true;
     };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
+  }, [initialFolderPath, isOpen, resetNestedReview]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [initialFolderPath, isOpen, workspaceDir]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
+  const handleClose = () => {
+    addGenRef.current += 1;
+    resetOnClose();
+    onClose();
+  };
+
+  const addFolder = async (path: string): Promise<void> => {
+    await invoke("catalog_add_folder", { path });
+  };
+
+  const beginNestedReview = (
+    scan: NestedRepoScanResult,
+    context: NestedReviewContext,
+    inProgress: boolean
+  ) => {
+    activeNestedScanIdRef.current = context.scanId;
+    setNestedScan(scan);
+    setNestedSelectedPaths(new Set(scan.repos.map((repo) => repo.path)));
+    setNestedGroupName(defaultProjectGroupNameForPath(scan.selectedPath));
+    setNestedReview(context);
+    setScanInProgress(inProgress);
+    setStep("nested");
+  };
+
+  const handleStopNestedScan = useCallback(() => {
+    const scanId = activeNestedScanIdRef.current;
+    if (!scanId) return;
+    // Why no eager `setScanInProgress(false)`: the scan promise still owns the
+    // final result, and letting the review import before it settles would race
+    // two catalog writes. The scanner settles the in-progress flag.
+    cancelLocalNestedRepoScan(scanId);
+  }, []);
 
   /**
-   * Confirm the folder a sidebar drop routed here. The git probe decides between adding
-   * it directly and the non-git confirmation, exactly like Browse Folder.
+   * Add one or more picked paths. In `batch` mode (multi-select) complex folders
+   * with nested repositories are skipped and counted, and the navigation handoff
+   * is deferred until every path settled — Orca's `handleAddLocalPaths`.
    */
-  const confirmDroppedFolder = async () => {
-    if (!droppedFolder) return;
-    setIsSubmitting(true);
+  const handleAddLocalPaths = async (
+    paths: string[],
+    mode: "single" | "batch"
+  ): Promise<void> => {
+    if (isRemoteHost) {
+      toast.error("Use a host path to add projects from a remote host.");
+      return;
+    }
+    const gen = ++addGenRef.current;
+    const busyFolderMode = paths.length > 1 ? "batch" : mode;
+    let skippedCount = 0;
+    let firstAddedPath: string | null = null;
+    let firstAddedKind: AddRepoProjectAddedKind | null = null;
+
+    setIsAdding(true);
     setError(null);
     try {
+      for (const path of paths) {
+        if (gen !== addGenRef.current) return;
+        setBusyLabel("Scanning for repositories...");
+        const scanId = createNestedRepoScanId();
+        activeNestedScanIdRef.current = scanId;
+        setNestedReview({ parentPath: path, scanId });
+        setScanInProgress(true);
+        let scan: NestedRepoScanResult;
+        try {
+          scan = await scanNestedReposLocal({
+            path,
+            scanId,
+            onProgress: (progress) => {
+              if (gen !== addGenRef.current) return;
+              if (
+                busyFolderMode === "batch" ||
+                progress.selectedPathKind !== "non_git_folder" ||
+                progress.repos.length === 0
+              ) {
+                return;
+              }
+              beginNestedReview(progress, { parentPath: path, scanId }, true);
+            }
+          });
+        } catch (scanError) {
+          activeNestedScanIdRef.current = null;
+          setNestedReview(null);
+          setScanInProgress(false);
+          if (gen === addGenRef.current) {
+            setError(extractIpcErrorMessage(scanError, String(scanError)));
+            return;
+          }
+          return;
+        }
+        if (gen !== addGenRef.current) return;
+
+        if (scan.selectedPathKind === "non_git_folder" && scan.repos.length > 0) {
+          if (busyFolderMode === "batch") {
+            activeNestedScanIdRef.current = null;
+            setNestedReview(null);
+            setScanInProgress(false);
+            skippedCount += 1;
+            continue;
+          }
+          setScanInProgress(false);
+          beginNestedReview(scan, { parentPath: path, scanId }, false);
+          return;
+        }
+
+        activeNestedScanIdRef.current = null;
+        setNestedReview(null);
+        setScanInProgress(false);
+        setBusyLabel("Opening project...");
+        const isGit = scan.selectedPathKind === "git_repo";
+        try {
+          await addFolder(path);
+        } catch (addError) {
+          if (gen === addGenRef.current) {
+            setError(extractIpcErrorMessage(addError, String(addError)));
+          }
+          return;
+        }
+        if (gen !== addGenRef.current) return;
+        firstAddedPath = path;
+        firstAddedKind = isGit ? "project" : "folder";
+        if (busyFolderMode === "single") {
+          onProjectAdded(path, firstAddedKind);
+          handleClose();
+          return;
+        }
+      }
+
+      if (gen !== addGenRef.current) return;
+      if (skippedCount > 0) {
+        toast.info("Some folders were skipped", {
+          description: "Add skipped folders individually to review or confirm them."
+        });
+      }
+      if (firstAddedPath) {
+        onProjectAdded(firstAddedPath, firstAddedKind ?? "project");
+        handleClose();
+      }
+    } finally {
+      if (gen === addGenRef.current) {
+        setIsAdding(false);
+        setBusyLabel(null);
+      }
+    }
+  };
+
+  const handleBrowseFolder = async () => {
+    try {
+      setBusyLabel("Choose a folder...");
+      const picked = (await open({
+        directory: true,
+        multiple: true,
+        title: "Select Existing Project or Git Repository"
+      })) as PickedFolder;
+      const paths = normalizePickedFolders(picked);
+      if (paths.length === 0) {
+        setBusyLabel(null);
+        return;
+      }
+      await handleAddLocalPaths(paths, paths.length > 1 ? "batch" : "single");
+    } catch (browseError) {
+      setBusyLabel(null);
+      setError(extractIpcErrorMessage(browseError, String(browseError)));
+    }
+  };
+
+  const handleBrowseByHost = () => {
+    routeAddRepoBrowse(hostSelection.selectedParsedHost, {
+      browseLocal: () => void handleBrowseFolder(),
+      browseRuntime: () => setStep("server-path"),
+      browseSsh: () => setStep("remote")
+    });
+  };
+
+  const handlePickCloneDestination = async () => {
+    if (!isLocalHost) {
+      toast.error("Enter a host path for the clone destination.");
+      return;
+    }
+    const gen = addGenRef.current;
+    const picked = await open({ directory: true, multiple: false, title: "Choose clone destination" });
+    const [dir] = normalizePickedFolders(picked as PickedFolder);
+    if (dir && gen === addGenRef.current) {
+      setCloneDest(dir);
+      setCloneError(null);
+    }
+  };
+
+  const handleClone = async () => {
+    const url = cloneUrl.trim();
+    const destination = cloneDest.trim();
+    if (!url || !destination) return;
+    if (!isLocalHost) {
+      setCloneError(
+        "Cloning on a remote host needs the SSH/runtime clone bridge, which this build does not ship."
+      );
+      return;
+    }
+    const gen = ++addGenRef.current;
+    setIsCloning(true);
+    setCloneError(null);
+    try {
+      const path = await invoke<string>("clone_project", { url, parentDir: destination });
+      if (gen !== addGenRef.current) return;
+      toast.success("Repository cloned");
+      onProjectAdded(path, "project");
+      handleClose();
+    } catch (cloneFailure) {
+      if (gen !== addGenRef.current) return;
+      setCloneError(extractIpcErrorMessage(cloneFailure, String(cloneFailure)));
+    } finally {
+      if (gen === addGenRef.current) setIsCloning(false);
+    }
+  };
+
+  const handlePickCreateParent = async () => {
+    if (!isLocalHost) {
+      toast.error("Enter a host parent path.");
+      return;
+    }
+    const gen = addGenRef.current;
+    const picked = await open({ directory: true, multiple: false, title: "Choose project parent folder" });
+    const [dir] = normalizePickedFolders(picked as PickedFolder);
+    if (dir && gen === addGenRef.current) {
+      setCreateParent(dir);
+      setCreateError(null);
+    }
+  };
+
+  const handleCreate = async () => {
+    const name = createName.trim();
+    const parent = createParent.trim();
+    if (!name || !parent) return;
+    if (!isLocalHost) {
+      setCreateError(
+        "Creating a project on a remote host needs the SSH/runtime create bridge, which this build does not ship."
+      );
+      return;
+    }
+    const gen = ++addGenRef.current;
+    setIsCreating(true);
+    setCreateError(null);
+    try {
+      const path = await invoke<string>("create_project", {
+        name,
+        parentDir: parent,
+        initGit: true
+      });
+      if (gen !== addGenRef.current) return;
+      toast.success("Project created");
+      onProjectAdded(path, "project");
+      handleClose();
+    } catch (createFailure) {
+      if (gen !== addGenRef.current) return;
+      setCreateError(extractIpcErrorMessage(createFailure, String(createFailure)));
+    } finally {
+      if (gen === addGenRef.current) setIsCreating(false);
+    }
+  };
+
+  const confirmDroppedFolder = async () => {
+    if (!droppedFolder) return;
+    const gen = ++addGenRef.current;
+    setIsAdding(true);
+    setDroppedFolderError(null);
+    try {
       const isGit = await invoke<boolean>("is_git_repository", { path: droppedFolder });
+      if (gen !== addGenRef.current) return;
       if (!isGit) {
         setNonGitFolder(droppedFolder);
         return;
       }
       await addFolder(droppedFolder);
-    } catch (err) {
-      setError(String(err));
+      if (gen !== addGenRef.current) return;
+      onProjectAdded(droppedFolder, "project");
+      handleClose();
+    } catch (dropError) {
+      if (gen === addGenRef.current) {
+        setDroppedFolderError(extractIpcErrorMessage(dropError, String(dropError)));
+      }
     } finally {
-      setIsSubmitting(false);
+      if (gen === addGenRef.current) setIsAdding(false);
     }
   };
+
+  const handleConfirmNonGitFolder = async () => {
+    const folder = nonGitFolder;
+    if (!folder) return;
+    const gen = ++addGenRef.current;
+    setIsAdding(true);
+    setError(null);
+    try {
+      await addFolder(folder);
+      if (gen !== addGenRef.current) return;
+      onProjectAdded(folder, "folder");
+      handleClose();
+    } catch (folderError) {
+      if (gen === addGenRef.current) {
+        setError(extractIpcErrorMessage(folderError, String(folderError)));
+      }
+    } finally {
+      if (gen === addGenRef.current) setIsAdding(false);
+    }
+  };
+
+  const defaultGroupName = nestedScan
+    ? defaultProjectGroupNameForPath(nestedScan.selectedPath)
+    : "";
+
+  const handleImportNestedRepos = async (mode: "group" | "separate") => {
+    if (!nestedScan || !nestedReview) return;
+    const gen = ++addGenRef.current;
+    setIsAdding(true);
+    setBusyLabel("Opening project...");
+    setError(null);
+    try {
+      if (mode === "separate") {
+        const paths = getSelectedNestedRepoPathsInScanOrder(nestedScan, nestedSelectedPaths);
+        let failed = 0;
+        let firstPath: string | null = null;
+        for (const path of paths) {
+          if (gen !== addGenRef.current) return;
+          try {
+            await addFolder(path);
+            firstPath ??= path;
+          } catch {
+            failed += 1;
+          }
+        }
+        if (gen !== addGenRef.current) return;
+        if (failed > 0) {
+          toast.warning("Some repositories could not be imported", {
+            description: `${failed} failed`
+          });
+        }
+        if (!firstPath) {
+          toast.error("No repositories imported");
+          return;
+        }
+        onProjectAdded(firstPath, "project");
+        handleClose();
+        return;
+      }
+
+      // Group import uses `catalog_add_folder` on the parent, which is the only
+      // group-creating catalog write in this backend. It imports every direct
+      // child repository and derives the group name from the folder, so a subset
+      // selection or a renamed group cannot be honored — say so instead of
+      // silently importing something the user did not pick.
+      const completeSelection =
+        nestedSelectedPaths.size === nestedScan.repos.length &&
+        nestedScan.repos.every((repo) => repo.depth === 1);
+      const nameUnchanged = nestedGroupName.trim() === defaultGroupName;
+      if (
+        !completeSelection ||
+        !nameUnchanged ||
+        nestedScan.truncated ||
+        nestedScan.stopped ||
+        nestedScan.timedOut
+      ) {
+        setError(
+          "Group import needs the complete folder scan (all direct child repositories, default name, no truncation). Import separately or open the folder instead."
+        );
+        return;
+      }
+      await addFolder(nestedScan.selectedPath);
+      if (gen !== addGenRef.current) return;
+      toast.success("Group imported");
+      onProjectAdded(nestedScan.selectedPath, "folder");
+      handleClose();
+    } catch (importError) {
+      if (gen === addGenRef.current) {
+        setError(extractIpcErrorMessage(importError, String(importError)));
+      }
+    } finally {
+      if (gen === addGenRef.current) {
+        setIsAdding(false);
+        setBusyLabel(null);
+      }
+    }
+  };
+
+  const handleOpenNestedRootFolder = async () => {
+    if (!nestedScan) return;
+    const gen = ++addGenRef.current;
+    setIsAdding(true);
+    setBusyLabel("Opening project...");
+    setError(null);
+    try {
+      // Why: `catalog_add_folder` on a non-git folder is the catalog's
+      // open-as-folder path (group + folder workspace). It also imports direct
+      // child repositories, which the catalog does today for this path.
+      await addFolder(nestedScan.selectedPath);
+      if (gen !== addGenRef.current) return;
+      onProjectAdded(nestedScan.selectedPath, "folder");
+      handleClose();
+    } catch (openError) {
+      if (gen === addGenRef.current) {
+        setError(extractIpcErrorMessage(openError, String(openError)));
+      }
+    } finally {
+      if (gen === addGenRef.current) {
+        setIsAdding(false);
+        setBusyLabel(null);
+      }
+    }
+  };
+
+  const goBack = () => {
+    if (step === "nested" && isAdding) return;
+    resetHostScopedState();
+  };
+
+  const startActions = useMemo(
+    () =>
+      getAddRepoLocalStartActions({
+        isSshLikely: hostSelection.hostOptions.some((host) => host.kind === "ssh"),
+        onBrowse: handleBrowseByHost,
+        onOpenCloneStep: () => {
+          setCloneError(null);
+          setStep("clone");
+        },
+        onOpenRemoteStep: () => setStep("remote"),
+        onOpenCreateStep: () => {
+          setCreateError(null);
+          setStep("create");
+        },
+        showRemoteAction: hostSelection.hostOptions.some((host) => host.kind === "ssh"),
+        canCreateProject: hostSelection.selectedParsedHost?.kind !== "ssh",
+        browseHostKind: selectedHostKind ?? "local"
+      }),
+    // Why: the handlers close over the current host/step state; rebuilding when
+    // those change keeps the primary action's browse authority correct.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hostSelection.hostOptions, hostSelection.selectedParsedHost, selectedHostKind]
+  );
 
   if (!isOpen) return null;
 
-  // 1. AÇÃO PRINCIPAL DO ORCA: Browse Folder (Selecionar pasta existente no sistema)
-  const handleBrowseFolder = async () => {
-    try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: "Select Existing Project or Git Repository",
-      });
-
-      if (selected && typeof selected === "string") {
-        setIsSubmitting(true);
-        setError(null);
-        // Orca `useAddRepoLocalFolderFlow`: a non-git folder is still openable, but
-        // the user confirms with the Git-features caveat instead of finding out later.
-        const isGit = await invoke<boolean>("is_git_repository", { path: selected });
-        setIsSubmitting(false);
-        if (!isGit) {
-          setNonGitFolder(selected);
-          return;
-        }
-        await addFolder(selected);
-      }
-    } catch (err) {
-      setIsSubmitting(false);
-      setError(String(err));
-    }
-  };
-
-  const handleClone = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cloneUrl.trim()) return;
-    setIsSubmitting(true);
-    setError(null);
-
-    invoke<string>("clone_project", {
-      url: cloneUrl.trim(),
-      parentDir: cloneDest.trim(),
-    })
-      .then(() => {
-        setIsSubmitting(false);
-        onProjectAdded();
-        handleClose();
-      })
-      .catch((err) => {
-        setIsSubmitting(false);
-        setError(String(err));
-      });
-  };
-
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!createName.trim()) return;
-    setIsSubmitting(true);
-    setError(null);
-
-    invoke<string>("create_project", {
-      name: createName.trim(),
-      parentDir: createParent.trim(),
-      initGit: true,
-    })
-      .then(() => {
-        setIsSubmitting(false);
-        onProjectAdded();
-        handleClose();
-      })
-      .catch((err) => {
-        setIsSubmitting(false);
-        setError(String(err));
-      });
-  };
-
   return (
-    <div onClick={handleClose} className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/60 select-none">
-      <div onClick={(e) => e.stopPropagation()} className="relative w-[500px] rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200">
-        {/* Orca AddRepoStepIndicator Header */}
+    <div
+      onClick={handleClose}
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 select-none"
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative rounded-xl bg-[#141518] border border-[#2a2b30] shadow-2xl overflow-hidden text-xs text-neutral-200 ${
+          step === "nested" ? "w-[560px] max-h-[calc(100vh-2rem)] overflow-y-auto" : "w-[500px]"
+        }`}
+      >
         <div className="h-11 border-b border-[#222327] px-4 flex items-center justify-between bg-[#111214]">
-          <div className="flex items-center gap-2 font-semibold text-neutral-200">
-            {step !== "start" && (
-              <button
-                onClick={() => setStep("start")}
-                className="p-1 -ml-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            )}
-            <span>
-              {step === "start" && "Add Project"}
+          <div className="min-w-0">
+            <span className="block truncate font-semibold text-neutral-200">
+              {step === "add" && "Add Project"}
               {step === "clone" && "Clone from URL"}
               {step === "create" && "Create New Project"}
               {step === "folder" && "Add Project from Folder"}
+              {step === "remote" && "Project on SSH host"}
+              {step === "server-path" && "Project on server"}
+              {step === "nested" && "Import repositories from folder"}
             </span>
           </div>
           <button
+            type="button"
             onClick={handleClose}
+            aria-label="Close"
             className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Error message banner */}
-        {error && (
-          <div className="m-4 mb-0 p-2.5 rounded bg-red-500/15 border border-red-500/30 text-red-400 text-[11px] flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span className="truncate">{error}</span>
-          </div>
-        )}
+        <div className="px-4 pt-2">
+          <AddRepoStepIndicator step={step} isAdding={isAdding} onBack={goBack} />
+        </div>
 
-        {/* Git availability (Orca preflight): clone/create are disabled without it. */}
-        {gitInstalled === false && (
-          <div className="m-4 mb-0 p-2.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
+        {error ? (
+          <div className="mx-4 mt-1 p-2.5 rounded bg-red-500/15 border border-red-500/30 text-red-400 text-[11px] flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="min-w-0 break-words">{error}</span>
+          </div>
+        ) : null}
+
+        {gitAvailability === "unavailable" ? (
+          <div className="mx-4 mt-1 p-2.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>Git is not installed or not on PATH. Cloning and creating projects are disabled.</span>
           </div>
-        )}
+        ) : null}
 
-        {/* 0. DROPPED FOLDER (Orca `confirm-add-project-from-folder`): the sidebar routed
-            this path here, so the user confirms instead of the catalog write happening
-            behind their back. */}
-        {step === "folder" && (
-          <div className="p-4 space-y-3">
-            <div className="rounded-xl border border-neutral-800 bg-[#0e0f11] p-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-100">
-                <FolderOpen className="w-4 h-4 text-emerald-400" />
-                Folder dropped on the sidebar
-              </div>
-              <div className="mt-1.5 break-all font-mono text-[11px] text-neutral-400">
-                {droppedFolder}
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="h-8 rounded-md border border-neutral-800 px-3 text-xs text-neutral-300 transition hover:bg-neutral-800 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => void confirmDroppedFolder()}
-                className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
-              >
-                Add Project
-              </button>
-            </div>
+        {step === "folder" ? (
+          <AddProjectFromFolderDialog
+            folderPath={droppedFolder ?? ""}
+            hostLabel={hostLabel}
+            isSubmitting={isAdding}
+            error={droppedFolderError}
+            onCancel={handleClose}
+            onConfirm={() => void confirmDroppedFolder()}
+          />
+        ) : null}
+
+        {step === "add" ? (
+          <div className="p-4">
+            <AddRepoStartStep
+              repoCount={repoCount}
+              isAdding={isAdding}
+              addProjectBusyLabel={busyLabel}
+              nestedScanInProgress={scanInProgress}
+              nestedScanId={nestedReview?.scanId ?? null}
+              hostSelector={
+                <AddRepoHostSelector
+                  hostOptions={hostSelection.hostOptions}
+                  selectedHostId={hostSelection.selectedHostId}
+                  connectingTargetIds={hostSelection.connectingTargetIds}
+                  onSelect={hostSelection.setSelectedHostId}
+                  onConnect={hostSelection.connectTarget}
+                />
+              }
+              actionsDisabled={!hostSelection.selectedHostOption}
+              primaryAction={startActions.primaryAction}
+              secondaryActions={startActions.secondaryActions}
+              onStopNestedScan={handleStopNestedScan}
+            />
           </div>
-        )}
+        ) : null}
 
-        {/* 1. START STEP: 100% Orca AddRepoLocalStartStep actions */}
-        {step === "start" && (
-          <div className="p-4 space-y-2">
-            {/* Primary Action 1 (Orca): Browse Folder */}
-            <button
-              onClick={handleBrowseFolder}
-              className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-emerald-500/40 bg-neutral-900/60 hover:bg-neutral-800/80 transition text-left cursor-pointer group"
-            >
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition">
-                <FolderOpen className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-neutral-100 text-xs flex items-center gap-1.5">
-                  <span>Browse folder</span>
-                  <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 uppercase font-bold">Existing</span>
-                </div>
-                <div className="text-[11px] text-neutral-400">Open an existing Git repository or project folder from disk</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-emerald-400 transition" />
-            </button>
+        {step === "clone" ? (
+          <AddRepoCloneStep
+            cloneUrl={cloneUrl}
+            cloneDestination={cloneDest}
+            cloneError={cloneError}
+            cloneProgress={cloneProgress}
+            isCloning={isCloning}
+            gitUnavailable={gitAvailability === "unavailable"}
+            destinationIsRemote={isRemoteHost}
+            hostLabel={hostLabel}
+            onUrlChange={(value) => {
+              setCloneUrl(value);
+              setCloneError(null);
+            }}
+            onDestinationChange={(value) => {
+              setCloneDest(value);
+              setCloneError(null);
+            }}
+            onPickDestination={() => void handlePickCloneDestination()}
+            onClone={() => void handleClone()}
+          />
+        ) : null}
 
-            {/* Action 2: Clone from URL */}
-            <button
-              onClick={() => setStep("clone")}
-              className="w-full flex items-center gap-3.5 p-3 rounded-xl border border-neutral-800/80 bg-[#0e0f11] hover:bg-neutral-800/60 transition text-left cursor-pointer group"
-            >
-              <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-blue-400 group-hover:border-blue-500/50 transition">
-                <Globe className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-neutral-100 text-xs">Clone from URL</div>
-                <div className="text-[11px] text-neutral-500">Clone a remote Git repository from GitHub, GitLab, or URL</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-neutral-600 group-hover:text-neutral-300 transition" />
-            </button>
+        {step === "create" ? (
+          <AddRepoCreateStep
+            createName={createName}
+            createParent={createParent}
+            createError={createError}
+            isCreating={isCreating}
+            defaultParent={isLocalHost ? workspaceDir : ""}
+            gitAvailability={gitAvailability}
+            manualParentEntry={isRemoteHost}
+            isRemoteHost={isRemoteHost}
+            hostLabel={hostLabel}
+            onNameChange={(value) => {
+              setCreateName(value);
+              setCreateError(null);
+            }}
+            onParentChange={(value) => {
+              setCreateParent(value);
+              setCreateError(null);
+            }}
+            onPickParent={() => void handlePickCreateParent()}
+            onBrowseServer={() => setStep("server-path")}
+            onCreate={() => void handleCreate()}
+          />
+        ) : null}
 
-            {/* Action 3: Create new project */}
-            <button
-              onClick={() => setStep("create")}
-              className="w-full flex items-center gap-3.5 p-3 rounded-xl border border-neutral-800/80 bg-[#0e0f11] hover:bg-neutral-800/60 transition text-left cursor-pointer group"
-            >
-              <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300 group-hover:border-neutral-700 transition">
-                <Plus className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-neutral-100 text-xs">Create new project</div>
-                <div className="text-[11px] text-neutral-500">Start from an empty folder with git repository initialized</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-neutral-600 group-hover:text-neutral-300 transition" />
-            </button>
-          </div>
-        )}
+        {step === "nested" && nestedScan ? (
+          <AddRepoNestedImportStep
+            scan={nestedScan}
+            groupName={nestedGroupName}
+            selectedPaths={nestedSelectedPaths}
+            isAdding={isAdding}
+            scanInProgress={scanInProgress}
+            onGroupNameChange={setNestedGroupName}
+            onSelectedPathsChange={setNestedSelectedPaths}
+            onImport={(mode) => void handleImportNestedRepos(mode)}
+            onOpenAsFolder={() => void handleOpenNestedRootFolder()}
+            onStopScan={handleStopNestedScan}
+          />
+        ) : null}
 
-        {/* 2. CLONE STEP */}
-        {step === "clone" && (
-          <form onSubmit={handleClone} className="p-5 space-y-4">
-            <div>
-              <label className="block text-neutral-400 mb-1 font-medium">Git Repository URL</label>
-              <input
-                type="text"
-                required
-                autoFocus
-                placeholder="https://github.com/user/repo.git or git@github.com:..."
-                value={cloneUrl}
-                onChange={(e) => setCloneUrl(e.target.value)}
-                className="w-full bg-[#0c0d0e] border border-[#2a2b30] rounded px-3 py-1.5 font-mono text-xs text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-emerald-500/80"
-              />
+        {step === "remote" || step === "server-path" ? (
+          <div className="p-5 space-y-3">
+            <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
+              {step === "remote" ? "Project on SSH host" : "Project on server"}
+            </h2>
+            <p className="text-xs leading-relaxed text-neutral-400">
+              {step === "remote"
+                ? `Opening a project path on ${hostLabel ?? "this SSH host"} needs the SSH project bridge (remote path add + remote folder scan), which this build does not ship. The host selector and connection probe work; adding is blocked.`
+                : "Opening a project path on a runtime server needs the runtime RPC bridge (`repo.add`), which this build does not ship. The host selector works; adding is blocked."}
+            </p>
+            <div className="rounded border border-[#2a2b30] bg-[#0e0f11] px-3 py-2 font-mono text-[11px] text-neutral-500">
+              {hostLabel ?? "No host selected"}
             </div>
-
-            <div>
-              <label className="block text-neutral-400 mb-1 font-medium">Destination Directory</label>
-              <input
-                type="text"
-                required
-                value={cloneDest}
-                onChange={(e) => setCloneDest(e.target.value)}
-                className="w-full bg-[#0c0d0e] border border-[#2a2b30] rounded px-3 py-1.5 font-mono text-xs text-neutral-200 focus:outline-none focus:border-emerald-500/80"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => setStep("start")}
-                className="px-3.5 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition"
+                onClick={() => setStep("add")}
+                className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition cursor-pointer"
               >
                 Back
               </button>
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting || !cloneUrl.trim() || !cloneDest.trim() || gitInstalled === false
-                }
-                className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition disabled:opacity-50"
-              >
-                {isSubmitting ? "Cloning..." : "Clone Project"}
-              </button>
             </div>
-          </form>
-        )}
-
-        {/* 3. CREATE STEP */}
-        {step === "create" && (
-          <form onSubmit={handleCreate} className="p-5 space-y-4">
-            <div>
-              <label className="block text-neutral-400 mb-1 font-medium">Project Name</label>
-              <input
-                type="text"
-                required
-                autoFocus
-                placeholder="e.g. my-awesome-project"
-                value={createName}
-                onChange={(e) => setCreateName(e.target.value)}
-                className="w-full bg-[#0c0d0e] border border-[#2a2b30] rounded px-3 py-1.5 font-mono text-xs text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-emerald-500/80"
-              />
-            </div>
-
-            <div>
-              <label className="block text-neutral-400 mb-1 font-medium">Location Directory</label>
-              <input
-                type="text"
-                required
-                value={createParent}
-                onChange={(e) => setCreateParent(e.target.value)}
-                className="w-full bg-[#0c0d0e] border border-[#2a2b30] rounded px-3 py-1.5 font-mono text-xs text-neutral-200 focus:outline-none focus:border-emerald-500/80"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setStep("start")}
-                className="px-3.5 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting || !createName.trim() || !createParent.trim() || gitInstalled === false
-                }
-                className="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition disabled:opacity-50"
-              >
-                {isSubmitting ? "Creating..." : "Create Project"}
-              </button>
-            </div>
-          </form>
-        )}
+          </div>
+        ) : null}
       </div>
+
       <NonGitFolderDialog
         open={nonGitFolder != null}
         folderPath={nonGitFolder ?? ""}
-        hostLabel={null}
-        onOpenChange={(open) => {
-          if (!open) setNonGitFolder(null);
+        hostLabel={hostLabel}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setNonGitFolder(null);
         }}
-        onConfirm={() => {
-          const folder = nonGitFolder;
-          if (folder) void addFolder(folder);
-        }}
+        onConfirm={() => void handleConfirmNonGitFolder()}
       />
-
     </div>
   );
 }

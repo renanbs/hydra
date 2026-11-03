@@ -21,9 +21,16 @@ import {
   shouldApplySuggestedName,
 } from "./sidebar/worktree-name-suggestions";
 import { useRetiredWorktreeNames } from "@/hooks/useRetiredWorktreeNames";
+import { useFolderWorkspaceComposerPathStatus } from "./sidebar/folder-workspace-composer-path-status";
 
 interface NewWorkspaceComposerProps {
   isOpen: boolean;
+  /**
+   * D02a-040: Add Project renders as a nested dialog on top of this composer.
+   * While it is open the composer keeps its state but yields Escape/Ctrl+Enter
+   * so closing the nested dialog never closes the composer underneath.
+   */
+  nestedDialogOpen?: boolean;
   activeProject: HydraProject | null;
   projects: HydraProject[];
   availableAgents: AvailableAgent[];
@@ -41,6 +48,7 @@ interface NewWorkspaceComposerProps {
 
 export function NewWorkspaceComposer({
   isOpen,
+  nestedDialogOpen = false,
   activeProject,
   projects,
   availableAgents,
@@ -83,7 +91,7 @@ export function NewWorkspaceComposer({
 
   // Handle global shortcuts inside composer (Esc to close, Ctrl+Enter to submit)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || nestedDialogOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -122,10 +130,17 @@ export function NewWorkspaceComposer({
     });
   }, [isOpen, effectiveProjectForSuggestion?.id, retiredNames]);
 
-  if (!isOpen) return null;
-
   const effectiveProject = activeProject || (projects.length > 0 ? projects[0] : null);
   const isGit = effectiveProject?.is_git ?? true;
+  const folderPathStatus = useFolderWorkspaceComposerPathStatus({
+    folderPath: effectiveProject?.path ?? "",
+    open: isOpen && !isGit,
+    executionHostId: effectiveProject?.executionHostId ?? null,
+  });
+  const createBlocked = !isGit && folderPathStatus.pathStatusBlocksCreate;
+
+  if (!isOpen) return null;
+
   const primaryActionLabel = isGit ? "Create worktree" : "Create workspace";
 
   const chosenAgent = availableAgents.find((a) => a.id === selectedAgentId) || {
@@ -140,6 +155,13 @@ export function NewWorkspaceComposer({
     const proj = effectiveProject;
     if (!proj) {
       setError("Please select a project first.");
+      return;
+    }
+    if (!isGit) {
+      setError(
+        folderPathStatus.pathStatusProjectError ??
+          "Creating a workspace in a folder project needs the folder-workspace bridge, which this build does not ship."
+      );
       return;
     }
 
@@ -245,6 +267,16 @@ export function NewWorkspaceComposer({
           </div>
         )}
 
+        {/* D02a-036: a folder workspace whose path is gone must not look creatable. */}
+        {!isGit && folderPathStatus.pathStatusProjectError ? (
+          <div
+            role="alert"
+            className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400"
+          >
+            {folderPathStatus.pathStatusProjectError}
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 1. Project Section */}
           <div className="space-y-1.5">
@@ -256,7 +288,6 @@ export function NewWorkspaceComposer({
                 <button
                   type="button"
                   onClick={() => {
-                    onClose();
                     onOpenAddRepoDialog();
                   }}
                   className="size-5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 inline-flex items-center justify-center transition cursor-pointer"
@@ -326,7 +357,6 @@ export function NewWorkspaceComposer({
                         type="button"
                         onClick={() => {
                           setProjectPickerOpen(false);
-                          onClose();
                           onOpenAddRepoDialog();
                         }}
                         className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-emerald-400 hover:bg-emerald-500/10 text-left transition cursor-pointer"
@@ -498,7 +528,8 @@ export function NewWorkspaceComposer({
 
             <button
               type="submit"
-              className="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+              disabled={createBlocked}
+              className="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm disabled:cursor-default disabled:opacity-50"
             >
               <span>{primaryActionLabel}</span>
               <span className="ml-1 inline-flex items-center gap-0.5 rounded border border-white/20 px-1.5 py-0.5 text-[10px] font-medium leading-none text-white/90">
