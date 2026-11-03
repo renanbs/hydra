@@ -108,3 +108,16 @@ export function toLinearLinkedWorkItem(issue: LinearIssue): LinkedWorkItemSummar
 export function getFolderWorkspacePrimaryActionLabel(): string {
   return 'Create workspace'
 }
+
+/** Orca `getNewWorkspaceProjectGroupHostId`: the group's own host stamp wins,
+ *  otherwise the SSH target, otherwise this machine. */
+export function getNewWorkspaceProjectGroupHostId(
+  projectGroup: Pick<ProjectGroup, 'connectionId' | 'executionHostId'>
+): ExecutionHostId {
+  const executionHostId = normalizeExecutionHostId(projectGroup.executionHostId)
+  if (executionHostId) {
+    return executionHostId
+  }
+  const connectionId = projectGroup.connectionId?.trim()
+  return connectionId ? toSshExecutionHostId(connectionId) : LOCAL_EXECUTION_HOST_ID
+}

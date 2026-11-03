@@ -2210,6 +2210,7 @@ pub fn run() {
             ssh_remote::ssh_browse_dir,
             ssh_remote::ssh_remote_clone,
             ssh_remote::ssh_remote_create_project,
+            ssh_remote::ssh_remote_probe_git,
             ssh_remote::ssh_remote_delete_worktree,
         ])
         .run(tauri::generate_context!())

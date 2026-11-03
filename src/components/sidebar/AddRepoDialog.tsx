@@ -32,28 +32,71 @@ import {
   getSelectedNestedRepoPathsInScanOrder,
   scanNestedReposLocal
 } from "./nested-repo-scan-local";
-import type { GitAvailability } from "./create-project-defaults";
+import { joinCreateProjectPath, type GitAvailability } from "./create-project-defaults";
 import type { NestedRepoScanResult } from "../../shared/project-group-types";
 import { extractIpcErrorMessage } from "../../lib/ipc-error";
 import { importNestedCatalogRepos } from "../../lib/catalog-client";
 import { toProjectGroupImportResult } from "../../lib/orca-api-shim";
 import { PROJECTS_REFRESH_EVENT } from "../../lib/refresh-projects-awaitable";
+import { addCatalogFolderWorkspace } from "../../lib/catalog-client";
+import { buildNestedRepoImportActionTelemetry, createNestedRepoTelemetryAttemptId } from "../../shared/nested-repo-telemetry";
+import { track } from "../../lib/telemetry";
+import {
+  resolveSshCreateParentDefault,
+  resolveSshGitAvailability
+} from "./ssh-create-defaults";
 
 export type AddRepoProjectAddedKind = "project" | "folder";
 
+/** Host captured when the add started; the async result must carry it. */
+export type AddRepoProjectOwner = {
+  connectionId?: string | null;
+  executionHostId?: string | null;
+  /** Telemetry/default-checkout source for the handoff (Orca `onGitRepoReady`). */
+  source?:
+    | "local_folder_picker"
+    | "runtime_server_path"
+    | "ssh_remote_path"
+    | "clone_url"
+    | "create_project";
+};
+
+/**
+ * Orca `AddRepoDialogHostedController`: a host surface (the workspace composer)
+ * may own the open state and close-autofocus while the dialog is layered above
+ * it. When absent the dialog uses the store's singleton modal slot.
+ */
+export type AddRepoDialogHostedController = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onProjectAdded?: (
+    path?: string,
+    kind?: AddRepoProjectAddedKind,
+    owner?: AddRepoProjectOwner
+  ) => void | Promise<void>;
+  /** Received before focus returns to the host (Radix contract). */
+  onCloseAutoFocus?: (event: Event) => void;
+};
+
 interface AddRepoDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+  /** Controlled mode (tests/legacy). Omitted in the app: the store modal owns it. */
+  isOpen?: boolean;
+  onClose?: () => void;
   /**
    * Orca `onGitRepoReady`: `path` names the added project (or folder workspace)
    * so the caller can select it instead of guessing from list order.
    */
-  onProjectAdded: (path?: string, kind?: AddRepoProjectAddedKind) => void;
+  onProjectAdded?: (
+    path?: string,
+    kind?: AddRepoProjectAddedKind,
+    owner?: AddRepoProjectOwner
+  ) => void | Promise<void>;
   /**
    * Orca `confirm-add-project-from-folder`: a folder dropped on the sidebar routes
    * here instead of being added silently, so the user still confirms the project.
    */
   initialFolderPath?: string | null;
+  hosted?: AddRepoDialogHostedController;
 }
 
 type NestedReviewContext = {
@@ -72,14 +115,47 @@ export function AddRepoDialog({
   isOpen,
   onClose,
   onProjectAdded,
-  initialFolderPath = null
+  initialFolderPath = null,
+  hosted
 }: AddRepoDialogProps) {
   const settings = useAppStore((state) => state.settings);
+  const storeActiveModal = useAppStore((state) => state.activeModal);
+  const storeModalData = useAppStore((state) => state.modalData);
+  const storeCloseModal = useAppStore((state) => state.closeModal);
+  // Why: Orca opens this dialog through `activeModal === 'add-repo'` and carries
+  // a dropped path in `modalData`; a passed `isOpen` keeps tests/controlled use.
+  const isOpenNow = hosted ? hosted.open : isOpen ?? storeActiveModal === "add-repo";
+  const droppedLocalPath =
+    hosted || isOpen !== undefined
+      ? initialFolderPath
+      : typeof storeModalData?.droppedLocalPath === "string"
+        ? storeModalData.droppedLocalPath
+        : initialFolderPath;
+  const closeModal = useCallback(() => {
+    if (hosted) {
+      hosted.onOpenChange(false);
+      hosted.onCloseAutoFocus?.(new Event("closeAutoFocus"));
+      return;
+    }
+    if (onClose) {
+      onClose();
+      return;
+    }
+    storeCloseModal();
+  }, [hosted, onClose, storeCloseModal]);
+  const notifyProjectAdded = useCallback(
+    (path?: string, kind?: AddRepoProjectAddedKind, owner?: AddRepoProjectOwner) => {
+      const target = hosted ? hosted.onProjectAdded : onProjectAdded;
+      // Arity is preserved: legacy callers/tests assert the two-argument call.
+      void (owner ? target?.(path, kind, owner) : target?.(path, kind));
+    },
+    [hosted, onProjectAdded]
+  );
   const repoCount = useAppStore((state) => state.repos.length);
   // Orca `useAddRepoLocalFolderFlow`: clone/create land in the configured workspace
   // directory, not a baked-in path. Empty until the settings hydrate.
   const workspaceDir = settings?.workspace_dir?.trim() ?? "";
-  const hostSelection = useAddRepoHostSelection({ isOpen });
+  const hostSelection = useAddRepoHostSelection({ isOpen: isOpenNow });
   const selectedHostKind = hostSelection.selectedParsedHost?.kind ?? null;
   const isLocalHost = selectedHostKind === "local";
   const isRemoteHost = !isLocalHost;
@@ -93,11 +169,25 @@ export function AddRepoDialog({
   const [busyLabel, setBusyLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [gitAvailability, setGitAvailability] = useState<GitAvailability>("unknown");
+  // D02a-017: an SSH host is probed on the host; the client's own `git` says
+  // nothing about the machine that will actually create the repository.
+  const [sshGitAvailability, setSshGitAvailability] = useState<GitAvailability>("unknown");
+  const sshCreateDefaultGenRef = useRef(0);
+  const sshGitProbeGenRef = useRef(0);
   // Why: monotonic id so stale async folders/clone/create results cannot close or
   // overwrite the dialog after Back/close/host switch. Orca's generation ref.
   const addGenRef = useRef(0);
-  // Id of the running local clone, so Cancel has the process handle `clone_abort` needs.
+  // Id of the running local clone, so Cancel and close/back-out have the
+  // process handle `clone_abort` needs (Orca `repos.cloneAbort`).
   const cloneIdRef = useRef<string | null>(null);
+  const abortActiveClone = useCallback(() => {
+    const cloneId = cloneIdRef.current;
+    cloneIdRef.current = null;
+    if (!cloneId) return;
+    void abortClone(cloneId).catch(() => {
+      // The clone promise owns the user-facing error surface; teardown is silent.
+    });
+  }, []);
   // Which host-path field the remote folder picker is filling.
   const [remotePicker, setRemotePicker] = useState<"clone" | "create" | null>(null);
 
@@ -127,6 +217,9 @@ export function AddRepoDialog({
   // Why a ref: reset must cancel the active scan without its identity feeding
   // every callback that depends on reset (which would retrigger the open effect).
   const activeNestedScanIdRef = useRef<string | null>(null);
+  // Telemetry identity for the scan/review pair; independent of the scan id so
+  // cancelling a scan cannot merge two attempts in the event stream.
+  const nestedAttemptIdRef = useRef<string | null>(null);
 
   const resetNestedReview = useCallback(() => {
     if (activeNestedScanIdRef.current) {
@@ -142,6 +235,7 @@ export function AddRepoDialog({
 
   const resetHostScopedState = useCallback(() => {
     addGenRef.current += 1;
+    abortActiveClone();
     setIsAdding(false);
     setBusyLabel(null);
     setError(null);
@@ -149,19 +243,20 @@ export function AddRepoDialog({
     setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
     setCloneError(null);
     setIsCloning(false);
-    cloneIdRef.current = null;
     setRemotePicker(null);
     setCreateName("");
     setCreateParent(isLocalHost ? workspaceDir : "");
     setCreateError(null);
     setIsCreating(false);
+    setSshGitAvailability("unknown");
     setDroppedFolderError(null);
     resetNestedReview();
     setStep("add");
-  }, [isLocalHost, resetNestedReview, workspaceDir]);
+  }, [abortActiveClone, isLocalHost, resetNestedReview, workspaceDir]);
 
   const resetOnClose = useCallback(() => {
     addGenRef.current += 1;
+    abortActiveClone();
     setStep("add");
     setError(null);
     setNonGitFolder(null);
@@ -171,10 +266,10 @@ export function AddRepoDialog({
     setIsAdding(false);
     setRemotePicker(null);
     resetNestedReview();
-  }, [resetNestedReview]);
+  }, [abortActiveClone, resetNestedReview]);
 
   useAddRepoHostChangeReset({
-    isOpen,
+    isOpen: isOpenNow,
     selectedHostId: hostSelection.selectedHostId,
     onResetClosed: resetOnClose,
     onResetHostScopedState: resetHostScopedState
@@ -186,13 +281,13 @@ export function AddRepoDialog({
   const cloneProgress = null as { phase: string; percent: number } | null;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpenNow) return;
     // Why reset: the dialog stays mounted between invocations, so a half-typed
     // clone URL or project name must not survive into the next open.
-    setStep(initialFolderPath ? "folder" : "add");
+    setStep(droppedLocalPath ? "folder" : "add");
     setError(null);
     setNonGitFolder(null);
-    setDroppedFolder(initialFolderPath);
+    setDroppedFolder(droppedLocalPath ?? null);
     setDroppedFolderError(null);
     setCloneUrl("");
     setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
@@ -204,7 +299,7 @@ export function AddRepoDialog({
     setCreateError(null);
     setIsCreating(false);
     resetNestedReview();
-    setStep(initialFolderPath ? "folder" : "add");
+    setStep(droppedLocalPath ? "folder" : "add");
 
     let cancelled = false;
     // Why probe on open: without git, clone and create cannot work — say so before
@@ -220,10 +315,43 @@ export function AddRepoDialog({
     return () => {
       cancelled = true;
     };
-  }, [initialFolderPath, isOpen, resetNestedReview]);
+  }, [droppedLocalPath, isOpenNow, resetNestedReview, workspaceDir]);
+
+  // D02a-017: default a new SSH project to `~/orca/projects` on that host. The
+  // listing resolves `~`; the literal remains the fallback when the box is slow.
+  useEffect(() => {
+    if (step !== "create" || !isSshHost || !sshTargetId) return;
+    if (createParent.trim()) return;
+    const gen = ++sshCreateDefaultGenRef.current;
+    void resolveSshCreateParentDefault(sshTargetId).then((parent) => {
+      if (gen !== sshCreateDefaultGenRef.current) return;
+      setCreateParent((current) => (current.trim() ? current : parent));
+    });
+  }, [createParent, isSshHost, sshTargetId, step]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (step !== "create" || !isSshHost || !sshTargetId) {
+      setSshGitAvailability("unknown");
+      return;
+    }
+    const gen = ++sshGitProbeGenRef.current;
+    setSshGitAvailability("checking");
+    void resolveSshGitAvailability(sshTargetId, createParent).then((availability) => {
+      if (gen === sshGitProbeGenRef.current) setSshGitAvailability(availability);
+    });
+  }, [createParent, isSshHost, sshTargetId, step]);
+
+  // A path dropped while the dialog is already open replaces the form instead
+  // of waiting for the next open (Orca reads `modalData.droppedLocalPath` live).
+  useEffect(() => {
+    if (!isOpenNow || !droppedLocalPath) return;
+    setDroppedFolder(droppedLocalPath);
+    setDroppedFolderError(null);
+    setStep("folder");
+  }, [droppedLocalPath, isOpenNow]);
+
+  useEffect(() => {
+    if (!isOpenNow) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") handleClose();
     };
@@ -234,7 +362,7 @@ export function AddRepoDialog({
   const handleClose = () => {
     addGenRef.current += 1;
     resetOnClose();
-    onClose();
+    closeModal();
   };
 
   const addFolder = async (path: string): Promise<void> => {
@@ -285,6 +413,7 @@ export function AddRepoDialog({
 
     setIsAdding(true);
     setError(null);
+    nestedAttemptIdRef.current = createNestedRepoTelemetryAttemptId();
     try {
       for (const path of paths) {
         if (gen !== addGenRef.current) return;
@@ -352,7 +481,7 @@ export function AddRepoDialog({
         firstAddedPath = path;
         firstAddedKind = isGit ? "project" : "folder";
         if (busyFolderMode === "single") {
-          onProjectAdded(path, firstAddedKind);
+          notifyProjectAdded(path, firstAddedKind);
           handleClose();
           return;
         }
@@ -365,7 +494,7 @@ export function AddRepoDialog({
         });
       }
       if (firstAddedPath) {
-        onProjectAdded(firstAddedPath, firstAddedKind ?? "project");
+        notifyProjectAdded(firstAddedPath, firstAddedKind ?? "project");
         handleClose();
       }
     } finally {
@@ -440,6 +569,20 @@ export function AddRepoDialog({
     }
   };
 
+  /** Catalog-side dedup: a create for a path already in the catalog must not
+   *  surface a raw "directory exists" error (Orca "Project already added"). */
+  const catalogContainsPath = (path: string, connectionId?: string | null) => {
+    const normalize = (value: string) => value.replace(/\\/g, "/").replace(/\/+$/, "");
+    const target = normalize(path);
+    return useAppStore
+      .getState()
+      .repos.some(
+        (repo) =>
+          normalize(repo.path) === target &&
+          (repo.connectionId ?? null) === (connectionId ?? null)
+      );
+  };
+
   const handleClone = async () => {
     const url = cloneUrl.trim();
     const destination = cloneDest.trim();
@@ -481,7 +624,17 @@ export function AddRepoDialog({
       }
       if (gen !== addGenRef.current) return;
       toast.success("Repository cloned");
-      onProjectAdded(path, "project");
+      notifyProjectAdded(
+        path,
+        "project",
+        isSshHost && sshTargetId
+          ? {
+              connectionId: sshTargetId,
+              executionHostId: toSshExecutionHostId(sshTargetId),
+              source: "clone_url",
+            }
+          : undefined
+      );
       handleClose();
     } catch (cloneFailure) {
       if (gen !== addGenRef.current) return;
@@ -520,6 +673,20 @@ export function AddRepoDialog({
       );
       return;
     }
+    const createOwner = isSshHost && sshTargetId
+      ? {
+          connectionId: sshTargetId,
+          executionHostId: toSshExecutionHostId(sshTargetId),
+          source: "create_project" as const,
+        }
+      : undefined;
+    const expectedPath = joinCreateProjectPath(parent, name);
+    if (catalogContainsPath(expectedPath, sshTargetId)) {
+      toast.info("Project already added", { description: name });
+      notifyProjectAdded(expectedPath, "project", createOwner);
+      handleClose();
+      return;
+    }
     const gen = ++addGenRef.current;
     setIsCreating(true);
     setCreateError(null);
@@ -549,7 +716,11 @@ export function AddRepoDialog({
         });
       }
       toast.success("Project created");
-      onProjectAdded(path, "project");
+      notifyProjectAdded(
+        path,
+        "project",
+        createOwner
+      );
       handleClose();
     } catch (createFailure) {
       if (gen !== addGenRef.current) return;
@@ -585,7 +756,7 @@ export function AddRepoDialog({
       }
       await addFolder(droppedFolder);
       if (gen !== addGenRef.current) return;
-      onProjectAdded(droppedFolder, "project");
+      notifyProjectAdded(droppedFolder, "project");
       handleClose();
     } catch (dropError) {
       if (gen === addGenRef.current) {
@@ -605,7 +776,7 @@ export function AddRepoDialog({
     try {
       await addFolder(folder);
       if (gen !== addGenRef.current) return;
-      onProjectAdded(folder, "folder");
+      notifyProjectAdded(folder, "folder");
       handleClose();
     } catch (folderError) {
       if (gen === addGenRef.current) {
@@ -661,7 +832,7 @@ export function AddRepoDialog({
         return;
       }
       toast.success(mode === "group" ? "Group imported" : "Repositories imported");
-      onProjectAdded(firstImported, "project");
+      notifyProjectAdded(firstImported, "project");
       handleClose();
     } catch (importError) {
       if (gen === addGenRef.current) {
@@ -677,17 +848,40 @@ export function AddRepoDialog({
 
   const handleOpenNestedRootFolder = async () => {
     if (!nestedScan) return;
+    const enteredName = nestedGroupName.trim();
+    // Why: only an edited name overrides host naming, so an untouched prefill
+    // still lets the host pick the folder's basename.
+    const displayName =
+      enteredName && enteredName !== defaultProjectGroupNameForPath(nestedScan.selectedPath)
+        ? enteredName
+        : undefined;
+    const attemptId = nestedAttemptIdRef.current;
+    if (attemptId) {
+      track(
+        "add_repo_nested_import_action",
+        buildNestedRepoImportActionTelemetry({
+          attemptId,
+          surface: "sidebar",
+          runtimeKind: "local",
+          action: "open_as_folder",
+          foundCount: nestedScan.repos.length,
+          selectedCount: nestedSelectedPaths.size
+        })
+      );
+    }
     const gen = ++addGenRef.current;
     setIsAdding(true);
     setBusyLabel("Opening project...");
     setError(null);
     try {
-      // Why: `catalog_add_folder` on a non-git folder is the catalog's
-      // open-as-folder path (group + folder workspace). It also imports direct
-      // child repositories, which the catalog does today for this path.
-      await addFolder(nestedScan.selectedPath);
+      // Orca `completeNestedFolderOpen`: the root becomes a folder workspace
+      // (synthetic manual group when it has none), not a repo row.
+      await addCatalogFolderWorkspace({
+        parentPath: nestedScan.selectedPath,
+        name: displayName ?? null
+      });
       if (gen !== addGenRef.current) return;
-      onProjectAdded(nestedScan.selectedPath, "folder");
+      notifyProjectAdded(nestedScan.selectedPath, "folder");
       handleClose();
     } catch (openError) {
       if (gen === addGenRef.current) {
@@ -729,7 +923,7 @@ export function AddRepoDialog({
     [hostSelection.hostOptions, hostSelection.selectedParsedHost, selectedHostKind]
   );
 
-  if (!isOpen) return null;
+  if (!isOpenNow) return null;
 
   return (
     <div
@@ -819,26 +1013,16 @@ export function AddRepoDialog({
         ) : null}
 
         {step === "clone" ? (
-          remotePicker === "clone" && isSshHost && sshTargetId ? (
-            <div className="p-5 space-y-3">
-              <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
-                Clone destination on {hostLabel ?? "this SSH host"}
-              </h2>
-              <RemoteFileBrowser
-                source={{ kind: "ssh", targetId: sshTargetId }}
-                initialPath={cloneDest.trim() || "~"}
-                onSelect={handleRemotePick}
-                onCancel={() => setRemotePicker(null)}
-              />
-            </div>
-          ) : (
-            <AddRepoCloneStep
+          <AddRepoCloneStep
               cloneUrl={cloneUrl}
               cloneDestination={cloneDest}
               cloneError={cloneError}
               cloneProgress={cloneProgress}
               isCloning={isCloning}
-              gitUnavailable={isLocalHost && gitAvailability === "unavailable"}
+              gitUnavailable={
+                (isLocalHost && gitAvailability === "unavailable") ||
+                (isSshHost && sshGitAvailability === "unavailable")
+              }
               destinationIsRemote={isRemoteHost}
               hostLabel={hostLabel}
               onUrlChange={(value) => {
@@ -853,30 +1037,18 @@ export function AddRepoDialog({
               onCancelClone={isLocalHost ? handleCancelClone : undefined}
               onClone={() => void handleClone()}
             />
-          )
         ) : null}
 
         {step === "create" ? (
-          remotePicker === "create" && isSshHost && sshTargetId ? (
-            <div className="p-5 space-y-3">
-              <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
-                Project parent on {hostLabel ?? "this SSH host"}
-              </h2>
-              <RemoteFileBrowser
-                source={{ kind: "ssh", targetId: sshTargetId }}
-                initialPath={createParent.trim() || "~"}
-                onSelect={handleRemotePick}
-                onCancel={() => setRemotePicker(null)}
-              />
-            </div>
-          ) : (
-            <AddRepoCreateStep
+          <AddRepoCreateStep
               createName={createName}
               createParent={createParent}
               createError={createError}
               isCreating={isCreating}
               defaultParent={isLocalHost ? workspaceDir : ""}
-              gitAvailability={isLocalHost ? gitAvailability : "unknown"}
+              gitAvailability={
+                isLocalHost ? gitAvailability : isSshHost ? sshGitAvailability : "unknown"
+              }
               manualParentEntry={isRemoteHost}
               isRemoteHost={isRemoteHost}
               hostLabel={hostLabel}
@@ -898,7 +1070,6 @@ export function AddRepoDialog({
               }}
               onCreate={() => void handleCreate()}
             />
-          )
         ) : null}
 
         {step === "nested" && nestedScan ? (
@@ -941,6 +1112,37 @@ export function AddRepoDialog({
           </div>
         ) : null}
       </div>
+
+      {remotePicker && isSshHost && sshTargetId ? (
+        <div
+          className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/75 p-6"
+          onClick={() => setRemotePicker(null)}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="flex max-h-[calc(100vh-3rem)] w-[min(900px,calc(100vw-3rem))] flex-col gap-3 overflow-auto rounded-xl border border-[#2a2b30] bg-[#141518] p-5 text-xs text-neutral-200 shadow-2xl"
+          >
+            <div>
+              <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
+                {remotePicker === "clone"
+                  ? `Clone destination on ${hostLabel ?? "this SSH host"}`
+                  : `Project parent on ${hostLabel ?? "this SSH host"}`}
+              </h2>
+              <p className="mt-1 text-[11px] text-neutral-400">
+                Navigate to a directory and choose Select to use it.
+              </p>
+            </div>
+            <RemoteFileBrowser
+              source={{ kind: "ssh", targetId: sshTargetId }}
+              initialPath={
+                (remotePicker === "clone" ? cloneDest : createParent).trim() || "~"
+              }
+              onSelect={handleRemotePick}
+              onCancel={() => setRemotePicker(null)}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <NonGitFolderDialog
         open={nonGitFolder != null}

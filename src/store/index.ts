@@ -10,7 +10,7 @@ import type { CreateWorktreeCallOptions } from './slices/worktrees/create/worktr
 import type { GitWorktreeInfo } from '../components/sidebar/types'
 import type { TabItem } from '../components/workbench/WorkbenchTabBar'
 import type { AgentStatusEntry } from '../shared/agent-status-types'
-import type { ProjectHostSetupProjection } from '../shared/project-host-setup-projection'
+import type { ProjectHostSetup } from '../shared/project-types'
 import type { ProviderRateLimits } from '../shared/rate-limit-types'
 import type { HydraSettings } from '../shared/settings-types'
 import type { WorktreeVisibilityDefaultsByHost } from './worktree-visibility-defaults-by-host'
@@ -74,8 +74,19 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   mruTabIds: string[]
   /** Repo list — populated from Hydra's projects list via App.tsx */
   repos: Repo[]
-  projects: unknown[]
-  projectHostSetups: Record<string, ProjectHostSetupProjection[]>
+  projects: readonly unknown[]
+  projectHostSetups: readonly ProjectHostSetup[]
+  // The UI slice (spread at runtime) owns the singleton modal slot and the
+  // sidebar preference writers this app calls directly.
+  activeModal: any
+  modalData: Record<string, any>
+  openModal: (modal: any, data?: Record<string, any>) => void
+  closeModal: () => void
+  setHideDefaultBranchWorkspace: (value: boolean) => void
+  setAlwaysShowDefaultBranchWorkspace: (value: boolean) => void
+  setShowActiveOnly: (value: boolean) => void
+  setFilterRepoIds: (ids: any) => void
+  showActiveOnly: boolean
   /** Active repo id */
   activeRepoId: string | null
   /** All worktrees grouped by owning repo id */
@@ -448,7 +459,7 @@ export const useAppStore = create<AppState>()(
     worktreesByRepo: {},
     worktreesById: new Map(),
     projects: [],
-    projectHostSetups: {},
+    projectHostSetups: [],
     agentStatusByPaneKey: {},
     compactRootListExpandedByWorktree: {},
     collapsedLineageParentsByWorktree: {},

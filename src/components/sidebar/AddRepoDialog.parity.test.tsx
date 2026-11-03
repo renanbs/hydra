@@ -334,7 +334,15 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
       })
     );
     await waitFor(() =>
-      expect(onProjectAdded).toHaveBeenCalledWith("/srv/code/widgets", "project")
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/code/widgets",
+        "project",
+        expect.objectContaining({
+          connectionId: "srv",
+          executionHostId: "ssh:srv",
+          source: "clone_url"
+        })
+      )
     );
   });
 
@@ -392,6 +400,9 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
     fireEvent.change(screen.getByLabelText("Host parent folder"), {
       target: { value: "/srv/projects" }
     });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Create Project" })).toBeEnabled()
+    );
     fireEvent.click(screen.getByRole("button", { name: "Create Project" }));
 
     await waitFor(() =>
@@ -409,7 +420,11 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
       )
     );
     await waitFor(() =>
-      expect(onProjectAdded).toHaveBeenCalledWith("/srv/projects/demo", "project")
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/projects/demo",
+        "project",
+        expect.objectContaining({ connectionId: "srv", source: "create_project" })
+      )
     );
   });
 

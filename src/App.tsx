@@ -41,7 +41,11 @@ import {
   reconcileWorktreeFlagSet,
   type ProjectFlagTarget,
 } from "./components/sidebar/worktree-flags";
-import { AddRepoDialog } from "./components/sidebar/AddRepoDialog";
+import {
+  AddRepoDialog,
+  type AddRepoProjectAddedKind,
+  type AddRepoProjectOwner,
+} from "./components/sidebar/AddRepoDialog";
 import { WorkbenchTabBar, type TabItem, type SplitPane, RUNNING_CLOSE_PROBE_TIMEOUT_MS, SHELL_EXECUTABLES, TAB_COLORS } from "./components/workbench/WorkbenchTabBar";
 import {
   RunningTerminalCloseDialog,
@@ -128,6 +132,21 @@ import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDele
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
 import { useDeleteWorktreeStatusHydration } from "./components/sidebar/use-delete-worktree-status-hydration";
 import { installOrcaApiShim } from "./lib/orca-api-shim";
+import { addCatalogFolderWorkspace } from "./lib/catalog-client";
+import type { FolderWorkspace } from "./shared/folder-workspace-types";
+import type { FolderWorkspaceCreateInput } from "./components/sidebar/folder-workspace-composer-submit";
+import { ProjectAddedDialog, type ProjectAddedRepo } from "./components/sidebar/ProjectAddedDialog";
+import {
+  applyCatalogToStore,
+  upsertAddedRepoWithProjectHostSetup,
+} from "./components/sidebar/add-repo-store-upsert";
+import { catalogRepoToRepo } from "./lib/catalog-store-projection";
+import {
+  finishProjectAddWithDefaultCheckout,
+  type DetectedRepoWorktrees,
+  type ProjectAddedHandoffDeps,
+} from "./components/sidebar/project-added-default-checkout";
+import { finalizeImportedRepoAfterSkip } from "./components/sidebar/add-repo-skip-finalization";
 import { selectDeletableWorktrees } from "./components/sidebar/worktree-delete-selection";
 import type { WorktreeDeleteIdentity } from "./components/sidebar/worktree-delete-request";
 import { describeWorktreeDeleteFailure } from "./components/sidebar/worktree-delete-failure";
@@ -559,10 +578,17 @@ export default function App() {
   const [status, setStatus] = useState("Initializing...");
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
-  // D03b-009: a folder dropped on the sidebar routes into the Add Project wizard, which
-  // confirms the path before the catalog write (Orca `confirm-add-project-from-folder`).
-  const [droppedAddRepoFolder, setDroppedAddRepoFolder] = useState<string | null>(null);
+  // D02a-001: the Add Project dialog is opened through the store's singleton
+  // modal slot (`activeModal === 'add-repo'`), carrying a dropped path in
+  // `modalData` like Orca. A boolean prop could not be driven by onboarding.
+  const activeModal = useAppStore((s) => s.activeModal);
+  const openModal = useAppStore((s) => s.openModal);
+  const closeModal = useAppStore((s) => s.closeModal);
+  const isAddRepoOpen = activeModal === "add-repo";
+  const openAddRepoDialog = useCallback(
+    (data: Record<string, unknown> = {}) => openModal("add-repo", data),
+    [openModal]
+  );
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
   // D03b-021/022: background creates live in the renderer store (Orca parity), so the
   // sidebar row and the content panel read the same entry the composer published.
@@ -1881,6 +1907,7 @@ export default function App() {
         setProjects(sorted);
         applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
+        applyCatalogToStore(envelope);
         if (sorted.length > 0) {
           setActiveProject(sorted[0]);
           setActiveWorktreePath(sorted[0].path);
@@ -1900,6 +1927,7 @@ export default function App() {
         setProjects(sorted);
         applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
+        applyCatalogToStore(envelope);
         return refreshAllWorktrees(sorted);
       }).catch(() => false);
     };
@@ -1913,8 +1941,7 @@ export default function App() {
     const handleAddProjectFromFolder = (event: Event) => {
       const path = (event as CustomEvent<{ path?: string }>).detail?.path;
       if (!path) return;
-      setDroppedAddRepoFolder(path);
-      setIsAddRepoOpen(true);
+      openAddRepoDialog({ droppedLocalPath: path });
     };
     window.addEventListener("hydra:add-project-from-folder", handleAddProjectFromFolder);
     // The sidebar's icon picker echoes the chosen glyph before the catalog write
@@ -2497,6 +2524,7 @@ export default function App() {
           setProjects(model.projects);
           applyCatalogProjectGroups(model);
           setFolderWorkspaces(model.folderWorkspaces);
+          applyCatalogToStore(envelope);
           if (activeProject?.path === proj.path) {
             if (model.projects.length > 0) {
               handleSelectProject(model.projects[0]);
@@ -3397,7 +3425,8 @@ export default function App() {
     branchName: string,
     agentName: string,
     executable: string,
-    repoPath?: string
+    repoPath?: string,
+    launchArgs?: string[]
   ) => {
     // The lane's create path persisted the status through `set_worktree_status`; refresh
     // re-reads it from the host so the new worktree paints in the lane it was created from.
@@ -3433,7 +3462,18 @@ export default function App() {
     }).catch(console.error);
 
     const tabId = `tab_${id}`;
-    setTabs((prev) => [...prev, { id: tabId, title: `${branchName} (fleet)`, type: "terminal", sessionId: id, executable, cwd: worktreePath }]);
+    setTabs((prev) => [
+      ...prev,
+      {
+        id: tabId,
+        title: `${branchName} (fleet)`,
+        type: "terminal",
+        sessionId: id,
+        executable,
+        ...(launchArgs ? { args: launchArgs } : {}),
+        cwd: worktreePath,
+      },
+    ]);
     setActiveTabId(tabId);
     if (repoPath) suggestLocalBaseRefRefresh(repoPath);
   };
@@ -3608,6 +3648,369 @@ export default function App() {
       ensureWorkspaceTerminal(folderPath);
     },
     [ensureWorkspaceTerminal]
+  );
+
+  // ─── D02a: add-project handoff ────────────────────────────────────────────
+  //
+  // App owns the catalog model and the scanned worktrees, while the store owns
+  // the host-scoped repo slices. These refs let one callback read the latest
+  // value after an await without re-creating every consumer.
+  const worktreesByProjectRef = useRef(worktreesByProject);
+  worktreesByProjectRef.current = worktreesByProject;
+  const hiddenWorktreesByProjectRef = useRef(hiddenWorktreesByProject);
+  hiddenWorktreesByProjectRef.current = hiddenWorktreesByProject;
+  const storeReposRef = useRef(storeRepos);
+  storeReposRef.current = storeRepos;
+  /** Scans performed by this handoff win over the render-lagged local state. */
+  const handoffScansRef = useRef(new Map<string, DetectedRepoWorktrees>());
+
+  const applyCatalogEnvelope = useCallback(
+    (envelope: CatalogEnvelope) => {
+      const model = catalogToSidebarModel(envelope);
+      setProjects(model.projects);
+      applyCatalogProjectGroups(model);
+      setFolderWorkspaces(model.folderWorkspaces);
+      // D02a-032: host removal and repo filters read the store slices, so the
+      // catalog read must refresh them in the same pass as the sidebar model.
+      applyCatalogToStore(envelope);
+      return model;
+    },
+    [applyCatalogProjectGroups]
+  );
+
+  const scanRepoWorktrees = useCallback(
+    async (repoPath: string): Promise<DetectedRepoWorktrees> => {
+      try {
+        const scan = await invoke<{
+          visible: GitWorktreeInfo[];
+          hidden: GitWorktreeInfo[];
+          isSuppressed: boolean;
+        }>("scan_worktrees", { repoPath });
+        const detected: DetectedRepoWorktrees = {
+          visible: scan.visible,
+          hidden: scan.hidden,
+          authoritative: true,
+        };
+        handoffScansRef.current.set(repoPath, detected);
+        setWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.visible }));
+        setHiddenWorktreesByProject((prev) => ({ ...prev, [repoPath]: scan.hidden }));
+        return detected;
+      } catch {
+        const legacy = await invoke<GitWorktreeInfo[]>("list_worktrees", {
+          repoPath,
+        }).catch(() => [] as GitWorktreeInfo[]);
+        const fallback: DetectedRepoWorktrees = {
+          visible: legacy,
+          hidden: [],
+          authoritative: false,
+        };
+        handoffScansRef.current.set(repoPath, fallback);
+        setWorktreesByProject((prev) => ({ ...prev, [repoPath]: legacy }));
+        setHiddenWorktreesByProject((prev) => ({ ...prev, [repoPath]: [] }));
+        return fallback;
+      }
+    },
+    []
+  );
+
+  const getRepoForHandoff = useCallback((repoId: string): ProjectAddedRepo | null => {
+    const repo = storeReposRef.current.find((candidate) => candidate.id === repoId);
+    if (repo) {
+      return {
+        id: repo.id,
+        path: repo.path,
+        kind: repo.kind === "folder" ? "folder" : "git",
+        connectionId: repo.connectionId ?? null,
+        executionHostId: repo.executionHostId ?? null,
+      };
+    }
+    const project = projectsRef.current.find((candidate) => candidate.id === repoId);
+    if (!project) {
+      return null;
+    }
+    return {
+      id: project.id,
+      path: project.path,
+      kind: project.is_git ? "git" : "folder",
+      connectionId: project.connectionId ?? null,
+      executionHostId: project.executionHostId ?? null,
+    };
+  }, []);
+
+  const projectAddedHandoffDeps = useCallback(
+    (repo: ProjectAddedRepo): ProjectAddedHandoffDeps => ({
+      getWorktrees: (repoId) => {
+        const target = getRepoForHandoff(repoId) ?? repo;
+        const cached = handoffScansRef.current.get(target.path);
+        if (cached) {
+          return cached;
+        }
+        const visible = worktreesByProjectRef.current[target.path];
+        if (!visible) {
+          return null;
+        }
+        return {
+          visible,
+          hidden: hiddenWorktreesByProjectRef.current[target.path] ?? [],
+          authoritative: true,
+        };
+      },
+      refreshWorktrees: async (_repoId, options) => {
+        // Why host-gated: Hydra has no remote worktree scan IPC, so a remote
+        // handoff falls through to the skip finalization instead of reporting
+        // this machine's checkouts for another host.
+        if (options.executionHostId && options.executionHostId !== "local") {
+          return null;
+        }
+        return scanRepoWorktrees(repo.path);
+      },
+      setExternalWorktreeVisibility: async (_repoId, visibility) => {
+        if (repo.connectionId) {
+          return false;
+        }
+        try {
+          const envelope = await invoke<CatalogEnvelope>("catalog_get");
+          const normalize = (value: string) => value.replace(/\\/g, "/").replace(/\/+$/, "");
+          const row = envelope.repos.find(
+            (candidate) => normalize(candidate.path) === normalize(repo.path)
+          );
+          if (!row) {
+            return false;
+          }
+          // FULL REPLACE: every field is sent, or the catalog clears the ones
+          // the handoff is not touching.
+          const updated = await invoke<CatalogEnvelope>(
+            "catalog_set_worktree_visibility_sources",
+            {
+              repoPath: row.path,
+              customSources: row.customWorktreeVisibilitySources ?? null,
+              sourcePreferences: row.worktreeVisibilitySourcePreferences ?? null,
+              externalWorktreeVisibilityLegacy: row.externalWorktreeVisibilityLegacy ?? null,
+              externalWorktreeVisibility: visibility,
+              agentWorktreeVisibility: row.agentWorktreeVisibility ?? null,
+              externalWorktreeDiscoverySuppressedAt:
+                row.externalWorktreeDiscoverySuppressedAt ?? null,
+              inboxBaselinePaths: row.externalWorktreeInboxBaselinePaths ?? null,
+              inboxPromptDismissedAt:
+                row.externalWorktreeVisibilityPromptDismissedAt ?? null,
+            }
+          );
+          applyCatalogEnvelope(updated);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      setHideDefaultBranchWorkspace: (value) =>
+        useAppStore.getState().setHideDefaultBranchWorkspace(value),
+      openDefaultCheckout: ({ repoId, worktree, initialCwd }) => {
+        const target = getRepoForHandoff(repoId) ?? repo;
+        const project = projectsRef.current.find((candidate) => candidate.path === target.path);
+        if (project) {
+          handleSelectProject(project);
+        }
+        setActiveWorktreePath(initialCwd ?? worktree.path);
+        prevProjectPathRef.current = initialCwd ?? worktree.path;
+        window.dispatchEvent(
+          new CustomEvent(SIDEBAR_REVEAL_REQUEST_EVENT, {
+            detail: { path: initialCwd ?? worktree.path },
+          })
+        );
+        // Why local-only: a remote checkout has no local cwd for a PTY.
+        if (!target.connectionId && !target.executionHostId) {
+          ensureWorkspaceTerminal(worktree.path);
+        }
+      },
+      finalizeImportedRepoAfterSkip: (repoId) => {
+        const target = getRepoForHandoff(repoId) ?? repo;
+        const project = projectsRef.current.find((candidate) => candidate.path === target.path);
+        if (project) {
+          handleSelectProject(project);
+        }
+        // D02a-030: reveal the imported repo through the project-filter state
+        // instead of leaving it hidden behind "active only"/default-branch flags.
+        finalizeImportedRepoAfterSkip(useAppStore.getState(), repoId);
+        window.dispatchEvent(
+          new CustomEvent(SIDEBAR_REVEAL_REQUEST_EVENT, { detail: { path: target.path } })
+        );
+      },
+    }),
+    [
+      applyCatalogEnvelope,
+      ensureWorkspaceTerminal,
+      getRepoForHandoff,
+      handleSelectProject,
+      scanRepoWorktrees,
+    ]
+  );
+
+  /** Orca `onGitRepoReady`: refresh the catalog, project the store slices, then
+   *  land on the new project's default checkout (or its folder workspace). */
+  const handleProjectAdded = useCallback(
+    async (
+      addedPath?: string,
+      kind?: AddRepoProjectAddedKind,
+      owner?: AddRepoProjectOwner
+    ): Promise<void> => {
+      let envelope: CatalogEnvelope;
+      try {
+        envelope = await invoke<CatalogEnvelope>("catalog_get");
+      } catch (error) {
+        console.error("Failed to refresh the catalog after adding a project:", error);
+        return;
+      }
+      const model = applyCatalogEnvelope(envelope);
+      if (!addedPath) {
+        return;
+      }
+      const normalize = (value: string) => value.replace(/\\/g, "/").replace(/\/+$/, "");
+      const row = envelope.repos.find(
+        (candidate) =>
+          normalize(candidate.path) === normalize(addedPath) &&
+          (candidate.connectionId ?? null) === (owner?.connectionId ?? null)
+      );
+      if (row) {
+        const runtimeEnvironmentId =
+          owner?.executionHostId?.startsWith("runtime:")
+            ? owner.executionHostId.slice("runtime:".length)
+            : undefined;
+        upsertAddedRepoWithProjectHostSetup(catalogRepoToRepo(row), {
+          sshConnectionId: owner?.connectionId ?? null,
+          ...(runtimeEnvironmentId !== undefined ? { runtimeEnvironmentId } : {}),
+        });
+      }
+
+      if (kind === "folder") {
+        if (isNewWorkspaceOpen) {
+          closeNewWorkspaceComposer();
+        }
+        handleActivateFolderWorkspace(addedPath);
+        return;
+      }
+
+      const project =
+        model.projects.find((candidate) => candidate.path === addedPath) ??
+        model.projects.find((candidate) => candidate.id === row?.id) ??
+        null;
+      if (!project) {
+        return;
+      }
+      const handoffRepo = getRepoForHandoff(project.id);
+      if (!handoffRepo) {
+        return;
+      }
+      const executionHostId =
+        (owner?.executionHostId as ExecutionHostId | undefined) ??
+        (project.executionHostId as ExecutionHostId | undefined) ??
+        undefined;
+      await finishProjectAddWithDefaultCheckout({
+        repoId: project.id,
+        source: owner?.source ?? "local_folder_picker",
+        executionHostId,
+        closeModal: () => closeModal(),
+        deps: projectAddedHandoffDeps(handoffRepo),
+      });
+    },
+    [
+      applyCatalogEnvelope,
+      closeModal,
+      closeNewWorkspaceComposer,
+      getRepoForHandoff,
+      handleActivateFolderWorkspace,
+      isNewWorkspaceOpen,
+      projectAddedHandoffDeps,
+    ]
+  );
+
+  /** D02a-027: the compatibility modal re-reads the catalog, so an onboarding
+   *  build that opened it before the add landed still finds its repo. */
+  const hydrateAddedRepoCatalog = useCallback(async (): Promise<void> => {
+    const envelope = await invoke<CatalogEnvelope>("catalog_get");
+    applyCatalogEnvelope(envelope);
+  }, [applyCatalogEnvelope]);
+
+  const revealAddedFolderWorkspace = useCallback(
+    async (repo: ProjectAddedRepo): Promise<void> => {
+      const envelope = await invoke<CatalogEnvelope>("catalog_get");
+      applyCatalogEnvelope(envelope);
+      handleActivateFolderWorkspace(repo.path);
+    },
+    [applyCatalogEnvelope, handleActivateFolderWorkspace]
+  );
+
+  /** D02a-034: the composer writes the folder workspace through the catalog
+   *  (the catalog is the authority) and returns the persisted row. */
+  const createFolderWorkspaceFromComposer = useCallback(
+    async (input: FolderWorkspaceCreateInput): Promise<FolderWorkspace | null> => {
+      if (!input.folderPath) {
+        return null;
+      }
+      const envelope = await addCatalogFolderWorkspace({
+        parentPath: input.folderPath,
+        projectGroupId: input.projectGroupId,
+        name: input.name,
+        connectionId: input.connectionId ?? null,
+      });
+      applyCatalogEnvelope(envelope);
+      const normalize = (value: string) => value.replace(/\\/g, "/").replace(/\/+$/, "");
+      const row = envelope.folderWorkspaces.find(
+        (candidate) =>
+          candidate.projectGroupId === input.projectGroupId &&
+          normalize(candidate.folderPath) === normalize(input.folderPath ?? "")
+      );
+      if (!row) {
+        return null;
+      }
+      return {
+        id: row.id,
+        projectGroupId: row.projectGroupId,
+        name: row.name,
+        folderPath: row.folderPath,
+        connectionId: row.connectionId ?? null,
+        executionHostId: (row.executionHostId as FolderWorkspace["executionHostId"]) ?? null,
+        linkedTask: input.linkedTask ?? null,
+        comment: "",
+        isArchived: false,
+        isUnread: false,
+        isPinned: false,
+        sortOrder: row.sortOrder,
+        lastActivityAt: row.createdAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        ...(input.createdWithAgent ? { createdWithAgent: input.createdWithAgent } : {}),
+        ...(input.pendingFirstAgentMessageRename
+          ? { pendingFirstAgentMessageRename: true }
+          : {}),
+      };
+    },
+    [applyCatalogEnvelope]
+  );
+
+  const handleFolderWorkspaceCreated = useCallback(
+    (
+      result: Parameters<NonNullable<React.ComponentProps<typeof NewWorkspaceComposer>["onFolderWorkspaceCreated"]>>[0]
+    ): void => {
+      const workspace = result.workspace;
+      closeNewWorkspaceComposer();
+      handleActivateFolderWorkspace(workspace.folderPath);
+      // D02a-035: launch the planned agent through the terminal transport. The
+      // plan already quotes the prompt practically for the target platform.
+      if (
+        result.startupPlan &&
+        !workspace.connectionId &&
+        !workspace.executionHostId
+      ) {
+        handleCreatedWorkspace(
+          workspace.folderPath,
+          workspace.name,
+          result.startupPlan.agent,
+          "bash",
+          undefined,
+          ["-lc", result.startupPlan.launchCommand]
+        );
+      }
+    },
+    [closeNewWorkspaceComposer, handleActivateFolderWorkspace, handleCreatedWorkspace]
   );
 
   /** D03a-100: visible sidebar rows request a PR refresh; the host `pr_status`
@@ -4256,7 +4659,7 @@ export default function App() {
         }
         if (isAddRepoOpen) {
           e.preventDefault();
-          setIsAddRepoOpen(false);
+          closeModal();
           return;
         }
         if (isPairingOpen) {
@@ -6015,7 +6418,7 @@ export default function App() {
                   setSettingsTargetSectionId(GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID);
                   setIsSettingsOpen(true);
                 }}
-                onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
+                onOpenAddRepoDialog={() => openAddRepoDialog()}
                 onOpenNewWorkspaceModal={(proj) => {
                   if (proj) handleSelectProject(proj);
                   setIsNewWorkspaceOpen(true);
@@ -6219,10 +6622,10 @@ export default function App() {
           ) : (
             <Landing
               hasProjects={projects.length > 0}
-              onAddProject={() => setIsAddRepoOpen(true)}
+              onAddProject={() => openAddRepoDialog()}
               onCreateWorktree={() => {
                 if (projects.length === 0) {
-                  setIsAddRepoOpen(true);
+                  openAddRepoDialog();
                   return;
                 }
                 const targetProj = activeProject || projects[0];
@@ -6477,51 +6880,39 @@ export default function App() {
 
       {/* Orca 100% Add Project Dialog (Clone / Create / Browse Folder) */}
       <AddRepoDialog
-        isOpen={isAddRepoOpen}
-        initialFolderPath={droppedAddRepoFolder}
-        onClose={() => {
-          setIsAddRepoOpen(false);
-          setDroppedAddRepoFolder(null);
-        }}
-        onProjectAdded={(addedPath, addedKind) => {
-          invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
-            const model = catalogToSidebarModel(envelope);
-            setProjects(model.projects);
-            applyCatalogProjectGroups(model);
-            setFolderWorkspaces(model.folderWorkspaces);
-            // D02a-028: select the project that was actually added (its main
-            // checkout path) instead of list order; folder/group adds activate the
-            // folder workspace the catalog created for that path.
-            if (addedPath && addedKind === "folder") {
-              if (isNewWorkspaceOpen) {
-                closeNewWorkspaceComposer();
+        // D02a-001: the store owns open/modalData; the composer hosts the
+        // nested dialog and redirects close-autofocus to its name field.
+        hosted={
+          isNewWorkspaceOpen
+            ? {
+                open: isAddRepoOpen,
+                onOpenChange: (open) => {
+                  if (open) {
+                    openAddRepoDialog();
+                  } else {
+                    closeModal();
+                  }
+                },
+                onProjectAdded: handleProjectAdded,
+                onCloseAutoFocus: () => {
+                  const input = document.getElementById("new-workspace-name");
+                  if (input instanceof HTMLInputElement) {
+                    input.focus();
+                    input.select();
+                  }
+                },
               }
-              handleActivateFolderWorkspace(addedPath);
-              return;
-            }
-            const addedProject = addedPath
-              ? model.projects.find((project) => project.path === addedPath)
-              : undefined;
-            if (addedProject || model.projects.length > 0) {
-              const selected = addedProject ?? model.projects[0];
-              handleSelectProject(selected);
-              // Why host-gated: a checkout on an SSH host has no local directory, so
-              // seeding a PTY with its path would spawn a shell in a missing cwd.
-              const isLocalCheckout = !selected.connectionId && !selected.executionHostId;
-              if (tabsRef.current.length === 0 && isLocalCheckout) {
-                const tabId = `tab_${Date.now().toString().slice(-4)}`;
-                const initialTab: TabItem = {
-                  id: tabId,
-                  title: `${selected.name} (main)`,
-                  type: "terminal",
-                  cwd: selected.path,
-                };
-                setTabs([initialTab]);
-                setActiveTabId(tabId);
-              }
-            }
-          }).catch(console.error);
-        }}
+            : undefined
+        }
+        onProjectAdded={handleProjectAdded}
+      />
+
+      {/* D02a-027: legacy onboarding handoff; accepts repoId or projectId. */}
+      <ProjectAddedDialog
+        hydrateRepos={hydrateAddedRepoCatalog}
+        findRepo={getRepoForHandoff}
+        revealFolderWorkspace={revealAddedFolderWorkspace}
+        handoffDeps={projectAddedHandoffDeps}
       />
 
       {/* Orca 100% New Workspace Composer Modal */}
@@ -6536,10 +6927,15 @@ export default function App() {
           hydraSettings.refresh_local_base_ref_on_worktree_create === true
         }
         onSelectProject={handleSelectProject}
-        onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
+        onOpenAddRepoDialog={() => openAddRepoDialog()}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={closeNewWorkspaceComposer}
         onCreated={handleCreatedWorkspace}
+        folderProjectGroupId={
+          activeProject ? projectGroupMap[activeProject.id] ?? null : null
+        }
+        onCreateFolderWorkspace={createFolderWorkspaceFromComposer}
+        onFolderWorkspaceCreated={handleFolderWorkspaceCreated}
       />
 
       {/* Mobile Companion Pairing Modal */}
