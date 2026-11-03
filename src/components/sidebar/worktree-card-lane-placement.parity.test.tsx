@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render } from "@testing-library/react";
 import { WorktreeCard } from "./WorktreeCard";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const project = {
   id: "repo_1",
@@ -28,7 +29,9 @@ const worktree = {
 describe("worktree card status lane placement (Orca parity)", () => {
   it("renders the lane inside the parent content, not inside the header", () => {
     const { container } = render(
+      <TooltipProvider>
       <WorktreeCard worktree={worktree} project={project} repo={project} status="active" branch="main" />
+      </TooltipProvider>
     );
 
     const lane = container.querySelector("[data-worktree-card-status-slot]");
@@ -60,6 +63,7 @@ describe("worktree card status lane placement (Orca parity)", () => {
       },
     ];
     const { container } = render(
+      <TooltipProvider>
       <WorktreeCard
         worktree={worktree}
         project={project}
@@ -69,6 +73,7 @@ describe("worktree card status lane placement (Orca parity)", () => {
         sessions={sessions as never}
         onSelectSession={() => {}}
       />
+      </TooltipProvider>
     );
 
     // Orca renders WorktreeCardAgents as a direct child of the content column and only

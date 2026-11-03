@@ -8,10 +8,11 @@ import { WorktreeCardDetailsHover } from './WorktreeCardDetailsHover'
 import { WorktreeCardAgents } from './WorktreeCardAgents'
 import { WorktreeCardStatusLane } from './WorktreeCardStatusLane'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
-import type { WorktreeCardController } from './use-worktree-card-controller'
+import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
+import { WorktreeCardSecondaryRows } from './worktree-card-secondary-rows'
 
 export interface WorktreeCardParentContentProps {
-  card: WorktreeCardController
+  card: WorktreeCardWithExtras
   presentation: WorktreeCardPresentation
 }
 
@@ -40,7 +41,17 @@ export function WorktreeCardParentContent({
     status,
     prDisplay,
     branch,
-    showInlineAgentList
+    showInlineAgentList,
+    isDeleting = false,
+    issueDisplay,
+    linearIssueDisplay,
+    jiraIssueDisplay,
+    handleEditIssue,
+    handleEditComment,
+    handleOpenIssueInBrowser,
+    handleOpenReviewInBrowser,
+    handleUnlinkReview,
+    handleRenameTitle
   } = card
   const { titleOnlyCard, parentContentMarginLeft, showCombinedStatusSlot } = presentation
 
@@ -56,7 +67,9 @@ export function WorktreeCardParentContent({
 
   const activeProject = repo || project
 
-  // Why: status glyphs and agent rows own their tooltips; only identity content should open the larger details card.
+  // Why: status glyphs and agent rows own their tooltips; only identity content
+  // should open the larger details card. Mutating actions are withheld in
+  // affiliate list mode (the board), which does not own metadata writes.
   const identityContentWithHover =
     presentation.hasHoverDetails && !titleRenaming && activeProject ? (
       <WorktreeCardDetailsHover
@@ -65,7 +78,17 @@ export function WorktreeCardParentContent({
         ports={workspacePorts}
         review={review}
         metadata={metadata}
-        onEditMetadata={onEditMetadata}
+        issue={issueDisplay}
+        linearIssue={linearIssueDisplay}
+        jiraIssue={jiraIssueDisplay}
+        onEditMetadata={affiliateListMode ? undefined : onEditMetadata}
+        onEditIssue={affiliateListMode ? undefined : handleEditIssue}
+        onEditComment={affiliateListMode ? undefined : handleEditComment}
+        workspaceTitleRenameDisabled={affiliateListMode || isDeleting}
+        onRenameWorkspaceTitle={handleRenameTitle}
+        onOpenIssueInBrowser={handleOpenIssueInBrowser}
+        onOpenReviewInBrowser={handleOpenReviewInBrowser}
+        onUnlinkReview={affiliateListMode ? undefined : handleUnlinkReview}
         cliCreated={cliCreated}
       >
         {identityContent}
@@ -118,6 +141,10 @@ export function WorktreeCardParentContent({
         )}
       >
         {identityContentWithHover}
+
+        {/* Why: a remote-branch collision is a card-level warning, not metadata, so
+            it sits between the identity block and the agent list. */}
+        <WorktreeCardSecondaryRows card={card} />
 
         {onSelectSession && sessions && sessions.length > 0 && (
           // Orca parity (`worktree-card-secondary-rows.tsx:66-73`): the agents block is a

@@ -2,7 +2,13 @@
 // Source: components/sidebar/WorktreeTitleInlineRename.tsx
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LoaderCircle } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { translate } from '@/i18n/i18n'
+import { isImeCompositionKeyDown } from '../../lib/ime-composition-keyboard-event'
 import { cn } from '../../lib/utils'
+import { isSidebarLabelTruncated } from './truncated-sidebar-label'
 
 export type WorktreeTitleRenameCommit = { kind: 'cancel' } | { kind: 'save'; displayName: string }
 
@@ -51,22 +57,63 @@ export function WorktreeTitleInlineRename({
   onBeginEditingConsumed
 }: WorktreeTitleInlineRenameProps): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const titleRef = useRef<HTMLSpanElement | null>(null)
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
   const cancellingRef = useRef(false)
+  // Why refs alongside state: blur and Enter can both fire inside one commit, and
+  // an unmount during the save must not notify the card twice.
+  const mountedRef = useRef(true)
+  const editingRef = useRef(false)
+  const savingRef = useRef(false)
+  const notifiedRef = useRef(false)
   const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(displayName)
   const [saving, setSaving] = useState(false)
+  const [value, setValue] = useState(displayName)
+  const [truncated, setTruncated] = useState(false)
 
   useEffect(() => {
     setValue(displayName)
   }, [displayName])
 
   useEffect(() => {
-    if (beginEditing && !disabled && !editing) {
-      setEditing(true)
-      onEditingChange?.(true)
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  const notifyEditingChange = useCallback(
+    (next: boolean) => {
+      if (notifiedRef.current === next) {
+        return
+      }
+      notifiedRef.current = next
+      onEditingChange?.(next)
+    },
+    [onEditingChange]
+  )
+
+  const beginEditingNow = useCallback(() => {
+    if (editingRef.current) {
+      return
+    }
+    editingRef.current = true
+    setEditing(true)
+    notifyEditingChange(true)
+  }, [notifyEditingChange])
+
+  const finishEditing = useCallback(() => {
+    editingRef.current = false
+    setEditing(false)
+    notifyEditingChange(false)
+  }, [notifyEditingChange])
+
+  useEffect(() => {
+    if (beginEditing && !disabled && !editingRef.current) {
+      beginEditingNow()
       onBeginEditingConsumed?.()
     }
-  }, [beginEditing, disabled, editing, onEditingChange, onBeginEditingConsumed])
+  }, [beginEditing, disabled, beginEditingNow, onBeginEditingConsumed])
 
   useEffect(() => {
     if (editing) {
@@ -77,41 +124,92 @@ export function WorktreeTitleInlineRename({
     }
   }, [editing])
 
-  const commit = useCallback(
-    async (nextValue: string) => {
-      const trimmed = nextValue.trim()
-      if (!trimmed || trimmed === displayName) {
-        setEditing(false)
-        setValue(displayName)
-        onEditingChange?.(false)
+  // Why: ResizeObserver does not fire when only the text changes, so the span is
+  // remeasured whenever its content or emphasis class changes.
+  const measureTruncated = useCallback(() => {
+    const node = titleRef.current
+    const next = node ? isSidebarLabelTruncated(node) : false
+    setTruncated((current) => (current === next ? current : next))
+  }, [])
+
+  const handleTitleRef = useCallback(
+    (node: HTMLSpanElement | null) => {
+      resizeObserverRef.current?.disconnect()
+      resizeObserverRef.current = null
+      titleRef.current = node
+      if (!node) {
         return
       }
+      measureTruncated()
+      if (typeof ResizeObserver === 'undefined') {
+        return
+      }
+      const observer = new ResizeObserver(measureTruncated)
+      observer.observe(node)
+      resizeObserverRef.current = observer
+    },
+    [measureTruncated]
+  )
+
+  useEffect(() => {
+    return () => resizeObserverRef.current?.disconnect()
+  }, [])
+
+  const commit = useCallback(
+    async (nextValue: string) => {
+      if (savingRef.current) {
+        return
+      }
+      const outcome = getWorktreeTitleRenameCommit(displayName, nextValue)
+      if (outcome.kind === 'cancel') {
+        setValue(displayName)
+        finishEditing()
+        return
+      }
+      savingRef.current = true
       setSaving(true)
       try {
-        await onRename(trimmed)
-      } catch (err) {
-        console.error('Failed to rename worktree title:', err)
+        await onRename(outcome.displayName)
+        if (!mountedRef.current) {
+          return
+        }
+      } catch (error) {
+        // Why a toast: the console line was invisible in a release build, so a
+        // failed rename looked like a successful one that reverted on refresh.
+        toast.error(
+          translate('auto.components.sidebar.WorktreeTitleInlineRename.renameFailed', 'Rename failed'),
+          { description: error instanceof Error ? error.message : String(error) }
+        )
+        if (mountedRef.current) {
+          setValue(displayName)
+        }
       } finally {
-        setSaving(false)
-        setEditing(false)
-        onEditingChange?.(false)
+        savingRef.current = false
+        if (mountedRef.current) {
+          setSaving(false)
+          finishEditing()
+        }
       }
     },
-    [displayName, onEditingChange, onRename]
+    [displayName, finishEditing, onRename]
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Why: CJK IMEs fire Enter to confirm a conversion candidate; committing the
+    // half-converted value would rename the workspace to a partial glyph run.
+    if (isImeCompositionKeyDown(e)) {
+      return
+    }
     if (e.key === 'Enter') {
       e.preventDefault()
       e.stopPropagation()
-      commit(value)
+      void commit(value)
     } else if (e.key === 'Escape') {
       e.preventDefault()
       e.stopPropagation()
       cancellingRef.current = true
       setValue(displayName)
-      setEditing(false)
-      onEditingChange?.(false)
+      finishEditing()
     }
   }
 
@@ -120,15 +218,15 @@ export function WorktreeTitleInlineRename({
       cancellingRef.current = false
       return
     }
-    if (editing && !saving) {
-      commit(value)
+    if (editingRef.current && !savingRef.current) {
+      void commit(value)
     }
   }
 
   if (editing) {
     return (
       <div
-        className={cn('flex-1 min-w-0 flex items-center gap-1', editingClassName)}
+        className={cn('flex min-w-0 flex-1 items-center gap-1', editingClassName)}
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
@@ -142,41 +240,67 @@ export function WorktreeTitleInlineRename({
           onBlur={handleBlur}
           className={cn(
             editingPresentation === 'field'
-              ? 'h-6 rounded-sm border border-input bg-input/40 px-1.5 py-0 shadow-xs selection:bg-[Highlight] selection:text-[HighlightText] focus-visible:border-ring focus-visible:ring-[1px] focus-visible:ring-ring/50 dark:bg-input/30 text-[12px]'
-              : 'w-full bg-input/80 border border-worktree-sidebar-ring/60 rounded px-1.5 py-0.5 text-[12px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-worktree-sidebar-ring',
+              ? 'h-6 rounded-sm border border-input bg-input/40 px-1.5 py-0 text-[12px] shadow-xs selection:bg-[Highlight] selection:text-[HighlightText] focus-visible:border-ring focus-visible:ring-[1px] focus-visible:ring-ring/50 dark:bg-input/30'
+              : 'w-full rounded border border-worktree-sidebar-ring/60 bg-input/80 px-1.5 py-0.5 text-[12px] font-medium text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-worktree-sidebar-ring focus:outline-none',
             inputClassName
           )}
         />
-        {saving && <LoaderCircle className="size-3 animate-spin text-muted-foreground shrink-0" />}
+        {saving && <LoaderCircle className="size-3 shrink-0 animate-spin text-muted-foreground" />}
       </div>
     )
   }
 
   const titleNode = (
     <span
+      // Why the key: a fresh node re-runs the geometry measurement, so a title
+      // that grew past the row (or lost its unread weight) re-evaluates its tooltip.
+      key={`${displayName}:${showUnreadEmphasis ? 'unread' : 'read'}`}
+      ref={handleTitleRef}
+      tabIndex={0}
       onDoubleClick={(e) => {
         if (!disabled) {
           e.stopPropagation()
-          setEditing(true)
-          onEditingChange?.(true)
+          beginEditingNow()
         }
       }}
       className={cn(
-        wrapTitle ? 'break-words cursor-default select-none' : 'truncate cursor-default select-none',
+        wrapTitle ? 'cursor-default break-words select-none' : 'truncate cursor-default select-none',
         showUnreadEmphasis
           ? 'font-medium text-worktree-sidebar-foreground'
           : dimReadTitle
             ? 'font-normal text-worktree-sidebar-foreground/85'
             : 'font-normal text-worktree-sidebar-foreground',
+        'outline-none focus-visible:ring-1 focus-visible:ring-worktree-sidebar-ring',
         className
       )}
-      title={displayName}
     >
       {displayName}
+      {showUnreadEmphasis ? (
+        <span className="sr-only">
+          {translate('auto.components.sidebar.WorktreeCard.unread', ' (unread)')}
+        </span>
+      ) : null}
     </span>
   )
 
-  return titleWrapper ? titleWrapper(titleNode) : titleNode
+  // Why: the hover card is the richer affordance and the card suppresses this
+  // tooltip when it is mounted; showing both made two overlays fight.
+  if (titleWrapper || !truncated) {
+    return titleWrapper ? titleWrapper(titleNode) : titleNode
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{titleNode}</TooltipTrigger>
+      <TooltipContent
+        side="right"
+        sideOffset={8}
+        className="max-w-80 break-all whitespace-normal text-left"
+      >
+        {displayName}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export default WorktreeTitleInlineRename

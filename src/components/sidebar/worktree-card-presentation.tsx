@@ -2,14 +2,15 @@
 // Source: components/sidebar/worktree-card-presentation.tsx
 import React from 'react'
 import { canShowWorkspaceDeleteQuickAction } from './workspace-delete-quick-action'
-import type { WorktreeCardController } from './use-worktree-card-controller'
-import { WorktreeCardPortsTrigger } from './WorktreeCardPortsTrigger'
+import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
+import { WorktreeCardPortsTrigger } from './WorktreeCardPorts'
 import { WorktreeCardReviewBadge } from './WorktreeCardReviewBadge'
 import { getFlushWorktreeCardPaddingLeft } from './worktree-list/rows/indentation'
 import {
   WorktreeCardMetaBadges,
   hasWorktreeCardDetails
 } from './worktree-card-metadata-badges'
+import { getWorktreeCardTitleDisplay } from './worktree-card-title-display'
 
 export interface WorktreeCardPresentation {
   showPinnedRepoIcon: boolean
@@ -31,6 +32,8 @@ export interface WorktreeCardPresentation {
   hoverBranchName?: string
   hoverWorkspaceTitle?: string
   hasHoverDetails: boolean
+  /** Title the card paints, after issue/Linear/Jira/review fallbacks. */
+  cardTitle: string
   titleWrapper?: (title: React.ReactElement) => React.ReactElement
   parentContentMarginLeft: number
   cardStyle?: React.CSSProperties
@@ -40,7 +43,7 @@ export interface WorktreeCardPresentation {
 }
 
 export function buildWorktreeCardPresentation(
-  card: WorktreeCardController,
+  card: WorktreeCardWithExtras,
   { deleteModifierPressed = false }: { deleteModifierPressed?: boolean } = {}
 ): WorktreeCardPresentation {
   const {
@@ -72,7 +75,12 @@ export function buildWorktreeCardPresentation(
     review,
     metadata,
     metaRowChildren,
-    isDeleting
+    isDeleting,
+    issueDisplay,
+    linearIssueDisplay,
+    jiraIssueDisplay,
+    automationProvenance,
+    cliCreated
   } = card
 
   const showPinnedRepoIcon = Boolean(inPinnedSection && repo)
@@ -87,10 +95,11 @@ export function buildWorktreeCardPresentation(
   const showDetachedHeadInMetaRow = Boolean(!compactCards && !isFolder && detachedHeadDisplay !== null)
   const showBranch = Boolean(
     !isFolder &&
-    branch.length > 0 &&
-    !newCardStyle &&
-    (!compactCards || branch !== (worktree.display_name || worktree.displayName))
+      branch.length > 0 &&
+      !newCardStyle &&
+      (!compactCards || branch !== (worktree.display_name || worktree.displayName))
   )
+  // Why: rebases already surface in source control, so dense cards skip the persistent rebase chip.
   const showConflictOperationBadge = Boolean(
     conflictOperation && conflictOperation !== 'unknown' && conflictOperation !== 'rebase'
   )
@@ -98,11 +107,10 @@ export function buildWorktreeCardPresentation(
     comment: metadata?.comment,
     linkedIssue: metadata?.linkedIssue,
     linkedLinearIssue: metadata?.linkedLinearIssue,
-    automationProvenance: worktree.automationProvenanceKind,
-    cliProvenance: worktree.cliProvenanceKind,
+    automationProvenance: worktree.automationProvenanceKind ?? automationProvenance,
+    cliProvenance: worktree.cliProvenanceKind ?? cliCreated,
     hasReview: Boolean(review)
   })
-  const hasMetadataBadge = showConflictOperationBadge
   const showUnreadQuickAction = Boolean(!affiliateListMode && showStatus && !newCardStyle)
   const showCombinedStatusSlot = Boolean(showStatus)
   const showTitleRowPrimary = Boolean(compactCards && (worktree.is_main ?? worktree.isMainWorktree) && !isFolder)
@@ -116,18 +124,18 @@ export function buildWorktreeCardPresentation(
 
   const hasDetailedMetaRowContent = Boolean(
     (showRepoBadgeInMetaRow && repo) ||
-    showHostContextBadge ||
-    showBranch ||
-    showIdentityInNewCard ||
-    showDetachedHeadInMetaRow ||
-    showConflictOperationBadge ||
-    cacheStartedAt != null ||
-    showMetaRowDetails ||
-    metaRowChildren
+      showHostContextBadge ||
+      showBranch ||
+      showIdentityInNewCard ||
+      showDetachedHeadInMetaRow ||
+      showConflictOperationBadge ||
+      cacheStartedAt != null ||
+      showMetaRowDetails ||
+      metaRowChildren
   )
   const hasMetaRow = Boolean(
     compactCards
-      ? hasMetadataBadge || cacheStartedAt != null || Boolean(metaRowChildren)
+      ? showConflictOperationBadge || cacheStartedAt != null || Boolean(metaRowChildren)
       : hasDetailedMetaRowContent
   )
   // Orca `canShowWorkspaceDeleteQuickAction`: the trash affordance is gated on the
@@ -156,8 +164,34 @@ export function buildWorktreeCardPresentation(
       : undefined
   const hasHoverIdentity = Boolean(hoverWorkspaceTitle || hoverBranchName)
   const hasHoverDetails = Boolean(
-    review || (ports && ports.length > 0) || hasHoverIdentity || hasMetadataDetails
+    review ||
+      (ports && ports.length > 0) ||
+      hasHoverIdentity ||
+      hasMetadataDetails ||
+      issueDisplay ||
+      linearIssueDisplay ||
+      jiraIssueDisplay
   )
+
+  // Orca `getWorktreeCardTitleDisplay`: when the persisted name is just the branch
+  // name, the card prefers a real task/review subject over the git identity.
+  const displayTitle = getWorktreeCardTitleDisplay({
+    storedDisplayName: visibleCardTitle,
+    branchName: branch,
+    linearIssueTitle: linearIssueDisplay?.title,
+    jiraIssueTitle: jiraIssueDisplay?.title,
+    issueTitle: issueDisplay?.title,
+    reviewTitle: review?.title
+  })
+  const cardTitle = displayTitle || visibleCardTitle
+
+  // Why: when the details hover is mounted the card owns the rich affordance, so
+  // the title must not stack a second (truncation) tooltip on top of it.
+  const titleWrapper = newCardStyle
+    ? hasHoverDetails
+      ? (title: React.ReactElement): React.ReactElement => title
+      : undefined
+    : undefined
 
   // Orca parity (`worktree-card-presentation.tsx:193-199`): a flush card pulls its
   // content back toward the surface edge — `max(minInset, contentIndent - pullback)`,
@@ -172,18 +206,21 @@ export function buildWorktreeCardPresentation(
   const parentContentMarginLeft = 0
   const cardStyle = cardPaddingLeft ? { paddingLeft: cardPaddingLeft } : undefined
 
+  // Why: the new card style moved the review signal into the left status lane, so
+  // painting the row badge too would state the same PR twice on one line.
+  const showInlineReviewBadge = Boolean(review && !newCardStyle)
   const detailsAndPorts = (
     <div className="flex shrink-0 items-center gap-1">
       <WorktreeCardMetaBadges
         metadata={metadata}
-        automationCreated={Boolean(worktree.automationProvenanceKind)}
-        cliCreated={Boolean(worktree.cliProvenanceKind)}
+        automationCreated={Boolean(worktree.automationProvenanceKind ?? automationProvenance)}
+        cliCreated={Boolean(worktree.cliProvenanceKind ?? cliCreated)}
         hasReview={Boolean(review)}
       />
       {hasPorts && (workspacePorts.length > 0 || (ports && ports.length > 0)) && (
         <WorktreeCardPortsTrigger ports={workspacePorts.length > 0 ? workspacePorts : ports ?? []} />
       )}
-      {review && <WorktreeCardReviewBadge review={review} />}
+      {showInlineReviewBadge && review ? <WorktreeCardReviewBadge review={review} /> : null}
       {metaRowChildren}
     </div>
   )
@@ -216,6 +253,8 @@ export function buildWorktreeCardPresentation(
     hoverBranchName,
     hoverWorkspaceTitle,
     hasHoverDetails,
+    cardTitle,
+    titleWrapper,
     parentContentMarginLeft,
     cardStyle,
     detailsAndPorts,

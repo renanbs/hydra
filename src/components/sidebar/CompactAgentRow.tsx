@@ -40,6 +40,14 @@ export interface CompactAgentRowProps {
   onMarkUnread?: () => void
   /** Clears a completed turn's notification without touching the thread (Orca `Clear notification`). */
   onClearNotification?: () => void
+  /** The turn's status is newer than its last acknowledgement (Orca unvisited row). */
+  isUnvisited?: boolean
+  /** Agent-send picker state for this row (Orca `sendTargetStatus`). */
+  sendTargetStatus?: 'eligible' | 'disabled' | 'sending'
+  /** Why a disabled row cannot receive the prompt; shown as the row title. */
+  sendTargetDisabledReason?: string
+  /** Click handler while the send picker is active. */
+  onSendTargetClick?: (paneKey: string) => void
 }
 
 function stopActivationKeyPropagation(e: React.KeyboardEvent): void {
@@ -62,7 +70,11 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   cacheTimerActive = true,
   onMarkRead,
   onMarkUnread,
-  onClearNotification
+  onClearNotification,
+  isUnvisited = false,
+  sendTargetStatus,
+  sendTargetDisabledReason,
+  onSendTargetClick
 }: CompactAgentRowProps): React.JSX.Element {
   const agentType = agent.agentType ?? agent.displayAgent ?? 'unknown'
   // Why: a subagent child has no pane of its own; activation targets its parent pane,
@@ -72,7 +84,25 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   // Why: Hydra has no dashboard conversation-name store; the tab title / prompt is the row's name.
   const conversationName = agent.terminalTitle?.trim() || agent.prompt?.trim() || null
   const primary = getCompactAgentPrimary(agent, conversationName)
-  const secondary = getCompactAgentSecondary(agent, now)
+  // Why: a live row's last assistant line must stay stable while status/tool payloads
+  // briefly omit the hook-only field between updates. Committed in an effect so a
+  // discarded concurrent render cannot pin an uncommitted message and no extra render
+  // pass runs per streaming ping. A zero stateStartedAt has no per-turn identity.
+  const turn = agent.entry.stateStartedAt ?? 0
+  const currentMessage = agent.entry.lastAssistantMessage?.trim() ?? ''
+  const turnHoldable = agent.state === 'working' && turn > 0
+  const heldMessageRef = React.useRef<{ turn: number; message: string } | null>(null)
+  React.useEffect(() => {
+    if (turnHoldable && currentMessage) {
+      heldMessageRef.current = { turn, message: currentMessage }
+    } else if (!turnHoldable) {
+      heldMessageRef.current = null
+    }
+  }, [turnHoldable, turn, currentMessage])
+  const held = heldMessageRef.current
+  const stableMessage =
+    turnHoldable && !currentMessage && held?.turn === turn ? held.message : undefined
+  const secondary = getCompactAgentSecondary(agent, now, stableMessage)
   // Why: sidebar truncation must preserve the passive-vs-active distinction.
   const leadingText = dotState === 'monitoring' ? secondary : primary
   const trailingText =
@@ -90,9 +120,16 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   const handleActivate = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
+      if (sendTargetStatus === 'disabled' || sendTargetStatus === 'sending') {
+        return
+      }
+      if (sendTargetStatus === 'eligible') {
+        onSendTargetClick?.(agent.paneKey)
+        return
+      }
       onActivate?.(activationId)
     },
-    [onActivate, activationId]
+    [onActivate, activationId, agent.paneKey, onSendTargetClick, sendTargetStatus]
   )
 
   const handleToggleChildren = useCallback(
@@ -118,6 +155,10 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
     <div
       role="listitem"
       tabIndex={0}
+      title={sendTargetStatus === 'disabled' ? sendTargetDisabledReason : rowTitle}
+      aria-disabled={sendTargetStatus === 'disabled' || sendTargetStatus === 'sending'}
+      data-worktree-agent-unvisited={isUnvisited || undefined}
+      data-worktree-agent-send-target={sendTargetStatus}
       onClick={handleActivate}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -137,7 +178,12 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
         'compact-agent-row group/compact-agent-row flex h-6 min-w-0 cursor-pointer items-center gap-1 overflow-hidden rounded-sm px-1 text-[11px] leading-none select-none',
         isFocusedPane
           ? 'bg-worktree-sidebar-accent text-worktree-sidebar-foreground'
-          : 'text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/40 hover:text-worktree-sidebar-foreground'
+          : 'text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/40 hover:text-worktree-sidebar-foreground',
+        // Why: an unvisited turn is the row's only affordance to say "new activity
+        // since you last looked"; weight carries it without a second badge.
+        isUnvisited && !isFocusedPane && 'font-medium text-worktree-sidebar-foreground',
+        sendTargetStatus === 'disabled' && 'cursor-not-allowed opacity-45 hover:bg-transparent',
+        sendTargetStatus === 'sending' && 'cursor-progress opacity-60'
       )}
     >
       {hasChildDisclosure ? (

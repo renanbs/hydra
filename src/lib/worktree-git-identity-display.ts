@@ -1,3 +1,5 @@
+// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
+// Source: src/renderer/src/lib/worktree-git-identity-display.ts
 export type WorktreeGitIdentityDisplay =
   | {
       kind: 'branch'
