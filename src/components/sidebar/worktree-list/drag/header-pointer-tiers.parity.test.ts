@@ -13,10 +13,12 @@ import {
 } from "./header-pointer-session";
 import {
   commitProjectHeaderDragDrop,
-  isProjectHeaderDragHandleTarget,
-  isRepoHeaderActionTarget,
   type RepoHeaderDragSession,
 } from "./repo-header-pointer-drag";
+import {
+  isProjectHeaderDragHandleTarget,
+  isRepoHeaderActionTarget,
+} from "../../project-header-drag-contract";
 import {
   getProjectGroupHeaderDragBucketKey,
   getProjectGroupTabOrderUpdatesForSidebarDrop,

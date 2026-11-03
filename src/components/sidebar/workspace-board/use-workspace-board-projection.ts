@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useAppStore } from '@/store'
 import { buildHostIdByRepoId } from '../repo-execution-host-index'
-import type { WorkspaceStatus } from '../../../shared/worktree/types'
+import { toWorktreeRow } from '../../../shared/worktree/worktree-row'
+import { useVisibleWorkspaceKanbanWorktreeIds } from '../use-visible-workspace-kanban-worktree-ids'
+import type { Repo } from '../../../shared/repo-types'
+import type { Worktree, WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
@@ -70,6 +73,28 @@ export function useWorkspaceBoardProjection(args: {
   const columnWidth = useAppStore((state) => state.workspaceBoardColumnWidth)
   const storeRepos = useAppStore((state) => state.repos)
   const hostIdByRepoId = useMemo(() => buildHostIdByRepoId(storeRepos), [storeRepos])
+  // Why project the same rows the lanes will project: the hook decides host scope
+  // on host-qualified identities, and the lanes then drop anything outside it.
+  const repoMap = useMemo(
+    () => new Map<string, Repo>(storeRepos.map((repo) => [repo.id, repo])),
+    [storeRepos]
+  )
+  const projectedWorktrees = useMemo(() => {
+    const rows: Worktree[] = []
+    for (const project of displayProjects) {
+      const hostId = hostIdByRepoId.get(project.id)
+      for (const worktree of getProjectWorktrees(project)) {
+        rows.push(
+          toWorktreeRow(worktree, { repoId: project.id, ...(hostId ? { hostId } : {}) })
+        )
+      }
+    }
+    return rows
+  }, [displayProjects, getProjectWorktrees, hostIdByRepoId])
+  const visibleIdentitySet = useVisibleWorkspaceKanbanWorktreeIds({
+    allWorktrees: projectedWorktrees,
+    repoMap
+  })
   const livePaths = liveWorkspacePaths ?? EMPTY_PATHS
   const pinnedPaths = pinnedWorktreePaths ?? EMPTY_PATHS
   const unreadPaths = unreadWorktreePaths ?? EMPTY_PATHS
@@ -90,6 +115,7 @@ export function useWorkspaceBoardProjection(args: {
         sortBy,
         portsByWorktree,
         prByPath,
+        visibleIdentitySet,
       }),
     [
       activeWorktreePath,
@@ -104,6 +130,7 @@ export function useWorkspaceBoardProjection(args: {
       sessions,
       sortBy,
       unreadPaths,
+      visibleIdentitySet,
       workspaceStatuses,
     ]
   )

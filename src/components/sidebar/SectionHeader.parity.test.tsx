@@ -164,3 +164,73 @@ describe("RepoSectionHeader (Orca parity)", () => {
     expect(onOpenNewWorkspace).toHaveBeenCalledTimes(1);
   });
 });
+
+// D15a-008/D15a-009: the header reorder contract is DOM-visible. The pointer
+// session measures `data-project-group-header-*` and arms only from
+// `data-*-header-drag-handle`, which must exist on BOTH the row and the title
+// surface, while the grab cursor stays off the action overlay.
+describe("header drag DOM contract (D15a-008/D15a-009)", () => {
+  function renderRepo(props: Partial<Parameters<typeof RepoSectionHeader>[0]> = {}) {
+    return render(
+      <RepoSectionHeader
+        project={{
+          id: "repo_1",
+          name: "hydra",
+          path: "/home/renan/src/hydra",
+          is_git: true,
+          current_branch: "main",
+        }}
+        isCollapsed={false}
+        onToggleCollapse={vi.fn()}
+        {...props}
+      />
+    );
+  }
+
+  it("renders project group drag attributes only when a pointer session is armed", () => {
+    const idle = renderGroup({ dragBucket: "root", dragIndex: 1 });
+    expect(idle.container.querySelector('[data-project-group-header-id="g1"]')).not.toBeNull();
+    expect(
+      idle.container.querySelector('[data-project-group-header-bucket="root"]')
+    ).not.toBeNull();
+    expect(idle.container.querySelector("[data-project-group-header-index]")).toHaveAttribute(
+      "data-project-group-header-index",
+      "1"
+    );
+    expect(idle.container.querySelectorAll("[data-project-group-header-drag-handle]")).toHaveLength(
+      0
+    );
+
+    const armed = renderGroup({
+      dragBucket: "root",
+      dragIndex: 0,
+      onHeaderPointerDown: vi.fn(),
+    });
+    expect(armed.container.querySelectorAll("[data-project-group-header-drag-handle]")).toHaveLength(
+      2
+    );
+    const row = armed.container.querySelector('[data-project-group-header-id="g1"]');
+    expect(row?.className).not.toContain("cursor-pointer");
+    expect(row?.className).not.toContain("cursor-grab");
+    const titleSurface = row?.firstElementChild;
+    expect(titleSurface?.className).toContain("cursor-grab");
+    expect(titleSurface?.className).toContain("active:cursor-grabbing");
+  });
+
+  it("keeps the repo header action overlay outside the grab cursor", () => {
+    const idle = renderRepo();
+    expect(idle.container.querySelectorAll("[data-repo-header-drag-handle]")).toHaveLength(0);
+    expect(idle.container.querySelector('[data-repo-header-id="repo_1"]')?.className).toContain(
+      "cursor-pointer"
+    );
+
+    const armed = renderRepo({ onHeaderPointerDown: vi.fn() });
+    expect(armed.container.querySelectorAll("[data-repo-header-drag-handle]")).toHaveLength(2);
+    const row = armed.container.querySelector('[data-repo-header-id="repo_1"]');
+    expect(row?.className).not.toContain("cursor-pointer");
+    const titleSurface = row?.firstElementChild;
+    expect(titleSurface?.className).toContain("cursor-grab");
+    const actions = armed.container.querySelector("[data-repo-header-actions]");
+    expect(actions?.className).toContain("cursor-pointer");
+  });
+});

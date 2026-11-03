@@ -26,6 +26,10 @@ import {
 } from "../../project-header-drop";
 import { getWorktreeSidebarDragAutoscroll } from "../../worktree-sidebar-drag-autoscroll";
 import {
+  isProjectHeaderDragHandleTarget,
+  isRepoHeaderActionTarget
+} from "../../project-header-drag-contract";
+import {
   hasPointerBeenReleased,
   isHeaderDragPromoted,
   swallowNextClickOnDragHandle,
@@ -44,37 +48,6 @@ export const INITIAL_REPO_HEADER_DRAG_STATE: RepoHeaderDragState = {
   dropIndex: null,
   dropIndicatorY: null,
 };
-
-const REPO_HEADER_DRAG_HANDLE_SELECTOR = "[data-repo-header-drag-handle]";
-
-/**
- * Actions inside the header (collapse chevron, menu, create) must not arm a drag; this is
- * the same set Orca treats as interactive, shared with the project-group tier.
- */
-export const REPO_HEADER_ACTION_SELECTOR =
-  '[data-repo-header-actions], [data-repo-header-action], [data-repo-header-collapse-affordance], button, a, input, textarea, select, [contenteditable=""], [contenteditable="true"]';
-
-export function isProjectHeaderDragHandleTarget(
-  target: EventTarget | null,
-  currentTarget: HTMLElement
-): boolean {
-  // Why Element: the project icon is an <svg>, whose events are SVGElement, not HTMLElement.
-  if (!(target instanceof Element)) {
-    return false;
-  }
-  const dragHandle = target.closest(REPO_HEADER_DRAG_HANDLE_SELECTOR);
-  return dragHandle !== null && currentTarget.contains(dragHandle);
-}
-
-export function isRepoHeaderActionTarget(
-  target: EventTarget | null,
-  currentTarget: HTMLElement
-): boolean {
-  if (!(target instanceof Element) || target === currentTarget) {
-    return false;
-  }
-  return currentTarget.contains(target) && target.closest(REPO_HEADER_ACTION_SELECTOR) !== null;
-}
 
 export type RepoHeaderDragSession = {
   repoId: string;

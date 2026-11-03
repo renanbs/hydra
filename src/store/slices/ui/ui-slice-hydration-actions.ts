@@ -38,6 +38,10 @@ import { parsePersistedAutomationHostFilter } from '../../../shared/automation-h
 import { normalizeUsagePercentageDisplay } from '../../../shared/usage-percentage-display'
 import { normalizeStatusBarUsageMode } from '../../../shared/status-bar-usage-mode'
 import { normalizeBrowserPageZoomLevel } from '../../../shared/browser-page-zoom'
+import {
+  isExistingPersistedProfile,
+  resolveProjectOrderManualDefaultNoticeDismissed
+} from '../../../shared/project-order-manual-default-notice'
 import { normalizeKagiSessionLink } from '../../../shared/browser-url'
 import { isReleaseChannel } from '../../../shared/release-channel'
 import type { StatusBarItem } from '../../../shared/ui-chrome-types'
@@ -123,6 +127,15 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           ui.rightSidebarTab,
           ui.rightSidebarExplorerView
         )
+        // Why: the notice explains the new manual default only to upgraded profiles
+        // that never stored a project order; fresh profiles never see it, and an
+        // explicit "recent" choice keeps it quiet.
+        const projectOrderManualDefaultNoticeDismissed =
+          resolveProjectOrderManualDefaultNoticeDismissed({
+            rawDismissed: ui.projectOrderManualDefaultNoticeDismissed,
+            rawProjectOrderBy: ui.projectOrderBy,
+            isExistingProfile: isExistingPersistedProfile({ repoCount: s.repos.length, ui })
+          })
         const hydrated = {
           // Why: persisted widths may be stale/corrupt/hand-edited; clamp during hydration so invalid values can't break layout.
           sidebarWidth: sanitizePersistedSidebarWidth(
@@ -266,8 +279,7 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           browserImportHintHidden: ui.browserImportHintHidden === true,
           mobileEmulatorTabIntroDismissed: ui.mobileEmulatorTabIntroDismissed === true,
           mobileEmulatorAgentSetupDismissed: ui.mobileEmulatorAgentSetupDismissed === true,
-          projectOrderManualDefaultNoticeDismissed:
-            ui.projectOrderManualDefaultNoticeDismissed === true,
+          projectOrderManualDefaultNoticeDismissed,
           // Why: treat only explicit true as dismissed so a false from migration still surfaces.
           usagePercentageDisplayChangeNoticeDismissed:
             ui.usagePercentageDisplayChangeNoticeDismissed === true,

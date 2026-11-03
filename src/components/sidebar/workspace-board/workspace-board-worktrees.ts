@@ -74,6 +74,11 @@ export function buildWorkspaceBoardLanes(args: {
   sortBy?: string
   portsByWorktree?: ReadonlyMap<string, WorkspacePort[]>
   prByPath?: Readonly<Record<string, PrDisplay>>
+  /**
+   * Host-qualified identities the sidebar currently shows. The lanes drop any
+   * card outside it, so the board can never resurrect a host the user scoped out.
+   */
+  visibleIdentitySet?: ReadonlySet<string> | null
 }): WorkspaceBoardLane[] {
   const {
     projects,
@@ -89,6 +94,7 @@ export function buildWorkspaceBoardLanes(args: {
     sortBy,
     portsByWorktree,
     prByPath,
+    visibleIdentitySet,
   } = args
   const liveActivity = buildSidebarLiveActivityIndex(sessions, liveWorkspacePaths)
   const cardsByStatus = new Map<WorkspaceStatus, WorkspaceBoardCard[]>(
@@ -112,12 +118,19 @@ export function buildWorkspaceBoardLanes(args: {
         isPinned: pinnedWorktreePaths.has(worktree.path),
         isUnread: unreadWorktreePaths.has(worktree.path),
       })
+      // Why host scope here: `getProjectWorktrees` already applies the sidebar's
+      // menu filters, but host scope lives in the row pipeline. `null` means no
+      // narrowing; a set (even empty) is authoritative.
+      const identity = getWorktreeHostIdentity(projected)
+      if (visibleIdentitySet && !visibleIdentitySet.has(identity)) {
+        continue
+      }
       if (!isVisibleUnderSidebarMenuFilters({ worktree: projected, displayOptions, liveActivity })) {
         continue
       }
       const status = getWorkspaceStatus(projected, workspaceStatuses)
       cardsByStatus.get(status)?.push({
-        identity: getWorktreeHostIdentity(projected),
+        identity,
         worktreeId: projected.id,
         worktree,
         project,

@@ -11,16 +11,13 @@ import {
 import { useAppStore } from "@/store";
 import { ALL_EXECUTION_HOSTS_SCOPE, type ExecutionHostId } from "../../shared/execution-host";
 import {
-  buildSidebarHostOptions,
-  buildSidebarHostScopeOptions,
   getSidebarHostHealthLabel,
   getSidebarHostVisibilityLabel,
   shouldShowHostScopeControls,
-  type SidebarHostOption,
   type SidebarHostScopeOption,
 } from "./sidebar-host-options";
+import { useSidebarHostScopeOptions } from "./use-sidebar-host-scope-options";
 import { planSidebarClearFilters, shouldShowOtherClientFilter } from "./sidebar-filter-actions";
-import { toHostSourceMap } from "./rendered-sidebar-worktree-order";
 import type { HydraProject } from "./WorktreeSidebar";
 import { FilterToggleRow } from "./FilterToggleRow";
 import { useOptionalShortcutLabel } from "../../hooks/useShortcutLabel";
@@ -167,9 +164,6 @@ export function WorkspaceOptionsMenu({
   const sleepingShortcut = useOptionalShortcutLabel("sidebar.sleepingWorkspaces.toggle");
 
   // ─── Host scope (Orca SidebarHostScopeMenuSection) ────────────────────────
-  const storeRepos = useAppStore((s) => s.repos);
-  const storeSshTargetLabels = useAppStore((s) => s.sshTargetLabels);
-  const storeSshConnectionStates = useAppStore((s) => s.sshConnectionStates);
   const storeRuntimeEnvironments = useAppStore((s) => s.runtimeEnvironments);
   const storeRuntimeEnvironmentCatalogHydrated = useAppStore(
     (s) => s.runtimeEnvironmentCatalogHydrated
@@ -222,26 +216,7 @@ export function WorkspaceOptionsMenu({
     setWorktreeCardProperties(getWorktreeCardModeProperties(layout === "compact" ? "Compact" : "Default"));
   };
 
-  const hostOptions = useMemo<SidebarHostOption[]>(
-    () =>
-      buildSidebarHostOptions({
-        repos: storeRepos,
-        sshTargetLabels: toHostSourceMap<string>(storeSshTargetLabels) ?? new Map<string, string>(),
-        sshConnectionStates: toHostSourceMap(storeSshConnectionStates),
-        settings: storeSettings,
-        runtimeEnvironments: Array.isArray(storeRuntimeEnvironments)
-          ? storeRuntimeEnvironments
-          : undefined,
-      }),
-    [
-      storeRepos,
-      storeSshTargetLabels,
-      storeSshConnectionStates,
-      storeSettings,
-      storeRuntimeEnvironments,
-    ]
-  );
-  const hostScopeOptions = useMemo(() => buildSidebarHostScopeOptions(hostOptions), [hostOptions]);
+  const { hostOptions, hostScopeOptions } = useSidebarHostScopeOptions();
   useEffect(() => {
     if (!isOpen) setOpenSubmenu(null);
   }, [isOpen]);
