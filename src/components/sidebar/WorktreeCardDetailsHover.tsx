@@ -7,7 +7,15 @@
 // the popover it came from.
 import React, { useCallback } from 'react'
 import { toast } from 'sonner'
-import { ExternalLink, Folder, MonitorUp, Pencil, SquareTerminal, StickyNote } from 'lucide-react'
+import {
+  BookOpenText,
+  ExternalLink,
+  Folder,
+  MonitorUp,
+  Pencil,
+  SquareTerminal,
+  StickyNote
+} from 'lucide-react'
 
 import {
   HoverCard,
@@ -18,6 +26,7 @@ import { Badge } from '@/components/ui/badge'
 import { translate } from '@/i18n/i18n'
 import { SelectedTextCopyMenu } from '@/components/SelectedTextCopyMenu'
 import { CommentMarkdownAsync, preloadCommentMarkdown } from './comment-markdown-lazy'
+import { WorktreeNotesDocumentDialog } from './WorktreeNotesDocumentDialog'
 import {
   WorktreeCardDetailSection,
   WorktreeCardDetailSectionContent
@@ -44,6 +53,7 @@ import { getProviderName, getReviewLabel } from './pr-display'
 
 const COMMENT_MARKDOWN_CLASS_NAME =
   'text-[11.5px] text-foreground break-words leading-normal [&_.comment-md-p]:block [&_.comment-md-p+.comment-md-p]:mt-1'
+
 
 export interface WorktreeCardDetailsHoverProps {
   worktree: GitWorktreeInfo
@@ -84,6 +94,7 @@ export interface WorktreeCardDetailsHoverProps {
 function hasComment(comment: string | null | undefined): boolean {
   return (comment ?? '').trim().length > 0
 }
+
 
 /** Adapt the sidebar's review status wire shape to the badges' display shape. */
 function toReviewDisplay(review: WorktreeReviewStatus | undefined): PrDisplay | null {
@@ -149,6 +160,7 @@ export function WorktreeCardDetailsHover(
   } = hoverControl ?? internalHoverControl
 
   const [workspaceTitleEditing, setWorkspaceTitleEditing] = React.useState(false)
+  const [notesDocumentOpen, setNotesDocumentOpen] = React.useState(false)
   const pendingWorkspaceTitleCloseRef = React.useRef(false)
 
   const handleWorkspaceTitleEditingChange = useCallback(
@@ -252,6 +264,7 @@ export function WorktreeCardDetailsHover(
   }
 
   return (
+    <>
     <HoverCard
       open={hoverOpen || workspaceTitleEditing}
       onOpenChange={handleEffectiveHoverOpenChange}
@@ -418,17 +431,31 @@ export function WorktreeCardDetailsHover(
                 icon={<StickyNote className="size-3 text-muted-foreground" />}
                 label={translate('auto.components.sidebar.WorktreeCardMeta.93cbea12c2', 'Notes')}
                 actions={
-                  onEditComment || onEditMetadata ? (
+                  <>
                     <MetadataActionIcon
                       label={translate(
-                        'auto.components.sidebar.WorktreeCardMeta.c7fa72ead0',
-                        'Edit notes'
+                        'auto.components.sidebar.WorktreeCardMeta.openNotesDocument',
+                        'Open notes document view'
                       )}
-                      onClick={onEditComment ?? (onEditMetadata ? dismissAndRun(onEditMetadata) : undefined)}
+                      onClick={() => {
+                        preloadCommentMarkdown()
+                        setNotesDocumentOpen(true)
+                      }}
                     >
-                      <Pencil className="size-3" />
+                      <BookOpenText className="size-3" />
                     </MetadataActionIcon>
-                  ) : null
+                    {onEditComment || onEditMetadata ? (
+                      <MetadataActionIcon
+                        label={translate(
+                          'auto.components.sidebar.WorktreeCardMeta.c7fa72ead0',
+                          'Edit notes'
+                        )}
+                        onClick={onEditComment ?? (onEditMetadata ? dismissAndRun(onEditMetadata) : undefined)}
+                      >
+                        <Pencil className="size-3" />
+                      </MetadataActionIcon>
+                    ) : null}
+                  </>
                 }
               />
               <WorktreeCardDetailSectionContent className="space-y-2">
@@ -437,9 +464,13 @@ export function WorktreeCardDetailsHover(
                   className={COMMENT_MARKDOWN_CLASS_NAME}
                   // Mirrors remark-breaks so the fallback keeps the note's line count.
                   fallbackClassName="whitespace-pre-wrap"
+                  expandImages
+                  linkifyFilePaths
+                  fileLinkBasePath={worktree.path}
                 />
               </WorktreeCardDetailSectionContent>
             </WorktreeCardDetailSection>
+
           )}
 
           <WorktreeCardPortsDetails ports={ports} />
@@ -495,7 +526,16 @@ export function WorktreeCardDetailsHover(
         </SelectedTextCopyMenu>
       </HoverCardContent>
     </HoverCard>
+    <WorktreeNotesDocumentDialog
+      open={notesDocumentOpen}
+      onOpenChange={setNotesDocumentOpen}
+      title={workspaceTitle ?? branchName ?? worktree.path}
+      content={comment}
+      fileLinkBasePath={worktree.path}
+    />
+    </>
   )
+
 }
 
 export default WorktreeCardDetailsHover
