@@ -1,19 +1,25 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/host-header-menu-items.ts
-// Parity with Orca `components/sidebar/host-header-menu-items.ts`, reduced to the actions
-// Hydra can actually execute today: `ssh_update_target` (rename), `ssh_remove_target`
-// (remove), and the "Manage host…" deep link into Settings → SSH Hosts. Orca's
-// Reconnect/Disconnect and runtime "Check connection" still need the remote-execution
-// subsystem (PTY over SSH, credentials, leases, relay), so they stay absent rather than
-// inert — a menu item with nothing behind it is a lie about the product.
+// Why: the host-header dropdown shows different lifecycle actions per host kind. Keeping the
+// availability rules in a pure function makes them unit-testable without rendering the sidebar.
+//
+// What Hydra can actually execute today:
+// - rename: client-side label override, every host kind.
+// - ssh-reconnect: `ssh_reconnect_target` (a real system-OpenSSH probe). Offered only while
+//   the host is not connected; Disconnect has no backend and is therefore absent rather than
+//   an inert item.
+// - manage: the Settings deep link. SSH lands on the SSH pane; local lands on General. A
+//   runtime host would need the paired-servers pane, which Hydra does not render yet, so it
+//   gets no manage/remove entry instead of a link to nothing.
+// - remove: `ssh_remove_target`, SSH only.
 import type { ExecutionHostKind } from '../../shared/execution-host'
 import type { ExecutionHostHealth } from '../../shared/execution-host-registry'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 
-export type HostHeaderMenuAction = 'rename' | 'manage' | 'remove'
+export type HostHeaderMenuAction = 'rename' | 'ssh-reconnect' | 'manage' | 'remove'
 
 export type HostHeaderMenuModel = {
-  /** Registry actions the host offers, in display order. */
+  /** Lifecycle/navigation actions, in display order. */
   actions: HostHeaderMenuAction[]
   /** Present only when the host is blocked on a compatibility verdict. */
   blocked: {
@@ -24,22 +30,21 @@ export type HostHeaderMenuModel = {
 export type HostHeaderMenuInput = {
   kind: ExecutionHostKind
   health: ExecutionHostHealth
+  /** SSH connection status drives whether a reconnect is meaningful. */
+  sshConnected?: boolean
   compatibility?: RuntimeCompatVerdict
 }
 
-/**
- * What a host's header menu offers, per host kind.
- *
- * Rename and Remove both write the SSH host registry, so only an SSH target has either:
- * the local host has no registry row, and removing a runtime environment needs the Orca
- * servers pane that owns active-environment switching.
- *
- * The blocked entry is a warning, not an action. It is gated on the registry's own
- * `blocked` health as well as the verdict, so a stale verdict on an otherwise healthy
- * host never paints an alarm, and the severity always comes from the verdict reason.
- */
 export function buildHostHeaderMenuModel(input: HostHeaderMenuInput): HostHeaderMenuModel {
-  const actions: HostHeaderMenuAction[] = input.kind === 'ssh' ? ['rename', 'manage', 'remove'] : []
+  const actions: HostHeaderMenuAction[] = ['rename']
+  if (input.kind === 'ssh') {
+    if (!(input.sshConnected ?? false)) {
+      actions.push('ssh-reconnect')
+    }
+    actions.push('manage', 'remove')
+  } else if (input.kind === 'local') {
+    actions.push('manage')
+  }
   const blocked =
     input.health === 'blocked' && input.compatibility?.kind === 'blocked'
       ? { reason: input.compatibility.reason }

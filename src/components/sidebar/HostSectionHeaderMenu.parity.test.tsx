@@ -1,17 +1,17 @@
-// Parity guard for the host-section header menu trigger. Orca puts the trigger inside the
-// header row, reveals it on hover/focus like the row's neighbours, and keeps it from
-// folding the section when it opens the menu. This port keeps all three, and adds the
-// rule the port introduces: a host with neither a registry action nor a compatibility
-// warning paints NO trigger at all, so the sidebar never offers a menu that opens empty.
-// It also locks the "Manage host…" deep link: the item must hand App the SSH pane through
-// the shared settings event, never open a settings surface of its own.
+// Parity guard for the host-section header menu. Orca puts the trigger inside the header row,
+// reveals it on hover/focus like the row's neighbours, and keeps it from folding the section
+// when it opens the menu. It also locks the per-kind entries: Rename for every host kind,
+// Manage → SSH/General settings, Remove only for an SSH target, and the compatibility
+// warning as a real menu item that deep-links to the pane that can fix it.
 import { describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 import { describeRuntimeCompatBlock } from '../../shared/protocol-compat'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { HostHeaderRow } from './host-section-rows'
 import { HostSectionHeaderMenu } from './HostSectionHeaderMenu'
+
 
 const BLOCKED_VERDICT: RuntimeCompatVerdict = {
   kind: 'blocked',
@@ -37,10 +37,14 @@ function hostRow(overrides: Partial<HostHeaderRow> = {}): HostHeaderRow {
 }
 
 function renderMenu(row: HostHeaderRow) {
-  return render(<HostSectionHeaderMenu row={row} />)
+  return render(
+    <TooltipProvider>
+      <HostSectionHeaderMenu row={row} />
+    </TooltipProvider>
+  )
 }
 
-describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
+describe('HostSectionHeaderMenu (Orca parity)', () => {
   it('opens by keyboard and closes on Escape, tracking aria-expanded', () => {
     renderMenu(hostRow())
     const trigger = screen.getByRole('button', { name: 'Host actions for Build server' })
@@ -64,9 +68,11 @@ describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
   it('keeps the menu click from reaching the header row (which toggles collapse)', () => {
     const onRowClick = vi.fn()
     render(
-      <div onClick={onRowClick}>
-        <HostSectionHeaderMenu row={hostRow()} />
-      </div>
+      <TooltipProvider>
+        <div onClick={onRowClick}>
+          <HostSectionHeaderMenu row={hostRow()} />
+        </div>
+      </TooltipProvider>
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Host actions for Build server' }))
@@ -74,10 +80,16 @@ describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
     expect(onRowClick).not.toHaveBeenCalled()
   })
 
-  it('paints no trigger for a host with no action and no warning', () => {
+  it('offers Rename and Manage but no Remove for the local host', () => {
     renderMenu(hostRow({ hostId: 'local', kind: 'local', label: 'Local Linux' }))
 
-    expect(screen.queryByRole('button', { name: 'Host actions for Local Linux' })).toBeNull()
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for Local Linux' }), {
+      key: 'Enter'
+    })
+
+    expect(screen.getByRole('menuitem', { name: 'Rename…' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Manage host…' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Remove host…' })).toBeNull()
   })
 
   it('deep-links Manage host… to App as a request for the SSH settings pane', () => {
@@ -91,13 +103,13 @@ describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Manage host…' }))
 
     expect(listener).toHaveBeenCalledTimes(1)
-    expect((listener.mock.calls[0][0] as CustomEvent<{ section: string }>).detail).toEqual({
+    expect((listener.mock.calls[0]![0] as CustomEvent<{ section: string }>).detail).toEqual({
       section: 'ssh'
     })
     window.removeEventListener('hydra:open-settings', listener)
   })
 
-  it('keeps the warning reachable for a blocked host that has no action to offer', () => {
+  it('keeps the skew warning for a runtime host without offering removal', () => {
     renderMenu(
       hostRow({
         hostId: 'runtime:vm-1',
@@ -112,9 +124,26 @@ describe('HostSectionHeaderMenu trigger (Orca parity)', () => {
       key: 'Enter'
     })
 
-    const warning = screen.getByText('Update server required')
+    const warning = screen.getByRole('menuitem', { name: 'Update server required' })
     expect(warning).toBeInTheDocument()
     expect(warning).toHaveAttribute('title', describeRuntimeCompatBlock(BLOCKED_VERDICT))
     expect(screen.queryByRole('menuitem', { name: 'Remove host…' })).toBeNull()
+  })
+
+  it('sends a blocked SSH host to the SSH pane through the warning item', () => {
+    const listener = vi.fn()
+    window.addEventListener('hydra:open-settings', listener)
+    renderMenu(hostRow({ health: 'blocked', compatibility: BLOCKED_VERDICT }))
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for Build server' }), {
+      key: 'Enter'
+    })
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Update server required' }))
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect((listener.mock.calls[0]![0] as CustomEvent<{ section: string }>).detail).toEqual({
+      section: 'ssh'
+    })
+    window.removeEventListener('hydra:open-settings', listener)
   })
 })

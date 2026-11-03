@@ -140,6 +140,7 @@ describe('SshPane actions (Orca parity, reduced)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
     await act(async () => {})
 
+
     expect(invokeMock).toHaveBeenCalledWith('ssh_update_target', {
       id: 'ssh-1',
       updates: {
@@ -148,6 +149,7 @@ describe('SshPane actions (Orca parity, reduced)', () => {
         host: 'build.internal',
         port: 22,
         username: 'deploy',
+        relayGracePeriodSeconds: 0,
         source: 'manual'
       }
     })

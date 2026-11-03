@@ -1,12 +1,9 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/HostRenameDialog.tsx
-// Parity with Orca `components/sidebar/HostRenameDialog.tsx`, with one deliberate
-// difference: Orca stores the rename as a client-only display-label override, while Hydra
-// writes the registry label itself through `ssh_update_target`. So the field starts on the
-// host's real label (not an override), a blank name is refused instead of meaning "reset",
-// and there is no "Reset to default" affordance — there is no override to reset.
+// Rename is a client-side display-label override (`hostSettingOverrides[host].displayLabel`),
+// not a registry write: it works for every host kind, follows the user across surfaces, and
+// "Reset to default" simply clears it. A blank field also means "use the derived label".
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,83 +15,47 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
-import { hydrateSshTargets, updateSshTarget } from '@/store/ssh-bridge'
-import { validateHostLabel, type HostLabelValidationError } from './host-rename-validation'
+import type { ExecutionHostId } from '../../shared/execution-host'
+import { applyHostRename, clearHostRename, getHostDisplayLabelOverride } from './host-rename-remove'
 
 type HostRenameDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Registry id the rename writes. */
-  targetId: string
-  /** The label the host currently shows, used to seed the field. */
-  currentLabel: string
+  hostId: ExecutionHostId
+  /** The label the host shows by default, used as the placeholder and reset target. */
+  derivedLabel: string
 }
 
 export function HostRenameDialog({
   open,
   onOpenChange,
-  targetId,
-  currentLabel
+  hostId,
+  derivedLabel
 }: HostRenameDialogProps): React.JSX.Element {
-  const sshTargetLabels = useAppStore((s) => s.sshTargetLabels)
-  const [value, setValue] = useState(currentLabel)
-  const [error, setError] = useState<HostLabelValidationError | null>(null)
-  const [busy, setBusy] = useState(false)
-  const mountedRef = useMountedRef()
+  const settings = useAppStore((s) => s.settings)
+  const updateSettings = useAppStore((s) => s.updateSettings)
+  const currentOverride = getHostDisplayLabelOverride(settings, hostId)
+  const [value, setValue] = useState(currentOverride ?? '')
 
-  // Why: reseed from the host's live label on every open, so a cancelled edit doesn't
-  // leak into the next one and a rename that landed elsewhere isn't shown as pending.
+  // Why: reseed from the persisted override each time the dialog opens so a prior
+  // cancelled edit doesn't leak into the next open.
   useEffect(() => {
     if (open) {
-      setValue(currentLabel)
-      setError(null)
+      setValue(currentOverride ?? '')
     }
-  }, [open, currentLabel])
+  }, [open, currentOverride])
 
-  const submit = async (): Promise<void> => {
-    const validation = validateHostLabel({
-      value,
-      currentTargetId: targetId,
-      sshTargetLabels
-    })
-    if (!validation.ok) {
-      setError(validation.reason)
-      return
-    }
-    setBusy(true)
-    try {
-      // A `null` result means main no longer holds the target (removed mid-edit). The
-      // re-read below is what drops it from the sidebar, but the rename itself did not
-      // land, so it is reported instead of closing the dialog as though it had.
-      const updated = await updateSshTarget(targetId, { label: validation.label })
-      await hydrateSshTargets()
-      if (!mountedRef.current) {
-        return
-      }
-      if (updated === null) {
-        toast.error(
-          translate('auto.components.sidebar.HostRenameDialog.renameFailed', 'Failed to rename host.')
-        )
-        return
-      }
-      onOpenChange(false)
-    } catch (err) {
-      if (!mountedRef.current) {
-        return
-      }
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate('auto.components.sidebar.HostRenameDialog.renameFailed', 'Failed to rename host.')
-      )
-    } finally {
-      if (mountedRef.current) {
-        setBusy(false)
-      }
-    }
+  const submit = (): void => {
+    void updateSettings({ hostSettingOverrides: applyHostRename(settings, hostId, value) })
+    onOpenChange(false)
+  }
+
+  const reset = (): void => {
+    setValue('')
+    void updateSettings({ hostSettingOverrides: clearHostRename(settings, hostId) })
+    onOpenChange(false)
   }
 
   return (
@@ -106,8 +67,8 @@ export function HostRenameDialog({
           </DialogTitle>
           <DialogDescription>
             {translate(
-              'auto.components.sidebar.HostRenameDialog.description',
-              'The saved SSH host is renamed everywhere it appears — sidebar, pickers and settings.'
+              'auto.components.sidebar.HostRenameDialog.2b3c4d5e6f',
+              'This label is shown only on this computer. Leave it blank to use the default name.'
             )}
           </DialogDescription>
         </DialogHeader>
@@ -119,40 +80,28 @@ export function HostRenameDialog({
             id="host-rename-input"
             autoFocus
             value={value}
-            aria-invalid={error !== null}
-            aria-describedby={error ? 'host-rename-error' : undefined}
-            onChange={(event) => {
-              setValue(event.target.value)
-              setError(null)
-            }}
+            placeholder={derivedLabel}
+            onChange={(event) => setValue(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault()
-                void submit()
+                submit()
               }
             }}
           />
-          {error ? (
-            <p id="host-rename-error" className="text-[12px] text-destructive">
-              {error === 'empty'
-                ? translate(
-                    'auto.components.sidebar.HostRenameDialog.labelRequired',
-                    'Enter a name for this host.'
-                  )
-                : translate(
-                    'auto.components.sidebar.HostRenameDialog.labelDuplicate',
-                    'Another host already uses this name.'
-                  )}
-            </p>
-          ) : null}
         </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
-            {translate('auto.components.sidebar.HostRenameDialog.5e6f7a8b9c', 'Cancel')}
+        <DialogFooter className="sm:justify-between">
+          <Button type="button" variant="ghost" disabled={!currentOverride} onClick={reset}>
+            {translate('auto.components.sidebar.HostRenameDialog.4d5e6f7a8b', 'Reset to default')}
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void submit()}>
-            {translate('auto.components.sidebar.HostRenameDialog.6f7a8b9c0d', 'Save')}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {translate('auto.components.sidebar.HostRenameDialog.5e6f7a8b9c', 'Cancel')}
+            </Button>
+            <Button type="button" onClick={submit}>
+              {translate('auto.components.sidebar.HostRenameDialog.6f7a8b9c0d', 'Save')}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

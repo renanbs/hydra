@@ -1,8 +1,9 @@
-// Parity guard for the host-removal workspace count. The dialog tells the user how many
-// workspaces stay behind, and that number has to agree with the sidebar's own host
-// attribution (`getWorktreeExecutionHostId` prefers a worktree's own host over its
-// repo's) instead of a second, drifting rule. What it locks out: counting another host's
-// workspaces, losing the repo root (a workspace too), or double-counting a duplicated row.
+// Parity guard for the host-removal workspace count and its connected/offline verdict. The
+// dialog tells the user how many workspaces stay behind, and that number has to agree with
+// the sidebar's own host attribution (`getWorktreeExecutionHostId` prefers a worktree's own
+// host over its repo's) instead of a second, drifting rule. What it locks out: counting
+// another host's workspaces, losing the repo root (a workspace too), double-counting a
+// duplicated row, and offering a remote delete for an offline host.
 import { describe, expect, it } from 'vitest'
 import { resolveSshHostRemoval } from './ssh-host-remove-resolution'
 
@@ -23,7 +24,13 @@ describe('resolveSshHostRemoval', () => {
       ]
     })
 
-    expect(resolution).toEqual({ targetId: 'srv', workspaceCount: 3 })
+    expect(resolution).toEqual({
+      targetId: 'srv',
+      hostRepoIds: ['repo_ssh'],
+      workspaceWorktreeIds: ['wt-a', 'wt-b'],
+      workspaceCount: 3,
+      isConnected: false
+    })
   })
 
   it('counts a worktree that only its repo claims, and skips other hosts', () => {
@@ -38,6 +45,7 @@ describe('resolveSshHostRemoval', () => {
     })
 
     expect(resolution.workspaceCount).toBe(2)
+    expect(resolution.workspaceWorktreeIds).toEqual(['wt-inherited'])
   })
 
   it('reports zero for a host with no repos and no worktrees', () => {
@@ -48,6 +56,7 @@ describe('resolveSshHostRemoval', () => {
     })
 
     expect(resolution.workspaceCount).toBe(0)
+    expect(resolution.isConnected).toBe(false)
   })
 
   it('does not inflate the count when the store holds a duplicated row', () => {
@@ -61,5 +70,16 @@ describe('resolveSshHostRemoval', () => {
     })
 
     expect(resolution.workspaceCount).toBe(2)
+  })
+
+  it('reports a connected host so the dialog can offer the remote delete copy', () => {
+    const resolution = resolveSshHostRemoval({
+      targetId: 'srv',
+      repos: [REPO_SSH],
+      worktrees: [],
+      sshConnectionStates: new Map([['srv', { status: 'connected' as const }]])
+    })
+
+    expect(resolution.isConnected).toBe(true)
   })
 })

@@ -1,9 +1,8 @@
-// Parity guard for the host-header menu MODEL. Orca decides the host menu's actions in
-// a pure function so the rules are testable without rendering the sidebar; this port
-// keeps that seam and narrows it to the actions Hydra has a backend for. What it locks
-// out: a menu item for a host that cannot execute it (a Reconnect row with no
-// remote-execution subsystem behind it), and a compatibility alarm invented from a
-// verdict the registry never called blocked.
+// Parity guard for the host-header menu MODEL. Orca decides the host menu's actions in a pure
+// function so the rules are testable without rendering the sidebar; this port keeps that
+// seam. What it locks: rename is offered for every host kind (it is a client-side label),
+// SSH hosts get a real reconnect probe plus manage/remove, and a compatibility alarm only
+// comes from a verdict the registry itself called blocked.
 import { describe, expect, it } from 'vitest'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
 import { buildHostHeaderMenuModel } from './host-header-menu-items'
@@ -25,24 +24,34 @@ const BLOCKED_CLIENT: RuntimeCompatVerdict = {
 }
 
 describe('buildHostHeaderMenuModel', () => {
-  it('offers Rename + Manage + Remove for an SSH host (the only kind with a registry row)', () => {
+  it('offers Rename + Reconnect + Manage + Remove for a disconnected SSH host', () => {
     const model = buildHostHeaderMenuModel({ kind: 'ssh', health: 'available' })
 
-    expect(model.actions).toEqual(['rename', 'manage', 'remove'])
+    expect(model.actions).toEqual(['rename', 'ssh-reconnect', 'manage', 'remove'])
     expect(model.blocked).toBeNull()
   })
 
-  it('offers nothing for the local host — there is no registry row to write', () => {
+  it('drops Reconnect once the SSH host is connected (Disconnect has no backend)', () => {
+    const model = buildHostHeaderMenuModel({
+      kind: 'ssh',
+      health: 'available',
+      sshConnected: true
+    })
+
+    expect(model.actions).toEqual(['rename', 'manage', 'remove'])
+  })
+
+  it('offers Rename + Manage for the local host — nothing to remove', () => {
     const model = buildHostHeaderMenuModel({ kind: 'local', health: 'local' })
 
-    expect(model.actions).toEqual([])
+    expect(model.actions).toEqual(['rename', 'manage'])
     expect(model.blocked).toBeNull()
   })
 
-  it('offers nothing for a runtime host — its removal belongs to the servers pane', () => {
+  it('offers only Rename for a runtime host until the servers pane exists', () => {
     const model = buildHostHeaderMenuModel({ kind: 'runtime', health: 'available' })
 
-    expect(model.actions).toEqual([])
+    expect(model.actions).toEqual(['rename'])
     expect(model.blocked).toBeNull()
   })
 
