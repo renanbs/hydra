@@ -68,14 +68,33 @@ describe("sidebar desktop contracts (D01-037/D01-038/D01-039/D01-041/D01-043)", 
     await expect(loadGitHubViewer()).rejects.toThrow("spawn failed");
   });
 
-  it("surfaces the absent updater and restart commands precisely", async () => {
+  it("surfaces the absent updater precisely", async () => {
     expect(isUpdateCheckAvailable()).toBe(false);
-    expect(isAppRestartAvailable()).toBe(false);
     await expect(checkForAppUpdates({ includePrerelease: true })).rejects.toThrow(
       "Update checks are not available in this build."
     );
-    await expect(restartApp()).rejects.toThrow(
-      "Application restart is not available in this build."
-    );
+  });
+
+  it("probes restart availability from the Tauri host, not a preload bridge", () => {
+    expect(isAppRestartAvailable()).toBe(false);
+
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {},
+    });
+    expect(isAppRestartAvailable()).toBe(true);
+
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
+  });
+
+  it("restarts through the registered restart_app command", async () => {
+    await restartApp();
+    expect(invoke).toHaveBeenCalledWith("restart_app");
+  });
+
+  it("keeps restart failures visible so the menu can restore", async () => {
+    vi.mocked(invoke).mockRejectedValueOnce(new Error("ipc closed"));
+
+    await expect(restartApp()).rejects.toThrow("ipc closed");
   });
 });

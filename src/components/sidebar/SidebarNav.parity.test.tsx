@@ -85,6 +85,29 @@ describe("SidebarNav view entries (D01-018/D01-021..D01-025)", () => {
     expect(screen.getByRole("button", { name: /Orca Mobile/ })).toBeInTheDocument();
   });
 
+  it("hides the Mobile entry when showMobileButton is off", () => {
+    renderNav({ showMobileButton: false });
+
+    expect(screen.queryByRole("button", { name: /Orca Mobile/ })).toBeNull();
+  });
+
+  it("hides Mobile through its context menu writer", async () => {
+    const { onUpdateSettings } = renderNav({ showMobileButton: true });
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: /Orca Mobile/ }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Hide from sidebar" }));
+
+    expect(onUpdateSettings).toHaveBeenCalledWith({ showMobileButton: false });
+  });
+
+  it("does not render the paired-device inline hide until a device list exists", () => {
+    renderNav({ showMobileButton: true });
+
+    // No device-listing IPC in Hydra, so the inline EyeOff stays absent; only
+    // the context-menu hide affordance is honest today.
+    expect(screen.queryByRole("button", { name: "Hide from sidebar" })).toBeNull();
+  });
+
   it("opens each configured page and marks it current", () => {
     renderNav({
       showArtifactsButton: true,
