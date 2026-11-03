@@ -13,6 +13,11 @@ import { AddRepoCloneStep } from "./AddRepoCloneStep";
 import { AddRepoCreateStep } from "./AddRepoCreateStep";
 import { AddRepoNestedImportStep } from "./AddRepoNestedImportStep";
 import { AddProjectFromFolderDialog } from "./AddProjectFromFolderDialog";
+import { RemoteFileBrowser } from "./RemoteFileBrowser";
+import { abortClone, cloneRepository, createCloneId } from "../../lib/clone-client";
+import { addRemoteCatalogRepo } from "../../lib/catalog-client";
+import { cloneSshRepository, createSshProject } from "../../store/ssh-remote-bridge";
+import { toSshExecutionHostId } from "../../shared/execution-host";
 import { useAddRepoHostSelection } from "./useAddRepoHostSelection";
 import { useAddRepoHostChangeReset } from "./useAddRepoHostChangeReset";
 import {
@@ -75,6 +80,10 @@ export function AddRepoDialog({
   const selectedHostKind = hostSelection.selectedParsedHost?.kind ?? null;
   const isLocalHost = selectedHostKind === "local";
   const isRemoteHost = !isLocalHost;
+  const sshTargetId = hostSelection.selectedSshTargetId;
+  // Why: only an SSH target has the remote execution commands; a paired runtime
+  // server still needs its RPC bridge.
+  const isSshHost = selectedHostKind === "ssh" && sshTargetId !== null;
   const hostLabel = hostSelection.selectedHostOption?.label ?? null;
   const [step, setStep] = useState<AddRepoDialogStep>("add");
   const [isAdding, setIsAdding] = useState(false);
@@ -84,6 +93,10 @@ export function AddRepoDialog({
   // Why: monotonic id so stale async folders/clone/create results cannot close or
   // overwrite the dialog after Back/close/host switch. Orca's generation ref.
   const addGenRef = useRef(0);
+  // Id of the running local clone, so Cancel has the process handle `clone_abort` needs.
+  const cloneIdRef = useRef<string | null>(null);
+  // Which host-path field the remote folder picker is filling.
+  const [remotePicker, setRemotePicker] = useState<"clone" | "create" | null>(null);
 
   const [cloneUrl, setCloneUrl] = useState("");
   // Orca `getDefaultCloneParent`: clones sit beside the "workspaces" tree, so a
@@ -133,6 +146,8 @@ export function AddRepoDialog({
     setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
     setCloneError(null);
     setIsCloning(false);
+    cloneIdRef.current = null;
+    setRemotePicker(null);
     setCreateName("");
     setCreateParent(isLocalHost ? workspaceDir : "");
     setCreateError(null);
@@ -151,6 +166,7 @@ export function AddRepoDialog({
     setDroppedFolderError(null);
     setBusyLabel(null);
     setIsAdding(false);
+    setRemotePicker(null);
     resetNestedReview();
   }, [resetNestedReview]);
 
@@ -179,6 +195,7 @@ export function AddRepoDialog({
     setCloneDest(isLocalHost ? getDefaultCloneParent(workspaceDir) : "");
     setCloneError(null);
     setIsCloning(false);
+    setRemotePicker(null);
     setCreateName("");
     setCreateParent(isLocalHost ? workspaceDir : "");
     setCreateError(null);
@@ -385,8 +402,12 @@ export function AddRepoDialog({
   };
 
   const handlePickCloneDestination = async () => {
-    if (!isLocalHost) {
-      toast.error("Enter a host path for the clone destination.");
+    if (isSshHost) {
+      setRemotePicker("clone");
+      return;
+    }
+    if (isRemoteHost) {
+      toast.error("Browsing a paired server needs the runtime RPC bridge, which this build does not ship.");
       return;
     }
     const gen = addGenRef.current;
@@ -398,36 +419,13 @@ export function AddRepoDialog({
     }
   };
 
-  const handleClone = async () => {
-    const url = cloneUrl.trim();
-    const destination = cloneDest.trim();
-    if (!url || !destination) return;
-    if (!isLocalHost) {
-      setCloneError(
-        "Cloning on a remote host needs the SSH/runtime clone bridge, which this build does not ship."
-      );
+  const handlePickCreateParent = async () => {
+    if (isSshHost) {
+      setRemotePicker("create");
       return;
     }
-    const gen = ++addGenRef.current;
-    setIsCloning(true);
-    setCloneError(null);
-    try {
-      const path = await invoke<string>("clone_project", { url, parentDir: destination });
-      if (gen !== addGenRef.current) return;
-      toast.success("Repository cloned");
-      onProjectAdded(path, "project");
-      handleClose();
-    } catch (cloneFailure) {
-      if (gen !== addGenRef.current) return;
-      setCloneError(extractIpcErrorMessage(cloneFailure, String(cloneFailure)));
-    } finally {
-      if (gen === addGenRef.current) setIsCloning(false);
-    }
-  };
-
-  const handlePickCreateParent = async () => {
-    if (!isLocalHost) {
-      toast.error("Enter a host parent path.");
+    if (isRemoteHost) {
+      toast.error("Browsing a paired server needs the runtime RPC bridge, which this build does not ship.");
       return;
     }
     const gen = addGenRef.current;
@@ -439,13 +437,83 @@ export function AddRepoDialog({
     }
   };
 
+  const handleClone = async () => {
+    const url = cloneUrl.trim();
+    const destination = cloneDest.trim();
+    if (!url || !destination) return;
+    if (!isLocalHost && !isSshHost) {
+      setCloneError(
+        "Cloning on a paired server needs the runtime RPC bridge (`repo.clone`), which this build does not ship."
+      );
+      return;
+    }
+    const gen = ++addGenRef.current;
+    setIsCloning(true);
+    setCloneError(null);
+    // Only the local clone is a cancellable child process; the SSH clone is one
+    // remote command with no abort surface.
+    const cloneId = isLocalHost ? createCloneId() : null;
+    cloneIdRef.current = cloneId;
+    try {
+      let path: string;
+      if (isSshHost && sshTargetId) {
+        path = (
+          await cloneSshRepository({
+            connectionId: sshTargetId,
+            url,
+            destination
+          })
+        ).path;
+        if (gen !== addGenRef.current) return;
+        // Why: the checkout lives on the host, so the row must carry its stamps
+        // or the sidebar would treat it as a local path.
+        await addRemoteCatalogRepo({
+          path,
+          connectionId: sshTargetId,
+          executionHostId: toSshExecutionHostId(sshTargetId),
+          kind: "git"
+        });
+      } else {
+        path = await cloneRepository(url, destination, cloneId ?? createCloneId());
+      }
+      if (gen !== addGenRef.current) return;
+      toast.success("Repository cloned");
+      onProjectAdded(path, "project");
+      handleClose();
+    } catch (cloneFailure) {
+      if (gen !== addGenRef.current) return;
+      setCloneError(extractIpcErrorMessage(cloneFailure, String(cloneFailure)));
+    } finally {
+      cloneIdRef.current = null;
+      if (gen === addGenRef.current) setIsCloning(false);
+    }
+  };
+
+  const handleCancelClone = () => {
+    const cloneId = cloneIdRef.current;
+    if (!cloneId) return;
+    void abortClone(cloneId)
+      .then((result) => {
+        // Why: the clone promise owns the error surface. Only a failed kill needs
+        // its own message; a cancelled clone rejects with "Clone cancelled".
+        if (!result.cancelled) {
+          toast.error("Could not cancel the clone", {
+            description: "The clone is still running in the background."
+          });
+        }
+      })
+      .catch((abortFailure: unknown) => {
+        toast.error(extractIpcErrorMessage(abortFailure, String(abortFailure)));
+      });
+  };
+
   const handleCreate = async () => {
     const name = createName.trim();
     const parent = createParent.trim();
     if (!name || !parent) return;
-    if (!isLocalHost) {
+    if (!isLocalHost && !isSshHost) {
       setCreateError(
-        "Creating a project on a remote host needs the SSH/runtime create bridge, which this build does not ship."
+        "Creating a project on a paired server needs the runtime RPC bridge (`repo.add`), which this build does not ship."
       );
       return;
     }
@@ -453,12 +521,30 @@ export function AddRepoDialog({
     setIsCreating(true);
     setCreateError(null);
     try {
-      const path = await invoke<string>("create_project", {
-        name,
-        parentDir: parent,
-        initGit: true
-      });
+      const path =
+        isSshHost && sshTargetId
+          ? (
+              await createSshProject({
+                connectionId: sshTargetId,
+                path: parent,
+                name,
+                initGit: true
+              })
+            ).path
+          : await invoke<string>("create_project", {
+              name,
+              parentDir: parent,
+              initGit: true
+            });
       if (gen !== addGenRef.current) return;
+      if (isSshHost && sshTargetId) {
+        await addRemoteCatalogRepo({
+          path,
+          connectionId: sshTargetId,
+          executionHostId: toSshExecutionHostId(sshTargetId),
+          kind: "git"
+        });
+      }
       toast.success("Project created");
       onProjectAdded(path, "project");
       handleClose();
@@ -468,6 +554,18 @@ export function AddRepoDialog({
     } finally {
       if (gen === addGenRef.current) setIsCreating(false);
     }
+  };
+
+  /** A folder chosen in the remote browser fills the field the picker was opened for. */
+  const handleRemotePick = (path: string) => {
+    if (remotePicker === "clone") {
+      setCloneDest(path);
+      setCloneError(null);
+    } else if (remotePicker === "create") {
+      setCreateParent(path);
+      setCreateError(null);
+    }
+    setRemotePicker(null);
   };
 
   const confirmDroppedFolder = async () => {
@@ -638,7 +736,6 @@ export function AddRepoDialog({
           setStep("create");
         },
         showRemoteAction: hostSelection.hostOptions.some((host) => host.kind === "ssh"),
-        canCreateProject: hostSelection.selectedParsedHost?.kind !== "ssh",
         browseHostKind: selectedHostKind ?? "local"
       }),
     // Why: the handlers close over the current host/step state; rebuilding when
@@ -737,51 +834,86 @@ export function AddRepoDialog({
         ) : null}
 
         {step === "clone" ? (
-          <AddRepoCloneStep
-            cloneUrl={cloneUrl}
-            cloneDestination={cloneDest}
-            cloneError={cloneError}
-            cloneProgress={cloneProgress}
-            isCloning={isCloning}
-            gitUnavailable={gitAvailability === "unavailable"}
-            destinationIsRemote={isRemoteHost}
-            hostLabel={hostLabel}
-            onUrlChange={(value) => {
-              setCloneUrl(value);
-              setCloneError(null);
-            }}
-            onDestinationChange={(value) => {
-              setCloneDest(value);
-              setCloneError(null);
-            }}
-            onPickDestination={() => void handlePickCloneDestination()}
-            onClone={() => void handleClone()}
-          />
+          remotePicker === "clone" && isSshHost && sshTargetId ? (
+            <div className="p-5 space-y-3">
+              <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
+                Clone destination on {hostLabel ?? "this SSH host"}
+              </h2>
+              <RemoteFileBrowser
+                source={{ kind: "ssh", targetId: sshTargetId }}
+                initialPath={cloneDest.trim() || "~"}
+                onSelect={handleRemotePick}
+                onCancel={() => setRemotePicker(null)}
+              />
+            </div>
+          ) : (
+            <AddRepoCloneStep
+              cloneUrl={cloneUrl}
+              cloneDestination={cloneDest}
+              cloneError={cloneError}
+              cloneProgress={cloneProgress}
+              isCloning={isCloning}
+              gitUnavailable={isLocalHost && gitAvailability === "unavailable"}
+              destinationIsRemote={isRemoteHost}
+              hostLabel={hostLabel}
+              onUrlChange={(value) => {
+                setCloneUrl(value);
+                setCloneError(null);
+              }}
+              onDestinationChange={(value) => {
+                setCloneDest(value);
+                setCloneError(null);
+              }}
+              onPickDestination={() => void handlePickCloneDestination()}
+              onCancelClone={isLocalHost ? handleCancelClone : undefined}
+              onClone={() => void handleClone()}
+            />
+          )
         ) : null}
 
         {step === "create" ? (
-          <AddRepoCreateStep
-            createName={createName}
-            createParent={createParent}
-            createError={createError}
-            isCreating={isCreating}
-            defaultParent={isLocalHost ? workspaceDir : ""}
-            gitAvailability={gitAvailability}
-            manualParentEntry={isRemoteHost}
-            isRemoteHost={isRemoteHost}
-            hostLabel={hostLabel}
-            onNameChange={(value) => {
-              setCreateName(value);
-              setCreateError(null);
-            }}
-            onParentChange={(value) => {
-              setCreateParent(value);
-              setCreateError(null);
-            }}
-            onPickParent={() => void handlePickCreateParent()}
-            onBrowseServer={() => setStep("server-path")}
-            onCreate={() => void handleCreate()}
-          />
+          remotePicker === "create" && isSshHost && sshTargetId ? (
+            <div className="p-5 space-y-3">
+              <h2 className="text-sm font-semibold tracking-tight text-neutral-100">
+                Project parent on {hostLabel ?? "this SSH host"}
+              </h2>
+              <RemoteFileBrowser
+                source={{ kind: "ssh", targetId: sshTargetId }}
+                initialPath={createParent.trim() || "~"}
+                onSelect={handleRemotePick}
+                onCancel={() => setRemotePicker(null)}
+              />
+            </div>
+          ) : (
+            <AddRepoCreateStep
+              createName={createName}
+              createParent={createParent}
+              createError={createError}
+              isCreating={isCreating}
+              defaultParent={isLocalHost ? workspaceDir : ""}
+              gitAvailability={isLocalHost ? gitAvailability : "unknown"}
+              manualParentEntry={isRemoteHost}
+              isRemoteHost={isRemoteHost}
+              hostLabel={hostLabel}
+              onNameChange={(value) => {
+                setCreateName(value);
+                setCreateError(null);
+              }}
+              onParentChange={(value) => {
+                setCreateParent(value);
+                setCreateError(null);
+              }}
+              onPickParent={() => void handlePickCreateParent()}
+              onBrowseServer={() => {
+                if (isSshHost) {
+                  setRemotePicker("create");
+                  return;
+                }
+                setStep("server-path");
+              }}
+              onCreate={() => void handleCreate()}
+            />
+          )
         ) : null}
 
         {step === "nested" && nestedScan ? (
@@ -806,7 +938,7 @@ export function AddRepoDialog({
             </h2>
             <p className="text-xs leading-relaxed text-neutral-400">
               {step === "remote"
-                ? `Opening a project path on ${hostLabel ?? "this SSH host"} needs the SSH project bridge (remote path add + remote folder scan), which this build does not ship. The host selector and connection probe work; adding is blocked.`
+                ? `Opening an existing path on ${hostLabel ?? "this SSH host"} needs a remote repository probe (is this path a Git checkout?), which this build does not ship. Cloning and creating on this host work; the host selector, connection probe and folder picker work.`
                 : "Opening a project path on a runtime server needs the runtime RPC bridge (`repo.add`), which this build does not ship. The host selector works; adding is blocked."}
             </p>
             <div className="rounded border border-[#2a2b30] bg-[#0e0f11] px-3 py-2 font-mono text-[11px] text-neutral-500">

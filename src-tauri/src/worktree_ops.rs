@@ -1,9 +1,14 @@
 use crate::catalog::{self, CatalogRepo};
 use crate::db::{CustomWorktreeSource, SourcePreferences, WorktreeVisibilityDefaults};
+use crate::proc_runner::{run_bounded, RunFailure, OUTPUT_CAP_BYTES};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock};
+use std::time::{Duration, Instant};
+use parking_lot::Mutex;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GitWorktreeInfo {
     pub path: String,
@@ -1873,36 +1878,203 @@ pub fn create_new_project(params: CreateProjectParams) -> Result<String, String>
     Ok(project_dir.to_string_lossy().to_string())
 }
 
-pub fn clone_git_repository(url: &str, parent_dir: &str) -> Result<String, String> {
+/// Running local clones, keyed by the id the renderer generated. The value is
+/// the cancel flag the clone loop polls; the map itself is the liveness signal,
+/// so an aborted clone disappears the moment its process is reaped.
+static ACTIVE_CLONES: LazyLock<Mutex<HashMap<String, Arc<AtomicBool>>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
+/// Renderer-facing result of a clone cancellation request.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CloneAbortResult {
+    pub clone_id: String,
+    /// Whether the clone was still registered when the request arrived.
+    pub found: bool,
+    /// Whether the clone process actually ended before the request returned.
+    pub cancelled: bool,
+}
+
+/// Removes the registry entry on every exit path (success, git failure, cancel),
+/// which is what `abort_clone` observes to report a confirmed cancellation.
+#[derive(Debug)]
+struct CloneRegistration {
+    id: String,
+}
+
+impl CloneRegistration {
+    fn new(id: String, cancel: Arc<AtomicBool>) -> Result<Self, String> {
+        let mut active = ACTIVE_CLONES.lock();
+        if active.insert(id.clone(), cancel).is_some() {
+            return Err(format!("A clone with id {id} is already running"));
+        }
+        Ok(Self { id })
+    }
+}
+
+impl Drop for CloneRegistration {
+    fn drop(&mut self) {
+        ACTIVE_CLONES.lock().remove(&self.id);
+    }
+}
+
+/// Requests cancellation of a running clone and waits briefly for the process
+/// to be reaped, so `cancelled` is an observation and not a guess.
+pub fn abort_clone(clone_id: &str) -> CloneAbortResult {
+    let clone_id = clone_id.trim().to_string();
+    let flag = ACTIVE_CLONES.lock().get(&clone_id).cloned();
+    let Some(flag) = flag else {
+        return CloneAbortResult {
+            clone_id,
+            found: false,
+            cancelled: false,
+        };
+    };
+    flag.store(true, Ordering::Relaxed);
+
+    let deadline = Instant::now() + Duration::from_secs(3);
+    loop {
+        if !ACTIVE_CLONES.lock().contains_key(&clone_id) {
+            return CloneAbortResult {
+                clone_id,
+                found: true,
+                cancelled: true,
+            };
+        }
+        if Instant::now() >= deadline {
+            return CloneAbortResult {
+                clone_id,
+                found: true,
+                cancelled: false,
+            };
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
+}
+
+/// Clones `url` into `parent_dir`. When `clone_id` is given the process is
+/// registered so `abort_clone` can kill it; the returned path is resolved before
+/// the transfer starts, so a cancelled clone never reports a checkout.
+pub fn clone_git_repository_cancellable(
+    url: &str,
+    parent_dir: &str,
+    clone_id: Option<&str>,
+) -> Result<String, String> {
     let parent = PathBuf::from(parent_dir);
     if !parent.exists() {
-        std::fs::create_dir_all(&parent).map_err(|e| format!("Failed to create destination directory: {e}"))?;
+        std::fs::create_dir_all(&parent)
+            .map_err(|e| format!("Failed to create destination directory: {e}"))?;
     }
 
-    let out = Command::new("git")
-        .args(["clone", url])
+    let repository_name = {
+        let derived = url
+            .trim_end_matches('/')
+            .rsplit(['/', ':'])
+            .find(|part| !part.is_empty())
+            .unwrap_or("repo")
+            .trim_end_matches(".git");
+        if derived.is_empty() {
+            "repo".to_string()
+        } else {
+            derived.to_string()
+        }
+    };
+    let cloned_path = parent.join(&repository_name);
+
+    let cancel = Arc::new(AtomicBool::new(false));
+    let _registration = match clone_id.map(str::trim).filter(|id| !id.is_empty()) {
+        Some(id) => Some(CloneRegistration::new(id.to_string(), cancel.clone())?),
+        None => None,
+    };
+
+    let child = Command::new("git")
+        .args(["clone", "--", url])
         .current_dir(&parent)
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(|e| format!("Failed to run git clone: {e}"))?;
 
-    if !out.status.success() {
-        return Err(String::from_utf8_lossy(&out.stderr).to_string());
+    let output = run_bounded(child, None, OUTPUT_CAP_BYTES, Some(cancel.as_ref())).map_err(
+        |failure| match failure {
+            RunFailure::Cancelled => "Clone cancelled".to_string(),
+            other => other.message(),
+        },
+    )?;
+
+    if !output.success {
+        return Err(output
+            .stderr_detail()
+            .unwrap_or_else(|| format!("git clone exited with status {}", output.status_code.unwrap_or(-1))));
     }
 
-    let repo_name = url
-        .trim_end_matches('/')
-        .split('/')
-        .last()
-        .unwrap_or("repo")
-        .trim_end_matches(".git");
-
-    let cloned_path = parent.join(repo_name);
     Ok(cloned_path.to_string_lossy().to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn abort_unknown_clone_reports_not_found() {
+        let result = abort_clone("clone-never-started");
+        assert_eq!(result.clone_id, "clone-never-started");
+        assert!(!result.found);
+        assert!(!result.cancelled);
+    }
+
+    #[test]
+    fn abort_clone_waits_for_the_registration_to_disappear() {
+        let cancel = Arc::new(AtomicBool::new(false));
+        let registration = CloneRegistration::new("clone-1".to_string(), cancel.clone())
+            .expect("clone registered");
+        assert!(!cancel.load(Ordering::Relaxed));
+
+        // The clone loop drops its registration once the child is reaped; the
+        // abort call must observe that instead of guessing.
+        let dropper = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(80));
+            drop(registration);
+        });
+
+        let result = abort_clone("clone-1");
+        assert!(result.found);
+        assert!(result.cancelled);
+        assert!(cancel.load(Ordering::Relaxed), "abort sets the cancel flag");
+        dropper.join().expect("dropper thread");
+        assert!(!ACTIVE_CLONES.lock().contains_key("clone-1"));
+    }
+
+    #[test]
+    fn duplicate_clone_ids_are_rejected() {
+        let first = CloneRegistration::new("clone-dup".to_string(), Arc::new(AtomicBool::new(false)))
+            .expect("first registration");
+        let error = CloneRegistration::new("clone-dup".to_string(), Arc::new(AtomicBool::new(false)))
+            .expect_err("duplicate rejected");
+        assert!(error.contains("already running"));
+        drop(first);
+    }
+
+    #[test]
+    fn clone_failure_surfaces_git_stderr() {
+        let parent = std::env::temp_dir().join(format!(
+            "hydra-clone-failure-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let error = clone_git_repository_cancellable(
+            "file:///definitely/missing/hydra-test-repo.git",
+            parent.to_str().unwrap(),
+            Some("clone-missing"),
+        )
+        .expect_err("clone fails");
+        assert!(!error.is_empty());
+        // The registry entry is cleaned up on the error path as well.
+        assert!(!ACTIVE_CLONES.lock().contains_key("clone-missing"));
+    }
 
     #[test]
     fn test_parse_worktree_porcelain() {

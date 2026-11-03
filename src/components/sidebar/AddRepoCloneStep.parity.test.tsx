@@ -67,13 +67,35 @@ describe('AddRepoCloneStep (D02a-012)', () => {
     expect(screen.queryByText(/%/)).toBeNull()
   })
 
-  it('disables the native picker for a remote destination and explains why', () => {
+  it('offers the host picker for a remote destination and explains the native picker limit', () => {
     const { handlers } = renderClone({ destinationIsRemote: true })
-    const picker = screen.getByRole('button', { name: /Host destination must be typed/i })
-    expect(picker).toBeDisabled()
+    const picker = screen.getByRole('button', { name: /Pick a host folder/i })
+    expect(picker).toBeEnabled()
     expect(screen.getByText(/native picker only sees this computer/i)).toBeInTheDocument()
     fireEvent.click(picker)
-    expect(handlers.onPickDestination).not.toHaveBeenCalled()
+    expect(handlers.onPickDestination).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a cancel action only when the host can abort the clone', () => {
+    const onCancelClone = vi.fn()
+    const { handlers, rerender } = renderClone({ isCloning: true, onCancelClone })
+    fireEvent.click(screen.getByRole('button', { name: /Cancel clone/i }))
+    expect(onCancelClone).toHaveBeenCalledTimes(1)
+
+    rerender(
+      <AddRepoCloneStep
+        cloneUrl="https://github.com/acme/widgets.git"
+        cloneDestination="/work"
+        cloneError={null}
+        cloneProgress={null}
+        isCloning
+        gitUnavailable={false}
+        destinationIsRemote={false}
+        hostLabel={null}
+        {...handlers}
+      />
+    )
+    expect(screen.queryByRole('button', { name: /Cancel clone/i })).toBeNull()
   })
 
   it('surfaces the clone error', () => {

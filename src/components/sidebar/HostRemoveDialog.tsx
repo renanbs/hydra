@@ -1,7 +1,8 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/HostRemoveDialog.tsx
 // Removing an SSH host: says what happens to its workspaces, optionally clears them first
-// (local forget is backed by `ssh_forget_workspace`; remote deletion has no backend), aborts
+// (local forget is backed by `ssh_forget_workspace`; remote deletion runs
+// `ssh_remote_delete_worktree` on the host and keeps branches it cannot prove merged), aborts
 // atomically when a workspace fails so no ghost rows survive, then deletes the target and
 // drops its now-orphaned display-name override.
 import { useMemo, useState } from 'react'
@@ -92,11 +93,11 @@ export function HostRemoveDialog({
           path: worktree.path,
           repoPath: repos.find((repo) => repo.id === worktree.repoId)?.path ?? ''
         }))
-        const { failedIds, error } = await clearSshHostWorkspaces({
+        const { failedIds, error, preservedBranches } = await clearSshHostWorkspaces({
           resolution,
           worktrees: worktreeRows,
           repos: repos.map((repo) => ({ id: repo.id, path: repo.path })),
-          // Connected hosts would need a remote delete; offline/ghost hosts can only forget.
+          // Connected hosts delete the checkout on the host; offline/ghost hosts can only forget.
           mode: isConnected ? 'delete-remote' : 'forget-local'
         })
         // Why: never remove the target while some workspaces failed — that would strand
@@ -111,6 +112,17 @@ export function HostRemoveDialog({
             error ? { description: error } : undefined
           )
           return
+        }
+        if (preservedBranches.length > 0) {
+          // A worktree removal never deletes branches, so say what stayed behind.
+          toast.info(
+            translate(
+              'auto.components.sidebar.HostRemoveDialog.branchesPreserved',
+              'Kept {{count}} branches on the host',
+              { count: preservedBranches.length }
+            ),
+            { description: preservedBranches.join(', ') }
+          )
         }
       }
       await removeSshTarget(targetId)

@@ -81,6 +81,14 @@ pub struct CatalogFolderWorkspace {
 pub struct CatalogRepo {
     pub id: String,
     pub path: String,
+    /// SSH target id when the checkout lives on a remote host. `None` = local.
+    /// Serialized so the sidebar row keeps its host scope (D03a-046).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub connection_id: Option<String>,
+    /// Explicit execution owner (`ssh:<id>` / `runtime:<id>`), mirroring
+    /// Orca's `executionHostId`; the sidebar keys host filtering on it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution_host_id: Option<String>,
     pub display_name: String,
     pub added_at: i64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -202,6 +210,8 @@ pub fn migrate_added_projects(rows: Vec<AddedProjectRow>, envelope: &mut Catalog
             envelope.repos.push(CatalogRepo {
                 id: new_id(),
                 path: norm,
+                connection_id: None,
+                execution_host_id: None,
                 display_name: row.name,
                 added_at: row.added_at,
                 kind: Some("git".to_string()),
@@ -438,6 +448,8 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
         envelope.repos.push(CatalogRepo {
             id: new_id(),
             path: norm,
+            connection_id: None,
+            execution_host_id: None,
             display_name: name,
             added_at: now,
             kind: Some("git".to_string()),
@@ -513,6 +525,8 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
         envelope.repos.push(CatalogRepo {
             id: new_id(),
             path: sub_norm,
+            connection_id: None,
+            execution_host_id: None,
             display_name: name,
             added_at: now,
             kind: Some("git".to_string()),
@@ -531,6 +545,84 @@ pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Resu
         });
     }
     Ok(())
+}
+
+/// Last path segment, for a display name when the caller did not supply one.
+fn last_path_segment(path: &str) -> Option<String> {
+    path.trim_end_matches(['/', '\\'])
+        .rsplit(['/', '\\'])
+        .find(|segment| !segment.is_empty())
+        .map(str::to_string)
+}
+
+/// Registers a checkout that lives on another host (SSH).
+///
+/// Unlike [`add_folder_to_catalog`] there is no local directory to probe, so the
+/// caller supplies the identity the row is keyed on: normalized path +
+/// connection id. Re-adding the same pair returns the existing row instead of a
+/// duplicate, which makes a retried dialog or a re-clone idempotent.
+pub fn add_remote_repo_to_catalog(
+    path: &str,
+    connection_id: &str,
+    execution_host_id: Option<&str>,
+    kind: &str,
+    display_name: Option<&str>,
+    envelope: &mut CatalogEnvelope,
+) -> Result<CatalogRepo, String> {
+    let normalized = normalize_catalog_path(path);
+    if normalized.is_empty() {
+        return Err("Empty path".to_string());
+    }
+    let connection_id = connection_id.trim();
+    if connection_id.is_empty() {
+        return Err("connectionId is required for a remote repository".to_string());
+    }
+    let kind = kind.trim();
+    let kind = if kind.is_empty() { "git" } else { kind };
+    if kind != "git" && kind != "folder" {
+        return Err(format!("Unsupported repository kind: {kind}"));
+    }
+
+    if let Some(existing) = envelope.repos.iter().find(|repo| {
+        repo.connection_id.as_deref() == Some(connection_id)
+            && normalize_catalog_path(&repo.path) == normalized
+    }) {
+        return Ok(existing.clone());
+    }
+
+    let display_name = display_name
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+        .or_else(|| last_path_segment(&normalized))
+        .unwrap_or_else(|| normalized.clone());
+
+    let repo = CatalogRepo {
+        id: new_id(),
+        path: normalized,
+        connection_id: Some(connection_id.to_string()),
+        execution_host_id: execution_host_id
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string),
+        display_name,
+        added_at: now_ms(),
+        kind: Some(kind.to_string()),
+        worktree_base_path: None,
+        project_group_id: None,
+        repo_icon: None,
+        imported_external_worktree_paths: None,
+        external_worktree_discovery_suppressed_at: None,
+        external_worktree_inbox_baseline_paths: None,
+        external_worktree_visibility_prompt_dismissed_at: None,
+        external_worktree_visibility: None,
+        external_worktree_visibility_legacy: None,
+        agent_worktree_visibility: None,
+        custom_worktree_visibility_sources: None,
+        worktree_visibility_source_preferences: None,
+    };
+    envelope.repos.push(repo.clone());
+    Ok(repo)
 }
 
 /// Applies the external-worktree inbox state to the repo at `repo_path`
@@ -957,6 +1049,8 @@ mod tests {
         env.repos.push(CatalogRepo {
             id: "r1".to_string(),
             path: "/x/repo".to_string(),
+            connection_id: None,
+            execution_host_id: None,
             display_name: "repo".to_string(),
             added_at: 1,
             kind: Some("git".to_string()),
@@ -1069,10 +1163,67 @@ mod tests {
         let _ = std::fs::remove_dir_all(&base);
     }
 
+    #[test]
+    fn add_remote_repo_keeps_host_stamps_and_is_idempotent() {
+        let mut env = CatalogEnvelope::empty();
+        let repo = add_remote_repo_to_catalog(
+            "/srv/apps/widgets/",
+            "ssh-1",
+            Some("ssh:ssh-1"),
+            "git",
+            None,
+            &mut env,
+        )
+        .expect("remote repo written");
+
+        assert_eq!(repo.path, "/srv/apps/widgets");
+        assert_eq!(repo.display_name, "widgets");
+        assert_eq!(repo.connection_id.as_deref(), Some("ssh-1"));
+        assert_eq!(repo.execution_host_id.as_deref(), Some("ssh:ssh-1"));
+        assert_eq!(env.repos.len(), 1);
+
+        // Same host + same path is a no-op; the row keeps its id.
+        let again = add_remote_repo_to_catalog(
+            "/srv/apps/widgets",
+            "ssh-1",
+            Some("ssh:ssh-1"),
+            "git",
+            Some("ignored"),
+            &mut env,
+        )
+        .expect("idempotent");
+        assert_eq!(again.id, repo.id);
+        assert_eq!(env.repos.len(), 1);
+
+        // The same path on another host is a different project.
+        add_remote_repo_to_catalog("/srv/apps/widgets", "ssh-2", None, "git", None, &mut env)
+            .expect("second host");
+        assert_eq!(env.repos.len(), 2);
+
+        // The host stamps survive the wire format the renderer reads.
+        let raw = serde_json::to_string(&env).expect("serialize");
+        assert!(raw.contains("\"connectionId\":\"ssh-1\""));
+        assert!(raw.contains("\"executionHostId\":\"ssh:ssh-1\""));
+    }
+
+    #[test]
+    fn add_remote_repo_rejects_missing_identity_and_unknown_kind() {
+        let mut env = CatalogEnvelope::empty();
+        assert!(add_remote_repo_to_catalog("", "ssh-1", None, "git", None, &mut env).is_err());
+        assert!(add_remote_repo_to_catalog("/srv/x", "  ", None, "git", None, &mut env).is_err());
+        assert!(
+            add_remote_repo_to_catalog("/srv/x", "ssh-1", None, "submodule", None, &mut env)
+                .is_err()
+        );
+        assert!(env.repos.is_empty());
+    }
+
     fn repo_at(path: &str) -> CatalogRepo {
         CatalogRepo {
             id: "r1".to_string(),
             path: path.to_string(),
+            connection_id: None,
+            execution_host_id: None,
             display_name: "repo".to_string(),
             added_at: 1,
             kind: Some("git".to_string()),

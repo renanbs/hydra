@@ -24,6 +24,8 @@ pub mod theme_import;
 pub mod port_scanner;
 pub mod hooks;
 pub mod ssh_hosts;
+pub mod ssh_remote;
+pub mod proc_runner;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{fold_terminal_output, AgentState};
@@ -49,14 +51,15 @@ use project_manager::{
     suppress_discovery_for_project, HydraProject,
 };
 use catalog::{
-    add_folder_to_catalog, read_catalog, remove_folder_workspace_from_catalog, write_catalog,
-    CatalogEnvelope,
+    add_folder_to_catalog, add_remote_repo_to_catalog, read_catalog,
+    remove_folder_workspace_from_catalog, write_catalog, CatalogEnvelope,
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
-    clone_git_repository, create_git_worktree, create_new_project, gate_worktree_archive_hook,
-    list_git_worktrees, remove_git_worktree, scan_project_worktrees, CreateProjectParams,
-    CreateWorktreeParams, GitWorktreeInfo, ProjectWorktreeScanResult, WorktreeDeleteOutcome,
+    abort_clone, clone_git_repository_cancellable, create_git_worktree, create_new_project,
+    gate_worktree_archive_hook, list_git_worktrees, remove_git_worktree,
+    scan_project_worktrees, CloneAbortResult, CreateProjectParams, CreateWorktreeParams,
+    GitWorktreeInfo, ProjectWorktreeScanResult, WorktreeDeleteOutcome,
 };
 
 pub struct AppState {
@@ -382,13 +385,53 @@ async fn catalog_add_folder(path: String) -> Result<CatalogEnvelope, String> {
 }
 
 #[tauri::command]
-async fn catalog_remove_repo(path: String) -> Result<CatalogEnvelope, String> {
+async fn catalog_add_remote_repo(
+    path: String,
+    connection_id: String,
+    execution_host_id: Option<String>,
+    kind: Option<String>,
+    display_name: Option<String>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        add_remote_repo_to_catalog(
+            &path,
+            &connection_id,
+            execution_host_id.as_deref(),
+            kind.as_deref().unwrap_or("git"),
+            display_name.as_deref(),
+            &mut envelope,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn catalog_remove_repo(
+    path: String,
+    connection_id: Option<String>,
+) -> Result<CatalogEnvelope, String> {
     tokio::task::spawn_blocking(move || {
         let mut envelope = read_catalog();
         let norm = catalog::normalize_catalog_path(&path);
-        envelope
-            .repos
-            .retain(|r| catalog::normalize_catalog_path(&r.path) != norm);
+        let scope = connection_id
+            .map(|id| id.trim().to_string())
+            .filter(|id| !id.is_empty());
+        envelope.repos.retain(|r| {
+            let same_path = catalog::normalize_catalog_path(&r.path) == norm;
+            if !same_path {
+                return true;
+            }
+            // Why: two hosts can hold the same absolute path. A host-scoped
+            // removal must not drop the row that belongs to the other host.
+            match scope.as_deref() {
+                Some(connection) => r.connection_id.as_deref() != Some(connection),
+                None => false,
+            }
+        });
         write_catalog(&envelope)?;
         Ok(envelope)
     })
@@ -619,9 +662,13 @@ async fn create_project(name: String, parent_dir: String, init_git: bool) -> Res
 }
 
 #[tauri::command]
-async fn clone_project(url: String, parent_dir: String) -> Result<String, String> {
+async fn clone_project(
+    url: String,
+    parent_dir: String,
+    clone_id: Option<String>,
+) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
-        let path = clone_git_repository(&url, &parent_dir)?;
+        let path = clone_git_repository_cancellable(&url, &parent_dir, clone_id.as_deref())?;
         let mut envelope = read_catalog();
         let _ = add_folder_to_catalog(&path, &mut envelope);
         let _ = write_catalog(&envelope);
@@ -629,6 +676,15 @@ async fn clone_project(url: String, parent_dir: String) -> Result<String, String
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+/// Cancels a running local clone. `cancelled` is only true when the child was
+/// already reaped, so the renderer can keep showing "Cloning..." otherwise.
+#[tauri::command]
+async fn clone_abort(clone_id: String) -> Result<CloneAbortResult, String> {
+    tokio::task::spawn_blocking(move || abort_clone(&clone_id))
+        .await
+        .map_err(|e| e.to_string())
 }
 #[tauri::command]
 async fn create_worktree(
@@ -1962,6 +2018,7 @@ pub fn run() {
             catalog_get,
             is_git_repository,
             catalog_add_folder,
+            catalog_add_remote_repo,
             catalog_remove_folder_workspace,
             catalog_remove_repo,
             catalog_set_worktree_visibility,
@@ -1980,6 +2037,7 @@ pub fn run() {
             suppress_worktree_inbox,
             create_project,
             clone_project,
+            clone_abort,
             create_worktree,
             delete_worktree,
             delete_worktrees_batch,
@@ -2059,6 +2117,10 @@ pub fn run() {
             ssh_hosts::ssh_resolve_config_host,
             ssh_hosts::ssh_reconnect_target,
             ssh_hosts::ssh_forget_workspace,
+            ssh_remote::ssh_browse_dir,
+            ssh_remote::ssh_remote_clone,
+            ssh_remote::ssh_remote_create_project,
+            ssh_remote::ssh_remote_delete_worktree,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

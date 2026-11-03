@@ -474,11 +474,12 @@ pub fn classify_ssh_probe_error(stderr: &str) -> &'static str {
     }
 }
 
-/// Arguments for a non-interactive `ssh` reachability probe. `BatchMode`
-/// guarantees a missing credential fails fast instead of hanging on a prompt.
-/// The target's explicit host/port/identity are preferred over its config alias
-/// so a later edit of `~/.ssh/config` cannot redirect the probe to another host.
-pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
+/// Non-interactive OpenSSH options shared by the reachability probe and every
+/// remote execution command (`ssh_remote`). `BatchMode` guarantees a missing
+/// credential fails fast instead of hanging on a prompt. The target's explicit
+/// host/port/identity are preferred over its config alias so a later edit of
+/// `~/.ssh/config` cannot redirect the connection to another host.
+pub fn build_ssh_base_args(target: &SshTarget) -> Vec<String> {
     let mut args = vec![
         "-T".to_string(),
         "-o".to_string(),
@@ -514,13 +515,24 @@ pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
         args.push("-J".to_string());
         args.push(jump_host.to_string());
     }
+    args
+}
+
+/// `user@host` destination for the ssh argument vector.
+pub fn build_ssh_destination(target: &SshTarget) -> String {
     let username = target.username.trim();
     let host = target.host.trim();
-    args.push(if username.is_empty() {
+    if username.is_empty() {
         host.to_string()
     } else {
         format!("{username}@{host}")
-    });
+    }
+}
+
+/// Arguments for the non-interactive reachability probe.
+pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.push(build_ssh_destination(target));
     args.push("true".to_string());
     args
 }
