@@ -356,6 +356,9 @@ export interface WorktreeSidebarProps {
   /**
    * Orca `setWorktreeCardMode` writes `compactWorktreeCards` through the settings
    * writer; App owns that write, so the menu delegates the preset change here.
+   * The nav entries also hide themselves through this same writer.
    */
-  onUpdateSettings?: (patch: { compact_worktree_cards: boolean }) => void;
+  onUpdateSettings?: (patch: Partial<HydraSettings>) => void;
+  /** Orca `openSettingsTarget({pane:'shortcuts'})` entry point for the help menu. */
+  onOpenSettingsSection?: (section: "shortcuts") => void;
 }

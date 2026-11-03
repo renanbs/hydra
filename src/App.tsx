@@ -5545,6 +5545,12 @@ export default function App() {
                 onNewSessionWithAgent={() => {}}
                 onDeleteSession={handleDeleteSession}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenSettingsSection={(section) => {
+                  // D01-036: the help menu's Keyboard Shortcuts item lands on the
+                  // settings pane instead of the last visited section.
+                  setSettingsSectionRequested(section);
+                  setIsSettingsOpen(true);
+                }}
                 onOpenGlobalSettings={() => {
                   setSettingsSectionRequested("general");
                   setIsSettingsOpen(true);
