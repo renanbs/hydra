@@ -75,6 +75,12 @@ export function buildWorkspaceBoardLanes(args: {
   sortBy?: string
   portsByWorktree?: ReadonlyMap<string, WorkspacePort[]>
   prByPath?: Readonly<Record<string, PrDisplay>>
+  /**
+   * Host-qualified identities the sidebar's filters leave visible. When omitted
+   * (`null`/`undefined`) every lane's own predicates decide; the board passes the
+   * epoch-keyed set once the store has a worktree projection.
+   */
+  visibleWorktreeIdentities?: ReadonlySet<string> | null
 }): WorkspaceBoardLane[] {
   const {
     projects,
@@ -90,6 +96,7 @@ export function buildWorkspaceBoardLanes(args: {
     sortBy,
     portsByWorktree,
     prByPath,
+    visibleWorktreeIdentities,
   } = args
   const liveActivity = buildSidebarLiveActivityIndex(sessions, liveWorkspacePaths)
   const cardsByStatus = new Map<WorkspaceStatus, WorkspaceBoardCard[]>(
@@ -116,9 +123,13 @@ export function buildWorkspaceBoardLanes(args: {
       if (!isVisibleUnderSidebarMenuFilters({ worktree: projected, displayOptions, liveActivity })) {
         continue
       }
+      const identity = getWorktreeHostIdentity(projected)
+      if (visibleWorktreeIdentities && !visibleWorktreeIdentities.has(identity)) {
+        continue
+      }
       const status = getWorkspaceStatus(projected, workspaceStatuses)
       cardsByStatus.get(status)?.push({
-        identity: getWorktreeHostIdentity(projected),
+        identity,
         worktreeId: projected.id,
         worktree,
         project,

@@ -4,6 +4,8 @@
 // free-form notes persisted in `worktree_metadata`. The dialog edits a draft and
 // only the Save handler writes, so Cancel never touches the store.
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import type { ExecutionHostId } from '../../shared/execution-host'
+import { getIssueLinkProviderFromUrl, parseIssueLinkInput } from '../../shared/issue-link-input'
 
 import { Label } from '@/components/ui/label'
 import { translate } from '@/i18n/i18n'
@@ -12,6 +14,8 @@ import { WorktreeIssueLinkField, type WorktreeIssueProvider } from './WorktreeIs
 import { WorktreeReviewLinkField } from './WorktreeReviewLinkField'
 import { getDisplacedLinkLabels } from './worktree-issue-displacement'
 import type { WorktreeMetadataDraft } from './worktree-metadata-types'
+import { useWorktreeMetaWorkspace } from './use-worktree-meta-workspace'
+
 
 export interface WorktreeMetaDialogProps {
   open: boolean;
@@ -19,6 +23,11 @@ export interface WorktreeMetaDialogProps {
   initial: WorktreeMetadataDraft;
   /** Provider of the linked review, so the field speaks PR or MR. */
   reviewProvider?: 'github' | 'gitlab';
+  /** Live workspace identity: resolves the owner repo/folder row instead of props. */
+  worktreeId?: string;
+  ownerRepoId?: string | null;
+  executionHostId?: ExecutionHostId;
+
   onOpenChange: (open: boolean) => void;
   onSave: (draft: WorktreeMetadataDraft) => void;
 }
@@ -35,9 +44,20 @@ export function WorktreeMetaDialog({
   worktreeName,
   initial,
   reviewProvider = 'github',
+  worktreeId,
+  ownerRepoId,
+  executionHostId,
   onOpenChange,
   onSave,
 }: WorktreeMetaDialogProps): React.JSX.Element | null {
+  // Identity resolution reads the live store: the owner repo wins over the
+  // ambiguity-preserving owner index, and folder workspaces (absent from
+  // `worktreesByRepo`) project from their catalog record.
+  const resolved = useWorktreeMetaWorkspace({
+    worktreeId: worktreeId ?? "",
+    ownerRepoId,
+    executionHostId,
+  });
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [issueProvider, setIssueProvider] = useState<WorktreeIssueProvider>(
     initial.linkedLinearIssue && initial.linkedIssue == null ? 'linear' : 'github'
@@ -58,10 +78,22 @@ export function WorktreeMetaDialog({
   // would wipe the draft mid-typing. Seed only when the dialog opens.
   const initialRef = useRef(initial);
   initialRef.current = initial;
+  const resolvedRef = useRef(resolved);
+  resolvedRef.current = resolved;
 
   useEffect(() => {
     if (!open) return;
-    const seed = initialRef.current;
+    const fromProps = initialRef.current;
+    const live = resolvedRef.current.worktree;
+    const seed: WorktreeMetadataDraft = live
+      ? {
+          displayName: live.displayName || fromProps.displayName,
+          comment: live.comment ?? fromProps.comment,
+          linkedIssue: live.linkedIssue ?? null,
+          linkedPR: live.linkedPR ?? null,
+          linkedLinearIssue: live.linkedLinearIssue ?? null,
+        }
+      : fromProps;
     setDisplayName(seed.displayName);
     setIssueProvider(seed.linkedLinearIssue && seed.linkedIssue == null ? 'linear' : 'github');
     setIssueInput(
@@ -100,7 +132,7 @@ export function WorktreeMetaDialog({
 
   const submit = useCallback(() => {
     const pullRequest = parsePositiveInteger(linkedPR);
-    if (isIssueInvalid || pullRequest === undefined) {
+    if (pullRequest === undefined) {
       setError(
         translate(
           'auto.components.sidebar.WorktreeMetaDialog.invalidLinks',
@@ -109,34 +141,40 @@ export function WorktreeMetaDialog({
       );
       return;
     }
-    const issue = issueProvider === 'github' ? parsePositiveInteger(issueInput) : null;
-    if (issueProvider === 'github' && issue === undefined) {
-      setError(
-        translate(
-          'auto.components.sidebar.WorktreeMetaDialog.invalidLinks',
-          'Issue and review must be positive numbers.'
-        )
-      );
-      return;
+
+    // One parse for the gate and payload: a pasted GitHub/Linear URL decides its
+    // provider; a bare number stays on the selected chip; a typed Linear id is
+    // normalized by the shared parser.
+    let issue: number | null = null;
+    let linear: string | null = null;
+    const issueText = issueInput.trim();
+    if (issueText) {
+      const provider = getIssueLinkProviderFromUrl(issueText) ?? issueProvider;
+      const parsed = parseIssueLinkInput(issueText, provider);
+      if (!parsed) {
+        setError(
+          translate(
+            'auto.components.sidebar.WorktreeMetaDialog.invalidLinks',
+            'Issue and review must be positive numbers.'
+          )
+        );
+        return;
+      }
+      if (parsed.provider === 'linear') {
+        linear = parsed.identifier;
+      } else {
+        issue = parsed.number;
+      }
     }
-    const linear = issueProvider === 'linear' ? issueInput.trim() : '';
+
     onSave({
       displayName: displayName.trim() || worktreeName,
       comment,
-      linkedIssue: issue ?? null,
-      linkedPR: pullRequest ?? null,
-      linkedLinearIssue: linear || null,
+      linkedIssue: issue,
+      linkedPR: pullRequest,
+      linkedLinearIssue: linear,
     });
-  }, [
-    comment,
-    displayName,
-    isIssueInvalid,
-    issueInput,
-    issueProvider,
-    linkedPR,
-    onSave,
-    worktreeName,
-  ]);
+  }, [comment, displayName, issueInput, issueProvider, linkedPR, onSave, worktreeName]);
 
   useEffect(() => {
     if (!open) return;

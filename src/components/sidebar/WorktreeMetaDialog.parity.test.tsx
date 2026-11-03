@@ -71,4 +71,29 @@ describe("WorktreeMetaDialog (Orca parity)", () => {
     expect(onOpenChange).toHaveBeenCalledTimes(2);
     expect(onSave).not.toHaveBeenCalled();
   });
+
+  it("resolves a pasted GitHub issue URL to its number", () => {
+    const { onSave } = renderDialog();
+    fireEvent.change(screen.getByDisplayValue("12"), {
+      target: { value: "https://github.com/acme/hydra/issues/77" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ linkedIssue: 77, linkedLinearIssue: "ENG-7" })
+    );
+  });
+
+  it("moves a pasted Linear issue URL from the issue field to the Linear link", () => {
+    const { onSave } = renderDialog();
+    fireEvent.change(screen.getByDisplayValue("12"), {
+      target: { value: "https://linear.app/acme/issue/ENG-42/fix-it" },
+    });
+    fireEvent.change(screen.getByDisplayValue("ENG-7"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ linkedIssue: null, linkedLinearIssue: "ENG-42" })
+    );
+  });
 });

@@ -5,6 +5,7 @@ import type { WorkspaceSourceProvider } from './new-workspace/workspace-source'
 // Why: narrows the canonical provider union instead of minting a parallel one.
 export const ISSUE_LINK_PROVIDERS = ['github', 'linear'] as const satisfies readonly WorkspaceSourceProvider[]
 
+
 export type IssueLinkProvider = (typeof ISSUE_LINK_PROVIDERS)[number]
 
 export function isIssueLinkProvider(value: unknown): value is IssueLinkProvider {
@@ -13,6 +14,7 @@ export function isIssueLinkProvider(value: unknown): value is IssueLinkProvider 
 
 /** URL input only. Linear and Jira issue keys are byte-identical in shape, so a
  *  bare `STA-335` can never decide a provider — it would override the chip. */
+
 export function getIssueLinkProviderFromUrl(input: string): IssueLinkProvider | null {
   const trimmed = input.trim()
   if (!/^https?:\/\//i.test(trimmed)) {
@@ -29,6 +31,7 @@ export function getIssueLinkProviderFromUrl(input: string): IssueLinkProvider | 
     return 'linear'
   }
   return null
+
 }
 
 export type ParsedIssueLinkInput =
@@ -37,6 +40,7 @@ export type ParsedIssueLinkInput =
 
 /** Single parse shared by the dialog's save gate and its payload builder, so a
  *  value that enables Save is always the value that gets written. */
+
 export function parseIssueLinkInput(
   input: string,
   provider: IssueLinkProvider
@@ -66,4 +70,5 @@ export function parseIssueLinkInput(
   // Why: `/^\d+$/` accepts 400 digits, which parseInt turns into Infinity —
   // Save would enable and persistence would write `null`.
   return Number.isSafeInteger(parsed) && parsed > 0 ? { provider: 'github', number: parsed } : null
+
 }
