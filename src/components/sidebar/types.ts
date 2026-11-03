@@ -133,6 +133,8 @@ export interface GitWorktreeInfo {
   displayName?: string | null;
   first_agent_message_rename_error?: string | null;
   firstAgentMessageRenameError?: string | null;
+  /** Persisted Jira link projected by the worktree scan (`worktree_metadata`). */
+  linked_jira_issue?: string | null;
   is_sparse?: boolean;
   isSparse?: boolean;
   sparse_directories?: string[];

@@ -3,7 +3,7 @@
 // command that answers with the persisted envelope.
 import { invoke } from "@tauri-apps/api/core";
 import type { RepoIcon } from "../shared/repo-icon";
-import type { CatalogEnvelope } from "./catalog-types";
+import type { CatalogEnvelope, NestedRepoImportResult } from "./catalog-types";
 
 /**
  * Sidebar project ids are the catalog repo id behind the `repo_` prefix
@@ -24,4 +24,48 @@ export function setCatalogRepoIcon(
   repoIcon: RepoIcon | null
 ): Promise<CatalogEnvelope> {
   return invoke<CatalogEnvelope>("catalog_set_repo_icon", { repoId, repoIcon });
+}
+
+export type AddCatalogFolderWorkspaceArgs = {
+  parentPath: string;
+  /** Existing group to open the folder under; omitted creates a `manual` one. */
+  projectGroupId?: string | null;
+  /** Defaults to `<folder> workspace` in the host. */
+  name?: string | null;
+  /** SSH target owning the folder, when it does not live on this machine. */
+  connectionId?: string | null;
+  executionHostId?: string | null;
+};
+
+/**
+ * Creates a folder workspace (`catalogAddFolderWorkspace`). The host is
+ * idempotent per `(group, folder path)`, so re-opening the same folder returns
+ * the envelope unchanged instead of duplicating the row.
+ */
+export function addCatalogFolderWorkspace(
+  args: AddCatalogFolderWorkspaceArgs
+): Promise<CatalogEnvelope> {
+  return invoke<CatalogEnvelope>("catalog_add_folder_workspace", {
+    parentPath: args.parentPath,
+    projectGroupId: args.projectGroupId ?? null,
+    name: args.name ?? null,
+    connectionId: args.connectionId ?? null,
+    executionHostId: args.executionHostId ?? null,
+  });
+}
+
+/**
+ * Adds the repositories selected in the nested-import checklist in one catalog
+ * write (`import_nested_repos`). `groupName` creates a group and assigns every
+ * added repo to it; omit it for a separate import. A single invalid path rejects
+ * the whole batch host-side, so `added` is all-or-nothing.
+ */
+export function importNestedCatalogRepos(
+  paths: readonly string[],
+  groupName?: string | null
+): Promise<NestedRepoImportResult> {
+  return invoke<NestedRepoImportResult>("import_nested_repos", {
+    paths: [...paths],
+    groupName: groupName?.trim() ? groupName.trim() : null,
+  });
 }

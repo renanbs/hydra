@@ -30,6 +30,9 @@ import {
 import type { GitAvailability } from "./create-project-defaults";
 import type { NestedRepoScanResult } from "../../shared/project-group-types";
 import { extractIpcErrorMessage } from "../../lib/ipc-error";
+import { importNestedCatalogRepos } from "../../lib/catalog-client";
+import { toProjectGroupImportResult } from "../../lib/orca-api-shim";
+import { PROJECTS_REFRESH_EVENT } from "../../lib/refresh-projects-awaitable";
 
 export type AddRepoProjectAddedKind = "project" | "folder";
 
@@ -515,70 +518,52 @@ export function AddRepoDialog({
     }
   };
 
-  const defaultGroupName = nestedScan
-    ? defaultProjectGroupNameForPath(nestedScan.selectedPath)
-    : "";
-
+  /**
+   * D02a-024: one bulk catalog write for the reviewed selection. The host
+   * validates every selected path before persisting, so a failed import leaves
+   * the catalog untouched instead of landing a partial batch.
+   */
   const handleImportNestedRepos = async (mode: "group" | "separate") => {
     if (!nestedScan || !nestedReview) return;
+    const paths = getSelectedNestedRepoPathsInScanOrder(nestedScan, nestedSelectedPaths);
+    if (paths.length === 0) {
+      setError("Select at least one repository to import.");
+      return;
+    }
     const gen = ++addGenRef.current;
     setIsAdding(true);
-    setBusyLabel("Opening project...");
+    setBusyLabel("Importing repositories...");
     setError(null);
     try {
-      if (mode === "separate") {
-        const paths = getSelectedNestedRepoPathsInScanOrder(nestedScan, nestedSelectedPaths);
-        let failed = 0;
-        let firstPath: string | null = null;
-        for (const path of paths) {
-          if (gen !== addGenRef.current) return;
-          try {
-            await addFolder(path);
-            firstPath ??= path;
-          } catch {
-            failed += 1;
-          }
-        }
-        if (gen !== addGenRef.current) return;
-        if (failed > 0) {
-          toast.warning("Some repositories could not be imported", {
-            description: `${failed} failed`
-          });
-        }
-        if (!firstPath) {
-          toast.error("No repositories imported");
-          return;
-        }
-        onProjectAdded(firstPath, "project");
-        handleClose();
-        return;
-      }
-
-      // Group import uses `catalog_add_folder` on the parent, which is the only
-      // group-creating catalog write in this backend. It imports every direct
-      // child repository and derives the group name from the folder, so a subset
-      // selection or a renamed group cannot be honored — say so instead of
-      // silently importing something the user did not pick.
-      const completeSelection =
-        nestedSelectedPaths.size === nestedScan.repos.length &&
-        nestedScan.repos.every((repo) => repo.depth === 1);
-      const nameUnchanged = nestedGroupName.trim() === defaultGroupName;
-      if (
-        !completeSelection ||
-        !nameUnchanged ||
-        nestedScan.truncated ||
-        nestedScan.stopped ||
-        nestedScan.timedOut
-      ) {
-        setError(
-          "Group import needs the complete folder scan (all direct child repositories, default name, no truncation). Import separately or open the folder instead."
-        );
-        return;
-      }
-      await addFolder(nestedScan.selectedPath);
+      const catalogResult = await importNestedCatalogRepos(
+        paths,
+        mode === "group"
+          ? nestedGroupName.trim() ||
+              defaultProjectGroupNameForPath(nestedScan.selectedPath)
+          : null
+      );
+      // The catalog is the authority. App refreshes it again in `onProjectAdded`,
+      // so this notification is fire-and-forget; blocking here would couple the
+      // import to whichever listener happens to be mounted.
+      window.dispatchEvent(new CustomEvent(PROJECTS_REFRESH_EVENT));
       if (gen !== addGenRef.current) return;
-      toast.success("Group imported");
-      onProjectAdded(nestedScan.selectedPath, "folder");
+      const result = toProjectGroupImportResult(catalogResult);
+      if (result.failedCount > 0) {
+        toast.warning("Some repositories could not be imported", {
+          description: `${result.failedCount} failed`
+        });
+      }
+      const firstImported = result.projects.find(
+        (project) => project.status === "imported"
+      )?.path;
+      if (!firstImported) {
+        toast.info("Nothing new to import", {
+          description: "Every selected repository is already in the sidebar."
+        });
+        return;
+      }
+      toast.success(mode === "group" ? "Group imported" : "Repositories imported");
+      onProjectAdded(firstImported, "project");
       handleClose();
     } catch (importError) {
       if (gen === addGenRef.current) {

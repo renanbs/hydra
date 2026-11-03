@@ -70,6 +70,10 @@ beforeEach(() => {
     if (command === "catalog_add_folder") {
       return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] });
     }
+    if (command === "import_nested_repos") {
+      const paths = (args as { paths?: string[] })?.paths ?? [];
+      return Promise.resolve({ added: paths, skipped: [] });
+    }
     if (command === "clone_project") return Promise.resolve("/work/widgets");
     if (command === "create_project") return Promise.resolve("/work/projects/demo");
     return Promise.resolve(undefined);
@@ -217,9 +221,11 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
     fireEvent.click(screen.getByRole("button", { name: /import separately/i }));
 
     await waitFor(() =>
-      expect(invokeMock).toHaveBeenCalledWith("catalog_add_folder", { path: "/acme/api" })
+      expect(invokeMock).toHaveBeenCalledWith("import_nested_repos", {
+        paths: ["/acme/api", "/acme/web"],
+        groupName: null
+      })
     );
-    expect(invokeMock).toHaveBeenCalledWith("catalog_add_folder", { path: "/acme/web" });
     await waitFor(() =>
       expect(onProjectAdded).toHaveBeenCalledWith("/acme/api", "project")
     );
@@ -235,9 +241,13 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
     fireEvent.click(screen.getByRole("button", { name: /import as group/i }));
 
     await waitFor(() =>
-      expect(invokeMock).toHaveBeenCalledWith("catalog_add_folder", { path: "/acme" })
+      expect(invokeMock).toHaveBeenCalledWith("import_nested_repos", {
+        paths: ["/acme/api", "/acme/web"],
+        groupName: "acme"
+      })
     );
-    await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/acme", "folder"));
+    // The group import adds repositories, so the first one is what gets selected.
+    await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/acme/api", "project"));
     expect(toastMock.success).toHaveBeenCalledWith("Group imported");
   });
 

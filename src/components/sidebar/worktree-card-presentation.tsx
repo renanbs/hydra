@@ -21,6 +21,8 @@ export interface WorktreeCardPresentation {
   showDetachedHeadInMetaRow: boolean
   showBranch: boolean
   showConflictOperationBadge: boolean
+  /** The checkout has commits ahead of or behind its upstream. */
+  showUpstreamChips: boolean
   showUnreadQuickAction: boolean
   showCombinedStatusSlot: boolean
   showTitleRowPrimary: boolean
@@ -62,6 +64,7 @@ export function buildWorktreeCardPresentation(
     branch,
     identityDisplay,
     conflictOperation,
+    upstreamStatus,
     cacheStartedAt,
     hasDetails,
     hasPorts,
@@ -103,10 +106,16 @@ export function buildWorktreeCardPresentation(
   const showConflictOperationBadge = Boolean(
     conflictOperation && conflictOperation !== 'unknown' && conflictOperation !== 'rebase'
   )
+  const showUpstreamChips = Boolean(
+    upstreamStatus &&
+      !isFolder &&
+      (upstreamStatus.ahead > 0 || upstreamStatus.behind > 0)
+  )
   const hasMetadataDetails = hasWorktreeCardDetails({
     comment: metadata?.comment,
     linkedIssue: metadata?.linkedIssue,
     linkedLinearIssue: metadata?.linkedLinearIssue,
+    linkedJiraIssue: metadata?.linkedJiraIssue,
     automationProvenance: worktree.automationProvenanceKind ?? automationProvenance,
     cliProvenance: worktree.cliProvenanceKind ?? cliCreated,
     hasReview: Boolean(review)
@@ -129,13 +138,17 @@ export function buildWorktreeCardPresentation(
       showIdentityInNewCard ||
       showDetachedHeadInMetaRow ||
       showConflictOperationBadge ||
+      showUpstreamChips ||
       cacheStartedAt != null ||
       showMetaRowDetails ||
       metaRowChildren
   )
   const hasMetaRow = Boolean(
     compactCards
-      ? showConflictOperationBadge || cacheStartedAt != null || Boolean(metaRowChildren)
+      ? showConflictOperationBadge ||
+        showUpstreamChips ||
+        cacheStartedAt != null ||
+        Boolean(metaRowChildren)
       : hasDetailedMetaRowContent
   )
   // Orca `canShowWorkspaceDeleteQuickAction`: the trash affordance is gated on the
@@ -242,6 +255,7 @@ export function buildWorktreeCardPresentation(
     showDetachedHeadInMetaRow,
     showBranch,
     showConflictOperationBadge,
+    showUpstreamChips,
     showUnreadQuickAction,
     showCombinedStatusSlot,
     showTitleRowPrimary,

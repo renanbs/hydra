@@ -2,10 +2,12 @@
 // Source: components/sidebar/use-worktree-card-controller.ts
 import React, { useCallback, useState } from 'react'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus, WorktreeSession } from './types'
+import type { WorktreeUpstreamStatus } from '../../lib/worktree-upstream-status'
 import type { WorktreeStatus } from '../../lib/worktree-status'
 import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
 import { usePromptCacheCountdownStartedAt, usePromptCacheTtlMs } from './CacheTimer'
+import { useWorktreeUpstreamStatus } from '../../hooks/useWorktreeUpstreamStatus'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   repo: HydraProject | undefined
@@ -36,6 +38,8 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   branch: string
   detachedHeadDisplay: string | null
   conflictOperation: string
+  /** Ahead/behind against the upstream branch, fetched per mounted card. */
+  upstreamStatus?: WorktreeUpstreamStatus | null
   cacheStartedAt: number | null
   cacheTtlMs: number
   hasDetails: boolean
@@ -183,6 +187,14 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     : null
 
   const isFolder = !branchName && !worktree.head_commit && !(worktree.is_main ?? worktree.isMainWorktree)
+  // Why hostContextLabel gates it: this command runs Git on this machine, so a
+  // workspace owned by another host must not be measured against a local path.
+  const upstreamStatus = useWorktreeUpstreamStatus({
+    repoPath: effectiveRepo?.path,
+    worktreePath: worktree.path,
+    head: worktree.head_commit,
+    enabled: !isFolder && !hostContextLabel && Boolean(effectiveRepo?.path)
+  })
   const visibleCardTitle =
     worktree.display_name?.trim() ||
     worktree.displayName?.trim() ||
@@ -337,6 +349,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     branch: branchName,
     detachedHeadDisplay,
     conflictOperation: '',
+    upstreamStatus,
     cacheStartedAt,
     cacheTtlMs,
     hasDetails: Boolean(review || (ports && ports.length > 0) || metaRowChildren),

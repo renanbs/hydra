@@ -53,6 +53,7 @@ export function toWorktreeRow(
       linkedIssue: number | null
       linkedPR: number | null
       linkedLinearIssue: string | null
+      linkedJiraIssue?: string | null
     } | null
   }
 ): Worktree {
@@ -66,6 +67,7 @@ export function toWorktreeRow(
     linkedIssue: context.metadata?.linkedIssue ?? null,
     linkedPR: context.metadata?.linkedPR ?? null,
     linkedLinearIssue: context.metadata?.linkedLinearIssue ?? null,
+    linkedJiraIssue: context.metadata?.linkedJiraIssue ?? null,
     isArchived: false,
     isUnread: isUnread ?? worktree.is_unread ?? false,
     isPinned: isPinned ?? worktree.is_pinned ?? false,

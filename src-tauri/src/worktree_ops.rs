@@ -38,6 +38,10 @@ pub struct GitWorktreeInfo {
     /// same column. Omitted from the wire when NULL.
     #[serde(rename = "cliProvenanceKind", default, skip_serializing_if = "Option::is_none")]
     pub cli_provenance_kind: Option<String>,
+    /// Persisted Jira link (`worktree_metadata.linked_jira_issue`), projected so
+    /// a scan-only sidebar already has the producer the card needs.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linked_jira_issue: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -951,6 +955,7 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
                     sparse_directories: None,
                     automation_provenance_kind: None,
                     cli_provenance_kind: None,
+                    linked_jira_issue: None,
                 });
                 current_head = String::new();
                 current_branch = String::new();
@@ -990,6 +995,7 @@ pub fn parse_worktree_porcelain(stdout: &str) -> Vec<GitWorktreeInfo> {
             sparse_directories: None,
             automation_provenance_kind: None,
             cli_provenance_kind: None,
+            linked_jira_issue: None,
         });
     }
 
@@ -1031,6 +1037,7 @@ struct PersistedWorktreeMetadata {
     is_unread: Option<bool>,
     provenance: WorktreeProvenance,
     provenance_kind: Option<String>,
+    linked_jira_issue: Option<String>,
 }
 
 fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMetadata> {
@@ -1048,6 +1055,7 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                     provenance_kind TEXT,
                     is_pinned INTEGER,
                     is_unread INTEGER,
+                    linked_jira_issue TEXT,
                     updated_at INTEGER NOT NULL
                 )",
                 rusqlite::params![],
@@ -1058,7 +1066,8 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN provenance_kind TEXT", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_pinned INTEGER", rusqlite::params![]);
             let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN is_unread INTEGER", rusqlite::params![]);
-            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, provenance_kind FROM worktree_metadata") {
+            let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_jira_issue TEXT", rusqlite::params![]);
+            if let Ok(mut stmt) = conn.prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, provenance_kind, linked_jira_issue FROM worktree_metadata") {
                 if let Ok(rows) = stmt.query_map(rusqlite::params![], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
@@ -1073,6 +1082,7 @@ fn load_all_persisted_worktree_metadata() -> HashMap<String, PersistedWorktreeMe
                                 created_with_agent: row.get(5)?,
                             },
                             provenance_kind: row.get(8)?,
+                            linked_jira_issue: row.get(9)?,
                         },
                     ))
                 }) {
@@ -1163,6 +1173,9 @@ fn fill_worktree_metadata(worktrees: &mut [GitWorktreeInfo]) {
             // the persisted value wins for both set and unset.
             wt.is_pinned = record.is_pinned;
             wt.is_unread = record.is_unread;
+            if wt.linked_jira_issue.is_none() {
+                wt.linked_jira_issue = record.linked_jira_issue.clone();
+            }
             // Same for creation provenance kind: the persisted column is the only
             // source, and an unrecognized/absent value paints neither field.
             match record.provenance_kind.as_deref() {
@@ -1632,6 +1645,276 @@ fn delete_local_branch_if_merged(repo: &Path, branch: &str) -> bool {
         .unwrap_or(false)
 }
 
+fn git_output(dir: &Path, args: &[&str]) -> Result<std::process::Output, String> {
+    Command::new("git")
+        .args(args)
+        .current_dir(dir)
+        .output()
+        .map_err(|error| format!("Failed to run git {}: {error}", args.join(" ")))
+}
+
+fn git_stdout(dir: &Path, args: &[&str]) -> Result<String, String> {
+    let output = git_output(dir, args)?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(if stderr.is_empty() {
+            format!("git {} failed", args.join(" "))
+        } else {
+            stderr
+        });
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn branch_ref_exists(repo: &Path, branch: &str) -> bool {
+    Command::new("git")
+        .args(["rev-parse", "--verify", "--quiet", &format!("refs/heads/{branch}")])
+        .current_dir(repo)
+        .output()
+        .map(|out| out.status.success())
+        .unwrap_or(false)
+}
+
+/// The repository's default branch, when Git can name one:
+/// `origin/HEAD`, then `init.defaultBranch`, then a local `main`/`master`.
+/// `None` means the repo has no recognizable default, so the caller must not
+/// pretend a branch is safe to delete on that evidence.
+fn resolve_repo_default_branch(repo: &Path) -> Option<String> {
+    if let Ok(name) = git_stdout(
+        repo,
+        &["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"],
+    ) {
+        let trimmed = name.trim();
+        if let Some(branch) = trimmed.strip_prefix("origin/") {
+            if !branch.is_empty() {
+                return Some(branch.to_string());
+            }
+        }
+        if !trimmed.is_empty() {
+            return Some(trimmed.to_string());
+        }
+    }
+    if let Ok(configured) = git_stdout(repo, &["config", "--get", "init.defaultBranch"]) {
+        let configured = configured.trim();
+        if !configured.is_empty() {
+            return Some(configured.to_string());
+        }
+    }
+    ["main", "master"]
+        .into_iter()
+        .find(|candidate| branch_ref_exists(repo, candidate))
+        .map(str::to_string)
+}
+
+/// Cancels the `--branch` flag parsing hazard: a branch name that Git's own
+/// grammar rejects never reaches a destructive command.
+fn validate_branch_name(repo: &Path, branch: &str) -> Result<(), String> {
+    if branch.trim().is_empty() {
+        return Err("Branch name is required".to_string());
+    }
+    let output = git_output(repo, &["check-ref-format", "--branch", branch])?;
+    if !output.status.success() {
+        return Err(format!("Invalid branch name: {branch}"));
+    }
+    Ok(())
+}
+
+/// Successful force delete of a branch Git preserved on worktree removal.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ForceDeletePreservedBranchOutcome {
+    pub deleted: bool,
+    pub branch_name: String,
+    /// Full commit the branch pointed at when it was deleted. Lets the caller
+    /// keep the toast copy honest after the ref is gone.
+    pub head: String,
+}
+
+/// Force-deletes a branch a worktree removal preserved, after proving it is safe
+/// to do so blindly: the branch exists, the head matches when the caller passed
+/// the one it showed the user, no worktree has it checked out, and it is not the
+/// repository's default branch. Every refusal leaves the branch untouched.
+pub fn force_delete_preserved_branch(
+    repo_path: &str,
+    branch_name: &str,
+    expected_head: Option<&str>,
+) -> Result<ForceDeletePreservedBranchOutcome, String> {
+    let repo = Path::new(repo_path);
+    if repo_path.trim().is_empty() {
+        return Err("Repository path is required".to_string());
+    }
+    if !repo.is_dir() {
+        return Err(format!("Repository path does not exist: {repo_path}"));
+    }
+    let branch = branch_name.trim();
+    validate_branch_name(repo, branch)?;
+
+    let head = git_stdout(
+        repo,
+        &["rev-parse", "--verify", &format!("refs/heads/{branch}")],
+    )
+    .map_err(|_| format!("Branch not found: {branch}"))?;
+
+    if let Some(expected) = expected_head.map(str::trim).filter(|value| !value.is_empty()) {
+        let matches = head.eq_ignore_ascii_case(expected)
+            || (expected.len() >= 7 && head.starts_with(expected));
+        if !matches {
+            return Err(format!(
+                "Branch head changed: expected {expected}, found {head}"
+            ));
+        }
+    }
+
+    if let Some(worktree) = checked_out_in_worktree(repo, branch) {
+        return Err(format!(
+            "Branch {branch} is checked out in worktree {worktree}"
+        ));
+    }
+
+    if resolve_repo_default_branch(repo).as_deref() == Some(branch) {
+        return Err(format!("Branch {branch} is the repository default branch"));
+    }
+
+    let output = git_output(repo, &["branch", "-D", branch])?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(if stderr.is_empty() {
+            format!("Failed to delete branch {branch}")
+        } else {
+            stderr
+        });
+    }
+
+    Ok(ForceDeletePreservedBranchOutcome {
+        deleted: true,
+        branch_name: branch.to_string(),
+        head,
+    })
+}
+
+/// The path of the worktree holding `branch`, if any. Uses the porcelain listing
+/// so the repository's own checkout counts too.
+fn checked_out_in_worktree(repo: &Path, branch: &str) -> Option<String> {
+    let stdout = git_stdout(repo, &["worktree", "list", "--porcelain"]).ok()?;
+    let mut current_path: Option<String> = None;
+    for line in stdout.lines() {
+        if let Some(path) = line.strip_prefix("worktree ") {
+            current_path = Some(path.trim().to_string());
+        } else if let Some(full_ref) = line.strip_prefix("branch ") {
+            let name = full_ref.trim().strip_prefix("refs/heads/").unwrap_or(full_ref.trim());
+            if name == branch {
+                return current_path;
+            }
+        }
+    }
+    None
+}
+
+/// `git rev-list --left-right --count @{upstream}...HEAD`: the left count is
+/// commits only upstream has (`behind`), the right count is commits only HEAD
+/// has (`ahead`).
+pub fn parse_ahead_behind(stdout: &str) -> Option<(u32, u32)> {
+    let mut fields = stdout.split_whitespace();
+    let behind = fields.next()?.parse::<u32>().ok()?;
+    let ahead = fields.next()?.parse::<u32>().ok()?;
+    if fields.next().is_some() {
+        return None;
+    }
+    Some((ahead, behind))
+}
+
+/// Position of one worktree's branch relative to its upstream branch.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct WorktreeUpstreamStatus {
+    pub ahead: u32,
+    pub behind: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upstream: Option<String>,
+}
+
+/// Upstream divergence for `worktree_path`: how many commits the branch has that
+/// upstream does not (`ahead`) and how many upstream has that it does not
+/// (`behind`). A branch with no upstream is a successful `0/0` with
+/// `upstream: null`; only a real Git failure is an error.
+pub fn get_worktree_upstream_status(
+    repo_path: &str,
+    worktree_path: &str,
+) -> Result<WorktreeUpstreamStatus, String> {
+    if worktree_path.trim().is_empty() {
+        return Err("Worktree path is required".to_string());
+    }
+    let worktree = Path::new(worktree_path);
+    if !worktree.is_dir() {
+        return Err(format!("Worktree path does not exist: {worktree_path}"));
+    }
+
+    // When the caller names a real checkout, the worktree must belong to it; a
+    // folder workspace has no `.git` of its own, so its child worktrees pass.
+    let repo = Path::new(repo_path);
+    if !repo_path.trim().is_empty() && repo.join(".git").exists() {
+        let repo_common = git_stdout(repo, &["rev-parse", "--git-common-dir"])
+            .ok()
+            .and_then(|value| resolve_git_path(repo, &value));
+        let worktree_common = git_stdout(worktree, &["rev-parse", "--git-common-dir"])
+            .ok()
+            .and_then(|value| resolve_git_path(worktree, &value));
+        if let (Some(repo_common), Some(worktree_common)) = (repo_common, worktree_common) {
+            if repo_common != worktree_common {
+                return Err(format!(
+                    "Worktree {worktree_path} does not belong to repository {repo_path}"
+                ));
+            }
+        }
+    }
+
+    let upstream = Command::new("git")
+        .args([
+            "rev-parse",
+            "--abbrev-ref",
+            "--symbolic-full-name",
+            "@{upstream}",
+        ])
+        .current_dir(worktree)
+        .output()
+        .ok()
+        .filter(|out| out.status.success())
+        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
+        .filter(|name| !name.is_empty());
+
+    let Some(upstream) = upstream else {
+        return Ok(WorktreeUpstreamStatus {
+            ahead: 0,
+            behind: 0,
+            upstream: None,
+        });
+    };
+
+    let stdout = git_stdout(
+        worktree,
+        &["rev-list", "--left-right", "--count", "@{upstream}...HEAD"],
+    )
+    .map_err(|error| format!("Failed to count commits against {upstream}: {error}"))?;
+    let (ahead, behind) = parse_ahead_behind(&stdout)
+        .ok_or_else(|| format!("Unexpected git rev-list output: {stdout}"))?;
+
+    Ok(WorktreeUpstreamStatus {
+        ahead,
+        behind,
+        upstream: Some(upstream),
+    })
+}
+
+fn resolve_git_path(base: &Path, value: &str) -> Option<PathBuf> {
+    let candidate = PathBuf::from(value);
+    let absolute = if candidate.is_absolute() {
+        candidate
+    } else {
+        base.join(candidate)
+    };
+    std::fs::canonicalize(&absolute).ok().or(Some(absolute))
+}
+
 pub fn remove_git_worktree(repo_path: &str, worktree_path: &str, force: bool) -> Result<WorktreeDeleteOutcome, String> {
     let wt = PathBuf::from(worktree_path);
     let wt_existed = wt.exists();
@@ -1963,11 +2246,11 @@ branch refs/heads/feat/auth\n";
         let repo_path = "/home/user/src/my-repo";
         let history: Vec<OrcaWorkspaceLayout> = vec![];
         // Worktree inside nested workspaceDir should be External → visible
-        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
+        let wt_nested = GitWorktreeInfo { path: "/tmp/orca-workspaces/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None, linked_jira_issue: None };
         // Worktree inside .claude/worktrees without configured base should be AgentScratch → hidden
-        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
+        let wt_scratch = GitWorktreeInfo { path: "/home/user/src/my-repo/.claude/worktrees/feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None, linked_jira_issue: None };
         // Worktree outside any layout → UnknownLegacy → hidden
-        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None };
+        let wt_outside = GitWorktreeInfo { path: "/home/user/other/my-repo-feat".to_string(), head_commit: "abc".to_string(), branch: "feat".to_string(), is_bare: false, is_locked: false, created_at: None, status: None, display_name: None, first_agent_message_rename_error: None, is_pinned: None, is_unread: None, is_sparse: None, sparse_directories: None, automation_provenance_kind: None, cli_provenance_kind: None, linked_jira_issue: None };
 
         let configured: Vec<String> = vec![];
         let known = build_known_orca_workspace_layouts(ws_dir, true, &history, repo_path, &configured);
@@ -3164,6 +3447,213 @@ branch refs/heads/feat/auth\n";
             .arg(&wt)
             .current_dir(&repo)
             .output();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    // ── Preserved-branch force delete + upstream status ─────────────────────
+
+    fn run_test_git(dir: &Path, args: &[&str]) -> std::process::Output {
+        Command::new("git")
+            .args(args)
+            .current_dir(dir)
+            .output()
+            .expect("git runs")
+    }
+
+    fn init_test_repo(repo: &Path) {
+        std::fs::create_dir_all(repo).expect("repo dir");
+        assert!(run_test_git(repo, &["init", "-q", "-b", "main"]).status.success());
+        assert!(run_test_git(repo, &["config", "user.email", "test@example.com"])
+            .status
+            .success());
+        assert!(run_test_git(repo, &["config", "user.name", "Test"]).status.success());
+        std::fs::write(repo.join("README.md"), "hello").expect("seed file");
+        assert!(run_test_git(repo, &["add", "-A"]).status.success());
+        assert!(run_test_git(repo, &["commit", "-q", "-m", "init"]).status.success());
+    }
+
+    fn commit_file(repo: &Path, name: &str, body: &str) {
+        std::fs::write(repo.join(name), body).expect("write commit file");
+        assert!(run_test_git(repo, &["add", "-A"]).status.success());
+        assert!(run_test_git(repo, &["commit", "-q", "-m", name]).status.success());
+    }
+
+    fn branch_head(repo: &Path, branch: &str) -> String {
+        let out = run_test_git(repo, &["rev-parse", &format!("refs/heads/{branch}")]);
+        assert!(out.status.success());
+        String::from_utf8_lossy(&out.stdout).trim().to_string()
+    }
+
+    #[test]
+    fn force_delete_preserved_branch_deletes_unmerged_branch() {
+        let root = unique_root("force-delete-branch");
+        let repo = root.join("repo");
+        init_test_repo(&repo);
+        assert!(run_test_git(&repo, &["checkout", "-q", "-b", "feature/unmerged"]).status.success());
+        commit_file(&repo, "feature.txt", "unmerged work");
+        let head = branch_head(&repo, "feature/unmerged");
+        assert!(run_test_git(&repo, &["checkout", "-q", "main"]).status.success());
+
+        let outcome = force_delete_preserved_branch(
+            repo.to_str().unwrap(),
+            "feature/unmerged",
+            Some(&head),
+        )
+        .expect("force delete succeeds after the guards pass");
+
+        assert!(outcome.deleted);
+        assert_eq!(outcome.branch_name, "feature/unmerged");
+        assert_eq!(outcome.head, head);
+        assert!(!branch_exists(&repo, "feature/unmerged"));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn force_delete_preserved_branch_refuses_a_checked_out_branch() {
+        let root = unique_root("force-delete-checked-out");
+        let repo = root.join("repo");
+        let worktree = root.join("held");
+        init_test_repo(&repo);
+        let added = run_test_git(
+            &repo,
+            &["worktree", "add", "-q", "-b", "feature/held", worktree.to_str().unwrap()],
+        );
+        assert!(added.status.success(), "{}", String::from_utf8_lossy(&added.stderr));
+
+        let error = force_delete_preserved_branch(repo.to_str().unwrap(), "feature/held", None)
+            .expect_err("a branch checked out in a worktree must be refused");
+        assert!(error.contains("checked out"), "{error}");
+        assert!(branch_exists(&repo, "feature/held"));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn force_delete_preserved_branch_refuses_a_stale_expected_head() {
+        let root = unique_root("force-delete-head");
+        let repo = root.join("repo");
+        init_test_repo(&repo);
+        assert!(run_test_git(&repo, &["branch", "feature/stale"]).status.success());
+
+        let error = force_delete_preserved_branch(
+            repo.to_str().unwrap(),
+            "feature/stale",
+            Some("0000000000000000000000000000000000000000"),
+        )
+        .expect_err("mismatched head must be refused");
+        assert!(error.contains("Branch head changed"), "{error}");
+        assert!(branch_exists(&repo, "feature/stale"));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn force_delete_preserved_branch_refuses_the_default_branch() {
+        let root = unique_root("force-delete-default");
+        let repo = root.join("repo");
+        init_test_repo(&repo);
+        assert!(run_test_git(&repo, &["branch", "topic"]).status.success());
+        assert!(run_test_git(&repo, &["checkout", "-q", "topic"]).status.success());
+
+        let error = force_delete_preserved_branch(repo.to_str().unwrap(), "main", None)
+            .expect_err("the default branch must never be force-deleted");
+        assert!(error.contains("default branch"), "{error}");
+        assert!(branch_exists(&repo, "main"));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn parse_ahead_behind_reads_left_as_behind_and_right_as_ahead() {
+        assert_eq!(parse_ahead_behind("2\t3\n"), Some((3, 2)));
+        assert_eq!(parse_ahead_behind("0 0"), Some((0, 0)));
+        assert_eq!(parse_ahead_behind(""), None);
+        assert_eq!(parse_ahead_behind("2"), None);
+        assert_eq!(parse_ahead_behind("2 3 4"), None);
+        assert_eq!(parse_ahead_behind("x y"), None);
+    }
+
+    #[test]
+    fn upstream_status_reports_none_without_a_tracking_branch() {
+        let root = unique_root("upstream-none");
+        let repo = root.join("repo");
+        init_test_repo(&repo);
+
+        let status = get_worktree_upstream_status(repo.to_str().unwrap(), repo.to_str().unwrap())
+            .expect("local-only branch is a valid 0/0");
+        assert_eq!(status.ahead, 0);
+        assert_eq!(status.behind, 0);
+        assert!(status.upstream.is_none());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn upstream_status_counts_ahead_and_behind_from_git() {
+        let root = unique_root("upstream-counts");
+        let repo = root.join("repo");
+        let remote = root.join("origin.git");
+        init_test_repo(&repo);
+        assert!(run_test_git(&root, &["init", "-q", "--bare", remote.to_str().unwrap()])
+            .status
+            .success());
+        assert!(run_test_git(&repo, &["remote", "add", "origin", remote.to_str().unwrap()])
+            .status
+            .success());
+        assert!(run_test_git(&repo, &["push", "-q", "-u", "origin", "main"])
+            .status
+            .success());
+        // The bare HEAD must name the branch we pushed, or the clone checks out
+        // an unborn master and cannot commit.
+        assert!(run_test_git(
+            &remote,
+            &["symbolic-ref", "HEAD", "refs/heads/main"],
+        )
+        .status
+        .success());
+
+        // Two local commits the remote does not have.
+        commit_file(&repo, "local-a.txt", "a");
+        commit_file(&repo, "local-b.txt", "b");
+
+        // One remote-only commit, fetched but not merged.
+        let other = root.join("other");
+        let clone = run_test_git(
+            &root,
+            &["clone", "-q", remote.to_str().unwrap(), other.to_str().unwrap()],
+        );
+        assert!(clone.status.success(), "{}", String::from_utf8_lossy(&clone.stderr));
+        assert!(run_test_git(&other, &["config", "user.email", "test@example.com"])
+            .status
+            .success());
+        assert!(run_test_git(&other, &["config", "user.name", "Test"]).status.success());
+        commit_file(&other, "remote.txt", "remote");
+        assert!(run_test_git(&other, &["push", "-q", "origin", "HEAD:main"]).status.success());
+        assert!(run_test_git(&repo, &["fetch", "-q", "origin"]).status.success());
+
+        let status = get_worktree_upstream_status(repo.to_str().unwrap(), repo.to_str().unwrap())
+            .expect("tracking branch reports divergence");
+        assert_eq!(status.ahead, 2, "two local-only commits");
+        assert_eq!(status.behind, 1, "one remote-only commit");
+        assert_eq!(status.upstream.as_deref(), Some("origin/main"));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn upstream_status_refuses_a_worktree_from_another_repository() {
+        let root = unique_root("upstream-owner");
+        let repo = root.join("repo");
+        let other = root.join("other");
+        init_test_repo(&repo);
+        init_test_repo(&other);
+
+        let error =
+            get_worktree_upstream_status(repo.to_str().unwrap(), other.to_str().unwrap())
+                .expect_err("a foreign worktree must not be measured against this repo");
+        assert!(error.contains("does not belong"), "{error}");
+
         let _ = std::fs::remove_dir_all(&root);
     }
 }

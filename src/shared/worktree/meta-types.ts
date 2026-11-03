@@ -36,6 +36,8 @@ export type WorktreeMeta = {
   /** GitHub PR hidden from branch discovery after an explicit unlink. */
   suppressedGitHubPR?: number | null
   linkedLinearIssue: string | null
+  /** Jira key or issue URL (Orca `WorktreeMeta.linkedJiraIssue`). */
+  linkedJiraIssue?: string | null
   linkedLinearIssueWorkspaceId?: string | null
   linkedLinearIssueOrganizationUrlKey?: string | null
   /** Optional for backward compatibility — see Worktree.linkedGitLabMR. */
