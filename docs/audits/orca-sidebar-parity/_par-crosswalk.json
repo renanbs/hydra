@@ -290,7 +290,7 @@
   },
   {
    "id": "D04a-052",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D04a-065",
@@ -484,7 +484,7 @@
  "PAR-67": [
   {
    "id": "D04a-019",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-19": [
@@ -510,11 +510,11 @@
   },
   {
    "id": "D04a-030",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D04a-031",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D04a-042",
@@ -612,13 +612,13 @@
  "PAR-27": [
   {
    "id": "D04a-051",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-21": [
   {
    "id": "D04a-067",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D07-001",
@@ -644,7 +644,7 @@
  "PAR-86": [
   {
    "id": "D04a-069",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D07-041",
@@ -662,7 +662,7 @@
  "PAR-34": [
   {
    "id": "D04a-073",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D04a-076",
@@ -672,7 +672,7 @@
  "PAR-66": [
   {
    "id": "D04a-079",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D04a-080",

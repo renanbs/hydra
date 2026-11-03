@@ -2405,6 +2405,96 @@
    ],
    "missing_behaviors": [],
    "note": "gh_viewer feeds the feedback dialog identity prefill."
+  },
+  {
+   "id": "D04a-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "GitHub issue state badge with tone/icon."
+  },
+  {
+   "id": "D04a-031",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Linear state badge inferred from status text."
+  },
+  {
+   "id": "D04a-079",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Full-mode agent rows with tree/group roles."
+  },
+  {
+   "id": "D04a-086",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Unvisited highlight + dismiss clears status/retained."
+  },
+  {
+   "id": "D04a-094",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Display name emoji picker + Enter + note."
+  },
+  {
+   "id": "D04b-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Local base ref suggestion toast and setting consumer."
+  },
+  {
+   "id": "D04b-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Per-worktree activity status selector wired."
+  },
+  {
+   "id": "D04b-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Batch activity status selector with shallow equality."
+  },
+  {
+   "id": "D04b-018",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Async issue link open with 35s timeout (GitHub live)."
+  },
+  {
+   "id": "D04b-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar"
+   ],
+   "missing_behaviors": [],
+   "note": "Pure metadata payload wired into save path."
   }
  ]
 }
