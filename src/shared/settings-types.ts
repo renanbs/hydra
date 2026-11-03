@@ -15,6 +15,11 @@ export type HydraSettings = {
   app_font_family: string;
   ui_zoom?: number;
   compact_worktree_cards?: boolean;
+  /** Orca `refreshLocalBaseRefOnWorktreeCreate`: fast-forward the local base branch
+   *  (best effort, `--ff-only`) before creating a workspace. */
+  refresh_local_base_ref_on_worktree_create?: boolean;
+  /** Orca `localBaseRefSuggestionDismissed`: the one-time upsell was declined. */
+  local_base_ref_suggestion_dismissed?: boolean;
   left_sidebar_appearance_mode?: "default" | "match-terminal" | "tinted";
   left_sidebar_tint_color?: string;
   left_sidebar_tint_opacity?: number;
@@ -141,6 +146,8 @@ export const DEFAULT_HYDRA_SETTINGS: HydraSettings = {
   theme: "system",
   ui_zoom: 1,
   compact_worktree_cards: false,
+  refresh_local_base_ref_on_worktree_create: false,
+  local_base_ref_suggestion_dismissed: false,
   left_sidebar_appearance_mode: "default",
   left_sidebar_tint_color: "#336699",
   left_sidebar_tint_opacity: 0.1,
@@ -245,6 +252,8 @@ export function normalizeHydraSettings(input: unknown): HydraSettings {
     terminal_font_size: get("terminal_font_size", "terminalFontSize", DEFAULT_HYDRA_SETTINGS.terminal_font_size) as number,
     ui_zoom: (() => { const v = get("ui_zoom", "uiZoom", DEFAULT_HYDRA_SETTINGS.ui_zoom); return typeof v === "number" && Number.isFinite(v) ? Math.min(2, Math.max(0.5, v)) : 1; })(),
     compact_worktree_cards: Boolean(get("compact_worktree_cards", "compactWorktreeCards", DEFAULT_HYDRA_SETTINGS.compact_worktree_cards)),
+    refresh_local_base_ref_on_worktree_create: Boolean(get("refresh_local_base_ref_on_worktree_create", "refreshLocalBaseRefOnWorktreeCreate", false)),
+    local_base_ref_suggestion_dismissed: Boolean(get("local_base_ref_suggestion_dismissed", "localBaseRefSuggestionDismissed", false)),
     left_sidebar_appearance_mode: (() => { const v = get("left_sidebar_appearance_mode", "leftSidebarAppearanceMode", "default"); return v === "match-terminal" || v === "tinted" ? v : "default"; })(),
     left_sidebar_tint_color: String(get("left_sidebar_tint_color", "leftSidebarTintColor", "#336699")),
     left_sidebar_tint_opacity: (() => { const v = get("left_sidebar_tint_opacity", "leftSidebarTintOpacity", 0.1); return typeof v === "number" && Number.isFinite(v) ? Math.min(0.5, Math.max(0, v)) : 0.1; })(),
