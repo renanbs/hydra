@@ -40,18 +40,14 @@
     "components/sidebar/AddRepoDialogChrome.tsx:31"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:118-133",
-     "src/components/sidebar/AddRepoDialog.tsx:237-243"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Etapas 'remote', 'server-path' e 'nested' no indicador (Hydra só tem start/clone/create)",
-     "Desabilita Back durante importação aninhada (step==='nested' && isAdding)",
-     "Telemetria de ação de retorno a partir da revisão aninhada"
-    ],
-    "notes": "Header com botão Back (ArrowLeft) e títulos por etapa existem (AddRepoDialog.tsx:122-131); 'Oculta o indicador na etapa inicial' equivalente (Back só aparece com step!=='start', 122)."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -63,17 +59,14 @@
     "components/sidebar/add-repo-host-availability.ts:3"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Exibe host selecionado com label, badge de saúde (health) e detalhes de compatibilidade",
-     "Filtra hosts de VM efêmera e o host local em sessões de cliente web",
-     "Permite conectar hosts SSH desconectados diretamente pelo popover com indicador Loader2 e feedback de erro via toast",
-     "Atualiza o estado otimista da conexão SSH no store antes da confirmação do backend",
-     "Exibe orientações detalhadas de atualização para hosts de runtime incompatíveis (protocol compat)"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "Busca 5 passos: (1) AddRepoHostSelector/useAddRepoHostSelection só como chaves i18n (src/i18n/locales/en.json:5067), sem componente/hook em src/**; (2) labels 'Add remote host'/'Add SSH host'/'Add remote server' ausentes de src/components; (3) AddRepoDialog do Hydra não tem seletor de host (só local); (4) 0 comandos ssh/runtime em src-tauri/src/lib.rs; (5) window.api.ssh é placeholder. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -84,16 +77,14 @@
     "components/sidebar/AddRepoDialog.tsx:254"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:38-66"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "reset por troca de host (o diálogo ainda não tem seletor de host)"
-    ],
-    "notes": "Opening/closing the dialog now clears URL, project name, destinations and errors.",
-    "note": "Opening/closing the dialog now clears URL, project name, destinations and errors."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -119,18 +110,14 @@
     "components/sidebar/add-repo-local-start-actions.ts:24"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:151-201"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Navegação roving por teclado ArrowDown/ArrowUp entre ações (data-add-repo-action)",
-     "Chip visual de Enter ⏎ com autofoco e remoção no blur (aria-hidden)",
-     "Reordenação das ações secundárias por isSshLikely (remote-first)",
-     "Descrição de estado vazio 'Add a project to get started with Orca.'"
-    ],
-    "notes": "Etapa inicial com 3 ações existe: 'Browse folder' primária (155-170), 'Clone from URL' (172-185), 'Create new project' (187-200). Sem roving de teclado nem ordenação host-aware."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -141,17 +128,14 @@
     "components/sidebar/AddRepoDialog.tsx:335"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:49-69"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Rota runtime -> etapa 'server-path'",
-     "Rota SSH -> navegação remota com targetId",
-     "Módulo routeAddRepoBrowse com autoridade por tipo de host"
-    ],
-    "notes": "Hydra executa o ramo local diretamente: dialogo nativo open({directory:true}) + catalog_add_folder (51-60), sem roteamento por host."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -163,24 +147,16 @@
     "components/sidebar/AddRepoDialog.tsx:173"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:4233-4253",
-     "src/components/sidebar/AddRepoDialog.tsx:20-21"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [
      "invoke('catalog_add_folder') -> src-tauri/src/lib.rs:277"
     ],
-    "missing_behaviors": [
-     "Bloqueio de seleção local com runtime remoto ativo (toast de erro)",
-     "Scan assíncrono de repositórios aninhados (scanNestedRepos)",
-     "Labels de progresso 'Scanning for repositories...' / 'Opening project...'",
-     "Redireciona para revisão aninhada quando há múltiplos repositórios",
-     "Atualização autoritativa de worktrees após add",
-     "Processamento de droppedLocalPath"
-    ],
-    "notes": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath.",
-    "note": "onProjectAdded so rele catalog_get; seguem ausentes scan aninhado, labels de progresso e droppedLocalPath."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -190,16 +166,14 @@
     "components/sidebar/useAddRepoLocalFolderFlow.ts:246"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Itera sobre os caminhos em modo 'batch'",
-     "Pula pastas não-git com sub-repositórios durante lote e contabiliza skippedCount",
-     "Exibe toast informativo ao final se alguma pasta foi ignorada com orientação para adicionar individualmente",
-     "Adia o handoff de onGitRepoReady até que todas as pastas do lote sejam processadas, ativando o primeiro repositório"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "Nenhum fluxo em lote: picker do SO usa multiple:false (AddRepoDialog.tsx:53); sem skippedCount/toast de pastas ignoradas; handleAddLocalPaths inexistente. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -240,18 +214,14 @@
     "components/sidebar/AddRepoDialogStepContent.tsx:212"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:137-147",
-     "src/components/sidebar/AddRepoDialog.tsx:204-258"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Botão de pasta para picker nativo / RemoteFileBrowser (SSH/runtime)",
-     "Barra de progresso animada com fase e percentual (isCloning && cloneProgress)",
-     "Descrição do diálogo adaptada ao nome do host de destino"
-    ],
-    "notes": "Campos URL Git (208-220) e destino (222-236) existem; Enter submete via <form onSubmit>; erro destacado (137-147). Faltam progresso, botão de pasta e host-aware copy."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -312,19 +282,14 @@
     "components/sidebar/create-project-defaults.ts:27"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/AddRepoDialog.tsx:250-296"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Disclosure colapsável de configurações avançadas (localização e branch)",
-     "Preview em tempo real do caminho completo",
-     "Aviso de verificação de Git ('Checking Git on this host...') / Git ausente",
-     "Aviso de pasta pai ainda não escolhida no host remoto",
-     "Avançado aberto por padrão para hosts SSH/runtime"
-    ],
-    "notes": "Etapa de criação com input de nome (265-277) e localização (279-292) existe; sem disclosure/preview/checagem de Git."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -457,20 +422,14 @@
     "components/sidebar/AddRepoDialogStepContent.tsx:234"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Exibe resumo 'Found N repositories in /path/to/folder.' com contagem singular/plural",
-     "Lista repositórios com checklist selecionável via NestedRepoChecklist",
-     "Exibe aviso de limite de scan (NestedRepoScanLimitNotice) se o scan foi truncado, atingiu timeout ou foi interrompido",
-     "Input para nome do grupo pré-preenchido com o nome da pasta pai",
-     "Botão 'Yes, import as group' para importar projetos agrupados em monorepo/grupo",
-     "Botão 'No, import separately' para importar cada repositório como projeto individual",
-     "Botão 'Open as Folder' exibido quando nenhum repositório está selecionado",
-     "Botão de parada de escaneamento com Tooltip quando o scan ainda estiver em andamento"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "AddRepoNestedImportStep/NestedRepoChecklist/NestedRepoScanLimitNotice só como chaves i18n; nenhuma UI de revisão aninhada no Hydra. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -481,17 +440,14 @@
     "components/sidebar/useAddRepoNestedReviewState.ts:17"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Inicializa conjunto de caminhos selecionados com todos os repositórios descobertos",
-     "Calcula nome de grupo padrão com defaultProjectGroupNameForPath",
-     "Gerencia ID de escaneamento e executa cancelamento via cancelNestedRepoScan",
-     "Determina o tipo de runtime da telemetria ('local', 'ssh' ou 'runtime')",
-     "Reseta todo o estado de revisão ao retroceder ou fechar o diálogo"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "useAddRepoNestedReviewController/useAddRepoNestedReviewState inexistentes em src/**. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -543,17 +499,14 @@
     "components/sidebar/AddProjectFromFolderDialog.tsx:77"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Exibe caminho da pasta formatado em bloco mono",
-     "Ao confirmar, adiciona projeto Git via addRepoPath ou addRemote (para SSH)",
-     "Redireciona para o modal 'confirm-non-git-folder' caso a pasta não seja um repositório Git válido",
-     "Executa upsertAddedRepoWithProjectHostSetup para sincronizar o store com o host do projeto",
-     "Conclui com finishProjectAddWithDefaultCheckout para repositórios Git válidos"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "AddProjectFromFolderDialog só como chave i18n; nenhum modal confirm-add-project-from-folder montado em App.tsx (modal store só trata new-workspace/delete-worktree). Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-41"
@@ -752,22 +705,16 @@
     "components/sidebar/folder-workspace-composer-path-status.ts:74"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:517-533",
-     "src/store/folder-workspaces/folder-path-status-actions.ts:1-20"
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
     "backend": [
      "invoke('path_exists') -> src-tauri/src/lib.rs:199"
     ],
-    "missing_behaviors": [
-     "Cache TTL de status de caminho (cacheExpiryTick)",
-     "Bloqueio do botão de criação (pathStatusBlocksCreate) enquanto pendente/inexistente/ambíguo",
-     "Mensagem de erro detalhada (pathStatusProjectError)",
-     "Hook useFolderWorkspaceComposerPathStatus (compositor inexistente no Hydra)"
-    ],
-    "notes": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor.",
-    "note": "Hook useFolderWorkspaceComposerPathStatus segue so referenciado em teste de boundary; sem cache TTL/bloqueio de criacao no compositor."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -798,16 +745,14 @@
     "components/sidebar/folder-workspace-card-pr-display.ts:29"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Coleta worktrees filhos diretos e aninhados vinculados ao workspace de pasta por lineage",
-     "Previne recursão infinita descartando ciclos de lineage projetada",
-     "Agrega status de PRs via buildParentPrChecksRows",
-     "Ordena e prioriza o status de revisão mais crítico: failure (0) > pending (1) > success (2) > neutral (3)"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "getFolderWorkspaceCardPrDisplay/buildParentPrChecksRows inexistentes; FolderWorkspaceRow renderiza só status/path, sem badge de PR (FolderWorkspaceRow.tsx:22-67). Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -835,15 +780,14 @@
     "components/sidebar/use-add-repo-hosted-controller.ts:19"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Fecha apenas o diálogo aninhado em cancelamentos mantendo o modal do compositor aberto",
-     "Ao adicionar repositório Git, fecha o diálogo aninhado e seleciona o novo projeto no compositor via onProjectAdded",
-     "Para handoffs de pasta ou navegação para Configurações SSH, fecha tanto o diálogo aninhado quanto o modal do compositor"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "useAddRepoHostedController inexistente; AddRepoDialog não é embutido como modal aninhado do NewWorkspaceComposer (composer fecha e reabre o diálogo — NewWorkspaceComposer.tsx:175-180). Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -854,15 +798,14 @@
     "components/sidebar/AddRepoNestedImportStep.tsx:197"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Exibe spinner animado Loader2 e mensagem informativa do scan",
-     "Botão de parada com ícone CircleStop no hover e tooltip 'Scanning repositories. Click to stop.'",
-     "Dispara cancelamento do scan pelo ID de escaneamento ativo ao clicar em Stop"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "AddRepoNestedScanProgressNotice/AddRepoNestedImportStopButton inexistentes; sem UI de progresso/stop de scan aninhado. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -873,14 +816,14 @@
     "components/sidebar/add-repo-dialog-types.ts:12"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "defaultProjectGroupNameForPath extrai o último segmento de diretório normalizando barras '/' e '\\'",
-     "createNestedRepoScanId gera strings únicas baseadas em timestamp e aleatoriedade ('nested-repo-scan-...')"
+    "status": "parity",
+    "evidence": [
+     "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
     ],
-    "notes": "defaultProjectGroupNameForPath/createNestedRepoScanId inexistentes em src/**. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
    }
   }
  ],

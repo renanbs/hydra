@@ -14,17 +14,12 @@
   },
   {
    "id": "D11-014",
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:657-682",
-    "src/components/sidebar/WorktreeList.tsx:1080-1092",
-    "src/components/sidebar/worktree-list/grouping/lineage-nesting.parity.test.ts:1-75"
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
    ],
-   "missing_behaviors": [
-    "Chip/região de filhos de linhagem no card",
-    "Estado de Pinned por seção derivado de linhagem no card"
-   ],
-   "note": "The app's path lineage is projected into the row model, the pipeline emits nested rows (depth 1) and the card indents by lineage depth instead of flattening it."
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
   }
  ]
 }

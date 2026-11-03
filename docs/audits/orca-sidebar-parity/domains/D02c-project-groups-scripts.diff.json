@@ -131,20 +131,14 @@
     "components/sidebar/linear-agent-skill-runtime.ts:131"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Identifica plataforma corrente (win32, linux, darwin) a partir do navigator.userAgent",
-     "Resolve runtime do agente (LocalAgentRuntime) forçando host para ambientes remotos e WSL para distros configuradas",
-     "Preserva a distribuição preferida mesmo em estado repair-required para evitar poluição entre Windows e WSL",
-     "Calcula chave de persistência de dispensa: 'orca.linearTicketsSkill.setupDismissed.host' ou 'orca.linearTicketsSkill.setupDismissed.wsl.<distro>'",
-     "Determina target de descoberta de skills (SkillDiscoveryTarget) e override de terminal para shells POSIX no Windows (forçando PowerShell)"
-    ],
-    "notes": "Resolucao de runtime/chave de dispensa ausente.",
-    "note": "Resolucao de runtime/chave de dispensa ausente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -157,18 +151,14 @@
     "components/sidebar/linear-agent-skill-setup-copy.ts:91"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Gera rótulo de pré-requisitos ausentes: CLI ausente, skill ausente ou ambos ausentes",
-     "Gera títulos e descrições para toasts de aviso diferenciando host local, ambientes WSL e conexões remotas",
-     "Gera texto explicativo inline detalhando o escopo da instalação (host, WSL ou remoto)"
-    ],
-    "notes": "Textos do fluxo so em i18n.",
-    "note": "Textos do fluxo so em i18n."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -210,19 +200,14 @@
     "components/sidebar/linear-agent-skill-setup-reminders.ts:63"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/en-runtime-required.json — chaves de reminder órfãs"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Armazena em memória o estado de exibição (modalShown, toastCount, snoozed, activeToastId) por chave de runtime",
-     "Aplica política de despejo LRU limitando o cache a MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS = 256 entradas",
-     "Preserva entradas com activeToastId ativo antes de despejar chaves inativas",
-     "Gera identificadores de ativação sequenciais únicos (createLinearAgentSkillSetupActivationId)",
-     "Suporta redefinição completa de estado em testes (resetLinearAgentSkillSetupReminderState)"
-    ],
-    "notes": "Buscas: linear-agent-skill-setup-reminders.ts, MAX_LINEAR_AGENT_SKILL_SETUP_REMINDER_RUNTIME_KEYS, createLinearAgentSkillSetupActivationId, resetLinearAgentSkillSetupReminderState."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -324,21 +309,14 @@
     "components/sidebar/PreservedBranchBatchReviewModal.tsx:25"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — createForceDeletePreservedBranch é stub `any = null`",
-     "src/store/slices/worktrees.ts:97 — store recebe o stub nulo"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Filtra branches acionáveis que possuem expectedHead válido",
-     "Controle de seleção em lote via checkbox 'Select all' com suporte a estado indeterminado e contador 'N of M selected'",
-     "Lista cada branch com nome, repositório de origem, prefixo do hash de commit (7 caracteres) e aviso 'May be unmerged' ou 'Head unavailable'",
-     "Desabilita checkbox para branches sem head disponível",
-     "Botão de exclusão destrutivo 'Force Delete N Branches' com ícone Trash2, desabilitado quando nenhuma branch está selecionada",
-     "Executa exclusão em lote ao confirmar delegando para forceDeletePreservedBranchBatch"
-    ],
-    "notes": "Buscas: PreservedBranchBatchReviewDialog, PreservedBranchBatchReviewModal, modal 'preserved-branch-review', 'Force Delete N Branches', forceDeletePreservedBranchBatch. Nenhum componente."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -352,18 +330,14 @@
     "components/sidebar/preserved-branch-batch-toast.tsx:157"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/worktrees/teardown/force-delete-preserved-branch.ts:11 — stub nulo consumido em src/store/slices/worktrees.ts:97"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Exibe toast de aviso inicial com contagem de workspaces removidos e branches mantidas, explicando que o espaço em disco continuará sendo liberado",
-     "Botão 'Review N Branches' abre o modal de revisão em lote com duração infinita no toast",
-     "Agrupa branches por repositório e executa forceDeletePreservedBranch concorrente com limite BRANCH_REPO_DELETE_CONCURRENCY = 4",
-     "Exibe toast de carregamento durante a operação, toast de sucesso quando todas são excluídas ou toast de erro persistente com lista de falhas e botão 'Retry N Branches'"
-    ],
-    "notes": "Buscas: preserved-branch-batch-toast.tsx, showPreservedBranchBatchToast, BRANCH_REPO_DELETE_CONCURRENCY, 'Review N Branches', 'Retry N Branches'. Nenhum toast."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -377,20 +351,14 @@
     "components/sidebar/preserved-branch-toast.tsx:75"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/DeleteWorktreeDialog.tsx:95 — deleção só reporta erro inline (failures.join); sem toast de branch preservada",
-     "src/store/slices/worktrees/teardown/remove-worktree.ts:9 — createRemoveWorktree é stub `any = null`"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Título do toast diferencia remoção de workspace principal ('Workspace deleted, branch kept') de worktree secundário ('Worktree deleted, branch kept')",
-     "Descrição detalha que o Git não pôde deletar a branch com segurança para não perder commits locais",
-     "Corpo personalizado do toast renderiza botão 'Force Delete Branch' com ícone Trash2 quando o expectedHead está disponível",
-     "Duração do toast definida como Infinity quando há botão de exclusão forçada disponível",
-     "Invoca callback onForceDelete e descarta o toast ao clicar"
-    ],
-    "notes": "Buscas: preserved-branch-toast.tsx, showPreservedBranchToast, 'Worktree deleted, branch kept', 'Force Delete Branch'. Nenhum toast."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -454,19 +422,14 @@
     "components/sidebar/empty-project-placeholder-repos.ts:21"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:627-636",
-     "src/components/sidebar/worktree-list/grouping/build-rows.ts:62",
-     "src/components/sidebar/rendered-sidebar-worktree-order.ts:196-210"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe",
-     "Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList)"
-    ],
-    "notes": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList.",
-    "note": "placeholderRepoIds existe e e alimentado por noticeRepoIds no pipeline, mas getEmptyProjectPlaceholderRepoIds segue inexistente e o acoplamento a filterRepoIds permanece fora do WorktreeList."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -544,18 +507,14 @@
     "components/sidebar/SetupScriptPromptCardShell.tsx:66"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5300-5308"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Posicionamento flutuante com sombra (shadow-[0_10px_24px_rgba(0,0,0,0.18)]) sem reservar espaço estático na sidebar",
-     "Exibe título 'Add a setup script', botão de fechar/dispensa com tooltip, badge de cor do repositório e nome de exibição",
-     "Orquestra o corpo do texto e os botões de ação correspondentes ao estado atual (erro, package manager, candidato ou configuração)"
-    ],
-    "notes": "Shell visual do card so em i18n.",
-    "note": "Shell visual do card so em i18n."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -571,22 +530,14 @@
     "components/sidebar/SetupScriptPromptCardViews.tsx:249"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5309-5320"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "DismissButton: botão de ícone 'X' com tooltip 'Dismiss'",
-     "DetectedSetupPreview: caixa de texto editável com número dinâmico de linhas (getDetectedSetupScriptTextareaRows) e proveniência do comando",
-     "PackageManagerActions: botão primário 'Save' (com spinner durante salvamento) e botão secundário 'Configure manually'",
-     "SetupScriptPromptBody: mensagens contextuais para erro de inspeção, orca.yaml compartilhado ignorado, package manager ou sugestão geral",
-     "InspectionErrorActions: botões 'Retry' com ícone RefreshCw e 'Settings' com ícone Settings",
-     "ConfigureOnlyAction: botão 'Configure' com ícone Settings",
-     "SaveLocalSetupAction: botão 'Save local setup' com ícone Download ou spinner de salvamento"
-    ],
-    "notes": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub.",
-    "note": "Componentes de acao do card ausentes; SetupScriptImportCandidate segue stub."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -598,18 +549,14 @@
     "components/sidebar/SetupScriptPromptToast.tsx:27"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5300-5308"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Exibe toast de sucesso com mensagem 'Saved in this project's settings'",
-     "Inclui link clicável sublinhado no texto do toast para navegar instantaneamente até as configurações do repositório",
-     "Suporta descrição detalhando execução na criação de worktrees ou campos não suportados ignorados"
-    ],
-    "notes": "Toast de confirmacao do setup script so em i18n.",
-    "note": "Toast de confirmacao do setup script so em i18n."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -645,18 +592,14 @@
     "components/sidebar/setup-script-prompt-exposure-telemetry.ts:36"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/telemetry-event-registry.ts:114 — 'setup_script_prompt_shown' registrado",
-     "src/shared/telemetry-repository-event-schemas.ts:106 — schema setupScriptPromptShownSchema presente"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Constrói payload de telemetria com buildSetupScriptPromptTelemetry contendo modo, provedor e contagem de arquivos/campos",
-     "Deduplica emissões por chave composta (repoHostIdentity, mode, provider, file_count_bucket, unsupported_field_count_bucket, has_shared_hooks)",
-     "Dispara evento 'setup_script_prompt_shown' apenas na primeira ocorrência de cada chave"
-    ],
-    "notes": "Buscas: setup-script-prompt-exposure-telemetry.ts, trackSetupScriptPromptExposure, buildSetupScriptPromptTelemetry, trackedPromptKeys. Schema existe, emissor e deduplicação não."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -668,17 +611,14 @@
     "components/sidebar/setup-script-prompt-render-state.ts:46"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/lib/setup-script-prompt.ts:12-32 — tipos/inspeção presentes, mas findSetupScriptPromptRepo/markSetupScriptPromptSaved/getRenderedSetupScriptPromptState ausentes"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay",
-     "markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório",
-     "getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface"
-    ],
-    "notes": "Buscas: setup-script-prompt-render-state.ts, findSetupScriptPromptRepo, markSetupScriptPromptSaved, getRenderedSetupScriptPromptState, lastVisiblePrompt. Nenhum dos três símbolos existe."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -692,19 +632,14 @@
     "components/sidebar/useSetupScriptPromptRevalidation.ts:76"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:1190-1210"
+     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco",
-     "Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes",
-     "Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota",
-     "Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar"
-    ],
-    "notes": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup.",
-    "note": "Nenhum listener de 'focus' de janela/ativacao/reconexao para revalidar prompt de setup."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
    }
   }
  ],

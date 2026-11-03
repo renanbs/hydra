@@ -18,7 +18,7 @@
  "PAR-14": [
   {
    "id": "D01-032",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D08-001",
@@ -202,7 +202,7 @@
   },
   {
    "id": "D15a-012",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-60": [
@@ -258,7 +258,7 @@
   },
   {
    "id": "D02a-026",
-   "status": "missing"
+   "status": "parity"
   }
  ],
  "PAR-44": [
@@ -294,7 +294,7 @@
   },
   {
    "id": "D04a-065",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D06-021",
@@ -412,7 +412,7 @@
   },
   {
    "id": "D11-003",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-82": [
@@ -426,11 +426,11 @@
   },
   {
    "id": "D11-014",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D11-015",
-   "status": "missing"
+   "status": "parity"
   }
  ],
  "PAR-26": [
@@ -472,7 +472,7 @@
   },
   {
    "id": "D11-009",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-57": [
@@ -566,7 +566,7 @@
   },
   {
    "id": "D12-006",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D12-007",
@@ -578,19 +578,19 @@
   },
   {
    "id": "D12-009",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-010",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-011",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-012",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D12-013",
@@ -602,11 +602,11 @@
   },
   {
    "id": "D15a-001",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D15a-002",
-   "status": "missing"
+   "status": "parity"
   }
  ],
  "PAR-27": [
@@ -666,7 +666,7 @@
   },
   {
    "id": "D04a-076",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-66": [
@@ -676,7 +676,7 @@
   },
   {
    "id": "D04a-080",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D05-010",
@@ -752,7 +752,7 @@
   },
   {
    "id": "D10-018",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-019",

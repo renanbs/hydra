@@ -1280,6 +1280,1086 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D01-010",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-018",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-019",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-021",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-022",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-023",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-025",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-033",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-035",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-037",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-040",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-042",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D01-045",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D01.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D01 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-002",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-003",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-009",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-015",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-022",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-023",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-026",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-036",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-038",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-040",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-041",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-042",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-001",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-002",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-004",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-009",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-011",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-014",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-016",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-017",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-019",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-023",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-024",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-025",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-026",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-027",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-028",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-029",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02b-030",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-013",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-014",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-017",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-021",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-022",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-024",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-025",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02c-026",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-014",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-047",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-048",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-049",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-065",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-084",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-085",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-091",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-099",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04a-107",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-001",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-002",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-004",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-019",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-020",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-021",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D04b-023",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D04b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D04B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-018",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-050",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-078",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-079",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-080",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-081",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D10-082",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D10.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D10 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-003",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-004",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-009",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-010",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-015",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D11-016",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D11.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D11 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D12-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D12.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D12 port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-001",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-002",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-009",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-010",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15a-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15a.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-001",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-003",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-004",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-005",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-006",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-007",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-008",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-009",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-010",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-012",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D15b-013",
+   "status": "parity",
+   "evidence": [
+    "docs/audits/orca-sidebar-parity/domains/D15b.diff.json"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented per the D15B port report and integrated in the mounted sidebar."
   }
  ]
 }

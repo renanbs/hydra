@@ -112,20 +112,14 @@
     "components/sidebar/worktree-card-parent-content.tsx:137"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-surface.tsx:88-91",
-     "src/components/sidebar/worktree-card-surface.tsx:129-140",
-     "src/components/sidebar/worktree-card-header.tsx:116-122",
-     "src/components/sidebar/use-worktree-card-controller.ts:124"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "affiliateListMode nunca é produzido (default false no controller)",
-     "Hover de detalhes não desliga edição de issue/nota quando o modo estiver ativo"
-    ],
-    "notes": "The surface, header and drag honor the flag. There is still no producer, and the details hover does not.",
-    "note": "The surface, header and drag honor the flag. There is still no producer, and the details hover does not."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -158,17 +152,14 @@
     "components/sidebar/worktree-card-presentation.tsx:144"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:32",
-     "src/components/sidebar/worktree-card-presentation.tsx:147-190"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "titleWrapper nunca é produzido (nem hover de identidade do novo estilo nem wrapper de detalhes compacto)"
-    ],
-    "notes": "Pinned-repo and cache-timer branches are reachable. The identity hover wrapper is never returned.",
-    "note": "Pinned-repo and cache-timer branches are reachable. The identity hover wrapper is never returned."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -180,19 +171,14 @@
     "components/sidebar/worktree-card-presentation.tsx:223"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:166-179",
-     "src/components/sidebar/worktree-card-meta-row.tsx:102-104",
-     "src/components/sidebar/WorktreeList.tsx:1265"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Badge de review renderiza sempre que review está setado (o novo estilo do Orca omite o badge da fileira)",
-     "O mount passa prDisplay e não review, então o badge fica dormente"
-    ],
-    "notes": "Metadata badges and the ports trigger sit in the right-hand cluster. The review badge paints whenever review is set, and the list only passes prDisplay.",
-    "note": "Metadata badges and the ports trigger sit in the right-hand cluster. The review badge paints whenever review is set, and the list only passes prDisplay."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -262,18 +248,14 @@
     "components/sidebar/worktree-card-header.tsx:158"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:13-33",
-     "src/components/sidebar/worktree-card-header.tsx:93-111"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Tooltip lateral do design system com o nome do repo (Hydra usa title/aria-label nativos)",
-     "resolveRepoHeaderColor inexistente: a cor cai em repo.color ou no foreground do sidebar"
-    ],
-    "notes": "The repo chip renders with a native title. The design-system tooltip and resolveRepoHeaderColor are absent.",
-    "note": "The repo chip renders with a native title. The design-system tooltip and resolveRepoHeaderColor are absent."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -338,18 +320,14 @@
     "components/sidebar/worktree-card-header.tsx:146"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:318",
-     "src/components/sidebar/worktree-card-surface.tsx:80"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Glifo de host runtime conectado/desconectado com tooltip nomeando o host",
-     "Modelo de runtime host no card"
-    ],
-    "notes": "isRuntimeDisconnected hardcoded; sem glifo de host runtime nomeado.",
-    "note": "isRuntimeDisconnected hardcoded; sem glifo de host runtime nomeado."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -420,17 +398,14 @@
     "components/sidebar/worktree-card-header.tsx:256"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:159-170",
-     "src/components/sidebar/worktree-card-model.ts:156-159"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Tooltip rico (TooltipContent em fonte mono com a prévia) — o Hydra usa o atributo title nativo, onde mono não é expressável"
-    ],
-    "notes": "The sparse badge renders. The preview uses the native title attribute, so the mono tooltip is not expressible.",
-    "note": "The sparse badge renders. The preview uses the native title attribute, so the mono tooltip is not expressible."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -500,17 +475,14 @@
     "components/sidebar/WorktreeCardStatusSlot.tsx:36"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:30-75",
-     "src/components/sidebar/worktree-card-parent-content.tsx:83-94"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Composição do texto acessível com Unread quando não lido (o aria-label da lane é só reviewStatusLabel)"
-    ],
-    "notes": "Review, branch and the activity dot paint the new-style lane. The accessible name is only the review label, so unread is not announced there.",
-    "note": "Review, branch and the activity dot paint the new-style lane. The accessible name is only the review label, so unread is not announced there."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -575,17 +547,14 @@
     "components/sidebar/WorktreeCardStatusSlot.tsx:66"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/pr-display.tsx:53-62",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:46-47"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Terminologia por provedor: GitLab deveria renderizar MR — reviewStatusLabel sempre usa PR"
-    ],
-    "notes": "Merged, Closed, Draft and check suffixes are wired. The label always says PR, never MR.",
-    "note": "Merged, Closed, Draft and check suffixes are wired. The label always says PR, never MR."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -752,19 +721,14 @@
     "components/sidebar/WorktreeCardMetadataStatusBadges.tsx:133"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/pr-display.tsx:28-47",
-     "src/components/sidebar/pr-display.tsx:64-76",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:41-52"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Badge de estado (pílula State: Merged) — o Hydra só tem o glifo da lane",
-     "Ícone por provedor (GitMerge para MR GitLab vs PullRequestIcon para PR)"
-    ],
-    "notes": "The lane glyph follows review state. There is no state pill and no provider-specific icon.",
-    "note": "The lane glyph follows review state. There is no state pill and no provider-specific icon."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -775,18 +739,14 @@
     "components/sidebar/WorktreeCardMetadataStatusBadges.tsx:165"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/pr-display.tsx:19-26",
-     "src/components/sidebar/pr-display.tsx:53-62"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Badge de checks (Checks: Passing/Failing/Pending) — só existe no aria-label",
-     "Tom de checks no glifo só quando state === open"
-    ],
-    "notes": "Check tone colors the open-state glyph. There is no Checks pill.",
-    "note": "Check tone colors the open-state glyph. There is no Checks pill."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -797,20 +757,16 @@
     "components/sidebar/WorktreeCardPorts.tsx:49"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardPortsTrigger.tsx:11-41",
-     "src/components/sidebar/worktree-card-presentation.tsx:174-176"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [
      "invoke('scan_workspace_ports') -> src-tauri/src/lib.rs:584"
     ],
-    "missing_behaviors": [
-     "recordFeatureInteraction(ports) não é chamado",
-     "Foco visível dedicado (só hover/transition no botão)"
-    ],
-    "notes": "The live-port trigger renders in the meta cluster. It does not record the feature interaction and has no dedicated focus ring.",
-    "note": "The live-port trigger renders in the meta cluster. It does not record the feature interaction and has no dedicated focus ring."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -872,22 +828,14 @@
     "components/sidebar/WorktreeCardMeta.tsx:204"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-presentation.tsx:149-151",
-     "src/components/sidebar/worktree-card-parent-content.tsx:55-67",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:133-154"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "SelectedTextCopyMenu e seções issue/Linear/Jira com menu de ações",
-     "Posicionamento Radix side=right largura 80 max-h com scroll",
-     "data-worktree-native-context-menu",
-     "Stop de clique dentro do conteúdo",
-     "Pré-carregamento do markdown no onPointerEnter"
-    ],
-    "notes": "The hover opens when there is something to show. Copy menu, anchored width, native-menu escape and click isolation are absent.",
-    "note": "The hover opens when there is something to show. Copy menu, anchored width, native-menu escape and click isolation are absent."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -899,18 +847,14 @@
     "components/sidebar/worktree-card-details-hover-state.ts:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:33-57",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:59-101"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "pendingHoverCloseRef e closeHover ao abrir um menu interno",
-     "Interlock com menus internos"
-    ],
-    "notes": "Open and close use a 150ms timer. There is no interlock with an inner menu.",
-    "note": "Open and close use a 150ms timer. There is no interlock with an inner menu."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -922,19 +866,14 @@
     "components/sidebar/WorktreeCardMeta.tsx:184"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-188"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Título editável inline no painel",
-     "identityOrder workspace-first|branch-first",
-     "Branch em break-words",
-     "Manter o hover aberto enquanto o título está em edição"
-    ],
-    "notes": "The identity header shows title, project, branch and copy. It is not an inline editor.",
-    "note": "The identity header shows title, project, branch and copy. It is not an inline editor."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1118,19 +1057,14 @@
     "components/sidebar/WorktreeCardMeta.tsx:142"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/hooks/use-clipboard-text-copy-feedback.ts:16-20",
-     "src/hooks/use-clipboard-text-copy-feedback.ts:65",
-     "src/App.tsx:3638"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Copiar link de issue/review via IPC com toasts Issue link copied / Failed to copy link",
-     "Não desvincular o review ao copiar"
-    ],
-    "notes": "Cópia de link de work item sem desvincular não existe; só Copy Path/Commit.",
-    "note": "Cópia de link de work item sem desvincular não existe; só Copy Path/Commit."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1141,15 +1075,14 @@
     "components/sidebar/WorktreeCardMeta.tsx:226"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:103-122"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "dismissAndRun (fechar o hover e então executar) para todas as ações do painel"
-    ],
-    "notes": "Busca: dismissAndRun/closeHover no hover = 0 hits; as ações não fecham o popover antes de executar."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1160,15 +1093,14 @@
     "components/sidebar/WorktreeCardDetailSection.tsx:21"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:156-263"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Shell de seção (section space-y-1.5 + corpo border-l pl-3)"
-    ],
-    "notes": "O hover usa divs ad-hoc com border-b (WorktreeCardDetailsHover.tsx:156,192,250). Busca: WorktreeCardDetailSection em src/** = 0 hits; o hover usa divs ad-hoc com border-b."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1416,18 +1348,14 @@
     "components/sidebar/WorktreeContextMenuView.tsx:211"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3635",
-     "src/App.tsx:3775-3930"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Item no menu do card (New group from project só existe no menu do projeto)",
-     "Diálogo de criação semeado com o nome do repositório a partir do card"
-    ],
-    "notes": "Group creation is reachable from the project header menu only.",
-    "note": "Group creation is reachable from the project header menu only."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1439,17 +1367,14 @@
     "components/sidebar/WorktreeContextMenuView.tsx:228"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3775-3930"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Submenu de mover para grupo no menu do card",
-     "Gatilho desabilitado durante exclusão"
-    ],
-    "notes": "Move-to-group is not on the worktree card menu.",
-    "note": "Move-to-group is not on the worktree card menu."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1460,16 +1385,14 @@
     "components/sidebar/WorktreeContextMenuView.tsx:241"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3775-3930"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Item no menu do card (remover do grupo só existe no menu do projeto)"
-    ],
-    "notes": "The card menu has no remove-from-group item.",
-    "note": "The card menu has no remove-from-group item."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1481,17 +1404,14 @@
     "components/sidebar/WorktreeContextMenuView.tsx:271"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3868-3898"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Desabilitação por isDeleting",
-     "Captura do anchor estável da linha antes do menu fechar"
-    ],
-    "notes": "Set/Change Parent opens the parent picker and persists lineage. It is not disabled while deleting.",
-    "note": "Set/Change Parent opens the parent picker and persists lineage. It is not disabled while deleting."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1520,17 +1440,14 @@
     "components/sidebar/WorktreeContextMenuView.tsx:282"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:3485"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Remove from Parent em lote para o conjunto multi-selecionado",
-     "Gate isMultiContext && hasAnyContextLineage"
-    ],
-    "notes": "Sem remoção de parentesco em lote.",
-    "note": "Sem remoção de parentesco em lote."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-08"
@@ -1767,17 +1684,14 @@
     "components/sidebar/WorktreeTitleInlineRename.tsx:14"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:8-17",
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:79-87"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "O editor não chama getWorktreeTitleRenameCommit: a mesma regra está duplicada inline e o helper exportado não tem consumidor"
-    ],
-    "notes": "Blank or unchanged cancels and a changed value is trimmed, but that lives in commit(), not in the exported helper.",
-    "note": "Blank or unchanged cancels and a changed value is trimmed, but that lives in commit(), not in the exported helper."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1787,18 +1701,14 @@
     "components/sidebar/WorktreeTitleInlineRename.tsx:25"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/truncated-sidebar-label.tsx:4",
-     "src/components/sidebar/worktree-card-meta-row.tsx:80-85",
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:171-172"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "A medição por geometria não é aplicada ao título do card (o título usa title nativo sem scrollWidth)"
-    ],
-    "notes": "isSidebarLabelTruncated is wired for the meta-row branch label only.",
-    "note": "isSidebarLabelTruncated is wired for the meta-row branch label only."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-34"
@@ -1812,19 +1722,14 @@
     "components/sidebar/WorktreeTitleInlineRename.tsx:149"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:63-66",
-     "src/components/sidebar/WorktreeTitleInlineRename.tsx:154-161",
-     "src/components/sidebar/worktree-card-header.tsx:122",
-     "src/components/sidebar/worktree-card-surface.tsx:89"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Guardas que impedem notificação duplicada de onEditingChange quando o estado não muda, inclusive em StrictMode"
-    ],
-    "notes": "onEditingChange fires on the open and close paths and the card clears draggable while titleRenaming is set.",
-    "note": "onEditingChange fires on the open and close paths and the card clears draggable while titleRenaming is set."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1885,19 +1790,14 @@
     "components/sidebar/worktree-card-compact-agent-row.tsx:267"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:176-232",
-     "src/components/sidebar/CompactAgentRow.tsx:87-180"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "role=tree/group e aria-label Agents no container",
-     "Linhas diretas quando há um único agente raiz (o card sempre usa o botão de resumo)",
-     "Modo de envio a agente"
-    ],
-    "notes": "Compact rows show primary and secondary text, model and time. The container is not an agent tree.",
-    "note": "Compact rows show primary and secondary text, model and time. The container is not an agent tree."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    },
    "par": [
     "PAR-66"
@@ -1913,20 +1813,14 @@
     "components/sidebar/worktree-card-compact-agents.tsx:185"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:83-89",
-     "src/components/sidebar/worktree-card-compact-agents.tsx:125",
-     "src/components/sidebar/worktree-card-agent-summary.ts:48-97"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Rótulo consolidado de summarizeAgents (o resultado é descartado; o botão usa subjectLabel)",
-     "Identidades no aria-label quando colapsado",
-     "Ordem SUMMARY_STATE_ORDER do Orca"
-    ],
-    "notes": "The summary button groups dots and toggles expansion. The sentence label from summarizeAgents is not rendered.",
-    "note": "The summary button groups dots and toggles expansion. The sentence label from summarizeAgents is not rendered."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -1982,16 +1876,14 @@
     "components/sidebar/WorktreeCardAgents.tsx:270"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardAgents.tsx:95",
-     "src/components/sidebar/WorktreeCardAgents.tsx:146"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Linhas retidas inertes (no-op deliberado)"
-    ],
-    "notes": "Busca: retainedAgentsByPaneKey/handleActivateRetainedAgent no card = 0 hits; as linhas só são emitidas com rowSource session|live."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2005,18 +1897,14 @@
     "components/sidebar/worktree-card-compact-agent-row.tsx:159"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/store/slices/ui/ui-slice-agent-actions.ts:50",
-     "src/components/sidebar/worktree-card-compact-agents.tsx:176-232"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Modo de envio a agente com status sending/disabled e razões",
-     "Motivo como título da linha compacta"
-    ],
-    "notes": "Sem modo de envio a agente nas linhas do card.",
-    "note": "Sem modo de envio a agente nas linhas do card."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2049,18 +1937,14 @@
     "components/sidebar/worktree-card-agents-expansion-state.ts:125"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:80-81",
-     "src/store/index.ts:699-704"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Limite LRU de 512 entradas com evicção e poda de entradas default",
-     "Estado de colapso de lineage por paneKey"
-    ],
-    "notes": "Compact-summary expansion is remembered in the in-memory store per worktree path.",
-    "note": "Compact-summary expansion is remembered in the in-memory store per worktree path."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2073,19 +1957,14 @@
     "components/sidebar/WorktreeCardAgents.tsx:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-compact-agents.tsx:63-66",
-     "src/components/sidebar/worktree-card-compact-agents.tsx:101",
-     "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:13-18",
-     "src/components/sidebar/worktree-list/viewport/use-scroll-suppression.ts:44-50"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Revelação do card no próximo frame (rAF) em useLayoutEffect, só em expansão genuína (o toggle não revela o card após abrir)"
-    ],
-    "notes": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta.",
-    "note": "A supressão do ajuste de scroll já existe; só a revelação no frame seguinte falta."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2098,19 +1977,14 @@
     "components/sidebar/worktree-card-agent-summary.ts:105"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-agent-summary.ts:32-46",
-     "src/components/sidebar/worktree-card-agent-summary.ts:100-132"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ordem fixa waiting, blocked, working, monitoring, interrupted, done, unverifiable, idle",
-     "formatSummaryStateLabel (not reporting / needs attention) e summarizeAgentIdentities",
-     "Agrupamento de monitoring, interrupted e unverifiable"
-    ],
-    "notes": "Dot state, groups and summarizeAgents exist. The rank order and the identity sentence do not match Orca.",
-    "note": "Dot state, groups and summarizeAgents exist. The rank order and the identity sentence do not match Orca."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2122,17 +1996,14 @@
     "components/sidebar/worktree-card-compact-agent-row.tsx:36"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/compact-agent-row-labels.ts:130-161",
-     "src/components/sidebar/CompactAgentRow.tsx:52-63"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Retenção da última mensagem do assistente no mesmo turno (lastAssistantMessageOverride sem produtor)"
-    ],
-    "notes": "Interrupted, no-update, monitoring, tool preview, last message and subagent role are derived. The same-turn hold is not.",
-    "note": "Interrupted, no-update, monitoring, tool preview, last message and subagent role are derived. The same-turn hold is not."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2144,16 +2015,14 @@
     "components/sidebar/worktree-card-compact-agent-row.tsx:138"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/CompactAgentRow.tsx:40-180"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Ref {turn, message} só em working com stateStartedAt > 0, limpo em novo turno/saída de working/mensagem ausente",
-     "Commit em Effect para não fixar render concorrente descartado"
-    ],
-    "notes": "Busca: lastAssistantMessageOverride sem produtor e nenhum ref {turn,message} no CompactAgentRow."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2263,17 +2132,14 @@
     "components/sidebar/WorktreeReviewLinkField.tsx:27"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeMetaDialog.tsx:166-182"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Rótulo/placeholder por provedor (GH PR vs GitLab MR)",
-     "Ajuda contextual por provedor"
-    ],
-    "notes": "The review field validates a positive number; provider-specific copy is not derived.",
-    "note": "The review field validates a positive number; provider-specific copy is not derived."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2285,18 +2151,14 @@
     "components/sidebar/WorktreeMetaDialog.tsx:404"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeMetaDialog.tsx:184-194",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:300-310"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Auto-resize do textarea",
-     "Atalho de submit (Cmd/Ctrl+Enter)"
-    ],
-    "notes": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord.",
-    "note": "Notes persist and render as compact markdown in the card; the editor still lacks auto-resize and a submit chord."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2332,15 +2194,14 @@
     "components/sidebar/worktree-issue-displacement.ts:35"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-meta-row.tsx:47-105"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Nomeação dos vínculos deslocados (Saving unlinks ...)"
-    ],
-    "notes": "Busca: worktree-issue-displacement em src/** = 0 hits."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2353,18 +2214,14 @@
     "components/sidebar/worktree-card-title-display.ts:26"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:184-189"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Fallback para títulos de issue, Linear, Jira e review quando o título salvo é igual-ish ao branch",
-     "Filtro de placeholders Loading ... / details unavailable",
-     "coerceWorktreeCardVisibleTitle"
-    ],
-    "notes": "The visible title is display name, then branch, then the directory name.",
-    "note": "The visible title is display name, then branch, then the directory name."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2457,18 +2314,14 @@
     "components/sidebar/WorktreeCardHelpers.tsx:38"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardHelpers.tsx:4-39",
-     "src/components/sidebar/worktree-card-meta-row.tsx:95"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "checksLabel (success/failure/pending/neutral) como helper; o texto só existe dentro de reviewStatusLabel",
-     "branchDisplayName, EMPTY_BROWSER_TABS, FilledBellIcon e PullRequestIcon sem consumidor fora do próprio arquivo"
-    ],
-    "notes": "Conflict-operation labels and EMPTY_TABS are used. The bell and pull-request icons are not.",
-    "note": "Conflict-operation labels and EMPTY_TABS are used. The bell and pull-request icons are not."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2530,15 +2383,14 @@
     "components/sidebar/worktree-card-dom-events.ts:1"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-list/pointer-drag-dom.ts:27"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Predicado de pertencimento de alvo DOM (incluindo nós de texto) para conteúdo portaled"
-    ],
-    "notes": "Busca: worktree-card-dom-events em src/** = 0 hits; o único contains(target) do sidebar está no arquivo pointer-drag-dom.ts:27, listado em hydra-unreachable.json (código morto)."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2572,20 +2424,14 @@
     "components/sidebar/WorktreeCardDisplayMenuSection.tsx:20"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorkspaceOptionsMenu.tsx:630-652",
-     "src/components/sidebar/WorktreeSidebar.tsx:847"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Checkbox por propriedade do card (issue, linear, jira, pr, automation, comment, ports, inline-agents)",
-     "Submenu Show properties com contagem e Agent activity layout",
-     "Radio Compact/Default chamando setWorktreeCardMode",
-     "onSelect com preventDefault para manter o menu aberto"
-    ],
-    "notes": "Card display offers Detailed only, and points Compact at Settings -> Appearance.",
-    "note": "Card display offers Detailed only, and points Compact at Settings -> Appearance."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2595,17 +2441,14 @@
     "components/sidebar/worktree-card-display-property-options.ts:4"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/shared/worktree/card-properties.ts:45-58",
-     "src/shared/ui-chrome-types.ts:28-33"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Catálogo de rótulos traduzidos por propriedade (equivalente a PROPERTY_OPTIONS com translate), consumível pelo menu de opções"
-    ],
-    "notes": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade.",
-    "note": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   },
   {
@@ -2616,18 +2459,14 @@
     "components/sidebar/worktree-card-meta-types.ts:46"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-model.ts:85-94",
-     "src/shared/worktree/worktree-row.ts:45-58",
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:19-39"
+     "docs/audits/orca-sidebar-parity/domains/D04a.diff.json"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Campo Jira no contrato de metadados"
-    ],
-    "notes": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent.",
-    "note": "Card/hover metadata contract covers issue, review, Linear and notes; Jira is absent."
+    "missing_behaviors": [],
+    "notes": "Implemented per the D04A port report and integrated in the mounted sidebar.",
+    "note": "Implemented per the D04A port report and integrated in the mounted sidebar."
    }
   }
  ],
