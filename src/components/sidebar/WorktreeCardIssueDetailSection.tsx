@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/WorktreeCardIssueDetailSection.tsx
 import React from 'react'
-import { CircleDot, Copy, Ellipsis, ExternalLink, Globe, Pencil } from 'lucide-react'
+import { CircleDot, Copy, Ellipsis, ExternalLink, Globe, MonitorUp, Pencil } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,8 @@ type WorktreeCardIssueDetailSectionProps = {
   onCopyIssueLink?: () => void
   onOpenIssueInBrowser?: (url: string) => void
   onEditIssue?: (event: React.MouseEvent) => void
+  /** Opens the issue in Hydra's Tasks view (Orca `Open in Orca`). */
+  onOpenGitHubIssueInOrca?: (event: React.MouseEvent) => void
 }
 
 export function WorktreeCardIssueDetailSection({
@@ -36,7 +38,8 @@ export function WorktreeCardIssueDetailSection({
   onIssueMenuOpenChange,
   onCopyIssueLink,
   onOpenIssueInBrowser,
-  onEditIssue
+  onEditIssue,
+  onOpenGitHubIssueInOrca
 }: WorktreeCardIssueDetailSectionProps): React.JSX.Element | null {
   if (!issue) {
     return null
@@ -113,6 +116,17 @@ export function WorktreeCardIssueDetailSection({
                 onClick={onEditIssue}
               >
                 <Pencil className="size-3" />
+              </MetadataActionIcon>
+            )}
+            {issue.url && onOpenGitHubIssueInOrca && (
+              <MetadataActionIcon
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.2c67730e07',
+                  'Open in Orca'
+                )}
+                onClick={onOpenGitHubIssueInOrca}
+              >
+                <MonitorUp className="size-3" />
               </MetadataActionIcon>
             )}
             {issue.url && (

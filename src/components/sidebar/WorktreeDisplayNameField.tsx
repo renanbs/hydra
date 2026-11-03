@@ -1,13 +1,13 @@
-// Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
-// Source: components/sidebar/WorktreeDisplayNameField.tsx
+// Ported from Orca (`renderer/src/components/sidebar/WorktreeDisplayNameField.tsx`).
 //
-// Emoji shortcode suggestions are not part of the card port: they need the
-// `emojibase-data` catalog and the command primitive, neither of which this
-// renderer ships. The field keeps everything else — label, focus, Enter, hint.
-import type { RefObject } from 'react'
+// Emoji shortcode suggestions come from the local curated catalog, so the field
+// behaves like Orca's without the `emojibase-data` dependency.
+import { useId, type RefObject } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { WorkspaceEmojiSuggestionPopover } from '@/components/workspace-emoji/WorkspaceEmojiSuggestionPopover'
+import { useWorkspaceEmojiShortcodeInput } from '@/components/workspace-emoji/useWorkspaceEmojiShortcodeInput'
 import { translate } from '@/i18n/i18n'
 
 type WorktreeDisplayNameFieldProps = {
@@ -15,6 +15,8 @@ type WorktreeDisplayNameFieldProps = {
   inputRef: RefObject<HTMLInputElement | null>
   onEnter: () => void | Promise<void>
   onValueChange: (value: string) => void
+  /** Portal target for the emoji popover; the dialog element keeps it in the modal layer. */
+  portalContainer?: HTMLElement | null
   value: string
 }
 
@@ -23,20 +25,35 @@ export function WorktreeDisplayNameField({
   inputRef,
   onEnter,
   onValueChange,
+  portalContainer,
   value
 }: WorktreeDisplayNameFieldProps): React.JSX.Element {
+  const inputId = useId()
+  const emojiInput = useWorkspaceEmojiShortcodeInput({
+    disabled,
+    inputRef,
+    onValueChange,
+    value
+  })
+
   return (
     <div className="space-y-1">
-      <Label className="text-[11px] font-medium text-muted-foreground">
+      <Label htmlFor={inputId} className="text-[11px] font-medium text-muted-foreground">
         {translate('auto.components.sidebar.WorktreeMetaDialog.ad5e4e514f', 'Display Name')}
       </Label>
       <Input
+        id={inputId}
         ref={inputRef}
         value={value}
         disabled={disabled}
-        onChange={(event) => onValueChange(event.target.value)}
+        onChange={(event) =>
+          emojiInput.handleValueChange(event.target.value, event.target.selectionStart)
+        }
+        onSelect={(event) => emojiInput.syncCursor(event.currentTarget)}
         onKeyDown={(event) => {
-          if (event.key !== 'Enter' || event.nativeEvent.isComposing) {
+          // Why: the picker owns Enter/arrows while open; only an unconsumed
+          // Enter submits the dialog.
+          if (emojiInput.handleKeyDown(event) || event.key !== 'Enter') {
             return
           }
           event.preventDefault()
@@ -47,6 +64,18 @@ export function WorktreeDisplayNameField({
           'Custom display name...'
         )}
         className="h-8 text-xs"
+      />
+      <WorkspaceEmojiSuggestionPopover
+        anchorRef={inputRef}
+        open={emojiInput.open}
+        commandValue={emojiInput.commandValue}
+        heading={translate('auto.components.new.workspace.SmartWorkspaceNameField.emoji', 'Emoji')}
+        suggestions={emojiInput.suggestions}
+        onCommandValueChange={emojiInput.onCommandValueChange}
+        onSelect={emojiInput.selectSuggestion}
+        onOpenChange={(open) => !open && emojiInput.close()}
+        portalContainer={portalContainer}
+        side="bottom"
       />
       <p className="text-[10px] text-muted-foreground">
         {translate(

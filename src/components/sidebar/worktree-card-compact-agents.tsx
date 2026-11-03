@@ -2,11 +2,14 @@
 // Source: components/sidebar/worktree-card-compact-agents.tsx
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { useAppStore } from '../../store'
 import { useNow } from '../../hooks/use-now'
 import { cn } from '../../lib/utils'
 import { translate } from '@/i18n/i18n'
+import { activateTabAndFocusPane } from '../../lib/activate-tab-and-focus-pane'
+import { parsePaneKey } from '../../shared/stable-pane-id'
 import { DashboardAgentRow } from '../dashboard/DashboardAgentRow'
 import { CompactAgentRow } from './CompactAgentRow'
 import { AgentBrandIcon } from '../AgentIcon'
@@ -19,6 +22,7 @@ import {
   summarizeAgents
 } from './worktree-card-agent-summary'
 import { useWorktreeAgentExpansionState } from './worktree-card-agents-expansion-state'
+import { selectAcknowledgedAgentTimes } from './worktree-card-agent-ack-inputs'
 import { SUPPRESS_WORKTREE_LIST_SCROLL_ADJUSTMENT_EVENT } from './worktree-list/viewport/use-scroll-suppression'
 import { revealElementInScrollContainer } from './worktree-sidebar-reveal'
 import type { DashboardAgentRowData } from './agent-status-types'
@@ -286,8 +290,15 @@ export function WorktreeCompactAgentsList({
   const displayMode = useAppStore(
     (s) => (s as unknown as CardDisplayState).agentActivityDisplayMode ?? 'default'
   )
-  const acknowledgedByPaneKey = useAppStore(
-    (s) => s.acknowledgedAgentsByPaneKey as Record<string, number> | undefined
+  // Why: acknowledgement writes are app-global; project only this card's rows so
+  // unrelated worktree activity does not rerender every agent body.
+  const acknowledgedAgentTimes = useAppStore(
+    useShallow((s) => selectAcknowledgedAgentTimes(s, rows))
+  )
+  const dropAgentStatus = useAppStore((s) => s.dropAgentStatus)
+  const dismissRetainedAgent = useAppStore(
+    (s) =>
+      (s as unknown as { dismissRetainedAgent?: (paneKey: string) => void }).dismissRetainedAgent
   )
   const sendTargetMode = useAppStore(
     (s) => s.agentSendPopoverTargetMode as unknown as SendTargetModeView
@@ -379,8 +390,24 @@ export function WorktreeCompactAgentsList({
   )
   // Why: a parent whose own status is at least as old as its last acknowledgement
   // is "unvisited" — the row stays emphasized until the user opens its tab.
-  const isUnvisited = (agent: AgentRow): boolean =>
-    (acknowledgedByPaneKey?.[agent.paneKey] ?? 0) < (agent.entry.stateStartedAt ?? 0)
+  // Why: the list also receives an externally computed map; this projection is
+  // the fallback for callers that do not pass one.
+  const unvisitedFromAck = useMemo(() => {
+    const out: Record<string, boolean> = {}
+    rows.forEach((agent, index) => {
+      out[agent.paneKey] =
+        (acknowledgedAgentTimes[index] ?? 0) < (agent.entry.stateStartedAt ?? 0)
+    })
+    return out
+  }, [acknowledgedAgentTimes, rows])
+
+  // Why: dismissing a row is the only way to clear a finished agent's status
+  // without opening its pane; the retained snapshot must go with it or the row
+  // reappears from hibernation on the next store tick.
+  const handleDismissAgent = (paneKey: string): void => {
+    dropAgentStatus(paneKey)
+    dismissRetainedAgent?.(paneKey)
+  }
 
   const renderBranch = (agent: AgentRow, ancestorPaneKeys: ReadonlySet<string>): React.ReactNode => {
     if (ancestorPaneKeys.has(agent.paneKey)) {
@@ -395,11 +422,46 @@ export function WorktreeCompactAgentsList({
     const descendantAncestorPaneKeys = new Set(ancestorPaneKeys)
     descendantAncestorPaneKeys.add(agent.paneKey)
     const activate = (): void => {
-      // Why inert rows: a closed thread stays listed but its pane is gone, so revealing
-      // it must be a no-op instead of selecting an unrelated session.
-      if (agent.sessionId) {
-        onSelectSession(agent.sessionId)
+      // Why: every user-initiated worktree switch routes through
+      // activateAndRevealWorktree (cross-repo activation + navigation history).
+      const activeWorktreeId = worktreeId ?? worktreePath
+      const parsed = parsePaneKey(agent.paneKey)
+      if (!parsed) {
+        // Why: headless daemon rows carry a session id instead of a pane key; the
+        // row still opens its session, but there is no pane to focus.
+        if (agent.sessionId) {
+          onSelectSession(agent.sessionId)
+        }
+        return
       }
+      if (agent.tab?.id && parsed.tabId !== agent.tab.id) {
+        // Why: a mismatched tab means the status belongs to a remounted pane, so
+        // discard the stale row instead of guessing another terminal pane.
+        handleDismissAgent(agent.paneKey)
+        return
+      }
+      // Why dynamic: the activation module reaches terminal seeding, which pulls
+      // the PTY dispatcher into every card render. Loading it on the click keeps
+      // the sidebar's initial import graph lean (and testable).
+      void import('../../lib/worktree-activation').then(({ activateAndRevealWorktree }) => {
+        activateAndRevealWorktree(activeWorktreeId)
+        const tabs = useAppStore.getState().tabsByWorktree[activeWorktreeId] ?? []
+        if (tabs.some((tab) => tab.id === parsed.tabId)) {
+          activateTabAndFocusPane(parsed.tabId, parsed.leafId, {
+            ackPaneKeyOnSuccess: agent.paneKey,
+            flashFocusedPane: true,
+            scrollToBottomIfOutputSinceLastView: true
+          })
+          return
+        }
+        const liveEntry = useAppStore.getState().agentStatusByPaneKey[agent.paneKey]
+        if (liveEntry?.worktreeId === activeWorktreeId) {
+          // Why: orchestration worker status can be attributed before the renderer
+          // knows its tab; keep the live row instead of dismissing it as stale.
+          return
+        }
+        handleDismissAgent(agent.paneKey)
+      })
     }
     const sendTarget = sendTargetStatusFor(agent.paneKey)
     return (
@@ -409,10 +471,17 @@ export function WorktreeCompactAgentsList({
             agent={toDashboardAgentRow(agent)}
             now={now}
             onActivate={activate}
+            onDismiss={handleDismissAgent}
+            isUnvisited={unvisitedByPaneKey?.[agent.paneKey] ?? unvisitedFromAck[agent.paneKey] ?? false}
+            stateDotSize="sm"
+            hideExpand
             isFocusedPane={
               agent.paneKey === focusedAgentPaneKey ||
               (Boolean(agent.sessionId) && agent.sessionId === activeSessionId)
             }
+            sendTargetStatus={sendTarget?.status}
+            sendTargetDisabledReason={sendTarget?.reason}
+            onSendTargetClick={sendTargetMode ? handleSendTargetClick : undefined}
             childAgentCount={hasChildAgents ? childAgents.length : undefined}
             childAgentsExpanded={isExpanded}
             onToggleChildAgents={
@@ -430,7 +499,7 @@ export function WorktreeCompactAgentsList({
               agent.paneKey === focusedAgentPaneKey ||
               (Boolean(agent.sessionId) && agent.sessionId === activeSessionId)
             }
-            isUnvisited={unvisitedByPaneKey?.[agent.paneKey] ?? isUnvisited(agent)}
+            isUnvisited={unvisitedByPaneKey?.[agent.paneKey] ?? unvisitedFromAck[agent.paneKey] ?? false}
             childAgentCount={hasChildAgents ? childAgents.length : undefined}
             childAgentsExpanded={isExpanded}
             onToggleChildAgents={
@@ -472,9 +541,9 @@ export function WorktreeCompactAgentsList({
       onClick={(e) => e.stopPropagation()}
       className={cn('mt-1 flex flex-col gap-0.5', className)}
       role={childrenByParentPaneKey.size > 0 ? 'tree' : 'group'}
-      aria-label="Agents"
+      aria-label={translate('auto.components.sidebar.WorktreeCardAgents.1b0a156717', 'Agents')}
     >
-      {singleRootWithoutChildren ? (
+      {displayMode === 'full' || singleRootWithoutChildren ? (
         subjectRows.map((row) => renderBranch(row, new Set()))
       ) : (
         <div className="compact-agent-summary-panel">
