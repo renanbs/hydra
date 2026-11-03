@@ -11422,19 +11422,17 @@
    "components/sidebar/worktree-manual-order.ts:108-251"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:747"
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/worktree-manual-order.ts",
+    "src/components/sidebar/worktree-manual-order-group-drop.parity.test.ts"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos",
-    "buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop",
-    "shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros)",
-    "Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem"
-   ],
-   "notes": "Só reordenação dentro do grupo de origem; drop entre grupos/lanes não commita.",
-   "note": "Só reordenação dentro do grupo de origem; drop entre grupos/lanes não commita."
+   "missing_behaviors": [],
+   "notes": "Within-group reorders replay through buildManualOrderUpdatesForVisibleGroups; a status-lane release resolves its slot and, only in manual sort mode (or same-lane), commits through buildManualOrderUpdatesForGroupDrop; other modes write status only.",
+   "note": "Within-group reorders replay through buildManualOrderUpdatesForVisibleGroups; a status-lane release resolves its slot and, only in manual sort mode (or same-lane), commits through buildManualOrderUpdatesForGroupDrop; other modes write status only."
   },
   "par": [
    "PAR-88"

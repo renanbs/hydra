@@ -623,6 +623,18 @@
    ],
    "missing_behaviors": [],
    "note": "Delete decision tree validates the confirmed instance, offers the primary-checkout confirmation, resolves SSH ghost/disconnected hosts with real reconnect/forget commands, and forces descendant confirmation."
+  },
+  {
+   "id": "D06-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/worktree-list/drag/drop-commit.ts",
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/worktree-manual-order.ts",
+    "src/components/sidebar/worktree-manual-order-group-drop.parity.test.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Within-group reorders replay through buildManualOrderUpdatesForVisibleGroups; a status-lane release resolves its slot and, only in manual sort mode (or same-lane), commits through buildManualOrderUpdatesForGroupDrop; other modes write status only."
   }
  ]
 }

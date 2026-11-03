@@ -24,6 +24,7 @@ export function WorktreeListDragProvider({
   scrollRef,
   onReorderWorktrees,
   onAssignWorktreesStatus,
+  onStatusLaneDrop,
   onPinWorktrees,
   lineageParentIdByChildId,
   onNestWorktrees,
@@ -44,6 +45,8 @@ export function WorktreeListDragProvider({
     status: string,
     executionHostId?: ExecutionHostId
   ) => void
+  /** Status-lane release: status plus manual-order slot when the mode is manual. */
+  onStatusLaneDrop: WorktreeDropCommitContext['onStatusLaneDrop']
   /** The workspace board's pin strip drop: a pin write, never a status write (D08-028). */
   onPinWorktrees: (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => void
   /** Persisted lineage parent per child id, used to reject cycles during a nest drag. */
@@ -95,6 +98,7 @@ export function WorktreeListDragProvider({
       resolveDraggedWorktreeIds,
       onReorderWorktrees,
       onAssignWorktreesStatus,
+      onStatusLaneDrop,
       onPinWorktrees,
       lineageParentIdByChildId,
       onNestWorktrees,
@@ -105,6 +109,7 @@ export function WorktreeListDragProvider({
     }),
     [
       onAssignWorktreesStatus,
+      onStatusLaneDrop,
       onPinWorktrees,
       onReorderWorktrees,
       lineageParentIdByChildId,

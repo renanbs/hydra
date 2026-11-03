@@ -212,7 +212,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 172 capabilities
+## PARTIAL — 171 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -369,10 +369,6 @@
 - **D05-009** — Resolução e normalização do tipo de agente com base no launchAgent da aba e título | falta: resolveCompatibleAgentTypeForOwner (normalização de compatibilidade OMP/Pi) — ausente; resolveTitleDerivedPaneOwner: launchAgent aplica-se apenas a abas com folha única de layout, não marcando subpainéis em split — ausente; resolveAgentTypeFromTerminalTitle (src/components/sidebar/worktree-title-derived-agent-rows.ts:3 é auto-stub null) | components/sidebar/worktree-agent-row-type.ts:11
 - **D05-013** — Sumário agregado e cacheado de atividade de agentes por worktree para indicadores de status | falta: Flags hasPermission/hasLiveWorking/hasLiveMonitoring/hasInterrupted/hasLiveDone/hasRetainedDone (Hydra colapsa tudo num único status working|monitoring|permission por worktree); Estados 'done' e 'interrupted' no sumário (não existem no índice do Hydra) e separação de finalização limpa vs interrompida; Mapas agentStatusPaneIdsByTabId e stalePaneIdsByTabId (supressão de títulos action-required de painéis estagnados); Reuso de objetos de sumário estruturalmente iguais (summariesEqual) e cache por agentStatusEpoch | components/sidebar/worktree-agent-activity-summary.ts:13
 - **D05-016** — Seletores otimizados de entradas de agentes, migrações e layouts por worktree | falta: selectLiveAgentStatusEntriesForWorktree / selectMigrationUnsupportedEntriesForWorktree / selectRetainedAgentEntriesForWorktree / selectTerminalLayoutsForWorktree (0 hits); Constantes imutáveis compartilhadas EMPTY_LIVE_ENTRIES/EMPTY_MIGRATION_UNSUPPORTED_ENTRIES/EMPTY_RETAINED/EMPTY_TERMINAL_LAYOUTS (0 hits); reuseArrayIfEqual para reutilização referencial entre publicações; getTabIdToWorktreeId com inclusão de abas unificadas agent-session | components/sidebar/worktree-agent-row-selectors.ts:20
-
-### D06-drag-order-keyboard (1)
-
-- **D06-019** — Geração de atualizações de ordem manual para reordenação dentro de grupos visíveis ou drop entre grupos/lanes | falta: buildManualOrderUpdatesForVisibleGroups reordenando o grupo de origem e mantendo os demais grupos intactos; buildManualOrderUpdatesForGroupDrop transferindo itens entre grupos na posição exata de drop; shouldWriteManualOrderForGroupDrop autorizando gravação conforme o modo de ordenação ativo (manual vs outros); Drops entre lanes fora do modo manual tratados estritamente como mudança de status, sem sobrescrever ordem | components/sidebar/worktree-manual-order.ts:108-251
 
 ### D08-kanban-board (13)
 

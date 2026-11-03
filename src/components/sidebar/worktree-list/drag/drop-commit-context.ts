@@ -46,6 +46,17 @@ export type WorktreeDropCommitContext = {
     executionHostId?: ExecutionHostId
   ) => void
   /**
+   * A release on a status lane: writes the status and, only in manual sort mode,
+   * the manual order at the resolved slot (D06-019). A null dropIndex appends.
+   */
+  onStatusLaneDrop: (args: {
+    status: string
+    draggedIds: readonly string[]
+    dropIndex: number | null
+    sourceGroupKey?: string
+    executionHostId?: ExecutionHostId
+  }) => void
+  /**
    * Pins the dragged workspaces without touching their status. The board's pin strip drop
    * (D08-028) is its only caller, and the panel bridges the ids onto the app's single pin
    * writer — the same one the row menu uses. Host-qualified for the same reason.

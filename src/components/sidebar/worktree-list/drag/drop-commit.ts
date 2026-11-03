@@ -109,7 +109,20 @@ export function commitWorktreeDropAtPoint(
     if (sectionTarget.kind === 'pin') {
       ctx.onPinWorktrees(draggedIds, args.executionHostId)
     } else {
-      ctx.onAssignWorktreesStatus(draggedIds, sectionTarget.status, args.executionHostId)
+      // The pointer knows where inside the lane it released; the native header path
+      // appends. Manual sort mode commits that slot, other modes are status-only.
+      const preview = ctx.computeWorktreeStatusDrop({
+        pointerY: point.y,
+        status: sectionTarget.status,
+        draggedIds
+      })
+      ctx.onStatusLaneDrop({
+        status: sectionTarget.status,
+        draggedIds,
+        dropIndex: preview ? preview.dropIndex : null,
+        sourceGroupKey,
+        executionHostId: args.executionHostId
+      })
     }
     ctx.clearWorktreeDrag()
     return 'section'

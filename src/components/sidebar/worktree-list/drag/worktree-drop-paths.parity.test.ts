@@ -51,6 +51,7 @@ function context(overrides: Partial<WorktreeDropCommitContext> = {}): WorktreeDr
     resolveDraggedWorktreeIds: () => ['child'],
     onReorderWorktrees: vi.fn(),
     onAssignWorktreesStatus: vi.fn(),
+    onStatusLaneDrop: vi.fn(),
     onPinWorktrees: vi.fn(),
     lineageParentIdByChildId: PARENTS,
     onNestWorktrees: vi.fn(),
@@ -172,10 +173,14 @@ describe('the shared drop commit (D03a-024)', () => {
       executionHostId: 'ssh:build'
     })
 
-    expect(ctx.onAssignWorktreesStatus).toHaveBeenCalledWith(
-      ['child'],
-      'todo',
-      'ssh:build'
+    expect(ctx.onStatusLaneDrop).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'todo',
+        draggedIds: ['child'],
+        dropIndex: 1,
+        sourceGroupKey: 'repo:1',
+        executionHostId: 'ssh:build',
+      })
     )
     expect(ctx.onReorderWorktrees).not.toHaveBeenCalled()
   })

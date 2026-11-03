@@ -137,9 +137,15 @@ import {
 import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pending-worktree-creation-keys";
 import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
-import { buildManualOrderUpdatesForVisibleGroups } from "./worktree-manual-order";
+import {
+  buildManualOrderUpdatesForGroupDrop,
+  buildManualOrderUpdatesForVisibleGroups,
+  shouldWriteManualOrderForGroupDrop,
+} from "./worktree-manual-order";
 import { buildWorktreeManualOrderCatalog } from "./worktree-manual-order-catalog";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
+import { getWorktreeDragGroups } from "./worktree-list/drag/groups";
+import { getWorkspaceStatusGroupKey } from "./workspace-status";
 import { buildLineageParentIdByChildId } from "./worktree-list/drag/nesting";
 import {
   WorktreeDragDropIndicator,
@@ -576,7 +582,11 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
   row: GroupHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onAssignStatusDrop: (worktreeIds: readonly string[], status: string) => void;
+  onAssignStatusDrop: (
+    worktreeIds: readonly string[],
+    status: string,
+    dropIndex: number | null
+  ) => void;
   onPinDrop: (worktreeIds: readonly string[]) => void;
 }): React.JSX.Element {
   const Icon = row.icon;
@@ -613,7 +623,7 @@ const LaneSectionHeader = React.memo(function LaneSectionHeader({
               if (isPinDropTarget) {
                 onPinDrop(worktreeIds);
               } else if (workspaceStatusId) {
-                onAssignStatusDrop(worktreeIds, workspaceStatusId);
+                onAssignStatusDrop(worktreeIds, workspaceStatusId, null);
               }
             }
           : undefined
@@ -1734,24 +1744,11 @@ export function WorktreeList({
     [dragMultiSelectionInput, selectedWorktreeIdentities]
   );
 
-  const handlePointerGroupReorder = useCallback(
-    (dragArgs: WorktreeGroupReorderArgs) => {
+  // Writes one ordered id stream back through the panel's single reorder writer,
+  // bucketed per project (the writer speaks repo + worktrees).
+  const applyManualOrderedIds = useCallback(
+    (orderedIds: readonly string[]) => {
       if (!onReorderWorktreesInGroup) return;
-      // The manual-order module owns the reorder: it replays the group through
-      // `buildSparseManualOrderUpdates` and reports whether anything moved.
-      const { changed, orderedIds } = buildManualOrderUpdatesForVisibleGroups({
-        groups: dragArgs.groups,
-        sourceGroupKey: dragArgs.sourceGroupKey,
-        draggedIds: dragArgs.draggedIds,
-        dropIndex: dragArgs.dropIndex,
-        now: Date.now(),
-        // Why the catalog: the written sequence is every known row, not just the painted
-        // slice — a filtered/collapsed workspace and a folder workspace keep their place.
-        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
-        allWorktreeIds: manualOrderCatalog.orderedIds,
-      });
-      if (!changed) return;
-
       const orderedByProject = new Map<
         string,
         { project: HydraProject; worktrees: GitWorktreeInfo[] }
@@ -1773,12 +1770,29 @@ export function WorktreeList({
         );
       }
     },
-    [
-      dragWorktreeById,
-      getFilteredAndSortedWorktrees,
-      manualOrderCatalog,
-      onReorderWorktreesInGroup,
-    ]
+    [dragWorktreeById, getFilteredAndSortedWorktrees, onReorderWorktreesInGroup]
+  );
+
+  const handlePointerGroupReorder = useCallback(
+    (dragArgs: WorktreeGroupReorderArgs) => {
+      if (!onReorderWorktreesInGroup) return;
+      // The manual-order module owns the reorder: it replays the group through
+      // `buildSparseManualOrderUpdates` and reports whether anything moved.
+      const { changed, orderedIds } = buildManualOrderUpdatesForVisibleGroups({
+        groups: dragArgs.groups,
+        sourceGroupKey: dragArgs.sourceGroupKey,
+        draggedIds: dragArgs.draggedIds,
+        dropIndex: dragArgs.dropIndex,
+        now: Date.now(),
+        // Why the catalog: the written sequence is every known row, not just the painted
+        // slice — a filtered/collapsed workspace and a folder workspace keep their place.
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (!changed) return;
+      applyManualOrderedIds(orderedIds);
+    },
+    [applyManualOrderedIds, manualOrderCatalog]
   );
 
   // ─── Pointer-drag board drop → the panel's status writer ───────────────────
@@ -1799,6 +1813,53 @@ export function WorktreeList({
   //
   // The same id→path bridge, for the board's pin strip: the drag speaks row ids, the app's
   // pin writer speaks workspace paths. One writer for both the strip and the row menu.
+  // D06-019: a release on a status lane assigns the status and, only when the panel
+  // sorts manually, commits the drop slot through the same manual-order writer.
+  const handleStatusLaneDrop = useCallback(
+    (args: {
+      status: string;
+      draggedIds: readonly string[];
+      dropIndex: number | null;
+      sourceGroupKey?: string;
+      executionHostId?: ExecutionHostId;
+    }) => {
+      for (const entry of resolveDragWorktreeEntries(args.draggedIds, args.executionHostId)) {
+        void onAssignWorktreeStatus(entry.worktree.path, args.status);
+      }
+      const targetGroupKey = getWorkspaceStatusGroupKey(args.status);
+      if (
+        !shouldWriteManualOrderForGroupDrop({
+          sortBy: displayOptions.sortBy,
+          sourceGroupKeys: args.sourceGroupKey ? [args.sourceGroupKey] : [],
+          targetGroupKey,
+        })
+      ) {
+        return;
+      }
+      const groups = getWorktreeDragGroups(rows);
+      const targetGroup = groups.find((group) => group.key === targetGroupKey);
+      if (!targetGroup) return;
+      const { changed, orderedIds } = buildManualOrderUpdatesForGroupDrop({
+        groups,
+        targetGroupKey,
+        draggedIds: args.draggedIds,
+        dropIndex: args.dropIndex ?? targetGroup.worktreeIds.length,
+        now: Date.now(),
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (changed) applyManualOrderedIds(orderedIds);
+    },
+    [
+      applyManualOrderedIds,
+      displayOptions.sortBy,
+      manualOrderCatalog,
+      onAssignWorktreeStatus,
+      resolveDragWorktreeEntries,
+      rows,
+    ]
+  );
+
   const handlePinWorktrees = useCallback(
     (worktreeIds: readonly string[], executionHostId?: ExecutionHostId) => {
       const worktreePaths = resolveDragWorktreeEntries(worktreeIds, executionHostId).map(
@@ -2640,7 +2701,14 @@ export function WorktreeList({
               row={row}
               isCollapsed={isCollapsedKey(row.key)}
               onToggleCollapse={slot.toggleCollapse}
-              onAssignStatusDrop={handleAssignWorktreesStatus}
+              onAssignStatusDrop={(worktreeIds, status, dropIndex) =>
+                handleStatusLaneDrop({
+                  status,
+                  draggedIds: worktreeIds,
+                  dropIndex,
+                  sourceGroupKey: `workspace-status:${status}`,
+                })
+              }
               onPinDrop={handlePinWorktrees}
             />
           );
@@ -2746,6 +2814,7 @@ export function WorktreeList({
       scrollRef={viewportScrollRef}
       onReorderWorktrees={handlePointerGroupReorder}
       onAssignWorktreesStatus={handleAssignWorktreesStatus}
+      onStatusLaneDrop={handleStatusLaneDrop}
       onPinWorktrees={handlePinWorktrees}
       lineageParentIdByChildId={rowModel.lineageParentIdByChildId}
       workspaceBoardOpen={workspaceBoardOpen}
