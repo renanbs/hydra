@@ -5950,21 +5950,35 @@ export default function App() {
           setIsAddRepoOpen(false);
           setDroppedAddRepoFolder(null);
         }}
-        onProjectAdded={() => {
+        onProjectAdded={(addedPath, addedKind) => {
           invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
             const model = catalogToSidebarModel(envelope);
             setProjects(model.projects);
             applyCatalogProjectGroups(model);
             setFolderWorkspaces(model.folderWorkspaces);
-            if (model.projects.length > 0) {
-              handleSelectProject(model.projects[0]);
+            // D02a-028: select the project that was actually added (its main
+            // checkout path) instead of list order; folder/group adds activate the
+            // folder workspace the catalog created for that path.
+            if (addedPath && addedKind === "folder") {
+              if (isNewWorkspaceOpen) {
+                closeNewWorkspaceComposer();
+              }
+              handleActivateFolderWorkspace(addedPath);
+              return;
+            }
+            const addedProject = addedPath
+              ? model.projects.find((project) => project.path === addedPath)
+              : undefined;
+            if (addedProject || model.projects.length > 0) {
+              const selected = addedProject ?? model.projects[0];
+              handleSelectProject(selected);
               if (tabsRef.current.length === 0) {
                 const tabId = `tab_${Date.now().toString().slice(-4)}`;
                 const initialTab: TabItem = {
                   id: tabId,
-                  title: `${model.projects[0].name} (main)`,
+                  title: `${selected.name} (main)`,
                   type: "terminal",
-                  cwd: model.projects[0].path,
+                  cwd: selected.path,
                 };
                 setTabs([initialTab]);
                 setActiveTabId(tabId);
@@ -5977,6 +5991,7 @@ export default function App() {
       {/* Orca 100% New Workspace Composer Modal */}
       <NewWorkspaceComposer
         isOpen={isNewWorkspaceOpen}
+        nestedDialogOpen={isAddRepoOpen}
         activeProject={activeProject}
         projects={projects}
         availableAgents={availableAgents}
