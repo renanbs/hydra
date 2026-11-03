@@ -10,6 +10,7 @@ import type {
   WorktreeCardJiraIssueDisplay,
   WorktreeCardLinearIssueDisplay
 } from './worktree-card-meta-types'
+import type { WorktreeUpstreamStatus } from '../../lib/worktree-upstream-status'
 
 export type ParsedRepoHost = {
   kind: 'local' | 'ssh' | 'runtime'
@@ -24,6 +25,8 @@ export type WorktreeCardControllerExtras = {
   conflictOperation?: string
   /** The branch already exists on the remote under another local worktree. */
   remoteBranchConflict?: { remote: string; branchName: string } | boolean | null
+  /** Ahead/behind of this checkout against its upstream, when it has one. */
+  upstreamStatus?: WorktreeUpstreamStatus | null
   issueDisplay?: WorktreeCardIssueDisplay | null
   linearIssueDisplay?: WorktreeCardLinearIssueDisplay | null
   jiraIssueDisplay?: WorktreeCardJiraIssueDisplay | null

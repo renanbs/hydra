@@ -14,16 +14,19 @@ export type WorktreeMetadataRecord = {
   linked_issue: number | null;
   linked_pr: number | null;
   linked_linear_issue: string | null;
+  linked_jira_issue: string | null;
   updated_at: number;
 };
 
 export type WorktreeMetadataByPath = Readonly<Record<string, WorktreeMetadataRecord>>;
 
-/** The four editable workspace metadata fields (Orca `WorktreeMeta`). */
+/** The editable workspace metadata fields (Orca `WorktreeMeta`). */
 export type WorktreeMetadataDraft = {
   displayName: string;
   comment: string;
   linkedIssue: number | null;
   linkedPR: number | null;
   linkedLinearIssue: string | null;
+  /** Jira key or issue URL; the card projects the Jira section from it. */
+  linkedJiraIssue: string | null;
 };

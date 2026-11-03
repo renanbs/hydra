@@ -73,6 +73,11 @@ export function WorktreeMetaDialog({
   );
   const [linkedPR, setLinkedPR] = useState(initial.linkedPR == null ? '' : String(initial.linkedPR));
   const [comment, setComment] = useState(initial.comment);
+  // Why a pass-through: the Jira link is authored by the composer/provider, not
+  // this dialog, so Save must preserve it instead of clearing the slot.
+  const [linkedJiraIssue, setLinkedJiraIssue] = useState<string | null>(
+    initial.linkedJiraIssue ?? null
+  );
   const [error, setError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const issueInputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +102,7 @@ export function WorktreeMetaDialog({
           linkedIssue: live.linkedIssue ?? null,
           linkedPR: live.linkedPR ?? null,
           linkedLinearIssue: live.linkedLinearIssue ?? null,
+          linkedJiraIssue: live.linkedJiraIssue ?? fromProps.linkedJiraIssue ?? null,
         }
       : fromProps;
     setDisplayName(seed.displayName);
@@ -110,6 +116,7 @@ export function WorktreeMetaDialog({
     );
     setLinkedPR(seed.linkedPR == null ? '' : String(seed.linkedPR));
     setComment(seed.comment);
+    setLinkedJiraIssue(seed.linkedJiraIssue ?? null);
     setError(null);
     requestAnimationFrame(() => nameInputRef.current?.focus());
   }, [open]);
@@ -129,6 +136,7 @@ export function WorktreeMetaDialog({
     linkedIssue: issueProvider === 'github' ? (parsePositiveInteger(issueInput) ?? null) : null,
     linkedPR: parsePositiveInteger(linkedPR) ?? null,
     linkedLinearIssue: issueProvider === 'linear' ? issueInput.trim() || null : null,
+    linkedJiraIssue,
   };
 
   const displacedLinkLabels = getDisplacedLinkLabels({
@@ -182,8 +190,18 @@ export function WorktreeMetaDialog({
       linkedIssue: issue,
       linkedPR: pullRequest,
       linkedLinearIssue: linear,
+      linkedJiraIssue,
     });
-  }, [comment, displayName, issueInput, issueProvider, linkedPR, onSave, worktreeName]);
+  }, [
+    comment,
+    displayName,
+    issueInput,
+    issueProvider,
+    linkedJiraIssue,
+    linkedPR,
+    onSave,
+    worktreeName
+  ]);
 
   useEffect(() => {
     if (!open) return;

@@ -16,6 +16,7 @@ describe("worktree card metadata badges (Orca parity)", () => {
     expect(hasWorktreeCardDetails({ comment: "note" })).toBe(true);
     expect(hasWorktreeCardDetails({ linkedIssue: 12 })).toBe(true);
     expect(hasWorktreeCardDetails({ linkedLinearIssue: "ENG-7" })).toBe(true);
+    expect(hasWorktreeCardDetails({ linkedJiraIssue: "OPS-4" })).toBe(true);
     expect(hasWorktreeCardDetails({ automationProvenance: {} })).toBe(true);
     expect(hasWorktreeCardDetails({ cliProvenance: {} })).toBe(true);
     expect(hasWorktreeCardDetails({ hasReview: true })).toBe(true);
@@ -25,7 +26,12 @@ describe("worktree card metadata badges (Orca parity)", () => {
     render(
       <TooltipProvider>
         <WorktreeCardMetaBadges
-          metadata={{ comment: "note", linkedIssue: 12, linkedLinearIssue: "ENG-7" }}
+          metadata={{
+            comment: "note",
+            linkedIssue: 12,
+            linkedLinearIssue: "ENG-7",
+            linkedJiraIssue: "OPS-4",
+          }}
           automationCreated
           cliCreated
           hasReview
@@ -38,6 +44,7 @@ describe("worktree card metadata badges (Orca parity)", () => {
     expect(screen.getByRole("img", { name: "Created by CLI" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Linked issue #12" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Linked Linear ENG-7" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Linked Jira OPS-4" })).toBeInTheDocument();
   });
 
   it("renders nothing for an empty workspace", () => {

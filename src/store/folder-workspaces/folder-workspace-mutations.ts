@@ -76,9 +76,22 @@ export function createFolderWorkspaceMutationActions(
             'Update the remote runtime to link Jira'
           )
         }
+        // Why: the host persists a workspace for a real folder path. A composer
+        // may name only the group, whose `parentPath` is that folder.
+        const projectGroups = get().projectGroups as readonly {
+          id: string
+          parentPath?: string | null
+        }[]
+        const groupFolderPath = projectGroups.find(
+          (group) => group.id === args.projectGroupId
+        )?.parentPath
+        const creationArgs =
+          args.folderPath?.trim() || !groupFolderPath
+            ? args
+            : { ...args, folderPath: groupFolderPath }
         const workspace =
           target.kind === 'local'
-            ? await window.api.folderWorkspaces.create(args)
+            ? await window.api.folderWorkspaces.create(creationArgs)
             : (
                 await callRuntimeRpc<{ folderWorkspace: FolderWorkspace }>(
                   target,

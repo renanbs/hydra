@@ -10,6 +10,7 @@ const INITIAL: WorktreeMetadataDraft = {
   linkedIssue: 12,
   linkedPR: 34,
   linkedLinearIssue: null,
+  linkedJiraIssue: null,
 };
 
 function renderDialog(overrides: Partial<Parameters<typeof WorktreeMetaDialog>[0]> = {}) {
@@ -54,6 +55,7 @@ describe("WorktreeMetaDialog (Orca parity)", () => {
       linkedIssue: 77,
       linkedPR: 34,
       linkedLinearIssue: null,
+      linkedJiraIssue: null,
     });
   });
 

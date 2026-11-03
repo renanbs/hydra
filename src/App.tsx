@@ -6320,6 +6320,8 @@ export default function App() {
             worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_pr ?? null,
           linkedLinearIssue:
             worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_linear_issue ?? null,
+          linkedJiraIssue:
+            worktreeMetadataByPath[worktreeMetaDialog?.wt.path ?? ""]?.linked_jira_issue ?? null,
         }}
         onOpenChange={(open) => {
           if (!open) setWorktreeMetaDialog(null);
@@ -6335,6 +6337,7 @@ export default function App() {
                 linkedIssue: draft.linkedIssue,
                 linkedPr: draft.linkedPR,
                 linkedLinearIssue: draft.linkedLinearIssue,
+                linkedJiraIssue: draft.linkedJiraIssue,
               });
               if (draft.displayName && draft.displayName !== target.display_name) {
                 await invoke("set_worktree_display_name", {
@@ -6373,6 +6376,7 @@ export default function App() {
                     linked_issue: null,
                     linked_pr: null,
                     linked_linear_issue: null,
+                    linked_jira_issue: null,
                     comment: null,
                     updated_at: now,
                   }),
@@ -6380,6 +6384,7 @@ export default function App() {
                   linked_issue: draft.linkedIssue,
                   linked_pr: draft.linkedPR,
                   linked_linear_issue: draft.linkedLinearIssue,
+                  linked_jira_issue: draft.linkedJiraIssue,
                   updated_at: now,
                 },
               }));

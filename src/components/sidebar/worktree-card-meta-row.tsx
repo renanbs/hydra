@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/worktree-card-meta-row.tsx
 import React from 'react'
-import { GitCommitHorizontal, GitMerge } from 'lucide-react'
+import { ArrowDown, ArrowUp, GitCommitHorizontal, GitMerge } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -33,6 +33,7 @@ export function WorktreeCardMetaRow({
     branch,
     detachedHeadDisplay,
     conflictOperation,
+    upstreamStatus,
     cacheStartedAt,
     cacheTtlMs
   } = card
@@ -44,6 +45,7 @@ export function WorktreeCardMetaRow({
     showBranch,
     showDetachedHeadInMetaRow,
     showConflictOperationBadge,
+    showUpstreamChips,
     showMetaRowDetails,
     detailsAndPorts
   } = presentation
@@ -116,6 +118,44 @@ export function WorktreeCardMetaRow({
             <span>{CONFLICT_OPERATION_LABELS[conflictOperation] || conflictOperation}</span>
           </Badge>
         )}
+
+        {showUpstreamChips && upstreamStatus?.ahead ? (
+          // Why a count and an arrow: the sidebar has no room for "3 commits
+          // ahead of origin/main", so the tooltip carries the branch name.
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                aria-label={`${upstreamStatus.ahead} ${upstreamStatus.ahead === 1 ? 'commit' : 'commits'} ahead of ${upstreamStatus.upstream ?? 'upstream'}`}
+                className="inline-flex h-[16px] shrink-0 items-center gap-0.5 rounded px-1 text-[10px] leading-none font-medium text-muted-foreground"
+              >
+                <ArrowUp className="size-2.5" />
+                <span>{upstreamStatus.ahead}</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {`${upstreamStatus.ahead} ahead of ${upstreamStatus.upstream ?? 'upstream'}`}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+
+        {showUpstreamChips && upstreamStatus?.behind ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                aria-label={`${upstreamStatus.behind} ${upstreamStatus.behind === 1 ? 'commit' : 'commits'} behind ${upstreamStatus.upstream ?? 'upstream'}`}
+                className="inline-flex h-[16px] shrink-0 items-center gap-0.5 rounded px-1 text-[10px] leading-none font-medium text-muted-foreground"
+              >
+                <ArrowDown className="size-2.5" />
+                <span>{upstreamStatus.behind}</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {`${upstreamStatus.behind} behind ${upstreamStatus.upstream ?? 'upstream'}`}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
 
         {cacheStartedAt != null && <CacheTimer startedAt={cacheStartedAt} ttlMs={cacheTtlMs} />}
       </div>

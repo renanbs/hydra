@@ -73,3 +73,13 @@ export interface CatalogEnvelope {
   folderWorkspaces: CatalogFolderWorkspace[];
   repos: CatalogRepo[];
 }
+
+/** Wire result of `import_nested_repos` (Rust `NestedRepoImportResult`). */
+export interface NestedRepoImportResult {
+  /** Created `manual` group; absent for a separate import or an all-skipped one. */
+  group?: CatalogProjectGroup;
+  /** Normalized paths added by this single catalog write. */
+  added: string[];
+  /** Normalized paths already in the catalog or repeated in the request. */
+  skipped: string[];
+}
