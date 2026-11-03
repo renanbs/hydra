@@ -9,12 +9,13 @@ import {
   ChevronsUpDown, 
   Check, 
   FolderGit2, 
-  CornerDownLeft, 
-  Loader2 
+  CornerDownLeft 
 } from "lucide-react";
 import type { AvailableAgent, HydraProject } from "./sidebar/WorktreeSidebar";
 import { persistWorktreeStatus } from "@/lib/worktree-status-persistence";
 import type { WorkspaceStatus } from "../shared/worktree/types";
+import type { PendingWorktreeCreation } from "@/lib/pending-worktree-creation";
+import { useAppStore } from "@/store";
 
 interface NewWorkspaceComposerProps {
   isOpen: boolean;
@@ -31,14 +32,6 @@ interface NewWorkspaceComposerProps {
   onOpenSettings?: () => void;
   onClose: () => void;
   onCreated: (worktreePath: string, branchName: string, agentName: string, executable: string) => void;
-  /** Publishes the in-flight create as a sidebar row until it settles. */
-  onCreateStart?: (creation: {
-    creationId: string;
-    repoId: string;
-    branchName: string;
-    agentName: string;
-  }) => void;
-  onCreateSettled?: (creationId: string) => void;
 }
 
 export function NewWorkspaceComposer({
@@ -52,8 +45,6 @@ export function NewWorkspaceComposer({
   onOpenSettings,
   onClose,
   onCreated,
-  onCreateStart,
-  onCreateSettled,
 }: NewWorkspaceComposerProps) {
   const [name, setName] = useState("");
   const [customBranch, setCustomBranch] = useState("");
@@ -61,7 +52,6 @@ export function NewWorkspaceComposer({
   const [selectedAgentId, setSelectedAgentId] = useState<string>("claude");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [createMultiple, setCreateMultiple] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
@@ -124,16 +114,45 @@ export function NewWorkspaceComposer({
     }
 
     const branchToUse = (customBranch.trim() || name.trim() || `workspace-${Date.now().toString().slice(-4)}`);
-    setIsSubmitting(true);
     setError(null);
 
     const creationId = globalThis.crypto?.randomUUID?.() ?? `creation-${Date.now()}`;
-    onCreateStart?.({
-      creationId,
+    // Why a subset cast: the real create is a single backend invoke today, so the request
+    // record only needs the fields the sidebar row/panel paint (name, repo, agent). The
+    // Orca-shaped request carries the full retry recipe, which this call path does not own.
+    const request = {
       repoId: proj.id,
-      branchName: branchToUse,
-      agentName: chosenAgent.name,
-    });
+      name: branchToUse,
+      displayName: branchToUse,
+      setupDecision: "inherit",
+      agent: chosenAgent.id,
+      pendingFirstAgentMessageRename: false,
+      note: note.trim(),
+      startupPlan: null,
+      quickPrompt: "",
+      quickTelemetry: null,
+    } as unknown as PendingWorktreeCreation["request"];
+    const entry: PendingWorktreeCreation = {
+      creationId,
+      phase: "preparing",
+      status: "creating",
+      startedAt: Date.now(),
+      indeterminate: true,
+      loaderVisible: true,
+      request,
+    };
+
+    // Orca background submit: the composer closes immediately and the create owns a
+    // sidebar row + content panel until it succeeds or fails.
+    useAppStore.getState().beginPendingWorktreeCreation(entry);
+    useAppStore.getState().updatePendingWorktreeCreation(creationId, { phase: "creating" });
+    if (!createMultiple) {
+      onClose();
+    } else {
+      setName("");
+      setCustomBranch("");
+      setNote("");
+    }
 
     invoke<string>("create_worktree", {
       repoPath: proj.path,
@@ -151,21 +170,17 @@ export function NewWorkspaceComposer({
             console.error("Failed to set workspace status on create:", statusError);
           }
         }
-        setIsSubmitting(false);
-        onCreateSettled?.(creationId);
+        useAppStore.getState().removePendingWorktreeCreation(creationId, { cleanupVm: false });
         onCreated(createdPath, branchToUse, chosenAgent.name, chosenAgent.executable);
-        if (!createMultiple) {
-          onClose();
-        } else {
-          setName("");
-          setCustomBranch("");
-          setNote("");
-        }
       })
       .catch((err) => {
-        setIsSubmitting(false);
-        onCreateSettled?.(creationId);
-        setError(String(err));
+        // Why the row stays: the failure belongs to the user until they dismiss it, and
+        // the panel is where they read the reason (Orca `status: 'error'`).
+        useAppStore.getState().updatePendingWorktreeCreation(creationId, {
+          status: "error",
+          error: String(err),
+          loaderVisible: true,
+        });
       });
   };
 
@@ -453,10 +468,8 @@ export function NewWorkspaceComposer({
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium text-xs inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+              className="h-8 px-3.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
             >
-              {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
               <span>{primaryActionLabel}</span>
               <span className="ml-1 inline-flex items-center gap-0.5 rounded border border-white/20 px-1.5 py-0.5 text-[10px] font-medium leading-none text-white/90">
                 <span>Ctrl</span>

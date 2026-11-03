@@ -144,7 +144,7 @@ export interface SidebarRowsState {
   worktreeCardProperties: readonly WorktreeCardProperty[]
   repos: Repo[]
   worktreesByRepo: Record<string, Worktree[]>
-  collapsedGroups: Set<string>
+  collapsedGroups: ReadonlySet<string>
   worktreeLineageById: Readonly<Record<string, WorktreeLineage>>
   folderWorkspaces: readonly FolderWorkspace[]
   prCache: AppState['prCache']
@@ -165,6 +165,8 @@ export interface SidebarRowsState {
   workspaceStatuses?: readonly WorkspaceStatusDefinition[]
   /** Optional: the live store does not carry it; the default is Orca's. */
   projectOrderBy?: ProjectOrderBy
+  /** True while a host-header drag force-collapses every host section (D03b-034). */
+  hostDragActive?: boolean
   /** Optional: the live store does not carry it; the default is Orca's. */
   workspaceHostOrder?: readonly ExecutionHostId[]
 }
@@ -267,7 +269,7 @@ export function computeSidebarRows(
         visibleWorkspaceHostIds: state.visibleWorkspaceHostIds,
         defaultHostId,
         collapsedHostKeys: state.collapsedGroups,
-        forceCollapseHosts: false,
+        forceCollapseHosts: state.hostDragActive === true,
         preferProjectGrouping: true
       })
     : rows

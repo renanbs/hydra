@@ -389,52 +389,6 @@
    "note": "Indicador de soltura dedicado (bolinhas + linha) pintado como dropIndicator do viewport."
   },
   {
-   "id": "D03b-025",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:269-272",
-    "src/components/sidebar/WorktreeSidebar.tsx:563-566",
-    "src/components/sidebar/WorktreeSidebar.tsx:923-925",
-    "src/components/sidebar/project-header-drop.ts:25-58"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "sessao de arrasto por ponteiro (createProjectHeaderDragSession/useRepoHeaderDrag) com limiar de 4px e preview flutuante",
-    "qualificacao de alvo: handle data-repo-header-drag-handle e exclusao de data-repo-header-actions"
-   ],
-   "note": "Hydra inicia drag via HTML5 draggable no header inteiro e comita reordenacao plana."
-  },
-  {
-   "id": "D03b-027",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/project-header-drop.ts:130-162",
-    "src/components/sidebar/project-header-drop.ts:185-200",
-    "src/components/sidebar/SectionHeader.tsx:276-281"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers",
-    "preview por limites de secao: data-repo-header-section-end sem produtor"
-   ],
-   "note": "Helpers medidos do Orca estao portados mas mortos; o affordance observavel e a linha de drop nativa do header."
-  },
-  {
-   "id": "D03b-028",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/project-header-drop.ts:61-107",
-    "src/components/sidebar/project-header-drop.ts:205-220",
-    "src/components/sidebar/WorktreeSidebar.tsx:577-593"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers",
-    "commit por bucket de grupo com ranks/tabOrder por irmaos"
-   ],
-   "note": "Reordenar cabecalho funciona, mas o commit e global e ignora os buckets/ranks de grupo do Orca."
-  },
-  {
    "id": "D03b-042",
    "status": "parity",
    "evidence": [
@@ -473,20 +427,6 @@
    "backend": [],
    "missing_behaviors": [],
    "note": "O indicador alinha ao placeholderTop-3 do layout replayado e e pintado pelo WorktreeDragDropIndicator."
-  },
-  {
-   "id": "D03b-045",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:40-46",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:104-124",
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:29"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar"
-   ],
-   "note": "Soltar sobre lane do board ja atribui status; falta a tolerancia de 6px para pointerup sem frame final."
   },
   {
    "id": "D04b-006",
@@ -932,6 +872,50 @@
    ],
    "missing_behaviors": [],
    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D03b-025",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-027",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-028",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-045",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   }
  ]
 }

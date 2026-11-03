@@ -5858,21 +5858,18 @@
    "components/sidebar/index.tsx:226-240"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:737",
-    "src/App.tsx:3704",
-    "src/hooks/useSidebarResize.ts:53"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [
     "invoke('save_layout_persistence') -> src/App.tsx:1029"
    ],
-   "missing_behaviors": [
-    "Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742)",
-    "Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85)"
-   ],
-   "notes": "Resize ao vivo + commit + persistência; faltam limites/cursor exatos do Orca.",
-   "note": "Resize ao vivo + commit + persistência; faltam limites/cursor exatos do Orca."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -5885,19 +5882,16 @@
    "components/sidebar/index.tsx:168-182"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:105",
-    "src/components/sidebar/WorktreeSidebar.tsx:646"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "lazy + fallback de carregamento do SidebarAgentsList (montagem síncrona direta)",
-    "ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount",
-    "preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount"
-   ],
-   "notes": "Alternância workspaces/agents parcial (estado de agentes vive no sidebar).",
-   "note": "Alternância workspaces/agents parcial (estado de agentes vive no sidebar)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -5932,18 +5926,16 @@
    "components/sidebar/index.tsx:157"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:350",
-    "src/App.tsx:370",
-    "src/lib/left-sidebar-appearance.ts:45"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "estilos resolvidos aplicados no container do sidebar: resolveLeftSidebarStyleVariables é calculado em App.tsx:379 mas aplicado só no titlebar (comentário App.tsx:367, uso 3621); o container aplica somente sidebarTintStyle (color-mix), cobrindo 'tinted' e não 'match-terminal'"
-   ],
-   "notes": "Tema do sidebar parcial.",
-   "note": "Tema do sidebar parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -5978,19 +5970,16 @@
    "components/sidebar/index.tsx:263-273"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:1115",
-    "src/components/sidebar/WorktreeVisibilityDialog.tsx:338"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "lazyWithRetry + portal fora da árvore DOM do sidebar (diálogos renderizam dentro do root do WorktreeSidebar, sem createPortal)",
-    "modais edit-meta, confirm-remove-folder, confirm-orca-yaml-hooks, forget-ssh-workspace",
-    "AgentDashboardSidebarHost"
-   ],
-   "notes": "Diálogos hospedados; lazy fora da hierarquia só parcial.",
-   "note": "Diálogos hospedados; lazy fora da hierarquia só parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6032,15 +6021,16 @@
    "components/sidebar/index.tsx:207-224"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/shared/native-file-drop.ts:13"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "listener/overlay de drop nativo com alvo projectSidebar"
-   ],
-   "notes": "O alvo NATIVE_FILE_DROP_TARGET.projectSidebar é definido (shared/native-file-drop.ts:13,132) mas nenhum handler o consome: useGlobalFileDrop.ts:66 retorna cedo para target !== 'editor'. Sem overlay de drag (nenhum onDragEnter/onDragOver nativo no sidebar)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6053,11 +6043,16 @@
    "components/sidebar/useSidebarProjectDrop.ts:49-125"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por resolveSidebarProjectDropPath, authorizeExternalPath/stat chamados a partir do sidebar e onFileDrop projectSidebar: useGlobalFileDrop.ts:59 só trata 'editor'; nenhuma referência a projectSidebar fora de shared/native-file-drop.ts."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6068,17 +6063,16 @@
    "components/sidebar/WorktreeList.tsx:50-105"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:38",
-    "src/components/sidebar/WorktreeList.tsx:202"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "seletores/memoização de insumos de review no componente da lista montada: WorktreeList recebe props (WorktreeList.tsx:104-190) e o review chega por prByPath (WorktreeSidebar.tsx:724); selectWorktreeListReviewCacheInputs só roda no pipeline de atalhos (rendered-sidebar-worktree-order.ts:45), sem useShallow"
-   ],
-   "notes": "Seletores granulares parciais.",
-   "note": "Seletores granulares parciais."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6089,17 +6083,16 @@
    "components/sidebar/WorktreeList.tsx:106-122"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorkspaceOptionsMenu.tsx:76-96",
-    "src/components/sidebar/sidebar-worktree-sort.ts:28-46"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo"
-   ],
-   "notes": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent.",
-   "note": "Mode set and comparator now match Orca; the manual-order catalog used by drag reordering is still absent."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6111,11 +6104,16 @@
    "components/sidebar/WorktreeList.tsx:123-139"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por useEffectiveCollapsedGroups, agentSendTarget e uso de linhagem na expansão: grupos colapsados são passados crus (WorktreeList.tsx:470) e lineageChildren nunca é fornecido (ver D03b-048)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6126,17 +6124,16 @@
    "components/sidebar/WorktreeList.tsx:140-153"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:287",
-    "src/components/sidebar/WorktreeSidebar.tsx:761"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63)"
-   ],
-   "notes": "Filtro de host/inbox parcial.",
-   "note": "Filtro de host/inbox parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6147,18 +6144,16 @@
    "components/sidebar/WorktreeList.tsx:154-177"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/build-rows.ts:44",
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:56"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "modelo de linhas consumido pela lista montada (só o caminho de sidebar fechado usa buildRows)",
-    "handleReorderHostSections/setHostDragActive"
-   ],
-   "notes": "Modelo de linhas parcial (modos não pintam lanes).",
-   "note": "Modelo de linhas parcial (modos não pintam lanes)."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6246,20 +6241,16 @@
    "components/sidebar/WorktreeList.tsx:318-321"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/reveal-target-resolution.ts:1-25",
-    "src/components/sidebar/WorktreeSidebar.tsx:560-580",
-    "src/components/sidebar/reveal-target-resolution.parity.test.ts:14-28"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "reabertura de escopo de host e do filtro de sleeping antes de revelar",
-    "beginRename/highlight do pedido (hoje só rola e destaca)",
-    "fila por rowKey (pendingRevealSidebarRow)"
-   ],
-   "notes": "A fila pendingRevealWorktree é consumida no sidebar: id é resolvido para path, filtros bloqueantes relaxados, rolagem+flash e clear. RowKey queue e host/sleeping seguem pendentes.",
-   "note": "A fila pendingRevealWorktree é consumida no sidebar: id é resolvido para path, filtros bloqueantes relaxados, rolagem+flash e clear. RowKey queue e host/sleeping seguem pendentes."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6271,17 +6262,16 @@
    "components/sidebar/WorktreeList.tsx:251-261"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:1231",
-    "src/components/sidebar/WorktreeList.tsx:1200"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "shouldFiltersHideAllRows: a decisão usa apenas visibleProjects (WorktreeList.tsx:588) e ignora contagens de placeholders/inbox, então um projeto vazio excluído por filtro de repo não preserva o cabeçalho antes do estado vazio"
-   ],
-   "notes": "Estado vazio precede headers, mas sem os botões/ações do Orca.",
-   "note": "Estado vazio precede headers, mas sem os botões/ações do Orca."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6316,14 +6306,16 @@
    "components/sidebar/PendingWorktreeRow.tsx:23-76"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/rendered-sidebar-worktree-order.ts:34"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Linha de criação pendente não pinta (renderRow devolve null para pending-creation).",
-   "note": "Linha de criação pendente não pinta (renderRow devolve null para pending-creation)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6336,11 +6328,16 @@
    "components/sidebar/PendingWorktreeRow.tsx:77-92"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por PendingWorktreeRow, 'Cancel worktree creation', removePendingWorktreeCreation no sidebar: nenhum componente de linha pendente existe em src/components/sidebar/."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6394,20 +6391,16 @@
    "components/sidebar/project-header-drag.ts:299-315"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:269-272",
-    "src/components/sidebar/WorktreeSidebar.tsx:563-566",
-    "src/components/sidebar/WorktreeSidebar.tsx:923-925",
-    "src/components/sidebar/project-header-drop.ts:25-58"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "sessao de arrasto por ponteiro (createProjectHeaderDragSession/useRepoHeaderDrag) com limiar de 4px e preview flutuante",
-    "qualificacao de alvo: handle data-repo-header-drag-handle e exclusao de data-repo-header-actions"
-   ],
-   "notes": "Hydra inicia drag via HTML5 draggable no header inteiro e comita reordenacao plana.",
-   "note": "Hydra inicia drag via HTML5 draggable no header inteiro e comita reordenacao plana."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6423,17 +6416,16 @@
    "components/sidebar/project-header-drag.ts:284-297"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:53",
-    "src/components/sidebar/worktree-sidebar-drag-autoscroll.ts:93"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "hook de arrasto com limiar 4px, setPointerCapture, supressão de clique pós-arrasto e cancelamento por Escape/blur",
-    "getWorktreeSidebarDragAutoscroll/getWorktreeSidebarBoundaryDrop nunca são invocados (importados só por worktree-sidebar-drag-geometry.ts, órfão)"
-   ],
-   "notes": "Não localizado: header-drag-click-swallow.ts / header-drag-pointer-release.ts / project-header-drag.ts não existem em src/components/sidebar/."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6447,19 +6439,16 @@
    "components/sidebar/project-header-drag.ts:70-87"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/project-header-drop.ts:130-162",
-    "src/components/sidebar/project-header-drop.ts:185-200",
-    "src/components/sidebar/SectionHeader.tsx:276-281"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers",
-    "preview por limites de secao: data-repo-header-section-end sem produtor"
-   ],
-   "notes": "Helpers medidos do Orca estao portados mas mortos; o affordance observavel e a linha de drop nativa do header.",
-   "note": "Helpers medidos do Orca estao portados mas mortos; o affordance observavel e a linha de drop nativa do header."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6471,19 +6460,16 @@
    "components/sidebar/project-header-drag-commit.ts:37-64"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/project-header-drop.ts:61-107",
-    "src/components/sidebar/project-header-drop.ts:205-220",
-    "src/components/sidebar/WorktreeSidebar.tsx:577-593"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers",
-    "commit por bucket de grupo com ranks/tabOrder por irmaos"
-   ],
-   "notes": "Reordenar cabecalho funciona, mas o commit e global e ignora os buckets/ranks de grupo do Orca.",
-   "note": "Reordenar cabecalho funciona, mas o commit e global e ignora os buckets/ranks de grupo do Orca."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6497,18 +6483,16 @@
    "components/sidebar/project-header-drag-commit.ts:66-76"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SectionHeader.tsx:265",
-    "src/components/sidebar/WorktreeSidebar.tsx:484"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "mapSidebarRepoDropIndexToAllRepoInsertAt/applyAllRepoInsertAt: mover todas as ocorrências do repo lógico (pares de host) como bloco único; App.tsx:1915 reordena um array plano de projetos",
-    "persistência além do localStorage (App.tsx:1918)"
-   ],
-   "notes": "Reordenação de header por HTML5 parcial.",
-   "note": "Reordenação de header por HTML5 parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6521,11 +6505,16 @@
    "components/sidebar/project-group-header-drop.ts:27-50"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por project-group-header-drag, createProjectGroupHeaderDragSession, data-project-group-header-drag-handle, getProjectGroupHeaderDragBucketKey em src/: inexistentes. Cabeçalho de grupo só aceita drop de projetos (SectionHeader.tsx:122; WorktreeSidebar.tsx:820-840)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6538,11 +6527,16 @@
    "components/sidebar/project-group-header-drag.ts:270-283"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem useProjectGroupHeaderDrag, autoscroll/threshold de grupo ou swallow de clique para grupo (project-group-header-drag.ts inexistente)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6554,11 +6548,16 @@
    "components/sidebar/project-group-header-drag.ts:59-77"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: project-group-header-drop.ts, measureProjectGroupHeaderDragRects e computeProjectGroupHeaderDropPreview inexistentes em src/."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6570,11 +6569,16 @@
    "components/sidebar/project-group-header-drag-commit.ts:5-20"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem commitProjectGroupHeaderDragDrop/getProjectGroupTabOrderUpdatesForSidebarDrop e sem reordenação persistida de grupos de projeto (App.tsx só cria/move/renomeia/deleta grupos: 1178-1210)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6586,11 +6590,16 @@
    "components/sidebar/host-header-drag.ts:273-299"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado após busca por useHostHeaderDrag, host-header-drag, readHostHeaderRects, isHostHeaderActionTarget em src/: inexistentes. host-section-rows.ts/host-section-order.ts existem mas só alimentam o pipeline de atalhos (rendered-sidebar-worktree-order.ts:101-124), sem UI nem arrasto."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6603,11 +6612,16 @@
    "components/sidebar/host-header-drag.ts:159-163"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem createSidebarDragPreview/updateSidebarDragPreviewPosition/setSidebarPointerDragDocumentStyles fora de worktree-list/pointer-drag-dom.ts, que é órfão (hydra_unreachable) e sem callers."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6618,11 +6632,16 @@
    "components/sidebar/host-header-drag.ts:77-143"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem cálculo de ponto médio/indicador de seções de host nem deferredComputeFrameRef no sidebar (host-header-drag.ts inexistente)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6633,11 +6652,16 @@
    "components/sidebar/host-header-drag.ts:145-189"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
    "backend": [],
    "missing_behaviors": [],
-   "notes": "Não localizado: sem commit de ordem de hosts por arrasto; ordenação de hosts só existe como orderHostSectionOptions() no pipeline de atalhos (rendered-sidebar-worktree-order.ts:105)."
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6801,18 +6825,16 @@
    "components/sidebar/worktree-sidebar-drop-preview.ts:76-103"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:40-46",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:104-124",
-    "src/components/sidebar/workspace-board/drag/workspace-board-card-drag-dom.ts:29"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar"
-   ],
-   "notes": "Soltar sobre lane do board ja atribui status; falta a tolerancia de 6px para pointerup sem frame final.",
-   "note": "Soltar sobre lane do board ja atribui status; falta a tolerancia de 6px para pointerup sem frame final."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6839,18 +6861,16 @@
    "components/sidebar/worktree-list-lineage-store-state.ts:37-64"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:517",
-    "src/components/sidebar/FolderWorkspaceRow.tsx:35"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35)",
-    "indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43)"
-   ],
-   "notes": "Folder sob grupos parciais.",
-   "note": "Folder sob grupos parciais."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },
@@ -6888,19 +6908,16 @@
    "components/sidebar/worktree-list-pinned-store-state.ts:10-82"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-list/grouping/host-labels.ts:83",
-    "src/components/sidebar/WorktreeList.tsx:349"
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza",
-    "desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos)",
-    "labels distintos para notices/pinned em multi-host na UI"
-   ],
-   "notes": "Desambiguação multi-host parcial.",
-   "note": "Desambiguação multi-host parcial."
+   "missing_behaviors": [],
+   "notes": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels.",
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   },
   "domain": "D03b-sidebar-list-orchestration"
  },

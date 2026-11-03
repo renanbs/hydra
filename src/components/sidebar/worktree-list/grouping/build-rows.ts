@@ -50,7 +50,7 @@ export function buildRows(
   worktrees: Worktree[],
   repoMap: Map<string, Repo>,
   prCache: Record<string, unknown> | null,
-  collapsedGroups: Set<string>,
+  collapsedGroups: ReadonlySet<string>,
   repoOrder?: Map<string, number>,
   workspaceStatuses: readonly WorkspaceStatusDefinition[] = cloneDefaultWorkspaceStatuses(),
   projectOrderBy: ProjectOrderBy = 'manual',

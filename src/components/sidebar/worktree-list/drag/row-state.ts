@@ -3,6 +3,7 @@
 import type { WorktreeSidebarDragRect } from '../../worktree-sidebar-drag-autoscroll'
 import type { WorktreeSidebarDropPreview } from '../../worktree-sidebar-drop-preview'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
+import type { SidebarTrackedSectionDropTarget } from './section-drop'
 
 /**
  * The visual state a drag publishes to the rows: which card is floating, where the
@@ -64,6 +65,11 @@ export type WorktreePointerDrag = {
   workspaceBoardDragPreviewRequested: boolean
   /** The pointer reached the board, so the preview must survive the drag teardown. */
   boardPreviewCommitted: boolean
+  /**
+   * The last pin/status header the pointer hovered, with the point that resolved it.
+   * A release that arrives before the next frame re-hit-tests from this (D03b-045).
+   */
+  latestSectionDropTarget: SidebarTrackedSectionDropTarget | null
 }
 
 export function areWorktreeDragPreviewOffsetsEqual(

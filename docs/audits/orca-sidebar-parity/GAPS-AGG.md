@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 151 capabilities
+## MISSING — 137 capabilities
 
 
 ### D01-shell-chrome (24)
@@ -95,22 +95,8 @@
 - **D02c-025** — Localização de repositório, persistência de salvamento e estabilidade de renderização do prompt de setup | falta: findSetupScriptPromptRepo: localiza o repositório correto no catálogo considerando worktrees SSH diretos e worktrees com runtime relay; markSetupScriptPromptSaved: marca hasEffectiveSetup como true para o host salvo sem contaminar outros hosts do mesmo repositório; getRenderedSetupScriptPromptState: retém o último prompt visível durante re-inspeções breves no mesmo host para evitar piscadas na interface | components/sidebar/setup-script-prompt-render-state.ts:15
 - **D02c-026** — Revalidação reativa do prompt de setup script em foco da janela, ativação de worktree e reconexão de runtime | falta: Registra listener no evento 'focus' da janela para re-inspecionar hooks editados externamente no disco; Re-inspeciona quando um worktree do mesmo repositório é ativado para capturar execuções de setup recentes; Monitora connectionGeneration do runtime do repositório para disparar revalidação após reconexão remota; Enfileira revalidações pendentes recebidas durante estados transitórios e dispara assim que o resultado anterior assentar | components/sidebar/useSetupScriptPromptRevalidation.ts:14
 
-### D03b-sidebar-list-orchestration (15)
+### D03b-sidebar-list-orchestration (1)
 
-- **D03b-008** — Exibição de affordance visual e rastreamento de profundidade durante arrasto de pastas do sistema operacional para o sidebar | falta: listener/overlay de drop nativo com alvo projectSidebar | components/sidebar/sidebar-project-drop.ts:9-12
-- **D03b-009** — Validação e roteamento de pastas soltas no sidebar para o assistente de adição de projetos | components/sidebar/sidebar-project-drop.ts:4-8
-- **D03b-012** — Expansão automática de grupos colapsados para alvos de envio de agente e insumos de revisão | components/sidebar/WorktreeList.tsx:106
-- **D03b-021** — Exibição de linha inline de criação de worktree em andamento com indicador de progresso e roteamento para o terminal | components/sidebar/PendingWorktreeRow.tsx:11-16
-- **D03b-022** — Tratamento visual de erro e cancelamento de criação de worktree inline | components/sidebar/PendingWorktreeRow.tsx:34
-- **D03b-026** — Controle de ponteiro, autoscroll, cancelamento por teclado e supressão de clique no arrasto de cabeçalhos de projeto | falta: hook de arrasto com limiar 4px, setPointerCapture, supressão de clique pós-arrasto e cancelamento por Escape/blur; getWorktreeSidebarDragAutoscroll/getWorktreeSidebarBoundaryDrop nunca são invocados (importados só por worktree-sidebar-drag-geometry.ts, órfão) | components/sidebar/header-drag-click-swallow.ts:9-20
-- **D03b-030** — Iniciação e qualificação de sessão de arrasto para cabeçalhos de grupos de projetos | components/sidebar/project-group-header-drag-contract.ts:50-78
-- **D03b-031** — Rastreamento, autoscroll e cancelamento por teclado no arrasto de cabeçalhos de grupos de projetos | components/sidebar/project-group-header-drag.ts:48-57
-- **D03b-032** — Medição de retângulos e cálculo de pré-visualização de soltura para grupos de projetos | components/sidebar/project-group-header-drop.ts:123-199
-- **D03b-033** — Comprometimento de reordenação de grupos de projetos gerando atualizações discretas de tabOrder para irmãos | components/sidebar/project-group-header-drop.ts:68-121
-- **D03b-034** — Iniciação e qualificação de sessão de arrasto para cabeçalhos de seção de host de execução | components/sidebar/host-header-drag-dom.ts:9-41
-- **D03b-035** — Geração de pré-visualização flutuante de arrasto e estilos de cursor para cabeçalhos de host | components/sidebar/host-header-drag.ts:9-13
-- **D03b-036** — Cálculo de pré-visualização de soltura com ponto médio e agendamento diferido por frame para seções de host | components/sidebar/host-header-drag.ts:77-143
-- **D03b-037** — Comprometimento de nova ordem de hosts de execução com splicing do array de identificadores | components/sidebar/host-header-drag.ts:145-189
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
 
 ### D04a-worktree-card-surface (22)
@@ -194,7 +180,7 @@
 - **D15b-010** — Estabilização e retenção de estado de prompt de setup script por repositório e host de execução evitando flicker e vazamento | components/sidebar/useRenderedSetupScriptPromptState.ts:8-45
 - **D15b-013** — Encaixe automático (snap) do indicador de drop em corpos de seção e intervalos vazios para evitar zonas mortas na reordenação de cabeçalhos | components/sidebar/worktree-sidebar-header-drop-preview.ts:88-142
 
-## PARTIAL — 150 capabilities
+## PARTIAL — 133 capabilities
 
 
 ### D01-shell-chrome (3)
@@ -239,27 +225,10 @@
 - **D02c-009** — Dialog modal para confirmação e abertura de pastas locais ou remotas que não são repositórios Git | falta: Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker) | backend: invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277 | components/sidebar/NonGitFolderDialog.tsx:21
 - **D02c-017** — Cálculo de repositórios placeholder para projetos vazios ou membros de grupos filtrados | falta: getEmptyProjectPlaceholderRepoIds (cálculo explícito de repositórios placeholder) — não existe; Acoplamento de filterRepoIds ao render agrupado por repo (Hydra usa filterRepoIds apenas em visible-worktrees.ts:163, fora do WorktreeList) | components/sidebar/empty-project-placeholder-repos.ts:5
 
-### D03b-sidebar-list-orchestration (19)
+### D03b-sidebar-list-orchestration (2)
 
-- **D03b-001** — Redimensionamento da largura do sidebar esquerdo com cursor interativo, limites mínimo/máximo e atualização de variável CSS em tempo real | falta: Limites 220–500px (Hydra usa 180–480: src/App.tsx:741-742); Variável CSS live --workspace-sidebar-live-width (Hydra escreve container.style.width: src/hooks/useSidebarResize.ts:70-85) | backend: invoke('save_layout_persistence') -> src/App.tsx:1029 | components/sidebar/index.tsx:33-40
-- **D03b-002** — Alternância de modo do corpo do sidebar entre Workspaces e Agents com preservação de estado de colapso e scroll | falta: lazy + fallback de carregamento do SidebarAgentsList (montagem síncrona direta); ActivityThreadCollapseContext / agentsCollapsedGroupKeys preservados fora do mount; preservação de scroll dos agentes (agentsScrollTopRef): filter/focusedSessionId/selectedSessions internos (SidebarAgentsList.tsx:49-52) são perdidos no unmount | components/sidebar/index.tsx:22-24
-- **D03b-004** — Resolução dinâmica de variáveis de estilo e tema do sidebar esquerdo com base em preferências do sistema e configurações | falta: estilos resolvidos aplicados no container do sidebar: resolveLeftSidebarStyleVariables é calculado em App.tsx:379 mas aplicado só no titlebar (comentário App.tsx:367, uso 3621); o container aplica somente sidebarTintStyle (color-mix), cobrindo 'tinted' e não 'match-terminal' | components/sidebar/index.tsx:18-19
-- **D03b-006** — Hospedagem e carregamento preguiçoso de caixas de diálogo modais fora da hierarquia do sidebar | falta: lazyWithRetry + portal fora da árvore DOM do sidebar (diálogos renderizam dentro do root do WorktreeSidebar, sem createPortal); modais edit-meta, confirm-remove-folder, confirm-orca-yaml-hooks, forget-ssh-workspace; AgentDashboardSidebarHost | components/sidebar/index.tsx:26-31
-- **D03b-010** — Orquestração central de seletores granulares e memoização de insumos de cache de revisão para a lista de worktrees | falta: seletores/memoização de insumos de review no componente da lista montada: WorktreeList recebe props (WorktreeList.tsx:104-190) e o review chega por prByPath (WorktreeSidebar.tsx:724); selectWorktreeListReviewCacheInputs só roda no pipeline de atalhos (rendered-sidebar-worktree-order.ts:45), sem useShallow | components/sidebar/WorktreeList.tsx:50-105
-- **D03b-011** — Integração do pipeline de ordenação, catálogo de ordem manual e derivação de worktrees visíveis | falta: catálogo de ordem manual (buildWorktreeManualOrderCatalog) e reordenação por drop persistida nesse catálogo | components/sidebar/WorktreeList.tsx:106-122
-- **D03b-013** — Filtragem de escopo de visibilidade por host e integração de cartões de worktrees externos/importados | falta: escopo de host na lista montada (useSidebarHostVisibleScope): getVisibleSidebarHostIdSet/filterProjectGroupsForVisibleHosts só são usados no pipeline de atalhos (rendered-sidebar-worktree-order.ts:41,63) | components/sidebar/WorktreeList.tsx:140-153
-- **D03b-014** — Geração do modelo de linhas de seção do sidebar com ordenação de projetos e políticas de fixação | falta: modelo de linhas consumido pela lista montada (só o caminho de sidebar fechado usa buildRows); handleReorderHostSections/setHostDragActive | components/sidebar/WorktreeList.tsx:154-177
 - **D03b-015** — Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista | falta: seleção múltipla de worktrees (useSidebarWorktreeSelection); moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex; pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406); dropWorktreesOnWorkspaceBoard (sem Kanban) | components/sidebar/WorktreeList.tsx:178-187
 - **D03b-017** — Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar | falta: handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings); confirmação 'confirm-remove-folder': App.tsx:1612 remove direto; handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500) | backend: invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181 | components/sidebar/WorktreeList.tsx:195-235
-- **D03b-018** — Processamento de requisições de reveal para rolagem e destaque de worktrees na lista virtualizada | falta: reabertura de escopo de host e do filtro de sleeping antes de revelar; beginRename/highlight do pedido (hoje só rola e destaca); fila por rowKey (pendingRevealSidebarRow) | components/sidebar/WorktreeList.tsx:31
-- **D03b-019** — Priorização do estado vazio 'Clear Filters' sobre cabeçalhos de grupos quando todos os itens são filtrados | falta: shouldFiltersHideAllRows: a decisão usa apenas visibleProjects (WorktreeList.tsx:588) e ignora contagens de placeholders/inbox, então um projeto vazio excluído por filtro de repo não preserva o cabeçalho antes do estado vazio | components/sidebar/WorktreeList.tsx:38
-- **D03b-025** — Iniciação e qualificação de sessão de arrasto para cabeçalhos de projeto/repositório | falta: sessao de arrasto por ponteiro (createProjectHeaderDragSession/useRepoHeaderDrag) com limiar de 4px e preview flutuante; qualificacao de alvo: handle data-repo-header-drag-handle e exclusao de data-repo-header-actions | components/sidebar/project-header-drag-contract.ts:46-78
-- **D03b-027** — Medição de retângulos e cálculo de pré-visualização de soltura para cabeçalhos de projeto | falta: measureProjectHeaderDragRects/computeProjectHeaderDropPreview sem callers; preview por limites de secao: data-repo-header-section-end sem produtor | components/sidebar/project-header-drop.ts:9-45
-- **D03b-028** — Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação por grupos de projetos | falta: getProjectGroupOrderForSidebarDrop/mapSidebarProjectHeaderDropIndexToSiblingInsertIndex/applyAllRepoInsertAt sem callers; commit por bucket de grupo com ranks/tabOrder por irmaos | components/sidebar/project-header-drop.ts:61-107
-- **D03b-029** — Comprometimento de reordenação de cabeçalho de projeto no modo de ordenação global de repositórios com preservação de blocos multi-host | falta: mapSidebarRepoDropIndexToAllRepoInsertAt/applyAllRepoInsertAt: mover todas as ocorrências do repo lógico (pares de host) como bloco único; App.tsx:1915 reordena um array plano de projetos; persistência além do localStorage (App.tsx:1918) | components/sidebar/project-header-drop.ts:47-59
-- **D03b-045** — Resolução de alvo de commit de status de worktree com tolerância de raio de 6px | falta: tolerancia de raio de 6px sobre o ultimo alvo rastreado no release do sidebar | components/sidebar/worktree-sidebar-drop-preview.ts:24-36
-- **D03b-047** — Renderização e indentação de linhas de workspace de pasta sob grupos de projetos de pastas | falta: aria-activedescendant apontando para a linha ativa de folder workspace (Hydra usa aria-current: FolderWorkspaceRow.tsx:35); indentação manual preservada fora de grupos escaneados e geometria 'new card' equivalente (a linha tem padding fixo pl-6/ml-1: FolderWorkspaceRow.tsx:43) | components/sidebar/worktree-list-card-markup-queries.ts:22-34
-- **D03b-049** — Consolidação de cabeçalhos de projeto multi-host, desambiguação de nomes de seção e etiquetagem de contexto de host | falta: exibição dos labels consolidados/multi-host no sidebar montado: hostContextLabel nunca é passado pela lista (WorktreeList.tsx:330-380), então WorktreeHostContextBadge não renderiza; desambiguação de nomes de seção por caminho no sidebar montado (withRepoSectionDisplayLabels só roda em buildRows do pipeline de atalhos); labels distintos para notices/pinned em multi-host na UI | components/sidebar/worktree-list-groups-test-fixtures.ts:6-89
 
 ### D04a-worktree-card-surface (61)
 

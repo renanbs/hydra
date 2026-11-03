@@ -2,6 +2,9 @@
 // Source: components/sidebar/WorktreeList.tsx
 import React, { useMemo, useCallback, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { useAppStore } from "@/store";
+import { useShallow } from "zustand/react/shallow";
+import type { AppState } from "@/store/types";
+import type { WorktreeCardProperty } from "../../shared/ui-chrome-types";
 import { AlertTriangle, ChevronDown, FolderPlus, Loader2, Plus, Server, ServerOff } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { reuseArrayIfEqual } from "../../lib/reuse-array-if-equal";
@@ -21,7 +24,6 @@ import type { WorktreeDeleteState } from "../../store/slices/worktree-delete-sta
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 import { selectWorktreeAgentActivitySummary } from "./worktree-agent-activity-summary";
-import { useShallow } from "zustand/react/shallow";
 import { buildSidebarLiveActivityIndex } from "./visible-worktree-filters";
 import { sidebarHasActiveFilters, toSidebarFilterState } from "./sidebar-filter-actions";
 import type { SidebarFilterState } from "./visible-worktree-kinds";
@@ -37,6 +39,7 @@ import type { Repo } from "../../shared/repo-types";
 import type { FolderWorkspace, WorkspaceKey } from "../../shared/folder-workspace-types";
 import type { ProjectGroup as SharedProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
+import type { Row } from "./worktree-list/grouping/row-types";
 import type { WorkspaceLineage, WorktreeLineage } from "../../shared/worktree/lineage-types";
 import type { HostHeaderRow, HostSectionRow } from "./host-section-rows";
 import { HostSectionHeaderMenu } from "./HostSectionHeaderMenu";
@@ -137,6 +140,7 @@ import {
   resolvePrimaryActiveRowKey,
 } from "./worktree-list/navigation/active-row";
 import { selectPendingWorktreeCreationKeys } from "./worktree-list/listing/pending-worktree-creation-keys";
+import { getEffectiveCollapsedGroups } from "./worktree-list/listing/effective-collapsed-groups";
 import { PendingWorktreeCreationRow } from "./worktree-list/rows/PendingWorktreeCreationRow";
 import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import {
@@ -155,7 +159,13 @@ import {
   WorktreeDragRow,
 } from "./worktree-list/drag/worktree-drag-surface";
 import type { WorktreeGroupReorderArgs } from "./worktree-list/drag/drop-commit-context";
-import { useWorktreeSidebarHeaderDrag } from "./worktree-list/drag/use-header-drag";
+import { useRepoHeaderPointerDrag } from "./worktree-list/drag/repo-header-pointer-drag";
+import {
+  getProjectGroupHeaderDragBucketKey,
+  useProjectGroupHeaderPointerDrag,
+} from "./worktree-list/drag/project-group-header-pointer-drag";
+import { useHostHeaderPointerDrag } from "./worktree-list/drag/host-header-pointer-drag";
+import { getProjectHeaderDragBucketKey } from "./project-header-drop";
 import { WorktreeSidebarDropIndicator } from "./WorktreeSidebarDropIndicator";
 import { VirtualizedWorktreeViewport } from "./worktree-list/viewport/VirtualizedWorktreeViewport";
 import type { WorktreeVirtualRowSlot } from "./worktree-list/viewport/viewport-props";
@@ -200,6 +210,7 @@ const EMPTY_LIVE_WORKSPACE_PATHS: ReadonlySet<string> = new Set();
 const EMPTY_SCAN_FAILURES: Record<string, string> = {};
 
 const EMPTY_DELETE_STATE: Record<string, WorktreeDeleteState | undefined> = {};
+const EMPTY_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [];
 
 export type WorkspaceSidebarShortcutAction = "workspace.rename" | "workspace.delete";
 
@@ -530,6 +541,11 @@ export interface WorktreeListProps {
   onReorderWorktreesInGroup?: (ordered: GitWorktreeInfo[], projectPath: string) => void;
   /** Orca `handleReorderHostSections`: persist the host-section order after a drag. */
   onReorderHostSections?: (orderedHostIds: ExecutionHostId[]) => void;
+  /**
+   * Persists a repo-header reorder (D03b-028/029). The ids are the logical project order,
+   * with every host-qualified occurrence of a repo moving as one block.
+   */
+  onReorderRepoHeaders?: (orderedRepoIds: string[]) => void;
   /** Project-group tier writer: the drop reports the group's new tab order. */
   onUpdateProjectGroup?: (groupId: string, updates: { tabOrder: number }) => void;
   /**
@@ -695,20 +711,18 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
   row,
   isCollapsed,
   onToggleCollapse,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  onDragEnd,
-  isDropTarget,
+  isDragged = false,
+  isDropTarget = false,
+  onHeaderPointerDown,
 }: {
   row: HostHeaderRow;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onDragStart?: (event: React.DragEvent) => void;
-  onDragOver?: (event: React.DragEvent) => void;
-  onDrop?: (event: React.DragEvent) => void;
-  onDragEnd?: () => void;
+  /** This card is the one being reordered by the pointer session (D03b-034). */
+  isDragged?: boolean;
   isDropTarget?: boolean;
+  /** Arms the host-tier pointer drag; actions inside the card never arm it. */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
 }): React.JSX.Element {
   const isDisconnected =
     row.health === "disconnected" || row.health === "error" || row.health === "blocked";
@@ -723,14 +737,12 @@ const HostSectionHeader = React.memo(function HostSectionHeader({
         aria-label={row.label}
         data-host-header-id={row.hostId}
         data-host-header-drag-id={row.hostId}
-        draggable={Boolean(onDragStart)}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onDragEnd={onDragEnd}
+        data-host-header-drag-handle=""
+        onPointerDown={onHeaderPointerDown}
+        aria-grabbed={isDragged || undefined}
         className={cn(
           "group/host-header flex h-8 w-full items-center gap-2 rounded-md border px-2 text-left transition-all cursor-pointer select-none",
-          onDragStart && "cursor-grab active:cursor-grabbing",
+          onHeaderPointerDown && "cursor-grab active:cursor-grabbing",
           isBlocked
             ? "border-destructive/40 bg-destructive/10"
             : isDisconnected
@@ -846,6 +858,7 @@ export function WorktreeList({
   scrollRef,
   onReorderWorktreesInGroup,
   onReorderHostSections,
+  onReorderRepoHeaders,
   onUpdateProjectGroup,
   onAssignWorktreeStatus,
   onSwitchToManualSort,
@@ -855,20 +868,10 @@ export function WorktreeList({
   onAssignWorktreeParent,
   onUnnestWorktrees,
   onPinWorktreePaths,
-  draggedProjectId,
-  projectDropTarget,
-  groupDropTargetId,
   onWorktreeDragStart,
   onWorktreeDragOver,
   onWorktreeDrop,
   onWorktreeDragEnd,
-  onProjectDragStart,
-  onProjectDragOver,
-  onProjectDrop,
-  onProjectDragEnd,
-  onGroupDragOver,
-  onGroupDragLeave,
-  onGroupDrop,
   className = "",
 }: WorktreeListProps): React.JSX.Element {
   const query = filter.trim().toLowerCase();
@@ -925,10 +928,18 @@ export function WorktreeList({
   // repaints the sections it just moved (D03a-020).
   const storeWorkspaceHostOrder = useAppStore((s) => s.workspaceHostOrder);
   const storeWorktreesByRepo = useAppStore((s) => s.worktreesByRepo);
-  // Why: the live store's UI slice is still an auto-stub, so these keys are not in
-  // `AppState` yet; the review-cache selector gets Orca's defaults until they are.
-  const storeWorktreeCardProperties: never[] = [];
-  const storeHostedReviewCache = null;
+  // D03b-010: the review-cache inputs come from ONE shallow selector, so a store tick
+  // that did not change these slices keeps its identity and the row memo stays intact.
+  const { storeWorktreeCardProperties, storeHostedReviewCache } = useAppStore(
+    useShallow((state) => ({
+      storeWorktreeCardProperties:
+        (state as unknown as { worktreeCardProperties?: WorktreeCardProperty[] })
+          .worktreeCardProperties ?? EMPTY_WORKTREE_CARD_PROPERTIES,
+      storeHostedReviewCache:
+        (state as unknown as { hostedReviewCache?: AppState['hostedReviewCache'] })
+          .hostedReviewCache ?? null,
+    }))
+  );
   const pendingRevealSidebarRow = useAppStore((s) => s.pendingRevealSidebarRow);
   // Orca `use-agent-send-target`: the worktree the send picker targets is forced
   // visible even when a filter would otherwise hide it (D03a-048).
@@ -1129,6 +1140,10 @@ export function WorktreeList({
     });
   }, [hostIdByRepoId, pipelineFolderWorkspaces, projects, worktreesByProject]);
 
+  // Host-tier pointer drag state lives above the row model: a host drag force-collapses
+  // every host section, so the pipeline must read the flag while it builds rows.
+  const [hostDragActive, setHostDragActive] = useState(false);
+
   const pendingCreationRefs = useMemo(() => {
     const pending = pendingWorktreeCreations ?? [];
     const keys = selectPendingWorktreeCreationKeys(pending);
@@ -1319,6 +1334,30 @@ export function WorktreeList({
       storeWorktreeCardProperties
     );
 
+    // D03b-012 (Orca `useEffectiveCollapsedGroups`): while the agent send picker targets
+    // a workspace, every collapsed section that hides it paints open. The persisted set is
+    // untouched; the pipeline receives the derived set for this render only.
+    const effectiveCollapsedGroups = getEffectiveCollapsedGroups({
+      collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
+      agentSendTargetWorktreeId,
+      groupBy: displayOptions.groupBy,
+      // Hydra has no "pinned rows in groups" toggle, so the policy resolves to the
+      // single-location default; the cast names the one Orca field the helper reads.
+      pinnedDisplayPolicy: getPinnedWorktreeDisplayPolicy(
+        storeSettings as unknown as { showPinnedWorktreesInGroups?: boolean } | null
+      ),
+      worktrees: visibleWorktrees,
+      worktreeMap: worktreeById,
+      worktreeLineageById: projectedLineageById,
+      folderWorkspaces: pipelineFolderWorkspaces,
+      projectGroups: pipelineGroups,
+      repoMap,
+      prCache: reviewCaches.prCache ?? null,
+      workspaceStatuses: storeWorkspaceStatuses,
+      settings: storeSettings,
+      pinnedWorktreePaths: pinnedSet,
+    });
+
     const pipelineState: SidebarRowsState = {
       settings: storeSettings,
       visibleWorkspaceHostIds: pipelineVisibleHostIds,
@@ -1329,7 +1368,7 @@ export function WorktreeList({
       worktreeCardProperties: storeWorktreeCardProperties,
       repos: pipelineRepos,
       worktreesByRepo,
-      collapsedGroups: pipelineCollapsedKeys(collapsedProjects, collapsedGroups),
+      collapsedGroups: effectiveCollapsedGroups,
       worktreeLineageById: projectedLineageById,
       folderWorkspaces: pipelineFolderWorkspaces,
       sshTargetLabels: storeSshTargetLabels,
@@ -1340,6 +1379,8 @@ export function WorktreeList({
       projectOrderBy: displayOptions.projectsOrder ?? "manual",
       workspaceHostOrder: storeWorkspaceHostOrder,
       hostedReviewCache: reviewCaches.hostedReviewCache,
+      // A host-header drag force-collapses every section so the bound is the header itself.
+      hostDragActive,
     };
 
     // Mixed-host labels: one repo visible on more than one host needs the card
@@ -1415,6 +1456,7 @@ export function WorktreeList({
     hostLabelById,
     focusedHostId,
     storeWorktreesByRepo,
+    hostDragActive,
     pendingCreationRefs,
   ]);
 
@@ -2298,61 +2340,91 @@ export function WorktreeList({
     [activeRowKey, activeWorktreePath, renderWorktreeRow]
   );
 
-  // ─── Header-tier drag reorder (D03a-020 / D03a-092) ───────────────────────
+  // ─── Header-tier pointer drag (D03b-025…037) ─────────────────────────────
   //
-  // Three header tiers reorder in place: host section cards, project groups and repo
-  // headers. The tier gates live in the drag module (`groupBy === "repo"` for the
-  // repo/group tiers, manual project order for repos), and each commit persists its
-  // own order — host order in the UI prefs, a group's tab order on its host, and the
-  // repo manual order host-split.
-  const headerDrag = useWorktreeSidebarHeaderDrag({
-    rows,
-    groupBy: displayOptions.groupBy,
-    projectOrderBy: displayOptions.projectsOrder ?? "manual",
-    scrollRef: viewportScrollRef,
-    projectGroups,
-    onReorderHostSections,
-    onUpdateProjectGroup,
-    onProjectDragStart,
-    onProjectDragOver,
-    onProjectDrop,
-    onProjectDragEnd,
-    onGroupDragOver,
-    onGroupDragLeave,
-    onGroupDrop,
-  });
-
-  // A drop fires the header's click on its way out; swallow exactly that click so
-  // reordering a host section never collapses it.
-  const headerCommitClickGuardRef = useRef(false);
-  const headerHandlersFor = useCallback(
-    (tier: "host" | "repo" | "project-group", id: string) => {
-      const handlers =
-        tier === "host"
-          ? headerDrag.hostHandlers(id as ExecutionHostId)
-          : tier === "repo"
-            ? headerDrag.repoHandlers(id)
-            : headerDrag.groupHandlers(id);
-      if (!handlers) return undefined;
-      if (tier !== "host") return handlers;
-      // Why host-only: the guard exists for the host header's own collapse click; a
-      // repo/group drop must not swallow a later, unrelated host click.
-      return {
-        ...handlers,
-        onDrop: handlers.onDrop
-          ? (event: React.DragEvent) => {
-              headerCommitClickGuardRef.current = true;
-              handlers.onDrop?.(event);
-            }
-          : undefined,
-        onDragEnd: () => {
-          headerCommitClickGuardRef.current = true;
-          handlers.onDragEnd?.();
-        },
-      };
-    },
-    [headerDrag]
+  // Three tiers reorder by pointer session: a 4px threshold, pointer capture, edge
+  // autoscroll, Escape/blur cancel, click suppression after a promoted drop, and (host
+  // tier) a floating clone of the pressed header. Each tier commits its own writer:
+  // a group rank/tabOrder, the logical repo order, or the host-section order.
+  const projectGroupByIdForDrag = useMemo(() => {
+    const byId = new Map<string, SharedProjectGroup>();
+    for (const group of projectGroups) {
+      byId.set(group.id, group as SharedProjectGroup);
+    }
+    return byId;
+  }, [projectGroups]);
+  const repoByIdForDrag = useMemo(
+    () => new Map((storeRepos as Repo[]).map((repo) => [repo.id, repo])),
+    [storeRepos]
   );
+  const orderedRepoIdsForDrag = useMemo(
+    () => projects.map((project) => project.id),
+    [projects]
+  );
+  // Why the header-only slice: the tier hooks key buckets off header rows; host cards are
+  // a different tier and would only be filtered out again inside each helper.
+  const headerRowModel = useMemo(
+    () => rows.filter((row) => row.type !== "host-header") as unknown as Row[],
+    [rows]
+  );
+  const repoHeaderDragMetaByRowKey = useMemo(() => {
+    const counters = new Map<string, number>();
+    const meta = new Map<string, { bucket: string; index: number }>();
+    for (const row of rows) {
+      if (row.type !== "header" || !row.repo) continue;
+      const bucket = getProjectHeaderDragBucketKey(row.repo);
+      const index = counters.get(bucket) ?? 0;
+      counters.set(bucket, index + 1);
+      meta.set(row.key, { bucket, index });
+    }
+    return meta;
+  }, [rows]);
+  const groupHeaderDragMetaByRowKey = useMemo(() => {
+    const counters = new Map<string, number>();
+    const meta = new Map<string, { bucket: string; index: number }>();
+    for (const row of rows) {
+      if (row.type !== "header") continue;
+      const group = row.projectGroup;
+      if (!group || typeof group.id !== "string") continue;
+      const bucket = getProjectGroupHeaderDragBucketKey(
+        group as SharedProjectGroup,
+        projectGroupByIdForDrag
+      );
+      const index = counters.get(bucket) ?? 0;
+      counters.set(bucket, index + 1);
+      meta.set(row.key, { bucket, index });
+    }
+    return meta;
+  }, [projectGroupByIdForDrag, rows]);
+
+  const repoHeaderDrag = useRepoHeaderPointerDrag({
+    rows: headerRowModel,
+    repoById: repoByIdForDrag,
+    orderedRepoIds: orderedRepoIdsForDrag,
+    usesProjectGroupOrdering: displayOptions.groupBy === "repo",
+    onCommitRepoOrder: (orderedIds) => onReorderRepoHeaders?.(orderedIds),
+    onCommitProjectGroupOrder: (_repoId, projectGroupId, order) => {
+      // The group writer speaks the bucket group id; the repo inside it is implicit.
+      if (projectGroupId) onUpdateProjectGroup?.(projectGroupId, { tabOrder: order });
+    },
+    scrollRef: viewportScrollRef,
+  });
+  const groupHeaderDrag = useProjectGroupHeaderPointerDrag({
+    rows: headerRowModel,
+    projectGroupById: projectGroupByIdForDrag,
+    onCommitProjectGroupTabOrder: (groupId, tabOrder) =>
+      onUpdateProjectGroup?.(groupId, { tabOrder }),
+    scrollRef: viewportScrollRef,
+  });
+  const hostHeaderDrag = useHostHeaderPointerDrag({
+    orderedHostIds: useMemo(
+      () => rows.filter((row) => row.type === "host-header").map((row) => row.hostId),
+      [rows]
+    ),
+    onCommit: (orderedIds) => onReorderHostSections?.(orderedIds),
+    onHostDragActiveChange: setHostDragActive,
+    scrollRef: viewportScrollRef,
+  });
 
   const renderRepoHeader = useCallback(
     (row: GroupHeaderRow, slot: WorktreeVirtualRowSlot): React.JSX.Element | null => {
@@ -2363,11 +2435,15 @@ export function WorktreeList({
       const storeRepo = storeRepos.find(
         (repo) => repo.id === proj.id || repo.path === proj.path
       );
-      // The drag module owns the tier gate (`groupBy === "repo"` + manual project
-      // order) and wraps the panel's order writer; without it the header is inert.
-      const dragHandlers = headerHandlersFor("repo", proj.id);
+      // Pointer session (D03b-025…029): pressing the icon/title column arms a reorder;
+      // actions inside the header stay clickable and never arm.
+      const dragMeta = repoHeaderDragMetaByRowKey.get(row.key);
+      const isDragging = repoHeaderDrag.state.draggingRepoId === proj.id;
       const isDropTarget =
-        headerDrag.isDropTarget("repo", proj.id) || projectDropTarget?.id === proj.id;
+        dragMeta !== undefined &&
+        repoHeaderDrag.state.draggingRepoId !== null &&
+        repoHeaderDrag.state.dropIndex === dragMeta.index &&
+        repoHeaderDrag.state.draggingRepoId !== proj.id;
       return (
         <SectionHeader
           key={row.key}
@@ -2386,12 +2462,12 @@ export function WorktreeList({
           onContextMenu={onProjectContextMenu}
           isDropTarget={isDropTarget}
           sectionEnd={headerSectionBounds.repoSectionEndByRepoId.get(proj.id)}
-          dropPosition={projectDropTarget?.position}
-          isDragged={draggedProjectId === proj.id}
-          onDragStart={dragHandlers?.onDragStart}
-          onDragOver={dragHandlers?.onDragOver}
-          onDrop={dragHandlers?.onDrop}
-          onDragEnd={dragHandlers?.onDragEnd}
+          isDragged={isDragging}
+          dragBucket={dragMeta?.bucket}
+          dragIndex={dragMeta?.index}
+          onHeaderPointerDown={(event) =>
+            repoHeaderDrag.onHandlePointerDown(event, proj.id)
+          }
         />
       );
     },
@@ -2404,16 +2480,10 @@ export function WorktreeList({
       onOpenNewWorkspaceModal,
       createStateByProjectId,
       onProjectContextMenu,
-      projectDropTarget,
-      draggedProjectId,
-      onProjectDragStart,
-      onProjectDragOver,
-      onProjectDrop,
-      onProjectDragEnd,
       storeRepos,
       scanFailuresByProject,
-      headerDrag,
-      headerHandlersFor,
+      repoHeaderDrag,
+      repoHeaderDragMetaByRowKey,
     ]
   );
 
@@ -2446,16 +2516,16 @@ export function WorktreeList({
           ? (getFolderWorkspaceCreateDisabledReason(groupGateStatus) ??
             `Folder not found: ${groupFolderPath}`)
           : undefined;
-      const dragHandlers = headerHandlersFor("project-group", group.id);
+      const dragMeta = groupHeaderDragMetaByRowKey.get(row.key);
+      const isDragging = groupHeaderDrag.state.draggingGroupId === group.id;
+      const isDropTarget =
+        dragMeta !== undefined &&
+        groupHeaderDrag.state.draggingGroupId !== null &&
+        groupHeaderDrag.state.dropIndex === dragMeta.index &&
+        groupHeaderDrag.state.draggingGroupId !== group.id;
       return (
-        // Why the wrapper: the shared header component is a drop target, not a drag
-        // source, so the group tier's draggable wrapper supplies the source.
-        <div
-          key={row.key}
-          draggable={Boolean(dragHandlers?.onDragStart)}
-          onDragStart={dragHandlers?.onDragStart}
-          onDragEnd={dragHandlers?.onDragEnd}
-        >
+        // The shared header is the pointer target; no HTML5 wrapper (Orca parity).
+        <div key={row.key} data-header-drag-active={isDragging ? "" : undefined}>
           <SectionHeader
             variant="group"
             group={group}
@@ -2469,16 +2539,16 @@ export function WorktreeList({
                 ? (e) => onGroupContextMenu(e, { id: group.id as string, name: group.name })
                 : undefined
             }
-            isDropTarget={
-              headerDrag.isDropTarget("project-group", group.id) || groupDropTargetId === group.id
-            }
+            isDropTarget={isDropTarget}
             sectionEnd={headerSectionBounds.projectGroupSectionEndByGroupId.get(group.id as string)}
             badgeColor={groupBadgeColorById.get(group.id as string)}
             createWorkspaceDisabledReason={createWorkspaceDisabledReason}
             folderPathStatus={groupPathStatus ?? null}
-            onDragOver={dragHandlers?.onDragOver}
-            onDragLeave={dragHandlers?.onDragLeave}
-            onDrop={dragHandlers?.onDrop}
+            dragBucket={dragMeta?.bucket}
+            dragIndex={dragMeta?.index}
+            onHeaderPointerDown={(event) =>
+              groupHeaderDrag.onHandlePointerDown(event, group.id as string)
+            }
           />
         </div>
       );
@@ -2488,9 +2558,8 @@ export function WorktreeList({
       headerSectionBounds,
       groupBadgeColorById,
       onGroupContextMenu,
-      groupDropTargetId,
-      headerDrag,
-      headerHandlersFor,
+      groupHeaderDrag,
+      groupHeaderDragMetaByRowKey,
       folderWorkspaces,
       missingPaths,
       folderPathStatusByPath,
@@ -2720,16 +2789,10 @@ export function WorktreeList({
     ]
   );
 
-  // ─── Host-section drag reorder (D03a-020) ──────────────────────────────────
-  //
-  // The drag module owns the host tier's order and persistence; the list keeps the
-  // ghost-click guard, because a drop fires the header's own click on its way out.
+  // The host tier's pointer session swallows the click that follows a promoted drop
+  // (Orca `swallowNextClickOnDragHandle`), so the collapse handler stays a plain toggle.
   const toggleHostCollapse = useCallback(
     (hostId: ExecutionHostId) => {
-      if (headerCommitClickGuardRef.current) {
-        headerCommitClickGuardRef.current = false;
-        return;
-      }
       onToggleGroupCollapse(hostId);
     },
     [onToggleGroupCollapse]
@@ -2744,18 +2807,17 @@ export function WorktreeList({
     (row: RenderRow, slot: WorktreeVirtualRowSlot): React.ReactNode => {
       switch (row.type) {
         case "host-header": {
-          const dragHandlers = headerHandlersFor("host", row.hostId);
           return (
             <HostSectionHeader
               key={row.key}
               row={row}
               isCollapsed={collapsedGroups.has(row.key)}
               onToggleCollapse={() => toggleHostCollapse(row.hostId)}
-              onDragStart={dragHandlers?.onDragStart}
-              onDragOver={dragHandlers?.onDragOver}
-              onDrop={dragHandlers?.onDrop}
-              onDragEnd={dragHandlers?.onDragEnd}
-              isDropTarget={headerDrag.isDropTarget("host", row.hostId)}
+              isDragged={hostHeaderDrag.state.draggingHostId === row.hostId}
+              isDropTarget={hostHeaderDrag.isDropTarget(row.hostId)}
+              onHeaderPointerDown={(event) =>
+                hostHeaderDrag.onHandlePointerDown(event, row.hostId)
+              }
             />
           );
         }
@@ -2798,8 +2860,6 @@ export function WorktreeList({
             <PendingWorktreeCreationRow
               key={row.key}
               creationId={row.creationId}
-              branchName={row.branchName}
-              agentName={row.agentName}
               repoName={row.repo?.displayName}
             />
           );
@@ -2807,8 +2867,7 @@ export function WorktreeList({
     },
     [
       collapsedGroups,
-      headerDrag,
-      headerHandlersFor,
+      hostHeaderDrag,
       isCollapsedKey,
       renderRepoHeader,
       renderGroupHeader,
@@ -2921,16 +2980,16 @@ export function WorktreeList({
         dropIndicator={
           <>
             <WorktreeDragDropIndicator />
-            {headerDrag.indicator?.tier === "repo" ? (
-              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            {repoHeaderDrag.state.dropIndicatorY !== null ? (
+              <WorktreeSidebarDropIndicator y={repoHeaderDrag.state.dropIndicatorY} />
             ) : null}
-            {headerDrag.indicator?.tier === "project-group" ? (
-              <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+            {groupHeaderDrag.state.dropIndicatorY !== null ? (
+              <WorktreeSidebarDropIndicator y={groupHeaderDrag.state.dropIndicatorY} />
             ) : null}
             {/* The host tier is the outer card; its line floats above the sticky stack. */}
-            {headerDrag.indicator?.tier === "host" ? (
+            {hostHeaderDrag.state.dropIndicatorY !== null ? (
               <div className="pointer-events-none absolute inset-0 z-40">
-                <WorktreeSidebarDropIndicator y={headerDrag.indicator.y} />
+                <WorktreeSidebarDropIndicator y={hostHeaderDrag.state.dropIndicatorY} />
               </div>
             ) : null}
           </>

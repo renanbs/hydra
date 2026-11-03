@@ -146,6 +146,12 @@ export interface GroupSectionHeaderProps {
   /** Estimated section bottom in virtual-row pixels (drag preview bounds). */
   sectionEnd?: number;
   className?: string;
+  /** Pointer session that reorders project-group headers (D03b-030…033). */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  /** Parent bucket (`root` / `parent:<groupId>`) this header reorders inside. */
+  dragBucket?: string;
+  /** Index among the bucket's group headers, in the row model. */
+  dragIndex?: number;
 }
 
 /**
@@ -186,6 +192,12 @@ export interface RepoSectionHeaderProps {
   sectionEnd?: number;
   className?: string;
   inGroup?: boolean;
+  /** Pointer session that reorders repo headers (D03b-025…029). */
+  onHeaderPointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  /** Drag bucket (`group:<id>` / `ungrouped`) this header reorders inside. */
+  dragBucket?: string;
+  /** Index among the bucket's repo headers, in the row model. */
+  dragIndex?: number;
 }
 
 export type SectionHeaderProps = GroupSectionHeaderProps | RepoSectionHeaderProps;
@@ -213,6 +225,9 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
   className = "",
   createWorkspaceDisabledReason,
   folderPathStatus,
+  onHeaderPointerDown,
+  dragBucket,
+  dragIndex,
 }: Omit<GroupSectionHeaderProps, "variant">): React.JSX.Element {
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -238,6 +253,9 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       aria-expanded={!isCollapsed}
       aria-label={`Project Group ${group.name}`}
       data-section-header-id={sectionKey}
+      data-project-group-header-id={group.id}
+      data-project-group-header-bucket={dragBucket}
+      data-project-group-header-index={dragIndex}
       data-project-group-header-section-end={sectionEnd}
       data-repo-header-color={badgeColor ? resolveRepoHeaderColor(badgeColor) : undefined}
       className={cn(
@@ -248,6 +266,7 @@ export const GroupSectionHeader = React.memo(function GroupSectionHeader({
       style={{
         paddingLeft: getProjectGroupHeaderPaddingLeft(depth),
       }}
+      onPointerDown={onHeaderPointerDown}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -374,6 +393,9 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
   sectionEnd,
   className = "",
   inGroup = false,
+  onHeaderPointerDown,
+  dragBucket,
+  dragIndex,
 }: Omit<RepoSectionHeaderProps, "variant">): React.JSX.Element {
   const handleClick = useCallback(() => {
     onSelectProject?.(project);
@@ -435,6 +457,9 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
         aria-expanded={!isCollapsed}
         aria-label={`Project ${project.displayName || project.name}`}
         data-repo-header-id={project.id}
+        data-repo-header-drag-handle=""
+        data-repo-header-bucket={dragBucket}
+        data-repo-header-index={dragIndex}
         data-repo-header-section-end={sectionEnd}
         data-repo-header-color={resolveRepoHeaderColor(project.color)}
         className="flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all cursor-pointer select-none rounded-md text-worktree-sidebar-foreground/80 hover:bg-worktree-sidebar-accent/50 hover:text-worktree-sidebar-foreground"
@@ -443,6 +468,7 @@ export const RepoSectionHeader = React.memo(function RepoSectionHeader({
             ? getProjectGroupHeaderPaddingLeft(depth || 1)
             : WORKTREE_SECTION_HEADER_PADDING_LEFT,
         }}
+        onPointerDown={onHeaderPointerDown}
         onClick={handleClick}
         onKeyDown={(e) => {
           // Orca `shouldIgnoreRepoHeaderToggle`: Enter on the menu/create trigger

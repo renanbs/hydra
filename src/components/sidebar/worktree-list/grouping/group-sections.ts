@@ -35,7 +35,7 @@ import { orderMainWorktreeFirst } from './section-order'
 export type SectionAppendContext = {
   result: Row[]
   groupBy: WorktreeGroupBy
-  collapsedGroups: Set<string>
+  collapsedGroups: ReadonlySet<string>
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
   repoMap: Map<string, Repo>
   defaultHostId: ExecutionHostId

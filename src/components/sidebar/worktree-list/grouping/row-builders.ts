@@ -107,7 +107,7 @@ export function appendWorktreeRows(
   _worktreeMap: Map<string, Worktree>,
   options: {
     nestLineage: boolean
-    collapsedGroups: Set<string>
+    collapsedGroups: ReadonlySet<string>
     groupDepth: number
     sectionKey: string
     hostContextLabelByRepoId?: ReadonlyMap<string, string>

@@ -108,6 +108,12 @@ import { WorktreeJumpPalette } from "./components/WorktreeJumpPalette";
 import { RecentTabSwitcher } from "./components/workbench/RecentTabSwitcher";
 import { buildTerminalQuickCommandItems } from "./components/workbench/TerminalQuickCommandsSubmenu";
 import { resolveLeftSidebarStyleVariables } from "./lib/left-sidebar-appearance";
+import { applyWorkspaceSidebarLiveWidth } from "./lib/sidebar-live-width";
+import {
+  orderItemsByProjectOrder,
+  persistProjectOrderPreference,
+  readProjectOrderPreference,
+} from "./lib/project-order-preference";
 import {
   findWorktreeForShortcutIndex,
   isWorktreeIndexJumpBlockedByTextEntry,
@@ -117,6 +123,7 @@ import { getVisibleWorktreeShortcutTargets } from "./components/sidebar/visible-
 import { CustomContextMenu, type ContextMenuItem } from "./components/CustomContextMenu";
 import { RadixContextMenu } from "./components/RadixContextMenu";
 import { NewWorkspaceComposer } from "./components/NewWorkspaceComposer";
+import { PendingWorktreeCreationPanel } from "./components/worktree-creation/PendingWorktreeCreationPanel";
 import { DeleteWorktreeDialog, type DeleteWorktreeDialogState, type WorktreeDeleteLiveTarget } from "./components/DeleteWorktreeDialog";
 import { pruneClosedDeleteStates } from "./components/sidebar/worktree-delete-state-prune";
 import { canHydrateDeleteTargetLocally } from "./components/sidebar/worktree-delete-dispatch";
@@ -503,10 +510,16 @@ export default function App() {
   const [isPairingOpen, setIsPairingOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddRepoOpen, setIsAddRepoOpen] = useState(false);
+  // D03b-009: a folder dropped on the sidebar routes into the Add Project wizard, which
+  // confirms the path before the catalog write (Orca `confirm-add-project-from-folder`).
+  const [droppedAddRepoFolder, setDroppedAddRepoFolder] = useState<string | null>(null);
   const [isNewWorkspaceOpen, setIsNewWorkspaceOpen] = useState(false);
-  const [pendingWorktreeCreations, setPendingWorktreeCreations] = useState<
-    Array<{ creationId: string; repoId: string; branchName: string; agentName: string }>
-  >([]);
+  // D03b-021/022: background creates live in the renderer store (Orca parity), so the
+  // sidebar row and the content panel read the same entry the composer published.
+  const pendingWorktreeCreations = useAppStore((s) => s.pendingWorktreeCreations);
+  // D03b-021: the sidebar row routes the create to this surface (Orca `activeView: 'terminal'`
+  // with the creation loader); the panel reads the same store entry.
+  const activePendingCreationId = useAppStore((s) => s.activePendingCreationId);
   /**
    * Lane the workspace board's create button was pressed from (D08-030): the composer
    * seeds its creation request with this status, so the new worktree is born in that lane.
@@ -1210,7 +1223,15 @@ export default function App() {
   const onLeftSidebarDraftWidthChange = useCallback((width: number) => {
     leftSidebarWidthRef.current = width;
     leftTitlebarRef.current?.style.setProperty("width", `${width}px`);
+    // Orca `setLiveSidebarWidth` (D03b-001): anchored panels read the drag draft from
+    // the document, so they track the sidebar without a React round-trip on every frame.
+    applyWorkspaceSidebarLiveWidth(width);
   }, []);
+  // Why: a closed sidebar has no width to track; leaving the last draft published would
+  // anchor companion panels to chrome that is no longer on screen.
+  useEffect(() => {
+    if (!isLeftSidebarOpen) applyWorkspaceSidebarLiveWidth(null);
+  }, [isLeftSidebarOpen]);
   const leftSidebar = useSidebarResize<HTMLElement>({
     isOpen: isLeftSidebarOpen,
     width: leftSidebarWidth,
@@ -1674,23 +1695,12 @@ export default function App() {
       .catch(console.error);
 
     invoke<CatalogEnvelope>("catalog_get")
-      .then((envelope) => {
+      .then(async (envelope) => {
         const model = catalogToSidebarModel(envelope);
-        let sorted = model.projects;
-        try {
-          const saved = localStorage.getItem("hydra:projects_order");
-          if (saved) {
-            const order: string[] = JSON.parse(saved);
-            sorted = [...model.projects].sort((a, b) => {
-              const idxA = order.indexOf(a.id);
-              const idxB = order.indexOf(b.id);
-              if (idxA === -1 && idxB === -1) return 0;
-              if (idxA === -1) return 1;
-              if (idxB === -1) return -1;
-              return idxA - idxB;
-            });
-          }
-        } catch {}
+        // D03b-029: the manual project order persists in the SQLite UI prefs (with the
+        // legacy localStorage key as its migration fallback), not only per-webview.
+        const savedOrder = await readProjectOrderPreference();
+        const sorted = orderItemsByProjectOrder(model.projects, savedOrder);
         setProjects(sorted);
         applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
@@ -1706,23 +1716,10 @@ export default function App() {
       .catch(console.error);
 
     const handleRefreshProjects = (): Promise<boolean> => {
-      return invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
+      return invoke<CatalogEnvelope>("catalog_get").then(async (envelope) => {
         const model = catalogToSidebarModel(envelope);
-        let sorted = model.projects;
-        try {
-          const saved = localStorage.getItem("hydra:projects_order");
-          if (saved) {
-            const order: string[] = JSON.parse(saved);
-            sorted = [...model.projects].sort((a,b) => {
-              const idxA = order.indexOf(a.id);
-              const idxB = order.indexOf(b.id);
-              if (idxA === -1 && idxB === -1) return 0;
-              if (idxA === -1) return 1;
-              if (idxB === -1) return -1;
-              return idxA - idxB;
-            });
-          }
-        } catch {}
+        const savedOrder = await readProjectOrderPreference();
+        const sorted = orderItemsByProjectOrder(model.projects, savedOrder);
         setProjects(sorted);
         applyCatalogProjectGroups(model);
         setFolderWorkspaces(model.folderWorkspaces);
@@ -1736,6 +1733,13 @@ export default function App() {
       void handleRefreshProjects().then((ok) => resolve?.(ok));
     };
     window.addEventListener("hydra:refresh-projects", handleRefreshProjectsEvent);
+    const handleAddProjectFromFolder = (event: Event) => {
+      const path = (event as CustomEvent<{ path?: string }>).detail?.path;
+      if (!path) return;
+      setDroppedAddRepoFolder(path);
+      setIsAddRepoOpen(true);
+    };
+    window.addEventListener("hydra:add-project-from-folder", handleAddProjectFromFolder);
     // The sidebar's icon picker echoes the chosen glyph before the catalog write
     // lands (and echoes the previous one back if that write fails). App owns
     // `projects`, so it applies the echo; the authoritative catalog refresh that
@@ -3222,9 +3226,8 @@ export default function App() {
 
   const handleReorderProjects = (newProjects: HydraProject[]) => {
     setProjects(newProjects);
-    try {
-      localStorage.setItem("hydra:projects_order", JSON.stringify(newProjects.map(p => p.id)));
-    } catch {}
+    // D03b-029: one writer for the repo-header drop, persisted through the SQLite prefs.
+    persistProjectOrderPreference(newProjects.map((project) => project.id));
   };
 
   const handleReorderWorktrees = (newWorktrees: GitWorktreeInfo[], projectPath?: string) => {
@@ -5562,7 +5565,14 @@ export default function App() {
                 onReorderWorktrees={handleReorderWorktrees}
                 lineageByPath={worktreeLineage}
                 worktreeMetadataByPath={worktreeMetadataByPath}
-                pendingWorktreeCreations={pendingWorktreeCreations}
+                pendingWorktreeCreations={Object.values(pendingWorktreeCreations).map(
+                  (entry) => ({
+                    creationId: entry.creationId,
+                    repoId: entry.request.repoId,
+                    branchName: entry.request.branchNameOverride ?? entry.request.name,
+                    agentName: (entry.request.agent as string | null) ?? "",
+                  })
+                )}
                 onEditWorktreeMetadata={(wt) => setWorktreeMetaDialog({ wt })}
                 onAssignWorktreeParent={handleAssignWorktreeParent}
                 onUnnestWorktrees={handleUnnestWorktrees}
@@ -5604,6 +5614,14 @@ export default function App() {
 
         {/* Central Workspace: Multi-Tab Workbench Surface */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative" style={{ background: "var(--app-bg)" }}>
+          {activePendingCreationId ? (
+            <div
+              className="absolute inset-0 z-10 flex flex-col"
+              style={{ background: "var(--app-bg)" }}
+            >
+              <PendingWorktreeCreationPanel />
+            </div>
+          ) : null}
           {tabs.length > 0 ? (
             <>
               <WorkbenchTabBar 
@@ -5927,7 +5945,11 @@ export default function App() {
       {/* Orca 100% Add Project Dialog (Clone / Create / Browse Folder) */}
       <AddRepoDialog
         isOpen={isAddRepoOpen}
-        onClose={() => setIsAddRepoOpen(false)}
+        initialFolderPath={droppedAddRepoFolder}
+        onClose={() => {
+          setIsAddRepoOpen(false);
+          setDroppedAddRepoFolder(null);
+        }}
         onProjectAdded={() => {
           invoke<CatalogEnvelope>("catalog_get").then((envelope) => {
             const model = catalogToSidebarModel(envelope);
@@ -5963,14 +5985,6 @@ export default function App() {
         onOpenAddRepoDialog={() => setIsAddRepoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={closeNewWorkspaceComposer}
-        onCreateStart={(creation) =>
-          setPendingWorktreeCreations((previous) => [...previous, creation])
-        }
-        onCreateSettled={(creationId) =>
-          setPendingWorktreeCreations((previous) =>
-            previous.filter((creation) => creation.creationId !== creationId)
-          )
-        }
         onCreated={handleCreatedWorkspace}
       />
 

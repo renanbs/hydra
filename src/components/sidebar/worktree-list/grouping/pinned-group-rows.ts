@@ -18,7 +18,7 @@ export function emitPinnedGroup(
   pinnedSectionWorktrees: Worktree[],
   repoMap: Map<string, Repo>,
   defaultHostId: ExecutionHostId,
-  collapsedGroups: Set<string>,
+  collapsedGroups: ReadonlySet<string>,
   renderedNaturalAnchorRepoIds: ReadonlySet<string>,
   importedWorktreesByRepo: ReadonlyMap<string, ImportedWorktreesCardCandidate>,
   allowImportedFallback: boolean,

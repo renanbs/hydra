@@ -20,7 +20,12 @@ import {
   findWorktreeNestingTarget,
   isWorktreeNestingCardPainted
 } from './nesting'
-import { clearSidebarSectionDropVisual, findSidebarSectionDropTarget } from './section-drop'
+import {
+  clearSidebarSectionDropVisual,
+  findSidebarSectionDropTarget,
+  resolveSidebarSectionDropCommitTarget,
+  type SidebarTrackedSectionDropTarget
+} from './section-drop'
 
 export type WorktreeDropPoint = { x: number; y: number }
 
@@ -74,6 +79,12 @@ export type WorktreeDropCommitArgs = {
   requireInsideSidebarBand?: boolean
   /** Bookkeeping for the board preview the pointer path opened (D03a-012). */
   onBoardTarget?: (target: WorkspaceBoardSidebarDropTarget) => void
+  /**
+   * The last pin/status header this gesture hovered (D03b-045). A release can arrive
+   * before the frame that would hit-test its final position, so a few pixels of drift
+   * still commits to the header the user saw highlighted.
+   */
+  latestSectionDropTarget?: SidebarTrackedSectionDropTarget | null
 }
 
 /** What a release resolved to, so each path can report the same commit it made. */
@@ -104,7 +115,12 @@ export function commitWorktreeDropAtPoint(
   }
   // A section header under the release is a membership write: pinning or moving to
   // the status lane, exactly as the board's own targets do.
-  const sectionTarget = findSidebarSectionDropTarget(point.x, point.y)
+  const sectionTarget = resolveSidebarSectionDropCommitTarget({
+    currentTarget: findSidebarSectionDropTarget(point.x, point.y),
+    latestTrackedTarget: args.latestSectionDropTarget ?? null,
+    x: point.x,
+    y: point.y
+  })
   if (sectionTarget) {
     clearSidebarSectionDropVisual()
     if (sectionTarget.kind === 'pin') {

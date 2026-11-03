@@ -174,6 +174,7 @@ export function useWorktreePointerDrag(args: {
         reorderIntent: null,
         workspaceBoardDragPreviewRequested: false,
         boardPreviewCommitted: false,
+        latestSectionDropTarget: null,
         frameId: null
       }
     },

@@ -1005,6 +1005,281 @@
    ],
    "missing_behaviors": [],
    "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D03b-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-013",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-014",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-019",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-021",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-022",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-030",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-031",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-032",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-033",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-034",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-035",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-036",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-037",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-047",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
+  },
+  {
+   "id": "D03b-049",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/WorktreeList.tsx",
+    "src/components/sidebar/WorktreeSidebar.tsx",
+    "src/components/sidebar/SectionHeader.tsx"
+   ],
+   "missing_behaviors": [],
+   "note": "Implemented and wired in the mounted sidebar: resize live width, agents-body state, portaled/lazy dialogs, OS folder drop→wizard, granular review inputs, collapsed-group expansion, host scope/rows/selection, reveal, empty gate, pending-creation rows, pointer header drag for repo/group/host tiers, 6px status commit fallback, folder-row aria/indent and multi-host labels."
   }
  ]
 }

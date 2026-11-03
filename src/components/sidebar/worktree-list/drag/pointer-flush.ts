@@ -72,6 +72,7 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   const boardTarget = getWorkspaceBoardSidebarDropTarget(drag.currentX, drag.currentY)
   updateWorkspaceBoardSidebarDropTargetVisual(boardTarget)
   if (boardTarget) {
+    drag.latestSectionDropTarget = null
     args.setWorktreeDragState((previous) => clearWorktreeDropPreview(previous))
     return
   }
@@ -79,6 +80,9 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   // insertion line must not promise a reorder on top of it.
   const sectionTarget = findSidebarSectionDropTarget(drag.currentX, drag.currentY)
   updateSidebarSectionDropVisual(sectionTarget)
+  drag.latestSectionDropTarget = sectionTarget
+    ? { target: sectionTarget, x: drag.currentX, y: drag.currentY }
+    : null
   if (sectionTarget) {
     drag.reorderIntent = null
     args.setWorktreeDragState((previous) =>
@@ -99,6 +103,7 @@ export function flushWorktreePointerDragFrame(args: WorktreePointerDragFrameArgs
   })
   updateWorktreeLineageDropTargetVisual(nestingTarget)
   if (nestingTarget) {
+    drag.latestSectionDropTarget = null
     drag.reorderIntent = null
     args.setWorktreeDragState((previous) =>
       applyWorktreeLineageDropPreview(previous, nestingTarget)

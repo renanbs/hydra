@@ -18,14 +18,24 @@ interface AddRepoDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onProjectAdded: () => void;
+  /**
+   * Orca `confirm-add-project-from-folder`: a folder dropped on the sidebar routes here
+   * instead of being added silently, so the user still confirms the project.
+   */
+  initialFolderPath?: string | null;
 }
 
-export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialogProps) {
+export function AddRepoDialog({
+  isOpen,
+  onClose,
+  onProjectAdded,
+  initialFolderPath = null,
+}: AddRepoDialogProps) {
   const settings = useAppStore((state) => state.settings);
   // Orca `useAddRepoLocalFolderFlow`: clone/create land in the configured workspace
   // directory, not a baked-in path. Empty until the settings hydrate.
   const workspaceDir = settings?.workspace_dir?.trim() ?? "";
-  const [step, setStep] = useState<"start" | "clone" | "create">("start");
+  const [step, setStep] = useState<"start" | "clone" | "create" | "folder">("start");
   const [cloneUrl, setCloneUrl] = useState("");
   // Orca `getDefaultCloneParent`: clones sit beside the "workspaces" tree, so a
   // workspace dir ending in /workspaces clones into its parent.
@@ -37,11 +47,13 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nonGitFolder, setNonGitFolder] = useState<string | null>(null);
+  const [droppedFolder, setDroppedFolder] = useState<string | null>(null);
 
   const handleClose = () => {
     setStep("start");
     setError(null);
     setNonGitFolder(null);
+    setDroppedFolder(null);
     onClose();
   };
 
@@ -62,6 +74,8 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
     setCreateName("");
     setCloneDest(getDefaultCloneParent(workspaceDir));
     setCreateParent(workspaceDir);
+    setDroppedFolder(initialFolderPath);
+    setStep(initialFolderPath ? "folder" : "start");
     let cancelled = false;
     // Why probe on open: without git, clone and create cannot work — say so before
     // the user types a URL instead of failing after submit.
@@ -83,7 +97,29 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
       cancelled = true;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, workspaceDir]);
+  }, [initialFolderPath, isOpen, workspaceDir]);
+
+  /**
+   * Confirm the folder a sidebar drop routed here. The git probe decides between adding
+   * it directly and the non-git confirmation, exactly like Browse Folder.
+   */
+  const confirmDroppedFolder = async () => {
+    if (!droppedFolder) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const isGit = await invoke<boolean>("is_git_repository", { path: droppedFolder });
+      if (!isGit) {
+        setNonGitFolder(droppedFolder);
+        return;
+      }
+      await addFolder(droppedFolder);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -176,6 +212,7 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
               {step === "start" && "Add Project"}
               {step === "clone" && "Clone from URL"}
               {step === "create" && "Create New Project"}
+              {step === "folder" && "Add Project from Folder"}
             </span>
           </div>
           <button
@@ -199,6 +236,40 @@ export function AddRepoDialog({ isOpen, onClose, onProjectAdded }: AddRepoDialog
           <div className="m-4 mb-0 p-2.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>Git is not installed or not on PATH. Cloning and creating projects are disabled.</span>
+          </div>
+        )}
+
+        {/* 0. DROPPED FOLDER (Orca `confirm-add-project-from-folder`): the sidebar routed
+            this path here, so the user confirms instead of the catalog write happening
+            behind their back. */}
+        {step === "folder" && (
+          <div className="p-4 space-y-3">
+            <div className="rounded-xl border border-neutral-800 bg-[#0e0f11] p-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-100">
+                <FolderOpen className="w-4 h-4 text-emerald-400" />
+                Folder dropped on the sidebar
+              </div>
+              <div className="mt-1.5 break-all font-mono text-[11px] text-neutral-400">
+                {droppedFolder}
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="h-8 rounded-md border border-neutral-800 px-3 text-xs text-neutral-300 transition hover:bg-neutral-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => void confirmDroppedFolder()}
+                className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
+              >
+                Add Project
+              </button>
+            </div>
           </div>
         )}
 
