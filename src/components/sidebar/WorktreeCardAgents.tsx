@@ -22,6 +22,8 @@ import type { WorktreeSession } from "./types";
 
 interface WorktreeCardAgentsProps {
   worktreePath: string;
+  /** Stable worktree id for tab lookup; the path doubles as the id when absent. */
+  worktreeId?: string;
   sessions?: WorktreeSession[];
   onSelectSession: (id: string) => void;
   activeSessionId?: string | null;
@@ -169,6 +171,7 @@ function toAgentRows(
 
 export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   worktreePath,
+  worktreeId,
   sessions = [],
   onSelectSession,
   activeSessionId,
@@ -199,6 +202,7 @@ export const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
   return (
     <WorktreeCompactAgentsList
       worktreePath={worktreePath}
+      worktreeId={worktreeId ?? worktreePath}
       agents={agentRows}
       onSelectSession={onSelectSession}
       activeSessionId={activeSessionId}

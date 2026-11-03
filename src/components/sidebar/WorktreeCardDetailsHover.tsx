@@ -17,6 +17,10 @@ import {
   StickyNote
 } from 'lucide-react'
 
+import { JiraIcon } from '@/components/icons/JiraIcon'
+import { LinearIcon } from '@/components/icons/LinearIcon'
+import { useAppStore } from '@/store'
+
 import {
   HoverCard,
   HoverCardContent,
@@ -49,7 +53,8 @@ import type {
 } from './worktree-card-meta-types'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeReviewStatus } from './types'
 import type { PrDisplay } from './pr-display'
-import { getProviderName, getReviewLabel } from './pr-display'
+import { getReviewLabel } from './pr-display'
+import { EMPTY_WORKSPACE_PORTS } from './worktree-card-model'
 
 const COMMENT_MARKDOWN_CLASS_NAME =
   'text-[11.5px] text-foreground break-words leading-normal [&_.comment-md-p]:block [&_.comment-md-p+.comment-md-p]:mt-1'
@@ -144,7 +149,7 @@ export function WorktreeCardDetailsHover(
   const {
     worktree,
     project,
-    ports = [],
+    ports = EMPTY_WORKSPACE_PORTS,
     review,
     metadata = null,
     issue,
@@ -216,9 +221,21 @@ export function WorktreeCardDetailsHover(
     [closeHover]
   )
 
+  // Why the IPC bridge: Tauri's webview clipboard permission is narrower than
+  // the browser API, and the native write is the same one the rest of the
+  // sidebar uses. Fall back to navigator for the browser build.
+  const writeClipboardText = useCallback(async (text: string): Promise<void> => {
+    const bridge = window.api?.ui?.writeClipboardText
+    if (typeof bridge === 'function') {
+      await bridge(text)
+      return
+    }
+    await navigator.clipboard.writeText(text)
+  }, [])
+
   const copyLink = useCallback(async (url: string, label: string): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(url)
+      await writeClipboardText(url)
       toast.success(
         translate('auto.components.sidebar.WorktreeCardMeta.copyLinkSuccess', '{{value0}} copied', {
           value0: label
@@ -232,7 +249,7 @@ export function WorktreeCardDetailsHover(
         )
       )
     }
-  }, [])
+  }, [writeClipboardText])
 
   const issueDisplay = issue ?? fallbackIssue(metadata?.linkedIssue)
   const linearDisplay = linearIssue ?? fallbackLinear(metadata?.linkedLinearIssue)
@@ -267,6 +284,80 @@ export function WorktreeCardDetailsHover(
       })
     )
   }, [copyLink, reviewDisplay, reviewLabelText])
+
+  const openTaskPage = useAppStore(
+    (s) =>
+      (s as unknown as { openTaskPage?: (data: Record<string, unknown>) => void }).openTaskPage
+  )
+
+  // Why: "Open in Orca" means Hydra's Tasks view, not an external browser — the
+  // issue/review keeps its provider context and the user can act on it there.
+  const handleOpenIssueInOrca = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      const url = issueDisplay && 'url' in issueDisplay ? issueDisplay.url : undefined
+      if (!openTaskPage || !issueDisplay || !url) {
+        return
+      }
+      closeHover()
+      openTaskPage({
+        taskSource: 'github',
+        preselectedRepoId: project?.id,
+        openGitHubWorkItem: {
+          id: url,
+          type: 'issue',
+          number: issueDisplay.number,
+          title: issueDisplay.title,
+          state: ('state' in issueDisplay ? issueDisplay.state : null) ?? 'open',
+          url,
+          labels: ('labels' in issueDisplay ? issueDisplay.labels : null) ?? [],
+          updatedAt: new Date().toISOString(),
+          author: null,
+          repoId: project?.id
+        }
+      })
+    },
+    [closeHover, issueDisplay, openTaskPage, project?.id]
+  )
+
+  const handleOpenReviewInOrca = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!openTaskPage || !reviewDisplay?.url || reviewDisplay.provider !== 'github') {
+        return
+      }
+      closeHover()
+      openTaskPage({
+        taskSource: 'github',
+        preselectedRepoId: project?.id,
+        openGitHubWorkItem: {
+          id: reviewDisplay.url,
+          type: 'pr',
+          number: reviewDisplay.number,
+          title: reviewDisplay.title,
+          state: reviewDisplay.state ?? 'open',
+          url: reviewDisplay.url,
+          labels: [],
+          updatedAt: new Date().toISOString(),
+          author: null,
+          repoId: project?.id
+        }
+      })
+    },
+    [closeHover, openTaskPage, project?.id, reviewDisplay]
+  )
+
+  const handleOpenLinearIssueInOrca = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!openTaskPage || !linearDisplay) {
+        return
+      }
+      closeHover()
+      openTaskPage({ taskSource: 'linear', openLinearIssue: linearDisplay })
+    },
+    [closeHover, linearDisplay, openTaskPage]
+  )
 
   const hasDetails = Boolean(
     showIdentityHeader ||
@@ -337,29 +428,43 @@ export function WorktreeCardDetailsHover(
                   }
                 : undefined
             }
+            onOpenGitHubIssueInOrca={handleOpenIssueInOrca}
           />
 
           {linearDisplay && (
             <WorktreeCardDetailSection>
               <DetailHeader
-                icon={<span className="text-[9px] font-bold text-muted-foreground">L</span>}
+                icon={<LinearIcon className="size-3 text-muted-foreground" />}
                 label={translate(
                   'auto.components.sidebar.WorktreeCardMeta.5e982e6128',
                   'Linear {{value0}}',
                   { value0: linearDisplay.identifier }
                 )}
                 actions={
-                  linearDisplay.url ? (
-                    <MetadataActionIcon
-                      label={translate(
-                        'auto.components.sidebar.WorktreeCardMeta.e42941631a',
-                        'View on Linear'
-                      )}
-                      href={linearDisplay.url}
-                    >
-                      <ExternalLink className="size-3" />
-                    </MetadataActionIcon>
-                  ) : null
+                  <>
+                    {linearDisplay.url ? (
+                      <MetadataActionIcon
+                        label={translate(
+                          'auto.components.sidebar.WorktreeCardMeta.2c67730e07',
+                          'Open in Orca'
+                        )}
+                        onClick={handleOpenLinearIssueInOrca}
+                      >
+                        <MonitorUp className="size-3" />
+                      </MetadataActionIcon>
+                    ) : null}
+                    {linearDisplay.url ? (
+                      <MetadataActionIcon
+                        label={translate(
+                          'auto.components.sidebar.WorktreeCardMeta.e42941631a',
+                          'View on Linear'
+                        )}
+                        href={linearDisplay.url}
+                      >
+                        <ExternalLink className="size-3" />
+                      </MetadataActionIcon>
+                    ) : null}
+                  </>
                 }
               />
               <WorktreeCardDetailSectionContent className="space-y-1.5">
@@ -388,7 +493,7 @@ export function WorktreeCardDetailsHover(
           {jiraDisplay && (
             <WorktreeCardDetailSection>
               <DetailHeader
-                icon={<span className="text-[9px] font-bold text-muted-foreground">J</span>}
+                icon={<JiraIcon className="size-3 text-muted-foreground" />}
                 label={translate(
                   'auto.components.sidebar.WorktreeCardMeta.jiraIssue',
                   'Jira {{value0}}',
@@ -427,6 +532,7 @@ export function WorktreeCardDetailsHover(
               onOpenReviewInBrowser && reviewDisplay?.url ? onOpenReviewInBrowser : undefined
             }
             onCopyReviewLink={reviewDisplay?.url ? handleCopyReviewLink : undefined}
+            onOpenReviewInOrca={handleOpenReviewInOrca}
             onUnlinkReview={onUnlinkReview}
             closeHover={closeHover}
           />
@@ -530,21 +636,6 @@ export function WorktreeCardDetailsHover(
                 </div>
               </WorktreeCardDetailSectionContent>
             </WorktreeCardDetailSection>
-          ) : null}
-
-          {reviewDisplay && onOpenReviewInBrowser && reviewDisplay.url ? (
-            <div className="flex justify-end">
-              <MetadataActionIcon
-                label={translate(
-                  'auto.components.sidebar.WorktreeCardMeta.viewOnProvider',
-                  'View on {{value0}}',
-                  { value0: getProviderName(reviewDisplay) }
-                )}
-                href={reviewDisplay.url}
-              >
-                <MonitorUp className="size-3" />
-              </MetadataActionIcon>
-            </div>
           ) : null}
         </SelectedTextCopyMenu>
       </HoverCardContent>

@@ -1,7 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/WorktreeCardReviewDetailSection.tsx
 import React from 'react'
-import { Copy, Ellipsis, ExternalLink, GitPullRequest, Globe, Trash2 } from 'lucide-react'
+import { Copy, Ellipsis, ExternalLink, GitPullRequest, Globe, MonitorUp } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
+import { HostedReviewUnlinkMenuItem } from '@/components/HostedReviewUnlinkMenuItem'
 import {
   WorktreeCardDetailSection,
   WorktreeCardDetailSectionContent
@@ -29,6 +30,8 @@ type WorktreeCardReviewDetailSectionProps = {
   onReviewMenuOpenChange: (open: boolean) => void
   onCopyReviewLink?: () => void
   onOpenReviewInBrowser?: (url: string) => void
+  /** Opens the review in Hydra's Tasks view (Orca `Open in Orca`). */
+  onOpenReviewInOrca?: (event: React.MouseEvent) => void
   onUnlinkReview?: () => void
   closeHover: () => void
 }
@@ -40,6 +43,7 @@ export function WorktreeCardReviewDetailSection({
   onReviewMenuOpenChange,
   onCopyReviewLink,
   onOpenReviewInBrowser,
+  onOpenReviewInOrca,
   onUnlinkReview,
   closeHover
 }: WorktreeCardReviewDetailSectionProps): React.JSX.Element | null {
@@ -55,6 +59,10 @@ export function WorktreeCardReviewDetailSection({
     'More {{value0}} actions',
     { value0: label }
   )
+  const dismissAndOpenReview = (event: React.MouseEvent): void => {
+    closeHover()
+    onOpenReviewInOrca?.(event)
+  }
   const moreActionsTrigger = (
     <DropdownMenuTrigger asChild>
       <Button
@@ -133,22 +141,29 @@ export function WorktreeCardReviewDetailSection({
                     </DropdownMenuItem>
                   )}
                   {onUnlinkReview && (
-                    <DropdownMenuItem
+                    <HostedReviewUnlinkMenuItem
+                      reviewLabel={label}
+                      reviewIdentifier={`${label === 'MR' ? '!' : '#'}${number ?? ''}`}
+                      providerLabel={provider}
                       onSelect={() => {
                         closeHover()
                         onUnlinkReview()
                       }}
-                    >
-                      <Trash2 className="size-3.5" />
-                      {translate(
-                        'auto.components.sidebar.WorktreeCardReviewDetailSection.unlink',
-                        'Unlink {{value0}} from this workspace',
-                        { value0: review ? reviewLabel(review) : label }
-                      )}
-                    </DropdownMenuItem>
+                    />
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+            )}
+            {review?.url && onOpenReviewInOrca && (
+              <MetadataActionIcon
+                label={translate(
+                  'auto.components.sidebar.WorktreeCardMeta.2c67730e07',
+                  'Open in Orca'
+                )}
+                onClick={dismissAndOpenReview}
+              >
+                <MonitorUp className="size-3" />
+              </MetadataActionIcon>
             )}
             {review?.url && (
               <MetadataActionIcon

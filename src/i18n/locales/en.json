@@ -17091,7 +17091,7 @@
       },
       "HostedReviewUnlinkMenuItem": {
         "label": "Unlink {{value0}} from workspace",
-        "description": "Orca will hide {{value0}} {{value1}} details for this workspace. The {{value0}} and branch on {{value2}} won’t be changed."
+        "description": "Hydra will hide {{value0}} {{value1}} details for this workspace. The {{value0}} and branch on {{value2}} won’t be changed."
       },
       "UnexpectedSignoutCard": {
         "9f2c1a4b7d": "You've been signed out",

@@ -13,6 +13,10 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
+import {
+  getPortOpenBrowserTooltipLabel,
+  resolvePortOpenInOrcaBrowser
+} from '@/lib/workspace-port-open-policy'
 import type { WorkspacePort } from './types'
 import {
   WorktreeCardDetailSection,
@@ -39,6 +43,23 @@ function portAddress(port: WorkspacePort): string {
 
 function portUrl(port: WorkspacePort): string {
   return `http://${portAddress(port)}`
+}
+
+async function writeClipboardText(text: string): Promise<void> {
+  const bridge = window.api?.ui?.writeClipboardText
+  if (typeof bridge === 'function') {
+    await bridge(text)
+    return
+  }
+  await navigator.clipboard.writeText(text)
+}
+
+/** Re-scans the owner worktree and republishes the sidebar's aggregate. */
+async function refreshPortsAfterStop(worktreePath: string): Promise<void> {
+  // Why the custom event: the sidebar owns the map and its polling timer, so
+  // the card asks it to repaint instead of holding a second copy of the scan.
+  window.dispatchEvent(new CustomEvent('hydra:refresh-ports'))
+  await invoke('scan_workspace_ports', { worktreePaths: [worktreePath] })
 }
 
 export function WorktreeCardPortsTrigger({
@@ -78,15 +99,26 @@ export function WorktreeCardPortsTrigger({
 
 function PortAction({
   label,
+  tooltipLabel = label,
   disabled = false,
   onClick,
   children
 }: {
   label: string
+  tooltipLabel?: string
   disabled?: boolean
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
   children: React.ReactNode
 }): React.JSX.Element {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    onClick(event)
+    // Why: a mouse click leaves focus on the button, which keeps the action
+    // strip visible over the row after the pointer leaves.
+    if (event.detail > 0) {
+      event.currentTarget.blur()
+    }
+  }
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -97,13 +129,13 @@ function PortAction({
           disabled={disabled}
           className="size-5 text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:text-muted-foreground/35"
           aria-label={label}
-          onClick={onClick}
+          onClick={handleClick}
         >
           {children}
         </Button>
       </TooltipTrigger>
       <TooltipContent side="top" sideOffset={4}>
-        {label}
+        {tooltipLabel}
       </TooltipContent>
     </Tooltip>
   )
@@ -111,29 +143,67 @@ function PortAction({
 
 function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
   const recordFeatureInteraction = useAppStore((s) => s.recordFeatureInteraction)
+  const settings = useAppStore((s) => s.settings)
+  const createBrowserTab = useAppStore((s) => s.createBrowserTab)
   const [stopping, setStopping] = useState(false)
   const address = portAddress(port)
   const canStop = canStopSidebarWorkspacePort(port)
   const processLabel =
     port.process_name ?? (port.pid ? `PID ${port.pid}` : 'Unknown process')
+  const openBrowserLabel = translate(
+    'auto.components.sidebar.WorktreeCardPorts.33bc7d7495',
+    'Open in Browser'
+  )
 
   const handleOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
       void recordFeatureInteraction('ports')
-      // Why: the renderer cannot mint an Orca browser tab from the card, so the
-      // system browser is the only path that exists today.
-      window.open(portUrl(port), '_blank', 'noopener,noreferrer')
+      const openInOrcaBrowser = resolvePortOpenInOrcaBrowser({
+        settings: settings as unknown as { openLinksInApp?: boolean | null } | null,
+        // Why: keyboard activations have detail=0; only pointer clicks carry
+        // the modifier intent for the system-browser escape hatch.
+        event: event.detail > 0 ? event : null,
+        isMac: navigator.userAgent.includes('Mac')
+      })
+      const url = portUrl(port)
+      try {
+        if (openInOrcaBrowser) {
+          createBrowserTab(port.worktree_path, url, { activate: true })
+          return
+        }
+        const openUrl = window.api?.shell?.openUrl
+        if (typeof openUrl === 'function') {
+          void openUrl(url).catch((error: unknown) => {
+            toast.error(
+              translate(
+                'auto.components.sidebar.WorktreeCardPorts.d1113f4660',
+                'Failed to open browser'
+              ),
+              { description: error instanceof Error ? error.message : String(error) }
+            )
+          })
+          return
+        }
+        window.open(url, '_blank', 'noopener,noreferrer')
+      } catch (error) {
+        toast.error(
+          translate(
+            'auto.components.sidebar.WorktreeCardPorts.d1113f4660',
+            'Failed to open browser'
+          ),
+          { description: error instanceof Error ? error.message : String(error) }
+        )
+      }
     },
-    [port, recordFeatureInteraction]
+    [createBrowserTab, port, recordFeatureInteraction, settings]
   )
 
   const handleCopy = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
       void recordFeatureInteraction('ports')
-      void navigator.clipboard
-        .writeText(address)
+      void writeClipboardText(address)
         .then(() =>
           toast.success(
             translate(
@@ -143,12 +213,13 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
             )
           )
         )
-        .catch(() =>
+        .catch((error: unknown) =>
           toast.error(
             translate(
               'auto.components.sidebar.WorktreeCardMeta.copyLinkFailure',
               'Failed to copy link'
-            )
+            ),
+            { description: error instanceof Error ? error.message : String(error) }
           )
         )
     },
@@ -164,18 +235,10 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
       void recordFeatureInteraction('ports')
       setStopping(true)
       const pid = port.pid
-      void invoke('kill_port_process', { pid, worktreePath: port.worktree_path })
-        .then(() => {
-          toast.success(
-            translate(
-              'auto.components.sidebar.WorktreeCardPorts.5d1a5d51bb',
-              'Stopped process on {{value0}}',
-              { value0: port.port }
-            )
-          )
-          window.dispatchEvent(new CustomEvent('hydra:refresh-ports'))
-        })
-        .catch((error: unknown) => {
+      const run = async (): Promise<void> => {
+        try {
+          await invoke('kill_port_process', { pid, worktreePath: port.worktree_path })
+        } catch (error) {
           toast.error(
             translate(
               'auto.components.sidebar.WorktreeCardPorts.killFailed',
@@ -183,15 +246,37 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
             ),
             { description: error instanceof Error ? error.message : String(error) }
           )
-        })
-        .finally(() => setStopping(false))
+          setStopping(false)
+          return
+        }
+        toast.success(
+          translate(
+            'auto.components.sidebar.WorktreeCardPorts.5d1a5d51bb',
+            'Stopped process on {{value0}}',
+            { value0: port.port }
+          )
+        )
+        try {
+          await refreshPortsAfterStop(port.worktree_path)
+        } catch (error) {
+          toast.error(
+            translate(
+              'auto.components.sidebar.WorktreeCardPorts.9950fe2d20',
+              'Failed to refresh ports'
+            ),
+            { description: error instanceof Error ? error.message : String(error) }
+          )
+        }
+        setStopping(false)
+      }
+      void run()
     },
     [canStop, port, recordFeatureInteraction]
   )
 
   return (
     <div className="group/port grid min-w-0 grid-cols-[3.25rem_minmax(0,1fr)] items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-accent/50">
-      <span className="font-mono text-[12px] font-semibold tabular-nums text-foreground">
+      <span className="select-text font-mono text-[12px] font-semibold tabular-nums text-foreground">
         {port.port}
       </span>
       <div className="relative flex h-5 min-w-0 items-center">
@@ -211,10 +296,8 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
         </Tooltip>
         <div className="absolute inset-y-0 right-0 flex items-center gap-0.5 rounded-md border border-border/40 bg-popover/95 px-0.5 opacity-0 shadow-xs transition-opacity group-hover/port:opacity-100 group-focus-within/port:opacity-100">
           <PortAction
-            label={translate(
-              'auto.components.sidebar.WorktreeCardPorts.33bc7d7495',
-              'Open in Browser'
-            )}
+            label={openBrowserLabel}
+            tooltipLabel={getPortOpenBrowserTooltipLabel(openBrowserLabel)}
             onClick={handleOpen}
           >
             <ExternalLink className="size-3" />

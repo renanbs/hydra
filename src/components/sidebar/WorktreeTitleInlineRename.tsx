@@ -5,6 +5,8 @@ import { LoaderCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { WorkspaceEmojiSuggestionPopover } from '@/components/workspace-emoji/WorkspaceEmojiSuggestionPopover'
+import { useWorkspaceEmojiShortcodeInput } from '@/components/workspace-emoji/useWorkspaceEmojiShortcodeInput'
 import { translate } from '@/i18n/i18n'
 import { isImeCompositionKeyDown } from '../../lib/ime-composition-keyboard-event'
 import { cn } from '../../lib/utils'
@@ -59,6 +61,7 @@ export function WorktreeTitleInlineRename({
   const inputRef = useRef<HTMLInputElement | null>(null)
   const titleRef = useRef<HTMLSpanElement | null>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
+  const removeResizeListenerRef = useRef<(() => void) | null>(null)
   const cancellingRef = useRef(false)
   // Why refs alongside state: blur and Enter can both fire inside one commit, and
   // an unmount during the save must not notify the card twice.
@@ -70,6 +73,12 @@ export function WorktreeTitleInlineRename({
   const [saving, setSaving] = useState(false)
   const [value, setValue] = useState(displayName)
   const [truncated, setTruncated] = useState(false)
+  const emojiInput = useWorkspaceEmojiShortcodeInput({
+    disabled: saving,
+    inputRef,
+    onValueChange: setValue,
+    value
+  })
 
   useEffect(() => {
     setValue(displayName)
@@ -109,10 +118,16 @@ export function WorktreeTitleInlineRename({
   }, [notifyEditingChange])
 
   useEffect(() => {
-    if (beginEditing && !disabled && !editingRef.current) {
-      beginEditingNow()
-      onBeginEditingConsumed?.()
+    if (!beginEditing) {
+      return
     }
+    // Why: always consume the request so the parent's trigger cannot linger; a
+    // disabled or already-editing title simply skips the open.
+    onBeginEditingConsumed?.()
+    if (disabled || editingRef.current) {
+      return
+    }
+    beginEditingNow()
   }, [beginEditing, disabled, beginEditingNow, onBeginEditingConsumed])
 
   useEffect(() => {
@@ -136,23 +151,36 @@ export function WorktreeTitleInlineRename({
     (node: HTMLSpanElement | null) => {
       resizeObserverRef.current?.disconnect()
       resizeObserverRef.current = null
+      removeResizeListenerRef.current?.()
+      removeResizeListenerRef.current = null
       titleRef.current = node
-      if (!node) {
+      // Why: wrapped titles render in full and never truncate, so skip the measure
+      // and observer entirely — for that mode it could only churn unused state.
+      if (!node || wrapTitle) {
+        setTruncated(false)
         return
       }
       measureTruncated()
+      // Why: compact sidebar width changes can clip a title that was readable;
+      // fall back to window resize where ResizeObserver is unavailable.
       if (typeof ResizeObserver === 'undefined') {
+        const onWindowResize = (): void => measureTruncated()
+        window.addEventListener('resize', onWindowResize)
+        removeResizeListenerRef.current = () => window.removeEventListener('resize', onWindowResize)
         return
       }
       const observer = new ResizeObserver(measureTruncated)
       observer.observe(node)
       resizeObserverRef.current = observer
     },
-    [measureTruncated]
+    [measureTruncated, wrapTitle]
   )
 
   useEffect(() => {
-    return () => resizeObserverRef.current?.disconnect()
+    return () => {
+      resizeObserverRef.current?.disconnect()
+      removeResizeListenerRef.current?.()
+    }
   }, [])
 
   const commit = useCallback(
@@ -162,6 +190,7 @@ export function WorktreeTitleInlineRename({
       }
       const outcome = getWorktreeTitleRenameCommit(displayName, nextValue)
       if (outcome.kind === 'cancel') {
+        emojiInput.close()
         setValue(displayName)
         finishEditing()
         return
@@ -177,8 +206,12 @@ export function WorktreeTitleInlineRename({
         // Why a toast: the console line was invisible in a release build, so a
         // failed rename looked like a successful one that reverted on refresh.
         toast.error(
-          translate('auto.components.sidebar.WorktreeTitleInlineRename.renameFailed', 'Rename failed'),
-          { description: error instanceof Error ? error.message : String(error) }
+          error instanceof Error
+            ? error.message
+            : translate(
+                'auto.components.sidebar.WorktreeTitleInlineRename.8df295a78d',
+                'Failed to rename workspace.'
+              )
         )
         if (mountedRef.current) {
           setValue(displayName)
@@ -191,10 +224,15 @@ export function WorktreeTitleInlineRename({
         }
       }
     },
-    [displayName, finishEditing, onRename]
+    [displayName, emojiInput, finishEditing, onRename]
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Why: the emoji list owns arrows/Enter/Tab/Escape while open; it also
+    // swallows composition keys so the picker cannot commit mid-conversion.
+    if (emojiInput.handleKeyDown(e)) {
+      return
+    }
     // Why: CJK IMEs fire Enter to confirm a conversion candidate; committing the
     // half-converted value would rename the workspace to a partial glyph run.
     if (isImeCompositionKeyDown(e)) {
@@ -208,6 +246,7 @@ export function WorktreeTitleInlineRename({
       e.preventDefault()
       e.stopPropagation()
       cancellingRef.current = true
+      emojiInput.close()
       setValue(displayName)
       finishEditing()
     }
@@ -225,28 +264,56 @@ export function WorktreeTitleInlineRename({
 
   if (editing) {
     return (
+      <>
       <div
         className={cn('flex min-w-0 flex-1 items-center gap-1', editingClassName)}
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <input
           ref={inputRef}
           type="text"
           value={value}
           disabled={saving}
-          onChange={(e) => setValue(e.target.value)}
+          spellCheck={false}
+          aria-label={translate(
+            'auto.components.sidebar.WorktreeTitleInlineRename.bff3bdd00c',
+            'Rename workspace'
+          )}
+          onChange={(e) =>
+            emojiInput.handleValueChange(e.target.value, e.target.selectionStart)
+          }
+          onSelect={(e) => emojiInput.syncCursor(e.currentTarget)}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           className={cn(
             editingPresentation === 'field'
               ? 'h-6 rounded-sm border border-input bg-input/40 px-1.5 py-0 text-[12px] shadow-xs selection:bg-[Highlight] selection:text-[HighlightText] focus-visible:border-ring focus-visible:ring-[1px] focus-visible:ring-ring/50 dark:bg-input/30'
-              : 'w-full rounded border border-worktree-sidebar-ring/60 bg-input/80 px-1.5 py-0.5 text-[12px] font-medium text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-worktree-sidebar-ring focus:outline-none',
+              : 'h-[1lh] w-full rounded-none border-0 !border-transparent !bg-transparent p-0 text-[12px] font-medium text-foreground placeholder:text-muted-foreground !shadow-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:outline-none dark:!bg-transparent',
+            // Why: reserve the trailing slot so the spinner never covers the caret's text.
+            saving && 'pr-6',
             inputClassName
           )}
         />
         {saving && <LoaderCircle className="size-3 shrink-0 animate-spin text-muted-foreground" />}
       </div>
+      <WorkspaceEmojiSuggestionPopover
+        anchorRef={inputRef}
+        open={emojiInput.open}
+        commandValue={emojiInput.commandValue}
+        heading={translate(
+          'auto.components.new.workspace.SmartWorkspaceNameField.emoji',
+          'Emoji'
+        )}
+        suggestions={emojiInput.suggestions}
+        onCommandValueChange={emojiInput.onCommandValueChange}
+        onSelect={emojiInput.selectSuggestion}
+        onOpenChange={(open) => !open && emojiInput.close()}
+        side="right"
+        contentClassName="w-56"
+      />
+      </>
     )
   }
 
