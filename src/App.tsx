@@ -172,6 +172,7 @@ import {
   showDeleteWorktreeFailureToast,
   showNoDeletableWorkspacesToast,
   showPreservedBranchBatchToast,
+  showPreservedBranchToast,
   showSkipDeleteConfirmToast,
   showWorkspaceListChangedToast,
 } from "./components/sidebar/worktree-delete-toasts";
@@ -2614,7 +2615,10 @@ export default function App() {
                   preservedBranch: {
                     worktreeId: target.id,
                     branchName: preserved.branch_name,
+                    ...(preserved.head ? { expectedHead: preserved.head } : {}),
                     ...(target.hostId ? { hostId: target.hostId } : {}),
+                    ...(target.displayName ? { displayName: target.displayName } : {}),
+                    isMainWorktree: target.path === target.repoPath,
                   },
                 }
               : { ok: true };
@@ -2666,6 +2670,28 @@ export default function App() {
         },
         onListChanged: showWorkspaceListChangedToast,
         showPreservedBranches: (deletedCount, branches) => {
+          // A single preserved branch keeps the focused recovery toast (title
+          // distinguishes the main workspace); a batch opens the review flow.
+          const only = branches.length === 1 ? branches[0] : undefined;
+          if (only && deletedCount === 1) {
+            showPreservedBranchToast(
+              only,
+              { displayName: only.displayName, isMainWorktree: only.isMainWorktree },
+              (branchName, expectedHead) => {
+                void (useAppStore.getState() as unknown as {
+                  forceDeletePreservedBranch: (
+                    worktreeId: string,
+                    branch: string,
+                    head: string,
+                    options?: { hostId?: string }
+                  ) => Promise<unknown>;
+                }).forceDeletePreservedBranch(only.worktreeId, branchName, expectedHead, {
+                  ...(only.hostId ? { hostId: only.hostId } : {}),
+                });
+              }
+            );
+            return;
+          }
           showPreservedBranchBatchToast(deletedCount, branches);
         },
         onDeleted: (rows) => {
