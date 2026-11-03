@@ -162,6 +162,8 @@ export type WorktreeSlice = {
   hasHydratedWorktreePurge: boolean
   /** Startup owns the initial all-host refresh; sidebar repo-change refreshes stay gated until it finishes. */
   startupWorktreeRefreshCompleted: boolean
+  /** One-way writer called once the startup scan settles; later calls are no-ops. */
+  markStartupWorktreeRefreshCompleted: () => void
   fetchDetectedWorktrees: (repoId: string) => Promise<DetectedWorktreeListResult | null>
   fetchWorktrees: {
     (

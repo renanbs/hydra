@@ -61,6 +61,7 @@ import {
   getRevealGroupKeysToExpand,
 } from "./worktree-list/grouping/worktree-group-keys";
 import { useSettledSortEpoch } from "./worktree-list/listing/use-sort-settle-epoch";
+import { useStartupGatedWorktreeRefresh } from "./use-startup-gated-worktree-refresh";
 import { getIndexedAllWorktrees } from "../../store/worktree-repo-index";
 import type { ProjectGroup } from "../../shared/project-group-types";
 import type { Worktree } from "../../shared/worktree/types";
@@ -298,6 +299,18 @@ export function WorktreeSidebar({
   const [filter, setFilter] = useState("");
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const optionsButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // D01-006: App owns the startup scan; this sidebar only re-runs the all-repo
+  // refresh after that first pass settled AND the repo count changed.
+  const startupWorktreeRefreshCompleted = useAppStore(
+    (state) => state.startupWorktreeRefreshCompleted
+  );
+  const fetchAllWorktrees = useAppStore((state) => state.fetchAllWorktrees);
+  useStartupGatedWorktreeRefresh({
+    repoCount: projects.length,
+    startupWorktreeRefreshCompleted,
+    fetchAllWorktrees,
+  });
 
   // ─── Ephemeral / UI State ────────────────────────────────────────────────
   const [appVersion, setAppVersion] = useState<string | null>(null);

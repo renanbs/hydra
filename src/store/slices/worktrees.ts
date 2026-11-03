@@ -79,6 +79,12 @@ export const createWorktreeSlice: StateCreator<AppState, [], [], WorktreeSlice> 
   fetchDetectedWorktrees: createFetchDetectedWorktrees(set, get),
   fetchWorktrees: createFetchWorktrees(set, get),
   fetchAllWorktrees: createFetchAllWorktrees(set, get),
+  markStartupWorktreeRefreshCompleted: () =>
+    set((state: AppState) =>
+      state.startupWorktreeRefreshCompleted
+        ? {}
+        : { startupWorktreeRefreshCompleted: true }
+    ),
   fetchWorktreeLineage: createFetchWorktreeLineage(set, get),
   updateWorktreeLineage: createUpdateWorktreeLineage(set, get),
   assignWorktreeParent: createAssignWorktreeParent(set, get),

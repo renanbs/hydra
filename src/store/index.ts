@@ -30,6 +30,7 @@ import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
 import type { WorktreeSlice as WorktreeSliceMembers } from './slices/worktree-helpers'
+import { createFetchAllWorktrees } from './slices/worktrees/listing/fetch-all-worktrees'
 import { createForceDeletePreservedBranch } from './slices/worktrees/teardown/force-delete-preserved-branch'
 import {
   beginPendingCreation,
@@ -202,6 +203,15 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   isRefreshingRuntimeAgents: boolean
   runtimeEnvironmentCatalogHydrated: boolean
   runtimeEnvironmentCatalogSettled: boolean
+  /**
+   * D01-006: startup owns the first authoritative worktree scan. The sidebar's
+   * repo-count refresh and the settings-driven full refresh stay gated until App
+   * marks the startup scan settled, so a partial startup catalog can never race
+   * it with a second all-repo scan.
+   */
+  startupWorktreeRefreshCompleted: boolean
+  markStartupWorktreeRefreshCompleted: () => void
+  fetchAllWorktrees: () => Promise<void>
   showSleepingWorkspaces: boolean
   terminalStartupRestorationReady: boolean
   workspaceSessionReady: boolean
@@ -507,6 +517,15 @@ export const useAppStore = create<AppState>()(
     isRefreshingRuntimeAgents: false,
     runtimeEnvironmentCatalogHydrated: false,
     runtimeEnvironmentCatalogSettled: false,
+    // Startup owns the first scan; App marks this once it settles (D01-006).
+    startupWorktreeRefreshCompleted: false,
+    markStartupWorktreeRefreshCompleted: () =>
+      set((state) =>
+        state.startupWorktreeRefreshCompleted
+          ? {}
+          : { startupWorktreeRefreshCompleted: true }
+      ),
+    fetchAllWorktrees: createFetchAllWorktrees(set, get),
     terminalStartupRestorationReady: false,
     workspaceSessionReady: false,
     allWorktrees: [],

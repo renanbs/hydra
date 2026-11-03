@@ -113,6 +113,11 @@ export function useOptionalShortcutLabel(actionId: KeybindingActionId): string |
   return formatOptionalShortcutLabel(actionId, keybindings)
 }
 
+export function useOptionalPrimaryShortcutLabel(actionId: KeybindingActionId): string | null {
+  const keybindings = useAppStore((state) => state.keybindings)
+  return formatOptionalPrimaryShortcutLabel(actionId, keybindings)
+}
+
 export function formatShortcutKeyComboDetails(
   actionId: KeybindingActionId,
   overrides?: KeybindingOverrides
