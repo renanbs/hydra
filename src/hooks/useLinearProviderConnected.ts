@@ -12,6 +12,6 @@ export function useLinearProviderConnected(): boolean {
   return useAppStore(
     (state) =>
       state.linearStatusContextKey === getProviderRuntimeContextKey(state.settings) &&
-      state.linearStatus.connected
+      state.linearStatus?.connected === true
   )
 }

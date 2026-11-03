@@ -4,6 +4,7 @@ import { useAppStore } from "@/store";
 import { DEFAULT_HYDRA_SETTINGS, type HydraSettings } from "@/shared/settings-types";
 import type { Repo } from "@/shared/repo-types";
 import { SidebarTaskNavButton } from "./SidebarTaskNavButton";
+import { getProviderRuntimeContextKey } from "@/lib/provider-runtime-context";
 
 const GIT_REPO = {
   id: "repo_a",
@@ -47,7 +48,14 @@ describe("SidebarTaskNavButton (D01-018/D01-019)", () => {
   });
 
   afterEach(() => {
-    useAppStore.setState({ activeView: "terminal", repos: [], activeRepoId: null });
+    useAppStore.setState({
+      activeView: "terminal",
+      repos: [],
+      activeRepoId: null,
+      settings: null,
+      linearStatus: null,
+      linearStatusContextKey: null,
+    });
   });
 
   it("opens the task page and is available with zero repositories", () => {
@@ -82,6 +90,21 @@ describe("SidebarTaskNavButton (D01-018/D01-019)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Open Jira tasks" }));
     expect(useAppStore.getState().openTaskPage).toHaveBeenCalledWith({ taskSource: "jira" });
+  });
+
+  it("shows the Linear shortcut only for the connected runtime context", () => {
+    const value = settings();
+    useAppStore.setState({
+      settings: value,
+      linearStatus: { connected: true, viewer: null },
+      linearStatusContextKey: getProviderRuntimeContextKey(value)
+    });
+
+    render(<SidebarTaskNavButton settings={value} />);
+
+    expect(screen.getByRole("button", { name: "Open Linear tasks" })).toBeInTheDocument();
+    // GitLab still has no probe (`glab`), so it stays hidden.
+    expect(screen.queryByRole("button", { name: "Open GitLab tasks" })).toBeNull();
   });
 
   it("hides the entry through the context menu settings writer", async () => {
