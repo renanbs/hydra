@@ -58,7 +58,7 @@ function build(args: {
   activeWorktreePath?: string | null
   hostIdByRepoId?: ReadonlyMap<string, never>
   sortBy?: string
-  visibleIdentitySet?: ReadonlySet<string> | null
+  visibleWorktreeIdentities?: ReadonlySet<string> | null
 }) {
   return buildWorkspaceBoardLanes({
     projects: [PROJECT],
@@ -72,7 +72,7 @@ function build(args: {
     activeWorktreePath: args.activeWorktreePath ?? null,
     hostIdByRepoId: args.hostIdByRepoId ?? new Map(),
     sortBy: args.sortBy,
-    visibleIdentitySet: args.visibleIdentitySet,
+    visibleWorktreeIdentities: args.visibleWorktreeIdentities,
   })
 }
 
@@ -304,7 +304,7 @@ describe('workspace board host scope (D15a-012)', () => {
   it('drops every card when the visible identity set is empty', () => {
     const lanes = build({
       worktrees: [worktree('wt-a', { status: 'todo' })],
-      visibleIdentitySet: new Set<string>(),
+      visibleWorktreeIdentities: new Set<string>(),
     })
 
     expect(cardIds(lanes, 'todo')).toEqual([])
@@ -314,7 +314,7 @@ describe('workspace board host scope (D15a-012)', () => {
     const visible = worktree('wt-a', { status: 'todo' })
     const lanes = build({
       worktrees: [visible, worktree('wt-b', { status: 'todo' })],
-      visibleIdentitySet: new Set(['|' + (visible.id ?? visible.path)]),
+      visibleWorktreeIdentities: new Set(['|' + (visible.id ?? visible.path)]),
     })
 
     expect(cardIds(lanes, 'todo')).toEqual(['wt-a'])
@@ -323,7 +323,7 @@ describe('workspace board host scope (D15a-012)', () => {
   it('keeps the pre-existing membership when there is no host narrowing', () => {
     const lanes = build({
       worktrees: [worktree('wt-a', { status: 'todo' })],
-      visibleIdentitySet: null,
+      visibleWorktreeIdentities: null,
     })
 
     expect(cardIds(lanes, 'todo')).toEqual(['wt-a'])

@@ -265,6 +265,10 @@ export function SidebarFeedbackDialog({
           ref={feedbackTextareaRef}
           value={feedback}
           onChange={(event) => setFeedback(event.target.value)}
+          aria-label={translate(
+            'auto.components.sidebar.SidebarFeedbackDialog.d46ddd66fc',
+            'What could we improve?'
+          )}
           placeholder={translate(
             'auto.components.sidebar.SidebarFeedbackDialog.d46ddd66fc',
             'What could we improve?'

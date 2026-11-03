@@ -9,7 +9,7 @@ const INITIAL: WorktreeMetadataDraft = {
   comment: "notes",
   linkedIssue: 12,
   linkedPR: 34,
-  linkedLinearIssue: "ENG-7",
+  linkedLinearIssue: null,
 };
 
 function renderDialog(overrides: Partial<Parameters<typeof WorktreeMetaDialog>[0]> = {}) {
@@ -29,12 +29,16 @@ function renderDialog(overrides: Partial<Parameters<typeof WorktreeMetaDialog>[0
 }
 
 describe("WorktreeMetaDialog (Orca parity)", () => {
-  it("seeds every field from persisted metadata", () => {
+  it("seeds the fields from persisted metadata", () => {
     renderDialog();
     expect(screen.getByDisplayValue("feat/parent")).toBeInTheDocument();
     expect(screen.getByDisplayValue("notes")).toBeInTheDocument();
     expect(screen.getByDisplayValue("12")).toBeInTheDocument();
     expect(screen.getByDisplayValue("34")).toBeInTheDocument();
+  });
+
+  it("seeds the issue field with a persisted Linear link", () => {
+    renderDialog({ initial: { ...INITIAL, linkedIssue: null, linkedLinearIssue: "ENG-7" } });
     expect(screen.getByDisplayValue("ENG-7")).toBeInTheDocument();
   });
 
@@ -42,7 +46,6 @@ describe("WorktreeMetaDialog (Orca parity)", () => {
     const { onSave } = renderDialog();
     fireEvent.change(screen.getByDisplayValue("12"), { target: { value: "#77" } });
     fireEvent.change(screen.getByDisplayValue("notes"), { target: { value: "  " } });
-    fireEvent.change(screen.getByDisplayValue("ENG-7"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(onSave).toHaveBeenCalledWith({
@@ -59,7 +62,7 @@ describe("WorktreeMetaDialog (Orca parity)", () => {
     fireEvent.change(screen.getByDisplayValue("12"), { target: { value: "abc" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent(/positive numbers/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/not a github issue/i);
     expect(onSave).not.toHaveBeenCalled();
   });
 
@@ -80,16 +83,15 @@ describe("WorktreeMetaDialog (Orca parity)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ linkedIssue: 77, linkedLinearIssue: "ENG-7" })
+      expect.objectContaining({ linkedIssue: 77, linkedLinearIssue: null })
     );
   });
 
-  it("moves a pasted Linear issue URL from the issue field to the Linear link", () => {
+  it("moves a pasted Linear issue URL into the Linear link", () => {
     const { onSave } = renderDialog();
     fireEvent.change(screen.getByDisplayValue("12"), {
       target: { value: "https://linear.app/acme/issue/ENG-42/fix-it" },
     });
-    fireEvent.change(screen.getByDisplayValue("ENG-7"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(onSave).toHaveBeenCalledWith(

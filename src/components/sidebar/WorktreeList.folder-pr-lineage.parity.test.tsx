@@ -4,7 +4,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import React from "react";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render as rtlRender } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { WorktreeList } from "./WorktreeList";
 import type { GitWorktreeInfo, HydraProject } from "./types";
@@ -104,6 +105,8 @@ function renderList(props: { lineageByPath?: Record<string, string> } = {}) {
     />
   );
 }
+
+const render = (ui: React.ReactElement) => rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe("WorktreeList folder workspace card review (D03a-077)", () => {
   beforeEach(() => resetStore());

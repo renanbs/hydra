@@ -141,11 +141,11 @@ function openHover(comment: string) {
     </TooltipProvider>
   );
   act(() => {
-    vi.advanceTimersByTime(200);
+    vi.advanceTimersByTime(400);
   });
-  fireEvent.mouseEnter(screen.getByText("card").parentElement!);
+  fireEvent.pointerEnter(screen.getByText("card"));
   act(() => {
-    vi.advanceTimersByTime(200);
+    vi.advanceTimersByTime(400);
   });
 }
 

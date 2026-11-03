@@ -1459,10 +1459,13 @@ export function WorktreeList({
       for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
     }
 
+    // Why the raw scan: a repo whose only worktree is hidden by a menu filter is
+    // not an empty repo, so it must not keep a header alive over the Clear Filters
+    // empty state.
     const placeholderRepoIds = getEmptyProjectPlaceholderRepoIds({
       groupBy: displayOptions.groupBy,
       repos: pipelineRepos,
-      worktreesByRepo,
+      worktreesByRepo: storeWorktreesByRepo,
       visibleWorktrees,
       filterRepoIds: displayOptions.filterProjectIds ?? [],
     });

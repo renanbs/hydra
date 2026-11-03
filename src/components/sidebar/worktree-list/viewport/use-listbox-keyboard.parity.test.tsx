@@ -2,10 +2,11 @@
 // container is the listbox, every focusable row is an option, `aria-activedescendant` names
 // the mounted active row, arrows cycle the painted rows, and the native scroll keys stay the
 // browser's own — exactly Orca's contract.
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render as rtlRender } from "@testing-library/react";
 import { useAppStore } from "@/store";
 import { WorktreeList } from "../../WorktreeList";
 import type { GitWorktreeInfo, HydraProject } from "../../types";
@@ -110,6 +111,8 @@ function renderList(
       ?.getAttribute("id") ?? null;
   return { ...view, listbox, onSelectGitWorktree, onToggleGroupCollapse, optionIdFor };
 }
+
+const render = (ui: React.ReactElement) => rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe("workspaces listbox semantics", () => {
   beforeEach(() => resetStore());

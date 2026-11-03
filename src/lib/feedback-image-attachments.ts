@@ -6,7 +6,7 @@ import {
   assertRasterImagePreviewWithinLimits
 } from '../shared/raster-image-preview-limits'
 
-export const MAX_FEEDBACK_IMAGE_COUNT = 5
+export const MAX_FEEDBACK_IMAGE_COUNT = 4
 export const MAX_FEEDBACK_IMAGE_BYTES = 8 * 1024 * 1024
 export const SUPPORTED_FEEDBACK_IMAGE_TYPES = [
   'image/png',

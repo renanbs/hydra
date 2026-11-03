@@ -72,3 +72,44 @@ export function parseIssueLinkInput(
   return Number.isSafeInteger(parsed) && parsed > 0 ? { provider: 'github', number: parsed } : null
 
 }
+
+export type ParsedGitHubIssueLink = {
+  provider: 'github'
+  number: number
+  isPullRequest: boolean
+}
+
+/** GitHub issue/PR URL, or a bare `#123` / `123` reference (Orca parity). */
+export function parseGitHubIssueLink(input: string): ParsedGitHubIssueLink | null {
+  const trimmed = input.trim()
+  if (!trimmed) {
+    return null
+  }
+  const link = parseGitHubIssueOrPRLink(trimmed)
+  if (link) {
+    return {
+      provider: 'github',
+      number: link.number,
+      isPullRequest: link.type === 'pr'
+    }
+  }
+  const numeric = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed
+  if (!/^\d+$/.test(numeric)) {
+    return null
+  }
+  const parsed = Number.parseInt(numeric, 10)
+  return Number.isSafeInteger(parsed) && parsed > 0
+    ? { provider: 'github', number: parsed, isPullRequest: false }
+    : null
+}
+
+export type ParsedLinearIssueLink = {
+  provider: 'linear'
+  identifier: string
+}
+
+/** Linear identifier (`ENG-123`) or linear.app issue URL. */
+export function parseLinearIssueLink(input: string): ParsedLinearIssueLink | null {
+  const parsed = parseLinearIssueInput(input.trim())
+  return parsed ? { provider: 'linear', identifier: parsed.identifier } : null
+}

@@ -62,9 +62,14 @@ export function WorktreeMetaDialog({
   const [issueProvider, setIssueProvider] = useState<WorktreeIssueProvider>(
     initial.linkedLinearIssue && initial.linkedIssue == null ? 'linear' : 'github'
   );
+  // One issue per workspace (Orca): a persisted GitHub number wins over a stale
+  // Linear link, and the chip reflects which one the field is editing.
   const [issueInput, setIssueInput] = useState(
-    initial.linkedLinearIssue ??
-      (initial.linkedIssue == null ? '' : String(initial.linkedIssue))
+    initial.linkedLinearIssue && initial.linkedIssue == null
+      ? initial.linkedLinearIssue
+      : initial.linkedIssue == null
+        ? ''
+        : String(initial.linkedIssue)
   );
   const [linkedPR, setLinkedPR] = useState(initial.linkedPR == null ? '' : String(initial.linkedPR));
   const [comment, setComment] = useState(initial.comment);
@@ -97,7 +102,11 @@ export function WorktreeMetaDialog({
     setDisplayName(seed.displayName);
     setIssueProvider(seed.linkedLinearIssue && seed.linkedIssue == null ? 'linear' : 'github');
     setIssueInput(
-      seed.linkedLinearIssue ?? (seed.linkedIssue == null ? '' : String(seed.linkedIssue))
+      seed.linkedLinearIssue && seed.linkedIssue == null
+        ? seed.linkedLinearIssue
+        : seed.linkedIssue == null
+          ? ''
+          : String(seed.linkedIssue)
     );
     setLinkedPR(seed.linkedPR == null ? '' : String(seed.linkedPR));
     setComment(seed.comment);
