@@ -1,15 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/store'
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { PrDisplay } from '../pr-display'
 import type { GitWorktreeInfo, HydraProject, WorkspacePort, WorktreeSession } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
 import WorkspaceBoardDrawerView from './WorkspaceBoardDrawerView'
+import WorkspaceBoardFilterMenu from './WorkspaceBoardFilterMenu'
 import { useWorkspaceBoardAreaSelection } from './use-workspace-board-area-selection'
 import { useWorkspaceBoardCardPointerDrag } from './drag/use-workspace-board-card-pointer-drag'
 import type { WorkspaceBoardCardDragTarget } from './drag/use-workspace-board-card-pointer-drag'
 import { useWorkspaceBoardColumnResize } from './use-workspace-board-column-resize'
 import { useWorkspaceBoardGeometry, type WorkspaceBoardGeometry } from './use-workspace-board-geometry'
+import { useWorkspaceBoardOutsideDismiss } from './use-workspace-board-outside-dismiss'
+import { useWorkspaceBoardRenderLifecycle } from './use-workspace-board-render-lifecycle'
 import { useWorkspaceBoardProjection } from './use-workspace-board-projection'
 import { useWorkspaceBoardSearch } from './use-workspace-board-search'
 import { useWorkspaceBoardSelection } from './use-workspace-board-selection'
@@ -24,12 +27,37 @@ import {
 import { resolveWorktreeMultiDragSelection } from '../worktree-multi-drag-selection'
 import { resolveWorkspaceBoardStatusAssignmentTargets } from './workspace-board-status-assignment'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
+import { resolveWorkspaceBoardCardDragCommit } from './drag/use-workspace-board-card-pointer-drag'
+import { resolveWorkspaceBoardFullLaneDropIndex } from './workspace-board-filtered-drop-index'
+import { registerWorkspaceBoardSidebarDropGroups } from './workspace-board-sidebar-drop'
+import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync'
+import { shouldWriteManualOrderForGroupDrop, buildManualOrderUpdatesForGroupDrop } from '../worktree-manual-order'
 
 export type WorkspaceBoardDrawerProps = {
   /** Whether the user has the board open (the sheet's own `open` state). */
   open: boolean
   /** Whether the drawer may stay mounted; outlives `open` by the close animation. */
   renderedOpen: boolean
+  /** A sidebar drag opened the board as a preview — not a user open until it commits. */
+  dragPreview?: boolean
+  /** A board-owned menu is open; outside presses and Escape leave the board alone. */
+  preserveOpenForMenu?: boolean
+  /** Reports the board header filter menu's open state to the panel that owns it. */
+  onMenuOpenChange?: (open: boolean) => void
+  /** Every project, unfiltered: the header filter's repo list must stay complete. */
+  filterProjects?: readonly HydraProject[]
+  /** The sidebar's display-options writer, shared with the header filter menu. */
+  onDisplayOptionsChange?: (options: WorkspaceDisplayOptions) => void
+  onAddProject?: () => void
+  onClearFilters?: () => void
+  onUpdateSettings?: (patch: { compact_worktree_cards: boolean }) => void
+  /** Switches the sidebar sort to `manual` when a board drop writes a manual order. */
+  onSwitchToManualSort?: () => void
+  /**
+   * Applies a board manual order: the ordered worktree ids become the project
+   * arrays' order (Hydra's persisted manual order), preserving rows the board hides.
+   */
+  onApplyManualOrder?: (orderedWorktreeIds: readonly string[]) => void
   /** The sidebar's own element, measured for the sheet's viewport box. */
   sidebarRef: React.RefObject<HTMLElement | null>
   displayProjects: readonly HydraProject[]
@@ -101,6 +129,16 @@ export default function WorkspaceBoardDrawer(
 
 function WorkspaceBoardDrawerContent({
   open,
+  dragPreview = false,
+  preserveOpenForMenu = false,
+  onMenuOpenChange,
+  filterProjects,
+  onDisplayOptionsChange,
+  onAddProject,
+  onClearFilters,
+  onUpdateSettings,
+  onSwitchToManualSort,
+  onApplyManualOrder,
   displayProjects,
   getProjectWorktrees,
   sessions,
@@ -124,7 +162,13 @@ function WorkspaceBoardDrawerContent({
 }: WorkspaceBoardDrawerProps & {
   geometry: WorkspaceBoardGeometry
 }): React.JSX.Element {
-  const { lanes, columnWidth: committedColumnWidth } = useWorkspaceBoardProjection({
+  const {
+    lanes,
+    boardDragGroups,
+    laneFullWorktreeIds,
+    worktreeById,
+    columnWidth: committedColumnWidth,
+  } = useWorkspaceBoardProjection({
     displayProjects,
     getProjectWorktrees,
     sessions,
@@ -135,6 +179,7 @@ function WorkspaceBoardDrawerContent({
     unreadWorktreePaths,
     portsByWorktree,
     prByPath,
+    sortBy: displayOptions.sortBy,
   })
   const setWorkspaceBoardColumnWidth = useAppStore((state) => state.setWorkspaceBoardColumnWidth)
   const { columnWidth, isResizingColumn, onColumnResizeStart, onColumnResizeKeyDown } =
@@ -142,48 +187,26 @@ function WorkspaceBoardDrawerContent({
   const boardRef = useRef<HTMLDivElement | null>(null)
   const laneScrollerRef = useRef<HTMLDivElement | null>(null)
   const areaSelectionOverlayRef = useRef<HTMLDivElement | null>(null)
-  // The ONE bridge between the native drag's payload and the app's writers: the drag speaks
-  // workspace ids (Orca's `Worktree.id`, the id the sidebar's own drag publishes), the app's
-  // status and pin writers key on workspace paths. Same shape as the sidebar list's own bridge.
-  const worktreePathByWorktreeId = useMemo(() => {
-    const byId = new Map<string, string>()
-    for (const lane of lanes) {
-      for (const card of lane.cards) {
-        byId.set(card.worktreeId, card.worktree.path)
-      }
-    }
-    return byId
-  }, [lanes])
-  const dropWorktreesAtEndOfStatus = useCallback(
-    (worktreeIds: readonly string[], status: WorkspaceStatus) => {
-      for (const worktreeId of worktreeIds) {
-        const worktreePath = worktreePathByWorktreeId.get(worktreeId)
-        if (worktreePath) {
-          void onAssignWorktreeStatus(worktreePath, status)
-        }
-      }
-    },
-    [onAssignWorktreeStatus, worktreePathByWorktreeId]
-  )
+  // The ONE bridge between a drag's ids and the app's writers: the drags speak workspace ids
+  // (Orca's `Worktree.id`, the ids the sidebar's own drag publishes), the app's status and pin
+  // writers key on workspace paths. The index drops ids two hosts share rather than guessing
+  // which host's row a write belongs to.
   const pinWorktrees = useCallback(
     (worktreeIds: readonly string[]) => {
+      let wrote = false
       for (const worktreeId of worktreeIds) {
-        const worktreePath = worktreePathByWorktreeId.get(worktreeId)
-        if (worktreePath) {
-          void onPinWorktree(worktreePath)
+        const card = worktreeById.get(worktreeId)
+        if (card) {
+          wrote = true
+          void onPinWorktree(card.worktree.path)
         }
       }
+      if (wrote) {
+        void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
+      }
     },
-    [onPinWorktree, worktreePathByWorktreeId]
+    [onPinWorktree, worktreeById]
   )
-  // Orca's shape: the native drag owns the board's lane/strip highlight state and the pointer
-  // drag publishes into it, so both gestures paint the same destination.
-  const nativeDrag = useWorkspaceBoardNativeDrag({
-    open,
-    boardRef,
-    onDropWorktreesAtEndOfStatus: dropWorktreesAtEndOfStatus,
-    onPinWorktrees: pinWorktrees
-  })
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
   const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
   const { query, setQuery, clearQuery, matchingWorktreeIds, isFiltering, isQueryTooLarge } =
@@ -196,13 +219,26 @@ function WorkspaceBoardDrawerContent({
     () => filtered.lanes.flatMap((lane) => lane.cards),
     [filtered.lanes]
   )
+  // The lane as the board currently paints it, in the drag's vocabulary. The commit
+  // boundary translates a rendered slot through this onto `laneFullWorktreeIds`.
+  const renderedLaneWorktreeIds = useMemo(
+    () =>
+      new Map(
+        filtered.lanes.map((lane) => [
+          lane.status.id,
+          lane.cards.map((card) => card.worktreeId),
+        ])
+      ),
+    [filtered.lanes]
+  )
   const {
     selectedWorktreeIds,
     selectionAnchorId,
     updateSelectionForGesture,
     updateSelectionForArea,
     selectForContextMenu,
-    selectAllVisible
+    selectAllVisible,
+    clearSelection
   } = useWorkspaceBoardSelection({ open, boardCards, visibleCards })
   const { handleAreaSelectionPointerDown } = useWorkspaceBoardAreaSelection({
     open,
@@ -221,6 +257,7 @@ function WorkspaceBoardDrawerContent({
       for (const card of lane.cards) {
         byIdentity.set(card.identity, {
           identity: card.identity,
+          worktreeId: card.worktreeId,
           worktreePath: card.worktree.path,
           status: lane.status.id
         })
@@ -250,17 +287,197 @@ function WorkspaceBoardDrawerContent({
     },
     [boardCards, dragTargetByIdentity, selectedWorktreeIds]
   )
+  const recordBoardAction = useCallback(() => {
+    void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
+  }, [])
+
+  const maybeSyncTaskStatuses = useWorkspaceBoardTaskStatusSync({ worktreeById })
+
+  /**
+   * Writes the slot's manual order when the gesture is an intentional reorder.
+   *
+   * Why the translation: the hit test counts rendered cards, and a query hides
+   * members; manual-order math runs against the full lane.
+   */
+  const writeManualOrderForBoardDrop = useCallback(
+    (args: {
+      worktreeIds: readonly string[]
+      status: WorkspaceStatus
+      dropIndex: number
+      sourceStatuses: readonly (WorkspaceStatus | null)[]
+    }): void => {
+      const shouldWrite = shouldWriteManualOrderForGroupDrop({
+        sortBy: displayOptions.sortBy,
+        sourceGroupKeys: args.sourceStatuses.filter(
+          (status): status is WorkspaceStatus => status !== null
+        ),
+        targetGroupKey: args.status,
+      })
+      if (!shouldWrite || !onApplyManualOrder) {
+        return
+      }
+      const fullLaneIds = laneFullWorktreeIds.get(args.status) ?? []
+      const fullDropIndex = resolveWorkspaceBoardFullLaneDropIndex({
+        fullLaneIds,
+        renderedIds: renderedLaneWorktreeIds.get(args.status) ?? [],
+        filteredDropIndex: args.dropIndex,
+      })
+      const { changed, orderedIds } = buildManualOrderUpdatesForGroupDrop({
+        groups: boardDragGroups,
+        targetGroupKey: args.status,
+        draggedIds: args.worktreeIds,
+        dropIndex: fullDropIndex,
+        now: Date.now(),
+        allWorktreeIds: boardDragGroups.flatMap((group) => group.worktreeIds),
+      })
+      if (!changed) {
+        return
+      }
+      // Why switch: the placement the user just made only stays visible in Manual.
+      onSwitchToManualSort?.()
+      onApplyManualOrder(orderedIds)
+    },
+    [
+      boardDragGroups,
+      displayOptions.sortBy,
+      laneFullWorktreeIds,
+      onApplyManualOrder,
+      onSwitchToManualSort,
+      renderedLaneWorktreeIds,
+    ]
+  )
+
+  /** Commits a pointer-drag batch into a lane: statuses, slot order and telemetry, once. */
+  const handleDropWorktrees = useCallback(
+    (args: {
+      targets: readonly WorkspaceBoardCardDragTarget[]
+      status: WorkspaceStatus
+      dropIndex: number
+    }): void => {
+      let wrote = false
+      for (const target of args.targets) {
+        const commitStatus = resolveWorkspaceBoardCardDragCommit({
+          sourceStatus: target.status,
+          targetStatus: args.status,
+        })
+        if (!commitStatus) {
+          continue
+        }
+        wrote = true
+        void onAssignWorktreeStatus(target.worktreePath, commitStatus)
+      }
+      // A same-lane drop only reorders; the manual-order rule decides whether that
+      // is a write, and a cross-lane drop that actually moved cards also qualifies.
+      const changedWorktreeIds = args.targets
+        .filter((target) => target.status !== args.status)
+        .map((target) => target.worktreeId)
+      writeManualOrderForBoardDrop({
+        worktreeIds: args.targets.map((target) => target.worktreeId),
+        status: args.status,
+        dropIndex: args.dropIndex,
+        sourceStatuses: args.targets.map((target) => target.status),
+      })
+      maybeSyncTaskStatuses(changedWorktreeIds, args.status)
+      if (wrote) {
+        recordBoardAction()
+      }
+    },
+    [
+      maybeSyncTaskStatuses,
+      onAssignWorktreeStatus,
+      recordBoardAction,
+      writeManualOrderForBoardDrop,
+    ]
+  )
+
+  /** Pins a pointer-drag batch in one pass: a pin write per card, one telemetry record. */
+  const handlePinWorktrees = useCallback(
+    (targets: readonly WorkspaceBoardCardDragTarget[]): void => {
+      if (targets.length === 0) {
+        return
+      }
+      for (const target of targets) {
+        void onPinWorktree(target.worktreePath)
+      }
+      recordBoardAction()
+    },
+    [onPinWorktree, recordBoardAction]
+  )
+
+  /**
+   * A lane drop that carries no slot (native HTML5, or a lane released at the end):
+   * the destination status, the end of the lane as the order slot.
+   */
+  const commitWorktreeIdsAtEndOfStatus = useCallback(
+    (worktreeIds: readonly string[], status: WorkspaceStatus): void => {
+      const targets: WorkspaceBoardCardDragTarget[] = []
+      for (const worktreeId of worktreeIds) {
+        const card = worktreeById.get(worktreeId)
+        if (!card) {
+          continue
+        }
+        targets.push({
+          identity: card.identity,
+          worktreeId: card.worktreeId,
+          worktreePath: card.worktree.path,
+          status: card.worktree.status ?? null,
+        })
+      }
+      if (targets.length === 0) {
+        return
+      }
+      const renderedDropIndex = renderedLaneWorktreeIds.get(status)?.length ?? 0
+      handleDropWorktrees({ targets, status, dropIndex: renderedDropIndex })
+    },
+    [handleDropWorktrees, renderedLaneWorktreeIds, worktreeById]
+  )
+
+  // Orca's shape: the native drag owns the board's lane/strip highlight state and the pointer
+  // drag publishes into it, so both gestures paint the same destination.
+  const nativeDrag = useWorkspaceBoardNativeDrag({
+    open,
+    boardRef,
+    onDropWorktreesAtEndOfStatus: commitWorktreeIdsAtEndOfStatus,
+    onPinWorktrees: pinWorktrees
+  })
   const { onCardPointerDownCapture, isPointerDragActiveRef } =
     useWorkspaceBoardCardPointerDrag({
       open,
       boardRef,
-      onAssignWorktreeStatus,
-      onPinWorktree,
+      onDropWorktrees: handleDropWorktrees,
+      onPinWorktrees: handlePinWorktrees,
       resolveCardDragTargets,
       onDragTargetChange: nativeDrag.setDragOverStatus,
       onPinDragTargetChange: nativeDrag.setPinDragOver
     })
   useWorkspaceBoardShiftWheelScroll(boardRef, laneScrollerRef, open, isPointerDragActiveRef)
+
+  // The board's full lane order is what the sidebar's manual-order math runs against.
+  // Registered while open: the sheet lingers through its close animation, and a board
+  // the user dismissed must not stay a drop destination.
+  useLayoutEffect(() => {
+    if (!open) {
+      return
+    }
+    return registerWorkspaceBoardSidebarDropGroups(boardDragGroups)
+  }, [boardDragGroups, open])
+
+  // The board header paints immediately; its cards mount one frame later.
+  const renderCards = useWorkspaceBoardRenderLifecycle({
+    boardRef,
+    clearSelection,
+    open,
+    selectedCount: selectedWorktreeIds.size,
+  })
+
+  // Orca `useWorkspaceKanbanOutsideDismiss`: a canvas press to the right of the sheet
+  // closes the board, while board-owned menus/dialogs/toasts and the sidebar keep it.
+  useWorkspaceBoardOutsideDismiss({
+    open,
+    boardRef,
+    preserveOpenForMenu,
+    onOpenChange,
+  })
 
   // Orca counts the *rendered* selection in the header: a card a search hides is still
   // selected, but the badge describes what the user can see and act on.
@@ -334,11 +551,28 @@ function WorkspaceBoardDrawerContent({
     [onOpenChange, onSelectWorktree]
   )
 
+  const headerFilter =
+    onDisplayOptionsChange && filterProjects ? (
+      <WorkspaceBoardFilterMenu
+        options={displayOptions}
+        projects={filterProjects}
+        onOptionsChange={onDisplayOptionsChange}
+        onAddProject={onAddProject}
+        onClearFilters={onClearFilters}
+        onUpdateSettings={onUpdateSettings}
+        onMenuOpenChange={onMenuOpenChange}
+      />
+    ) : null
+
   return (
     <WorkspaceBoardDrawerView
       open={open}
+      dragPreview={dragPreview}
+      preserveOpenForMenu={preserveOpenForMenu}
       geometry={geometry}
       lanes={filtered.lanes}
+      renderCards={renderCards}
+      laneFullWorktreeIds={laneFullWorktreeIds}
       columnWidth={columnWidth}
       isResizingColumn={isResizingColumn}
       onColumnResizeStart={onColumnResizeStart}
@@ -373,6 +607,7 @@ function WorkspaceBoardDrawerContent({
       onActivate={handleActivate}
       onSelectSession={onSelectSession}
       onContextMenu={handleCardContextMenu}
+      headerFilter={headerFilter}
     />
   )
 }

@@ -20,6 +20,7 @@ import { SidebarNav } from "./SidebarNav";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarFooter } from "./SidebarFooter";
 import { WorktreeList } from "./WorktreeList";
+import { applyWorktreeGroupOrder } from "./worktree-group-order";
 import type { RepoHeaderCreateState } from "./SectionHeader";
 import { stopRepoHeaderMenuEvent } from "./ProjectHeaderActions";
 import { translate } from "../../i18n/i18n";
@@ -418,8 +419,11 @@ export function WorktreeSidebar({
   const {
     workspaceBoardOpen,
     workspaceBoardRenderedOpen,
+    workspaceBoardDragPreviewOpen,
+    workspaceBoardMenuOpen,
     toggleWorkspaceBoard,
     handleWorkspaceBoardOpenChange,
+    setWorkspaceBoardMenuOpen,
     previewWorkspaceBoardFromDrag,
     solidifyWorkspaceBoardFromDrag,
     cancelWorkspaceBoardDragPreview,
@@ -626,6 +630,54 @@ export function WorktreeSidebar({
     setDisplayOptions(newOptions);
     notifyPrefs({ displayOptions: newOptions });
   }, [notifyPrefs]);
+
+  /**
+   * Switches the sidebar to Manual when a board drop wrote a manual order. The board's
+   * placement is only visible in Manual, so the write and the mode must move together
+   * (Orca `setSortBy('manual')` inside its board drop).
+   */
+  const handleSwitchToManualSort = useCallback(() => {
+    if (displayOptions.sortBy === "manual") return;
+    handleDisplayOptionsChange({ ...displayOptions, sortBy: "manual" });
+  }, [displayOptions, handleDisplayOptionsChange]);
+
+  /**
+   * Applies the board's manual order: the ordered ids become each project's array
+   * order, which is how Hydra persists manual order. Rows the board hides keep their
+   * slots (`applyWorktreeGroupOrder`), so a filtered board never drops a row.
+   */
+  const handleApplyBoardManualOrder = useCallback(
+    (orderedWorktreeIds: readonly string[]) => {
+      if (!onReorderWorktrees) return;
+      const rowsById = new Map<
+        string,
+        { worktree: GitWorktreeInfo; project: HydraProject }
+      >();
+      for (const project of projects) {
+        for (const worktree of getWorktreesForProject(project)) {
+          const id = worktree.id ?? `${project.id}::${worktree.path}`;
+          if (!rowsById.has(id)) rowsById.set(id, { worktree, project });
+        }
+      }
+      const orderedByProject = new Map<string, GitWorktreeInfo[]>();
+      for (const worktreeId of orderedWorktreeIds) {
+        const entry = rowsById.get(worktreeId);
+        if (!entry) continue;
+        const bucket = orderedByProject.get(entry.project.path) ?? [];
+        bucket.push(entry.worktree);
+        orderedByProject.set(entry.project.path, bucket);
+      }
+      for (const project of projects) {
+        const ordered = orderedByProject.get(project.path);
+        if (!ordered || ordered.length === 0) continue;
+        const current = getWorktreesForProject(project);
+        const next = applyWorktreeGroupOrder(current, ordered);
+        const changed = next.some((worktree, index) => worktree.path !== current[index]?.path);
+        if (changed) onReorderWorktrees(next, project.path);
+      }
+    },
+    [getWorktreesForProject, onReorderWorktrees, projects]
+  );
 
   // Orca `revealWorkspaceFilters` (D09-018): activation asks the sidebar to lift only
   // the filters hiding its target. The request names the workspace; this component
@@ -2017,6 +2069,7 @@ export function WorktreeSidebar({
                 }
               }}
               workspaceBoardOpen={workspaceBoardOpen}
+              onSwitchToManualSort={handleSwitchToManualSort}
               onWorkspaceBoardDragPreviewStart={previewWorkspaceBoardFromDrag}
               onWorkspaceBoardDragPreviewCommit={solidifyWorkspaceBoardFromDrag}
               onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
@@ -2238,6 +2291,16 @@ export function WorktreeSidebar({
       <WorkspaceBoardDrawer
         open={workspaceBoardOpen}
         renderedOpen={workspaceBoardRenderedOpen}
+        dragPreview={workspaceBoardDragPreviewOpen}
+        preserveOpenForMenu={workspaceBoardMenuOpen}
+        onMenuOpenChange={setWorkspaceBoardMenuOpen}
+        filterProjects={projects}
+        onDisplayOptionsChange={handleDisplayOptionsChange}
+        onAddProject={onOpenAddRepoDialog}
+        onClearFilters={handleClearSidebarFilters}
+        onUpdateSettings={onUpdateSettings}
+        onSwitchToManualSort={handleSwitchToManualSort}
+        onApplyManualOrder={handleApplyBoardManualOrder}
         sidebarRef={sidebarRootRef}
         displayProjects={displayProjects}
         getProjectWorktrees={getFilteredAndSortedWorktrees}

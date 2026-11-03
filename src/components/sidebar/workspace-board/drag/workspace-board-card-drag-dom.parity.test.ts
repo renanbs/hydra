@@ -85,9 +85,9 @@ describe('workspace board lane drop target', () => {
 
 describe('workspace board card drop index', () => {
   const cards = [
-    { top: 40, bottom: 100, index: 0 },
-    { top: 104, bottom: 164, index: 1 },
-    { top: 168, bottom: 228, index: 2 }
+    { top: 40, bottom: 100 },
+    { top: 104, bottom: 164 },
+    { top: 168, bottom: 228 }
   ]
 
   it('inserts before the first card whose midpoint is below the pointer', () => {
@@ -100,20 +100,18 @@ describe('workspace board card drop index', () => {
     expect(resolveWorkspaceBoardCardDropIndexFromRects(cards, 400)).toBe(3)
   })
 
-  it('reports the lane index of the card, not its rendered position', () => {
-    // A lane that only renders part of its cards still reports lane-accurate slots.
+  it('reports the rendered slot; the commit boundary translates it to the full lane', () => {
+    // The hit test cannot know a hidden member's position, so it counts what it paints.
     expect(
       resolveWorkspaceBoardCardDropIndexFromRects(
         [
-          { top: 40, bottom: 100, index: 5 },
-          { top: 104, bottom: 164, index: 6 }
+          { top: 40, bottom: 100 },
+          { top: 104, bottom: 164 }
         ],
         130
       )
-    ).toBe(6)
-    expect(
-      resolveWorkspaceBoardCardDropIndexFromRects([{ top: 40, bottom: 100, index: 5 }], 400)
-    ).toBe(6)
+    ).toBe(1)
+    expect(resolveWorkspaceBoardCardDropIndexFromRects([{ top: 40, bottom: 100 }], 400)).toBe(1)
   })
 
   it('reports slot 0 for a lane with no cards', () => {
@@ -123,8 +121,8 @@ describe('workspace board card drop index', () => {
 
 describe('workspace board card drop indicator', () => {
   const cards = [
-    { top: 40, bottom: 100, index: 0 },
-    { top: 104, bottom: 164, index: 1 }
+    { top: 40, bottom: 100 },
+    { top: 104, bottom: 164 }
   ]
 
   it('hangs the line just under the header of an empty lane', () => {
@@ -364,6 +362,8 @@ describe('workspace board card drop target with a virtualized card list', () => 
       spacerElement: spacer,
       getItemIdentities: () =>
         Array.from({ length: LANE_CARD_COUNT }, (_, index) => `|wt-${index}`),
+      getItemWorktreeIds: () =>
+        Array.from({ length: LANE_CARD_COUNT }, (_, index) => `repo_1::/repo/${index}`),
       getMeasurements: () =>
         Array.from({ length: LANE_CARD_COUNT }, (_, index) => {
           const start = index * (CARD_ESTIMATED_HEIGHT + CARD_GAP)

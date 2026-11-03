@@ -54,6 +54,8 @@ type WorkspaceBoardCardDragState = {
 export type WorkspaceBoardCardDragTarget = {
   /** Host-qualified card identity — the selection's vocabulary. */
   identity: string
+  /** The workspace id the sidebar's drag and the manual order speak. */
+  worktreeId: string
   /** The workspace path the app's own writers key on. */
   worktreePath: string
   /** The lane the worktree sits in when the drag lifts it; a release back here is a no-op. */
@@ -84,9 +86,18 @@ export function resolveWorkspaceBoardCardDragCommit(args: {
 export function useWorkspaceBoardCardPointerDrag(args: {
   open: boolean
   boardRef: React.RefObject<HTMLDivElement | null>
-  onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
-  /** Pins the dropped workspace without touching its status (D08-028). */
-  onPinWorktree: (worktreePath: string) => void | Promise<void>
+  /**
+   * Commits one batch into a lane: the whole selected set, the destination status
+   * and the slot the pointer released over (in rendered index space; the drawer
+   * translates it onto the full lane before writing manual order).
+   */
+  onDropWorktrees: (args: {
+    targets: readonly WorkspaceBoardCardDragTarget[]
+    status: WorkspaceStatus
+    dropIndex: number
+  }) => void
+  /** Pins the whole dropped batch without touching its status (D08-028). */
+  onPinWorktrees: (targets: readonly WorkspaceBoardCardDragTarget[]) => void
   /**
    * Resolves the batch a press on a card moves (D03a-002): the board's selection when the card
    * is part of it and it holds more than one, the pressed card alone otherwise. Host-qualified,
@@ -114,8 +125,8 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   const {
     open,
     boardRef,
-    onAssignWorktreeStatus,
-    onPinWorktree,
+    onDropWorktrees,
+    onPinWorktrees,
     resolveCardDragTargets,
     onDragTargetChange,
     onPinDragTargetChange
@@ -125,10 +136,10 @@ export function useWorkspaceBoardCardPointerDrag(args: {
   const suppressClickUntilRef = useRef(0)
   // Why: the window listeners are installed once per open board, so the commit callbacks
   // must be read through refs that always hold the latest ones App handed down.
-  const assignStatusRef = useRef(onAssignWorktreeStatus)
-  assignStatusRef.current = onAssignWorktreeStatus
-  const pinWorktreeRef = useRef(onPinWorktree)
-  pinWorktreeRef.current = onPinWorktree
+  const dropWorktreesRef = useRef(onDropWorktrees)
+  dropWorktreesRef.current = onDropWorktrees
+  const pinWorktreesRef = useRef(onPinWorktrees)
+  pinWorktreesRef.current = onPinWorktrees
   // Why a ref: the window listeners are installed once per open board and the press handler is
   // handed to memoised lanes, so the resolver is read through a ref that always holds the latest.
   const resolveCardDragTargetsRef = useRef(resolveCardDragTargets)
@@ -181,23 +192,22 @@ export function useWorkspaceBoardCardPointerDrag(args: {
       // Why before the status commit: a release over the pin strip is a pin, and the strip
       // resolves no lane, so it can never also write the column. The whole batch pins.
       if (commitTarget && isWorkspaceBoardPinDropTarget(commitTarget)) {
-        for (const target of state.targets) {
-          void pinWorktreeRef.current(target.worktreePath)
-        }
+        pinWorktreesRef.current(state.targets)
         return
       }
-      // Why per target: the batch can span lanes, so each worktree is compared against its own
-      // source lane — one write per worktree that actually moves, none for the ones already
-      // sitting in the destination lane.
-      for (const target of state.targets) {
-        const commitStatus = resolveWorkspaceBoardCardDragCommit({
-          sourceStatus: target.status,
-          targetStatus: commitTarget?.status ?? null
-        })
-        if (commitStatus) {
-          void assignStatusRef.current(target.worktreePath, commitStatus)
-        }
+      const targetStatus = commitTarget?.status ?? null
+      const targetDropIndex = commitTarget?.status ? commitTarget.dropIndex : 0
+      if (!targetStatus) {
+        return
       }
+      // Why one batch call: a lane drop writes status AND, when the sort mode calls
+      // for it, the slot's manual order — both from the same slot-in-view-space, so
+      // the drawer can translate it once at the commit boundary.
+      dropWorktreesRef.current({
+        targets: state.targets,
+        status: targetStatus,
+        dropIndex: targetDropIndex
+      })
     },
     [boardRef, clearDropTarget]
   )

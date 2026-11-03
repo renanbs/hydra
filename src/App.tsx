@@ -3987,6 +3987,14 @@ export default function App() {
         window.dispatchEvent(new CustomEvent("hydra:toggle-sleeping-workspaces"));
         return;
       }
+      // D08-001: the board toggle is a registry command (`workspace.openBoard`), unbound by
+      // default and remappable. The sidebar's panel hook owns the actual state; the app only
+      // dispatches the same event the footer button's toggle does.
+      if (keybindingMatchesAction("workspace.openBoard", e, getShortcutPlatform(), keybindings)) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("hydra:toggle-workspace-board"));
+        return;
+      }
       if (keybindingMatchesAction("sidebar.left.toggle", e, getShortcutPlatform(), keybindings)) {
         e.preventDefault();
         setIsLeftSidebarOpen((prev) => {

@@ -147,7 +147,8 @@ import {
 import { buildWorktreeManualOrderCatalog } from "./worktree-manual-order-catalog";
 import { WorktreeListDragProvider } from "./worktree-list/drag/WorktreeListDragProvider";
 import { getWorktreeDragGroups } from "./worktree-list/drag/groups";
-import { getWorkspaceStatusGroupKey } from "./workspace-status";
+import { DEFAULT_WORKSPACE_STATUS_ID, getWorkspaceStatusGroupKey } from "./workspace-status";
+import { getWorkspaceBoardSidebarDropGroups } from "./workspace-board/workspace-board-sidebar-drop";
 import { buildLineageParentIdByChildId } from "./worktree-list/drag/nesting";
 import {
   WorktreeDragDropIndicator,
@@ -537,6 +538,11 @@ export interface WorktreeListProps {
    * board and the context menu share one writer (D08-002/D08-040).
    */
   onAssignWorktreeStatus: (worktreePath: string, status: string) => void | Promise<void>;
+  /**
+   * Switches the sidebar sort to Manual when a board drop writes a manual order, so
+   * the placement stays visible instead of being re-sorted away (D08-040/D08-042).
+   */
+  onSwitchToManualSort?: () => void;
   /** Persisted lineage (`childPath -> parentPath`) owned by the app. */
   lineageByPath?: Readonly<Record<string, string>>;
   /** Persisted notes/linked work items, keyed by checkout path. */
@@ -842,6 +848,7 @@ export function WorktreeList({
   onReorderHostSections,
   onUpdateProjectGroup,
   onAssignWorktreeStatus,
+  onSwitchToManualSort,
   lineageByPath,
   worktreeMetadataByPath,
   onEditWorktreeMetadata,
@@ -1821,12 +1828,54 @@ export function WorktreeList({
   // ONE bridge for a card dropped on an open board, and it commits through the same
   // `onAssignWorktreeStatus` the context menu and the board's own card drop use.
   const handleAssignWorktreesStatus = useCallback(
-    (worktreeIds: readonly string[], status: string, executionHostId?: ExecutionHostId) => {
-      for (const entry of resolveDragWorktreeEntries(worktreeIds, executionHostId)) {
+    (
+      worktreeIds: readonly string[],
+      status: string,
+      executionHostId?: ExecutionHostId,
+      dropIndex?: number
+    ) => {
+      const entries = resolveDragWorktreeEntries(worktreeIds, executionHostId);
+      for (const entry of entries) {
         void onAssignWorktreeStatus(entry.worktree.path, status);
       }
+      if (dropIndex === undefined) return;
+      // Why the board's own groups: the sidebar list's rows are grouped by section,
+      // while the slot came from a lane. Manual order must be computed against the
+      // lane order the user dropped into.
+      const groups = getWorkspaceBoardSidebarDropGroups();
+      if (groups.length === 0) return;
+      if (
+        !shouldWriteManualOrderForGroupDrop({
+          sortBy: displayOptions.sortBy,
+          sourceGroupKeys: entries.map(
+            (entry) => entry.worktree.status ?? DEFAULT_WORKSPACE_STATUS_ID
+          ),
+          targetGroupKey: status,
+        })
+      ) {
+        return;
+      }
+      const { changed, orderedIds } = buildManualOrderUpdatesForGroupDrop({
+        groups,
+        targetGroupKey: status,
+        draggedIds: worktreeIds,
+        dropIndex,
+        now: Date.now(),
+        rankByWorktreeId: manualOrderCatalog.rankByWorktreeId,
+        allWorktreeIds: manualOrderCatalog.orderedIds,
+      });
+      if (!changed) return;
+      onSwitchToManualSort?.();
+      applyManualOrderedIds(orderedIds);
     },
-    [onAssignWorktreeStatus, resolveDragWorktreeEntries]
+    [
+      applyManualOrderedIds,
+      displayOptions.sortBy,
+      manualOrderCatalog,
+      onAssignWorktreeStatus,
+      onSwitchToManualSort,
+      resolveDragWorktreeEntries,
+    ]
   );
 
   // ─── Pointer-drag pin-strip drop → the panel's pin writer ──────────────────

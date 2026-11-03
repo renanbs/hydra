@@ -92,6 +92,7 @@ function mountBoardWithMeasuredLane(): { board: HTMLElement; scroller: HTMLEleme
     scrollElement: scroller,
     spacerElement: spacer,
     getItemIdentities: () => ['|a', '|b', '|c'],
+    getItemWorktreeIds: () => ['a', 'b', 'c'],
     getMeasurements: () =>
       Array.from({ length: 3 }, (_, index) => {
         const start = index * (CARD_HEIGHT + CARD_GAP)

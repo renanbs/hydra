@@ -14,8 +14,16 @@ import type {
 
 type WorkspaceBoardDrawerViewProps = {
   open: boolean
+  /** A card drag opened the board as a preview; the sheet marks it and it is not a user open. */
+  dragPreview: boolean
+  /** A board-owned menu is open; outside presses and Escape leave the board alone. */
+  preserveOpenForMenu: boolean
   geometry: WorkspaceBoardGeometry
   lanes: readonly WorkspaceBoardLane[]
+  /** Whether the render lifecycle allows card paint yet; lane shells paint regardless. */
+  renderCards: boolean
+  /** Each lane's full membership as worktree ids, for the sidebar-drop translation channel. */
+  laneFullWorktreeIds: ReadonlyMap<WorkspaceStatus, readonly string[]>
   columnWidth: number
   isResizingColumn: boolean
   onColumnResizeStart: (event: React.PointerEvent<HTMLElement>) => void
@@ -65,6 +73,8 @@ type WorkspaceBoardDrawerViewProps = {
   onActivate: (worktree: GitWorktreeInfo) => void
   onSelectSession?: (sessionId: string) => void
   onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
+  /** The board header's filter menu cluster, wired by the drawer to the sidebar writers. */
+  headerFilter?: React.ReactNode
 }
 
 /**
@@ -79,8 +89,12 @@ type WorkspaceBoardDrawerViewProps = {
  */
 export default function WorkspaceBoardDrawerView({
   open,
+  dragPreview,
+  preserveOpenForMenu,
   geometry,
   lanes,
+  renderCards,
+  laneFullWorktreeIds,
   columnWidth,
   isResizingColumn,
   onColumnResizeStart,
@@ -115,6 +129,7 @@ export default function WorkspaceBoardDrawerView({
   onActivate,
   onSelectSession,
   onContextMenu,
+  headerFilter,
 }: WorkspaceBoardDrawerViewProps): React.JSX.Element {
   // Why the drawer owns the lane row's scroller: the lanes are virtualized inside it. It is
   // handed to the grid as an element, not a ref — the grid is a child of this scroller, so its
@@ -129,7 +144,13 @@ export default function WorkspaceBoardDrawerView({
     [laneScrollerRef]
   )
   return (
-    <WorkspaceBoardSheet geometry={geometry} open={open} onOpenChange={onOpenChange}>
+    <WorkspaceBoardSheet
+      geometry={geometry}
+      open={open}
+      dragPreview={dragPreview}
+      preserveOpenForMenu={preserveOpenForMenu}
+      onOpenChange={onOpenChange}
+    >
       <WorkspaceBoardHeader
         query={query}
         isFiltering={isFiltering}
@@ -141,6 +162,7 @@ export default function WorkspaceBoardDrawerView({
         onClearQuery={onClearQuery}
         onClose={() => onOpenChange(false)}
         statusActions={statusActions}
+        filterMenu={headerFilter}
       />
       <div
         data-workspace-board-selection-surface=""
@@ -150,6 +172,11 @@ export default function WorkspaceBoardDrawerView({
         {/* Above the lane row, as Orca places it: the strip is the board's second drop
             destination and answers before the lanes (D08-028). Its native handlers are the
             board's own — the strip pins by payload, never by pointer position. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2"
+          data-contextual-tour-target="workspace-board-center"
+        />
         <WorkspaceBoardPinDropTarget
           open={open}
           isDragOver={pinDropTargetActive}
@@ -166,6 +193,8 @@ export default function WorkspaceBoardDrawerView({
             open={open}
             lanes={lanes}
             hasQuery={isFiltering}
+            laneFullWorktreeIds={laneFullWorktreeIds}
+            renderCards={renderCards}
             columnWidth={columnWidth}
             isResizingColumn={isResizingColumn}
             onColumnResizeStart={onColumnResizeStart}

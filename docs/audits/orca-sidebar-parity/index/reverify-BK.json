@@ -855,6 +855,156 @@
    ],
    "missing_behaviors": [],
    "note": "Agent thread list + row pipeline implemented and wired: shell-owned filters/prefs, live/retained/subagent/title-derived rows, deterministic order, decay, orchestration, summary flags and freshness selectors."
+  },
+  {
+   "id": "D08-001",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-002",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-004",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-006",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-008",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-009",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-010",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-011",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-013",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-026",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-029",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-038",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-039",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
+  },
+  {
+   "id": "D08-045",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
   }
  ]
 }

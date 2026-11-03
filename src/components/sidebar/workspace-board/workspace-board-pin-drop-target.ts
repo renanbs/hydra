@@ -71,6 +71,14 @@ export function resolveWorkspaceBoardPinDropTarget(
   return PIN_DROP_TARGET
 }
 
+/**
+ * Whether a viewport point is inside the registered pin strip. The board's own
+ * hit-test root excludes the strip, so the geometry asks the strip directly.
+ */
+export function isPointInWorkspaceBoardPinDropTarget(x: number, y: number): boolean {
+  return resolveWorkspaceBoardPinDropTarget(x, y) !== null
+}
+
 /** Published by the sidebar list's drag frame: the strip is that drag's own destination. */
 export function setWorkspaceBoardPinDropTargetDragOver(over: boolean): void {
   setDragOver(over)

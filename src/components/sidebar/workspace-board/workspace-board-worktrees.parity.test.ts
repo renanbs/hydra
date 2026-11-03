@@ -5,7 +5,14 @@ import {
 } from '../../../shared/workspace-statuses'
 import type { GitWorktreeInfo, HydraProject, WorktreeSession } from '../types'
 import type { WorkspaceDisplayOptions } from '../WorkspaceOptionsMenu'
-import { buildWorkspaceBoardLanes, type WorkspaceBoardLane } from './workspace-board-worktrees'
+import {
+  buildWorkspaceBoardDragGroups,
+  buildWorkspaceBoardLaneFullWorktreeIds,
+  buildWorkspaceBoardLanes,
+  buildWorkspaceBoardUnambiguousWorktreeIdIndex,
+  type WorkspaceBoardCard,
+  type WorkspaceBoardLane,
+} from './workspace-board-worktrees'
 
 const PROJECT: HydraProject = {
   id: 'repo_1',
@@ -50,6 +57,7 @@ function build(args: {
   pinnedWorktreePaths?: ReadonlySet<string>
   activeWorktreePath?: string | null
   hostIdByRepoId?: ReadonlyMap<string, never>
+  sortBy?: string
 }) {
   return buildWorkspaceBoardLanes({
     projects: [PROJECT],
@@ -62,6 +70,7 @@ function build(args: {
     workspaceStatuses: WORKSPACE_STATUSES,
     activeWorktreePath: args.activeWorktreePath ?? null,
     hostIdByRepoId: args.hostIdByRepoId ?? new Map(),
+    sortBy: args.sortBy,
   })
 }
 
@@ -215,5 +224,74 @@ describe('workspace board visibility parity with the sidebar', () => {
     })
 
     expect(cardIds(lanes, DEFAULT_WORKSPACE_STATUS_ID)).toEqual(['wt-primary'])
+  })
+})
+
+describe('workspace board manual sort and drag groups (D08-029)', () => {
+  it('keeps the sidebar order in manual mode instead of floating pinned cards', () => {
+    const worktrees = [
+      worktree('wt-first'),
+      worktree('wt-pinned', { is_pinned: true }),
+      worktree('wt-last'),
+    ]
+
+    const manual = build({
+      worktrees,
+      sortBy: 'manual',
+      pinnedWorktreePaths: new Set(['/repo/hydra/wt-pinned']),
+    })
+    expect(cardIds(manual, DEFAULT_WORKSPACE_STATUS_ID)).toEqual([
+      'wt-first',
+      'wt-pinned',
+      'wt-last',
+    ])
+
+    const recent = build({
+      worktrees,
+      sortBy: 'recent',
+      pinnedWorktreePaths: new Set(['/repo/hydra/wt-pinned']),
+    })
+    expect(cardIds(recent, DEFAULT_WORKSPACE_STATUS_ID)).toEqual([
+      'wt-pinned',
+      'wt-first',
+      'wt-last',
+    ])
+  })
+
+  it('builds one drag group and one full-id list per lane, in lane order', () => {
+    const lanes = build({
+      worktrees: [
+        worktree('wt-a', { status: 'todo' }),
+        worktree('wt-b', { status: 'completed' }),
+        worktree('wt-c', { status: 'todo' }),
+      ],
+    })
+
+    const groups = buildWorkspaceBoardDragGroups(lanes)
+    expect(groups.map((group) => group.key)).toEqual(WORKSPACE_STATUSES.map((status) => status.id))
+    expect(groups.find((group) => group.key === 'todo')?.worktreeIds).toEqual(['wt-a', 'wt-c'])
+
+    const fullIds = buildWorkspaceBoardLaneFullWorktreeIds(lanes)
+    expect(fullIds.get('completed')).toEqual(['wt-b'])
+  })
+
+  it('drops a workspace id that names two hosts from the id index', () => {
+    const card = build({ worktrees: [worktree('wt-a')] })
+      .flatMap((lane) => lane.cards)
+      .find((candidate) => candidate.worktreeId === 'wt-a')!
+    const sameIdOtherHost: WorkspaceBoardCard = {
+      ...card,
+      identity: 'ssh:other|wt-a',
+      worktree: { ...card.worktree, id: 'wt-a' },
+    }
+    const unique: WorkspaceBoardCard = {
+      ...card,
+      worktreeId: 'wt-unique',
+      identity: '|wt-unique',
+    }
+
+    const index = buildWorkspaceBoardUnambiguousWorktreeIdIndex([card, sameIdOtherHost, unique])
+    expect(index.has('wt-a')).toBe(false)
+    expect(index.get('wt-unique')?.identity).toBe('|wt-unique')
   })
 })

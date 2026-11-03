@@ -43,7 +43,12 @@ export type WorktreeDropCommitContext = {
   onAssignWorktreesStatus: (
     worktreeIds: readonly string[],
     status: string,
-    executionHostId?: ExecutionHostId
+    executionHostId?: ExecutionHostId,
+    /**
+     * The release slot translated onto the lane's full membership. Present only for
+     * the board's lane drop: the list's own drops never recolour a status column.
+     */
+    dropIndex?: number
   ) => void
   /**
    * A release on a status lane: writes the status and, only in manual sort mode,

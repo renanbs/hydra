@@ -52,6 +52,7 @@ function renderLane(
     totalCount?: number
     hasQuery?: boolean
     renderCards?: boolean
+    fullWorktreeIds?: readonly string[]
     onCreateWorktree?: (workspaceStatus: string) => void
   } = {}
 ): HTMLElement {
@@ -63,6 +64,7 @@ function renderLane(
         totalCount={overrides.totalCount ?? cards.length}
         hasQuery={overrides.hasQuery ?? false}
         renderCards={overrides.renderCards ?? true}
+        fullWorktreeIds={overrides.fullWorktreeIds}
         columnWidth={308}
         isResizingColumn={false}
         compactCards={false}
@@ -196,5 +198,35 @@ describe('WorkspaceBoardStatusLane (Orca WorkspaceKanbanStatusLane parity)', () 
     expect(onCreateWorktree).toHaveBeenCalledTimes(2)
     expect(onCreateWorktree).toHaveBeenNthCalledWith(1, 'in-progress')
     expect(onCreateWorktree).toHaveBeenNthCalledWith(2, 'in-progress')
+  })
+})
+
+describe('WorkspaceBoardStatusLane full-id channel (D08-026)', () => {
+  it('publishes the full lane membership only while a query hides cards', () => {
+    const cards = [card('wt-a', 0)]
+    const fullWorktreeIds = ['repo_1::/repo/hydra/wt-a', 'repo_1::/repo/hydra/wt-b']
+
+    const filtering = renderLane(cards, { hasQuery: true, fullWorktreeIds })
+    expect(
+      filtering
+        .querySelector('[data-workspace-status="in-progress"]')
+        ?.getAttribute('data-workspace-lane-full-ids')
+    ).toBe(fullWorktreeIds.join('\0'))
+
+    const unfiltered = renderLane(cards, { hasQuery: false, fullWorktreeIds })
+    expect(
+      unfiltered
+        .querySelector('[data-workspace-status="in-progress"]')
+        ?.hasAttribute('data-workspace-lane-full-ids')
+    ).toBe(false)
+  })
+
+  it('omits the channel when no full membership was supplied', () => {
+    const container = renderLane([card('wt-a', 0)], { hasQuery: true })
+    expect(
+      container
+        .querySelector('[data-workspace-status="in-progress"]')
+        ?.hasAttribute('data-workspace-lane-full-ids')
+    ).toBe(false)
   })
 })

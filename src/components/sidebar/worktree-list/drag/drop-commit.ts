@@ -10,6 +10,7 @@ import { getFullDropIndexForWorktreeDragUnit } from '../../worktree-drag-units'
 import { isWorkspaceBoardPinDropTarget } from '../../workspace-board/drag/workspace-board-card-drag-dom'
 import {
   getWorkspaceBoardSidebarDropTarget,
+  resolveWorkspaceBoardSidebarFullLaneDropIndex,
   type WorkspaceBoardSidebarDropTarget
 } from '../../workspace-board/workspace-board-sidebar-drop'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
@@ -155,7 +156,19 @@ export function commitWorktreeDropAtPoint(
     if (isWorkspaceBoardPinDropTarget(boardTarget)) {
       ctx.onPinWorktrees(draggedIds, args.executionHostId)
     } else {
-      ctx.onAssignWorktreesStatus(draggedIds, boardTarget.status, args.executionHostId)
+      // Why translate here: the target counts rendered cards (a board query hides
+      // members), while the manual-order write runs against the full lane. This is
+      // the one commit boundary, so a tracked target that outlived the lane still
+      // lands in the right slot.
+      ctx.onAssignWorktreesStatus(
+        draggedIds,
+        boardTarget.status,
+        args.executionHostId,
+        resolveWorkspaceBoardSidebarFullLaneDropIndex(
+          boardTarget.status,
+          boardTarget.dropIndex
+        )
+      )
     }
     ctx.clearWorktreeDrag()
     return 'board'

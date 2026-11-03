@@ -797,26 +797,6 @@
    "note": "Rename trims and ignores blanks, color/icon updates are applied, and every edit commits through setWorkspaceStatuses plus workspace-board-actions telemetry."
   },
   {
-   "id": "D08-040",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:55-66",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:84-104",
-    "src/components/sidebar/workspace-board/workspace-board-sidebar-drop.ts:112-137",
-    "src/components/sidebar/workspace-board/WorkspaceBoardLaneGrid.tsx:164",
-    "src/components/sidebar/worktree-list/drag/pointer-flush.ts:44-49",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:34-47",
-    "src/components/sidebar/worktree-list/drag/pointer-commit.ts:59-68",
-    "src/components/sidebar/worktree-list/drag/worktree-pointer-board-drop.parity.test.tsx:323-395"
-   ],
-   "backend": [],
-   "missing_behaviors": [
-    "Traduz índices virtuais/filtrados na fronteira de commit (resolveWorkspaceKanbanSidebarFullLaneDropIndex)",
-    "Constrói atualizações em lote (buildWorkspaceKanbanSidebarDropUpdates) e decide comutação para ordenação manual"
-   ],
-   "note": "Sidebar drag now resolves board lanes/pin strip via a registered open board, paints lane highlight + indicator and commits status/pin; index translation and batch metadata updates remain absent."
-  },
-  {
    "id": "D09-025",
    "status": "parity",
    "evidence": [
@@ -942,6 +922,16 @@
     "Catálogo de rótulos traduzidos por propriedade (equivalente a PROPERTY_OPTIONS com translate), consumível pelo menu de opções"
    ],
    "note": "A lista canônica de ids já existe e alimenta persistência/normalização; faltam os rótulos i18n por propriedade."
+  },
+  {
+   "id": "D08-040",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/workspace-board",
+    "src/components/sidebar/workspace-board/workspace-board-filtered-drop-index.ts"
+   ],
+   "missing_behaviors": [],
+   "note": "Board shell lifecycle, outside dismiss, deferred render, sheet/header/search, NUL lane channel, manual/host-qualified projection, pin target, filtered-index translation, sidebar drop updates and board-actions telemetry are implemented and wired."
   }
  ]
 }

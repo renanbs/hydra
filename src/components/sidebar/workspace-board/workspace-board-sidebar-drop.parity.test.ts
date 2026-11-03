@@ -11,7 +11,10 @@ import {
   clearWorkspaceBoardSidebarDropTargetVisual,
   getWorkspaceBoardSidebarDropTarget,
   hasWorkspaceBoardSidebarDropBoard,
+  getWorkspaceBoardSidebarDropGroups,
   registerWorkspaceBoardSidebarDropBoard,
+  registerWorkspaceBoardSidebarDropGroups,
+  resolveWorkspaceBoardSidebarFullLaneDropIndex,
   updateWorkspaceBoardSidebarDropTargetVisual,
   useWorkspaceBoardSidebarDropTargetStatus
 } from './workspace-board-sidebar-drop'
@@ -257,5 +260,56 @@ describe('workspace board sidebar drop visual', () => {
 
     expect(result.current).toBe(published)
     expect(result.current).toBe('in-progress')
+  })
+})
+
+describe('workspace board sidebar drop groups (D08-026/D08-040)', () => {
+  it('reads the published full lane membership under an active query', () => {
+    const board = buildBoard(['completed'])
+    const lane = board.querySelector<HTMLElement>('[data-workspace-status="completed"]')!
+    lane.dataset.workspaceLaneFullIds = ['a', 'b', 'c', 'd'].join('\0')
+    const rendered = document.createElement('div')
+    rendered.dataset.workspaceBoardCardId = '|a'
+    rendered.dataset.workspaceBoardWorktreeId = 'a'
+    lane.appendChild(rendered)
+    const renderedLast = document.createElement('div')
+    renderedLast.dataset.workspaceBoardCardId = '|c'
+    renderedLast.dataset.workspaceBoardWorktreeId = 'c'
+    lane.appendChild(renderedLast)
+    registerBoard(board)
+
+    // Rendered: a, c. Slot 1 means "above c", which is index 2 in the full lane.
+    expect(resolveWorkspaceBoardSidebarFullLaneDropIndex('completed', 1)).toBe(2)
+    // The tail branch maps the last match onto the slot after it.
+    expect(resolveWorkspaceBoardSidebarFullLaneDropIndex('completed', 2)).toBe(3)
+    expect(
+      getWorkspaceBoardSidebarDropGroups().find((group) => group.key === 'completed')
+        ?.worktreeIds
+    ).toEqual(['a', 'b', 'c', 'd'])
+  })
+
+  it('appends to the full lane when the query hid every card of that lane', () => {
+    const board = buildBoard(['todo'])
+    const lane = board.querySelector<HTMLElement>('[data-workspace-status="todo"]')!
+    lane.dataset.workspaceLaneFullIds = ['a', 'b', 'c'].join('\0')
+    lane.appendChild(document.createElement('div'))
+    registerBoard(board)
+
+    expect(resolveWorkspaceBoardSidebarFullLaneDropIndex('todo', 0)).toBe(3)
+  })
+
+  it('prefers the board registration over the painted lanes', () => {
+    const board = buildBoard(LANE_STATUS_IDS)
+    registerBoard(board)
+    const unregister = registerWorkspaceBoardSidebarDropGroups([
+      { key: 'todo', worktreeIds: ['one', 'two'] },
+    ])
+
+    expect(getWorkspaceBoardSidebarDropGroups()).toEqual([
+      { key: 'todo', worktreeIds: ['one', 'two'] },
+    ])
+
+    unregister()
+    expect(getWorkspaceBoardSidebarDropGroups().map((group) => group.key)).toEqual(LANE_STATUS_IDS)
   })
 })

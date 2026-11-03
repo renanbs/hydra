@@ -66,6 +66,12 @@ export function buildWorkspaceBoardLanes(args: {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
   activeWorktreePath: string | null
   hostIdByRepoId: ReadonlyMap<string, ExecutionHostId>
+  /**
+   * The sidebar's own sort mode. `manual` keeps the sidebar's order (which IS the
+   * persisted manual order); every other mode leads the lane with pinned cards, as
+   * the board always did.
+   */
+  sortBy?: string
   portsByWorktree?: ReadonlyMap<string, WorkspacePort[]>
   prByPath?: Readonly<Record<string, PrDisplay>>
 }): WorkspaceBoardLane[] {
@@ -80,6 +86,7 @@ export function buildWorkspaceBoardLanes(args: {
     workspaceStatuses,
     activeWorktreePath,
     hostIdByRepoId,
+    sortBy,
     portsByWorktree,
     prByPath,
   } = args
@@ -131,8 +138,12 @@ export function buildWorkspaceBoardLanes(args: {
 
   // Why stable: pinned cards lead their lane (Orca's board order) while the rest
   // keep the sidebar's own sort, so the board never invents a second ordering.
+  // Manual sort is the exception: the user ordered these rows explicitly, and
+  // floating pinned cards would silently undo that order.
   for (const cards of cardsByStatus.values()) {
-    cards.sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
+    if (sortBy !== 'manual') {
+      cards.sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
+    }
     cards.forEach((card, index) => {
       card.laneIndex = index
     })
@@ -146,4 +157,56 @@ export function buildWorkspaceBoardLanes(args: {
       totalCount: cards.length,
     }
   })
+}
+
+/**
+ * One drag group per status lane, in the lane's full order.
+ *
+ * Why the raw status id is the key: the board's own drag math compares lane ids,
+ * while the sidebar's grouped list uses `workspace-status:<id>` keys. Keeping the
+ * board's keys raw is what lets `buildManualOrderUpdatesForGroupDrop` run against
+ * board groups without translating twice.
+ */
+export function buildWorkspaceBoardDragGroups(
+  lanes: readonly WorkspaceBoardLane[]
+): Array<{ key: WorkspaceStatus; worktreeIds: string[] }> {
+  return lanes.map((lane) => ({
+    key: lane.status.id,
+    worktreeIds: lane.cards.map((card) => card.worktreeId),
+  }))
+}
+
+/** The board's full membership per lane, as the worktree ids a sidebar drag speaks. */
+export function buildWorkspaceBoardLaneFullWorktreeIds(
+  lanes: readonly WorkspaceBoardLane[]
+): Map<WorkspaceStatus, string[]> {
+  return new Map(
+    lanes.map((lane) => [lane.status.id, lane.cards.map((card) => card.worktreeId)])
+  )
+}
+
+/**
+ * The board's id → card index, only for ids that name exactly one card.
+ *
+ * Why ambiguous ids are dropped: two hosts can publish the same workspace id, and
+ * the app's status/pin writers key on paths. Picking whichever came last would
+ * write the wrong host's row; dropping the id makes the caller fall back to the
+ * host-qualified identity instead of guessing.
+ */
+export function buildWorkspaceBoardUnambiguousWorktreeIdIndex(
+  cards: readonly WorkspaceBoardCard[]
+): Map<string, WorkspaceBoardCard> {
+  const byId = new Map<string, WorkspaceBoardCard>()
+  const ambiguous = new Set<string>()
+  for (const card of cards) {
+    if (byId.has(card.worktreeId)) {
+      ambiguous.add(card.worktreeId)
+      continue
+    }
+    byId.set(card.worktreeId, card)
+  }
+  for (const worktreeId of ambiguous) {
+    byId.delete(worktreeId)
+  }
+  return byId
 }

@@ -15,9 +15,23 @@ import {
   isWorkspaceBoardPinDropTarget,
   removeWorkspaceBoardCardDropIndicator,
   updateWorkspaceBoardCardDropIndicator,
+  WORKSPACE_BOARD_CARD_SCROLLER_SELECTOR,
+  WORKSPACE_BOARD_CARD_SELECTOR,
+  WORKSPACE_BOARD_LANE_SELECTOR,
   type WorkspaceBoardCardLaneDropTarget,
   type WorkspaceBoardPinDropTarget
 } from './drag/workspace-board-card-drag-dom'
+import {
+  parseWorkspaceLaneFullIds,
+  resolveWorkspaceBoardFullLaneDropIndex
+} from './workspace-board-filtered-drop-index'
+import { getWorkspaceBoardVirtualCardWorktreeIds } from './workspace-board-virtual-card-layout'
+
+/** The board's full order, one group per lane, registered while the board is open. */
+export type WorkspaceBoardSidebarDropGroup = {
+  key: string
+  worktreeIds: readonly string[]
+}
 import {
   resolveWorkspaceBoardPinDropTarget,
   setWorkspaceBoardPinDropTargetDragOver
@@ -148,4 +162,117 @@ function getDropTargetStatus(): WorkspaceStatus | null {
 /** The lane the sidebar drag is over, as the lane grid paints its highlight. */
 export function useWorkspaceBoardSidebarDropTargetStatus(): WorkspaceStatus | null {
   return useSyncExternalStore(subscribeToDropTargetStatus, getDropTargetStatus)
+}
+
+let registeredGroups: readonly WorkspaceBoardSidebarDropGroup[] | null = null
+
+/**
+ * Registers the board's full lane order for the sidebar's manual-order math.
+ *
+ * Why the board registers it instead of the reader scanning the DOM: a virtualized
+ * lane only paints its window, and a filtered lane only paints its matches. The
+ * board knows the full membership; the drag may commit after the pointer has left
+ * the lane, so the snapshot must outlive the hover.
+ */
+export function registerWorkspaceBoardSidebarDropGroups(
+  groups: readonly WorkspaceBoardSidebarDropGroup[]
+): () => void {
+  const registration = groups.map((group) => ({
+    key: group.key,
+    worktreeIds: [...group.worktreeIds],
+  }))
+  registeredGroups = registration
+  return () => {
+    if (registeredGroups === registration) {
+      registeredGroups = null
+    }
+  }
+}
+
+/** The board's full order: the registration when present, the painted lanes otherwise. */
+export function getWorkspaceBoardSidebarDropGroups(): WorkspaceBoardSidebarDropGroup[] {
+  if (registeredGroups) {
+    return registeredGroups.map((group) => ({
+      key: group.key,
+      worktreeIds: [...group.worktreeIds],
+    }))
+  }
+  const board = registeredBoard
+  if (!board) {
+    return []
+  }
+  return Array.from(board.element.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_LANE_SELECTOR)).flatMap(
+    (lane) => {
+      const status = lane.dataset.workspaceStatus
+      if (!status) {
+        return []
+      }
+      return [{ key: status, worktreeIds: toLaneDropIds(lane).fullLaneIds }]
+    }
+  )
+}
+
+function getCardWorktreeId(card: HTMLElement): string | undefined {
+  return card.dataset.workspaceBoardWorktreeId
+}
+
+/**
+ * A lane as two id lists: its full membership and the cards the lane currently
+ * renders, both in the sidebar drag's vocabulary (worktree ids).
+ *
+ * Why the virtual layout first: the card list virtualizes, so the painted cards
+ * are a window rather than the rendered set. The DOM scan is the fallback for a
+ * lane whose card list never registered, where the painted cards are all there is.
+ */
+function toLaneDropIds(lane: HTMLElement): {
+  fullLaneIds: string[]
+  renderedIds: string[]
+} {
+  const publishedFullLaneIds = parseWorkspaceLaneFullIds(lane.dataset.workspaceLaneFullIds)
+  const cardScroller = lane.querySelector<HTMLElement>(WORKSPACE_BOARD_CARD_SCROLLER_SELECTOR)
+  const virtualWorktreeIds = cardScroller
+    ? getWorkspaceBoardVirtualCardWorktreeIds(cardScroller)
+    : null
+  const paintedIds = Array.from(
+    lane.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_CARD_SELECTOR)
+  ).flatMap((card) => getCardWorktreeId(card) ?? [])
+  const renderedIds = virtualWorktreeIds ?? paintedIds
+  return {
+    fullLaneIds: publishedFullLaneIds ?? renderedIds,
+    renderedIds,
+  }
+}
+
+function getLaneElement(status: WorkspaceStatus): HTMLElement | null {
+  const board = registeredBoard
+  if (!board) {
+    return null
+  }
+  return (
+    Array.from(board.element.querySelectorAll<HTMLElement>(WORKSPACE_BOARD_LANE_SELECTOR)).find(
+      (lane) => lane.dataset.workspaceStatus === status
+    ) ?? null
+  )
+}
+
+/**
+ * Translates a drop slot the board reported in the lane's *rendered* index space
+ * onto the lane's full membership. Call it once, at the commit boundary: a
+ * tracked target can be committed after the pointer has left the lane, so
+ * translating earlier would miss that path.
+ */
+export function resolveWorkspaceBoardSidebarFullLaneDropIndex(
+  status: WorkspaceStatus,
+  renderedDropIndex: number
+): number {
+  const lane = getLaneElement(status)
+  if (!lane) {
+    return renderedDropIndex
+  }
+  const { fullLaneIds, renderedIds } = toLaneDropIds(lane)
+  return resolveWorkspaceBoardFullLaneDropIndex({
+    fullLaneIds,
+    renderedIds,
+    filteredDropIndex: renderedDropIndex,
+  })
 }
