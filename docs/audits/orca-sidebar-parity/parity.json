@@ -4920,20 +4920,18 @@
    "components/sidebar/worktree-list/listing/use-folder-path-statuses.ts:13-128"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/hooks/use-folder-workspace-path-statuses.ts:1-90",
-    "src/lib/folder-path-status-cache.ts:1-60"
+    "src/lib/folder-path-status-cache.ts",
+    "src/hooks/use-folder-workspace-path-statuses.ts",
+    "src/lib/catalog-bridge.ts"
    ],
    "backend": [
     "invoke('path_exists') -> src-tauri/src"
    ],
-   "missing_behaviors": [
-    "cache key ignores the runtime/SSH environment (probe is local-only)",
-    "getFreshFolderWorkspacePathStatus selector not exposed"
-   ],
-   "notes": "Always-mounted probe with TTL cache, confirmed-only negatives, and revalidation on repo/ssh/runtime epoch changes.",
-   "note": "Always-mounted probe with TTL cache, confirmed-only negatives, and revalidation on repo/ssh/runtime epoch changes."
+   "missing_behaviors": [],
+   "notes": "Cache keyed by host+epoch+path; only local hosts probe and remote folders stay unknown; fresh selector bypasses TTL for gates.",
+   "note": "Cache keyed by host+epoch+path; only local hosts probe and remote folders stay unknown; fresh selector bypasses TTL for gates."
   },
   "domain": "D03a-worktree-list-module"
  },

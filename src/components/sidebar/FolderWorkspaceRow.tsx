@@ -38,6 +38,12 @@ export interface FolderWorkspaceRowProps {
   pathMissing?: boolean;
   /** Host-routed probe result: stale paths vs an ambiguous connection. */
   pathStatus?: FolderWorkspacePathStatus | null;
+  /**
+   * Status used only to block activation (Orca `getFreshFolderWorkspacePathStatus`):
+   * an expired probe must not keep the row inert while the badge keeps its last
+   * answer. Omitted falls back to `pathStatus`.
+   */
+  activationPathStatus?: FolderWorkspacePathStatus | null;
   isActive?: boolean;
   /**
    * Geometry from `getFolderWorkspaceRowGeometry` (Orca `folder-row.tsx`). When
@@ -61,6 +67,7 @@ export function FolderWorkspaceRow({
   id,
   pathMissing = false,
   pathStatus,
+  activationPathStatus,
   isActive = false,
   surfaceInset,
   contentIndent,
@@ -76,7 +83,9 @@ export function FolderWorkspaceRow({
         : null;
   const pathStatusTitle = getFolderWorkspacePathStatusTitle(resolvedPathStatus);
   const pathStatusDescription = getFolderWorkspacePathStatusDescription(resolvedPathStatus);
-  const pathBlocksActivation = folderWorkspaceActivationBlocked(resolvedPathStatus);
+  const activationStatus: FolderWorkspacePathStatus | null =
+    activationPathStatus !== undefined ? activationPathStatus : resolvedPathStatus;
+  const pathBlocksActivation = folderWorkspaceActivationBlocked(activationStatus);
   const pathStatusDestructive = isConfirmedStaleFolderPathStatus(resolvedPathStatus);
   const pathStatusState = !pathStatusTitle
     ? undefined
