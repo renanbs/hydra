@@ -7,6 +7,7 @@ import "@testing-library/jest-dom/vitest";
 import React from "react";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { useAppStore } from "@/store";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { WorktreeList } from "./WorktreeList";
 import type { GitWorktreeInfo, HydraProject } from "./types";
 import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
@@ -107,7 +108,12 @@ function renderList(
     );
   }
 
-  const view = render(<Harness />);
+  // Why the provider: the card header now owns design-system tooltips (Orca parity).
+  const view = render(
+    <TooltipProvider>
+      <Harness />
+    </TooltipProvider>
+  );
   const listbox = view.container.querySelector<HTMLElement>('[role="listbox"]')!;
   const optionFor = (path: string): HTMLElement | null =>
     view.container.querySelector<HTMLElement>(`[role="option"][data-worktree-path="${path}"]`);

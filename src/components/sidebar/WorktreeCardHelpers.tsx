@@ -12,6 +12,20 @@ export const CONFLICT_OPERATION_LABELS: Record<string, string> = {
   'cherry-pick': 'Cherry-picking'
 }
 
+/** Orca `checksLabel`: the check state as the badge sentence names it. */
+export function checksLabel(status: string | null | undefined): string {
+  switch (status) {
+    case 'success':
+      return 'Passing'
+    case 'failure':
+      return 'Failing'
+    case 'pending':
+      return 'Pending'
+    default:
+      return ''
+  }
+}
+
 export const EMPTY_TABS = []
 export const EMPTY_BROWSER_TABS: { id: string }[] = []
 

@@ -4,6 +4,82 @@
 // preference names so a profile written by either app survives the trip.
 import type { AgentActivityDisplayMode, WorktreeCardProperty } from '../../shared/ui-chrome-types'
 import { TASK_WORKTREE_CARD_PROPERTIES } from '../../shared/worktree/card-properties'
+import { translate } from '@/i18n/i18n'
+
+/**
+ * Orca `PROPERTY_OPTIONS` labels, one catalog so the display menu, the card and
+ * any future surface cannot drift on a property's name. Keys live under the
+ * shared `auto.components.sidebar` namespace and fall back to English.
+ */
+export function getWorktreeCardPropertyLabel(
+  property: WorktreeCardProperty | 'status' | 'branch' | 'cli' | 'tasks'
+): string {
+  switch (property) {
+    case 'status':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.status',
+        'Status'
+      )
+    case 'issue':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.issue',
+        'GitHub ticket'
+      )
+    case 'linear-issue':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.linear',
+        'Linear issue'
+      )
+    case 'jira-issue':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.jira',
+        'Jira issue'
+      )
+    case 'pr':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.pr',
+        'PR/MR link'
+      )
+    case 'automation':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.automation',
+        'Automation'
+      )
+    case 'cli':
+      return translate('auto.components.sidebar.worktreeCardDisplayPropertyOptions.cli', 'CLI')
+    case 'comment':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.comment',
+        'Notes'
+      )
+    case 'ports':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.ports',
+        'Ports'
+      )
+    case 'inline-agents':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.agents',
+        'Agent activity'
+      )
+    case 'branch':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.branch',
+        'Branch name'
+      )
+    case 'tasks':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.tasks',
+        'Tasks'
+      )
+    case 'ci':
+    case 'unread':
+      return translate(
+        'auto.components.sidebar.worktreeCardDisplayPropertyOptions.other',
+        'Status'
+      )
+  }
+}
 
 export const GROUP_BY_OPTIONS = [
   { id: 'none', label: 'None', dataId: 'c2c7a45cda' },
@@ -47,14 +123,14 @@ export const PROJECT_ORDER_OPTIONS = [
 ] as const
 
 export const PROPERTY_OPTIONS: { id: WorktreeCardProperty; label: string }[] = [
-  { id: 'issue', label: 'GitHub ticket' },
-  { id: 'linear-issue', label: 'Linear issue' },
-  { id: 'jira-issue', label: 'Jira issue' },
-  { id: 'pr', label: 'PR/MR link' },
-  { id: 'automation', label: 'Automation' },
-  { id: 'comment', label: 'Notes' },
-  { id: 'ports', label: 'Ports' },
-  { id: 'inline-agents', label: 'Agent activity' },
+  { id: 'issue', label: getWorktreeCardPropertyLabel('issue') },
+  { id: 'linear-issue', label: getWorktreeCardPropertyLabel('linear-issue') },
+  { id: 'jira-issue', label: getWorktreeCardPropertyLabel('jira-issue') },
+  { id: 'pr', label: getWorktreeCardPropertyLabel('pr') },
+  { id: 'automation', label: getWorktreeCardPropertyLabel('automation') },
+  { id: 'comment', label: getWorktreeCardPropertyLabel('comment') },
+  { id: 'ports', label: getWorktreeCardPropertyLabel('ports') },
+  { id: 'inline-agents', label: getWorktreeCardPropertyLabel('inline-agents') },
 ]
 
 export type WorktreeCardPropertyOption = {

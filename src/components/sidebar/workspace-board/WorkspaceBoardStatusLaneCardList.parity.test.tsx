@@ -16,6 +16,7 @@ import {
   estimateWorkspaceBoardCardHeight
 } from './workspace-board-virtual-lanes'
 import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-board-worktrees'
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const PROJECT: HydraProject = {
   id: 'repo_1',
@@ -138,7 +139,11 @@ describe('WorkspaceBoardStatusLaneCardList', () => {
   it('measures each card and shifts the next one by the measured height', async () => {
     stubCardHeights()
 
-    render(<CardListHarness />)
+    render(
+      <TooltipProvider>
+        <CardListHarness />
+      </TooltipProvider>
+    )
     await settleCardList()
 
     const slots = paintedSlots()
@@ -156,7 +161,11 @@ describe('WorkspaceBoardStatusLaneCardList', () => {
   it('seeds the cards outside the window from the estimate and the painted ones from their height', async () => {
     stubCardHeights()
 
-    render(<CardListHarness />)
+    render(
+      <TooltipProvider>
+        <CardListHarness />
+      </TooltipProvider>
+    )
     await settleCardList()
 
     const slots = paintedSlots()
@@ -178,7 +187,11 @@ describe('WorkspaceBoardStatusLaneCardList', () => {
   it('paints a window with overscan instead of every card of the lane', async () => {
     stubCardHeights()
 
-    render(<CardListHarness />)
+    render(
+      <TooltipProvider>
+        <CardListHarness />
+      </TooltipProvider>
+    )
     await settleCardList()
 
     const slots = paintedSlots()
@@ -193,7 +206,11 @@ describe('WorkspaceBoardStatusLaneCardList', () => {
   it('moves the window as the lane scrolls', async () => {
     stubCardHeights()
 
-    render(<CardListHarness />)
+    render(
+      <TooltipProvider>
+        <CardListHarness />
+      </TooltipProvider>
+    )
     await settleCardList()
     expect(paintedSlots()[0]?.dataset.index).toBe('0')
 
@@ -212,7 +229,11 @@ describe('WorkspaceBoardStatusLaneCardList', () => {
   it('publishes the lane card count the drop geometry reads', async () => {
     stubCardHeights()
 
-    render(<CardListHarness />)
+    render(
+      <TooltipProvider>
+        <CardListHarness />
+      </TooltipProvider>
+    )
     await settleCardList()
 
     expect(getWorkspaceBoardVirtualCardItemCount(scroller())).toBe(LANE_CARD_COUNT)
