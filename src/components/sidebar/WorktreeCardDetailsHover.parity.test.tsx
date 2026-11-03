@@ -74,6 +74,38 @@ describe("WorktreeCardDetailsHover metadata sections (Orca parity)", () => {
     expect(screen.getByText("CLI")).toBeInTheDocument();
   });
 
+  it("projects a persisted Jira key into the section without inventing a URL", () => {
+    openHover({
+      metadata: {
+        comment: "",
+        linkedIssue: null,
+        linkedPR: null,
+        linkedLinearIssue: null,
+        linkedJiraIssue: "OPS-9",
+      },
+    });
+    expect(screen.getByText("Jira OPS-9")).toBeInTheDocument();
+    // A bare key has no site URL, so the external action must stay absent.
+    expect(screen.queryByRole("link", { name: "View on Jira" })).toBeNull();
+  });
+
+  it("derives the identifier from a persisted Jira URL and links it", () => {
+    openHover({
+      metadata: {
+        comment: "",
+        linkedIssue: null,
+        linkedPR: null,
+        linkedLinearIssue: null,
+        linkedJiraIssue: "https://jira.example.com/browse/OPS-9",
+      },
+    });
+    expect(screen.getByText("Jira OPS-9")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View on Jira" })).toHaveAttribute(
+      "href",
+      "https://jira.example.com/browse/OPS-9"
+    );
+  });
+
   it("renders the Jira section only when the provider projection exists", () => {
     openHover({
       jiraIssue: { identifier: "OPS-4", title: "Rotate the token", url: "https://jira/OPS-4" },

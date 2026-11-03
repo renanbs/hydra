@@ -506,7 +506,7 @@
  "PAR-62": [
   {
    "id": "D04a-025",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D04a-030",
@@ -522,7 +522,7 @@
   },
   {
    "id": "D04a-043",
-   "status": "missing"
+   "status": "parity"
   },
   {
    "id": "D04a-102",

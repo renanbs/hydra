@@ -86,6 +86,8 @@ export type Worktree = {
   /** GitHub PR hidden from branch discovery after an explicit unlink. */
   suppressedGitHubPR?: number | null
   linkedLinearIssue: string | null
+  /** Jira key or issue URL, when the workspace links one. */
+  linkedJiraIssue?: string | null
   linkedLinearIssueWorkspaceId?: string | null
   linkedLinearIssueOrganizationUrlKey?: string | null
   // Why: parallel slots for non-GitHub work-item references. Kept as separate

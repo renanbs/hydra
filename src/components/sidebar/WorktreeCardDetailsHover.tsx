@@ -66,6 +66,7 @@ export interface WorktreeCardDetailsHoverProps {
     linkedIssue: number | null
     linkedPR: number | null
     linkedLinearIssue: string | null
+    linkedJiraIssue?: string | null
   } | null
   /** Provider-projected display objects; fall back to the persisted links. */
   issue?: WorktreeCardIssueDisplay | null
@@ -118,6 +119,23 @@ function fallbackIssue(number: number | null | undefined): WorktreeCardIssueDisp
 
 function fallbackLinear(identifier: string | null | undefined): WorktreeCardLinearIssueDisplay | null {
   return identifier ? { identifier, title: '' } : null
+}
+
+/**
+ * Persisted Jira link → card projection. A URL yields the issue key from its last
+ * path segment plus a working external link; a bare key still names the issue but
+ * has no URL, so the section omits the link action rather than rendering a dead
+ * one.
+ */
+function fallbackJira(value: string | null | undefined): WorktreeCardJiraIssueDisplay | null {
+  const trimmed = (value ?? '').trim()
+  if (!trimmed) return null
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return { identifier: trimmed, title: '', url: '' }
+  }
+  const path = trimmed.split(/[?#]/)[0]
+  const identifier = path.split('/').filter(Boolean).pop() ?? trimmed
+  return { identifier, title: '', url: trimmed }
 }
 
 export function WorktreeCardDetailsHover(
@@ -218,6 +236,7 @@ export function WorktreeCardDetailsHover(
 
   const issueDisplay = issue ?? fallbackIssue(metadata?.linkedIssue)
   const linearDisplay = linearIssue ?? fallbackLinear(metadata?.linkedLinearIssue)
+  const jiraDisplay = jiraIssue ?? fallbackJira(metadata?.linkedJiraIssue)
   const reviewDisplay = toReviewDisplay(review)
   const comment = metadata?.comment ?? ''
   const branchName = (worktree.branch ?? '').trim() || undefined
@@ -253,7 +272,7 @@ export function WorktreeCardDetailsHover(
     showIdentityHeader ||
       issueDisplay ||
       linearDisplay ||
-      jiraIssue ||
+      jiraDisplay ||
       reviewDisplay ||
       cliCreated ||
       hasComment(comment) ||
@@ -366,31 +385,35 @@ export function WorktreeCardDetailsHover(
             </WorktreeCardDetailSection>
           )}
 
-          {jiraIssue && (
+          {jiraDisplay && (
             <WorktreeCardDetailSection>
               <DetailHeader
                 icon={<span className="text-[9px] font-bold text-muted-foreground">J</span>}
                 label={translate(
                   'auto.components.sidebar.WorktreeCardMeta.jiraIssue',
                   'Jira {{value0}}',
-                  { value0: jiraIssue.identifier }
+                  { value0: jiraDisplay.identifier }
                 )}
                 actions={
-                  <MetadataActionIcon
-                    label={translate(
-                      'auto.components.sidebar.WorktreeCardMeta.viewOnJira',
-                      'View on Jira'
-                    )}
-                    href={jiraIssue.url}
-                  >
-                    <ExternalLink className="size-3" />
-                  </MetadataActionIcon>
+                  jiraDisplay.url ? (
+                    <MetadataActionIcon
+                      label={translate(
+                        'auto.components.sidebar.WorktreeCardMeta.viewOnJira',
+                        'View on Jira'
+                      )}
+                      href={jiraDisplay.url}
+                    >
+                      <ExternalLink className="size-3" />
+                    </MetadataActionIcon>
+                  ) : undefined
                 }
               />
               <WorktreeCardDetailSectionContent>
-                <div className="break-words text-[13px] font-semibold leading-snug text-foreground">
-                  {jiraIssue.title}
-                </div>
+                {jiraDisplay.title ? (
+                  <div className="break-words text-[13px] font-semibold leading-snug text-foreground">
+                    {jiraDisplay.title}
+                  </div>
+                ) : null}
               </WorktreeCardDetailSectionContent>
             </WorktreeCardDetailSection>
           )}

@@ -311,12 +311,12 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+    "notes": "Preserved-branch review deletes through host guards.",
+    "note": "Preserved-branch review deletes through host guards."
    }
   },
   {
@@ -332,12 +332,12 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+    "notes": "Batch force-delete reaches the real command.",
+    "note": "Batch force-delete reaches the real command."
    }
   },
   {
@@ -353,12 +353,12 @@
    "hydra": {
     "status": "parity",
     "evidence": [
-     "docs/audits/orca-sidebar-parity/domains/D02c.diff.json"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
     "missing_behaviors": [],
-    "notes": "Implemented per the D02C port report and integrated in the mounted sidebar.",
-    "note": "Implemented per the D02C port report and integrated in the mounted sidebar."
+    "notes": "Single preserved-branch toast deletes via the command.",
+    "note": "Single preserved-branch toast deletes via the command."
    }
   },
   {
@@ -477,23 +477,14 @@
     "components/sidebar/SetupScriptPromptCard.tsx:288"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/lib/setup-script-prompt.ts:1-32",
-     "src/i18n/locales/en.json:5300-5308"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Inspeciona assincronamente hooks de runtime e candidatos de importação (checkRuntimeHooks, inspectRuntimeSetupScriptImports)",
-     "Suporta edição de setup detectado de package manager antes de salvar",
-     "Botão 'Configure' navega diretamente para as configurações de comandos locais do repositório",
-     "Botão de dispensa persiste a recusa para a identidade de host do repositório no store (dismissSetupScriptPrompt)",
-     "Salva comando detectado via updateRepo (hookSettings) e emite telemetria de ação (setup_script_prompt_action)",
-     "Exibe toast de confirmação com link para reabrir as configurações do projeto após salvar",
-     "Suporta re-tentativa manual de inspeção em caso de erro"
-    ],
-    "notes": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers.",
-    "note": "Card orquestrador ausente; inspectSetupScriptPromptState segue sem callers."
+    "missing_behaviors": [],
+    "notes": "Hooks + import inspection wired to the setup prompt card.",
+    "note": "Hooks + import inspection wired to the setup prompt card."
    }
   },
   {

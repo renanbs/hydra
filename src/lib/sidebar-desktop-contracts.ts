@@ -85,17 +85,41 @@ export async function submitSidebarFeedback(
   }
 }
 
+const GH_NOT_AUTHENTICATED_PREFIX = 'gh-not-authenticated:'
+
+function normalizeGitHubViewer(value: unknown): GitHubViewer | null {
+  if (typeof value !== 'object' || value === null) {
+    return null
+  }
+  const raw = value as { login?: unknown; email?: unknown }
+  const login = typeof raw.login === 'string' ? raw.login.trim() : ''
+  if (!login) {
+    return null
+  }
+  const email = typeof raw.email === 'string' ? raw.email.trim() : ''
+  return { login, email: email || null }
+}
+
 /**
  * Resolves the GitHub viewer identity for feedback attribution.
- * BLOCKED surface: no `gh_viewer` command / preload bridge exists, so the
- * dialog falls back to the anonymous/typed-feedback guidance.
+ *
+ * The `gh_viewer` command runs `gh api user` on the host. A missing or
+ * unauthenticated CLI is a typed `gh-not-authenticated:` error that maps to
+ * `null` so the dialog keeps the anonymous path instead of showing a failure.
  */
 export async function loadGitHubViewer(): Promise<GitHubViewer | null> {
   const viewer = bridge()?.gh?.viewer
   if (typeof viewer === 'function') {
     return viewer()
   }
-  return null
+  try {
+    return normalizeGitHubViewer(await invoke<unknown>('gh_viewer'))
+  } catch (error) {
+    if (typeof error === 'string' && error.startsWith(GH_NOT_AUTHENTICATED_PREFIX)) {
+      return null
+    }
+    throw error
+  }
 }
 
 /** True when the renderer can actually hand an update check to a host. */

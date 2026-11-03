@@ -625,6 +625,261 @@ pub fn add_remote_repo_to_catalog(
     Ok(repo)
 }
 
+/// Host id the renderer uses for this computer. A folder workspace stamped with
+/// it is still local, so its directory has to exist.
+const LOCAL_EXECUTION_HOST_ID: &str = "local";
+
+fn normalize_stamp(value: Option<&str>) -> Option<String> {
+    value
+        .map(str::trim)
+        .filter(|stamp| !stamp.is_empty())
+        .map(str::to_string)
+}
+
+fn is_remote_workspace(
+    connection_id: Option<&str>,
+    execution_host_id: Option<&str>,
+) -> bool {
+    connection_id.is_some()
+        || execution_host_id.is_some_and(|id| id != LOCAL_EXECUTION_HOST_ID)
+}
+
+/// Creates a folder workspace (`catalog_add_folder_workspace`).
+///
+/// - `project_group_id` names an existing group; without it a `manual` group is
+///   created for the folder so the workspace always has an owner.
+/// - `name` defaults to `<folder> workspace`, matching the folder-scan rule.
+/// - Local folders must exist; a workspace stamped for an SSH/runtime host skips
+///   the probe, because that directory belongs to the other machine.
+/// - Idempotent per `(group, normalized folder path)`: re-opening the same folder
+///   in the same group returns the envelope unchanged instead of adding a row.
+pub fn add_folder_workspace_to_catalog(
+    parent_path: &str,
+    project_group_id: Option<&str>,
+    name: Option<&str>,
+    connection_id: Option<&str>,
+    execution_host_id: Option<&str>,
+    envelope: &mut CatalogEnvelope,
+) -> Result<(), String> {
+    if parent_path.trim().is_empty() {
+        return Err("Empty path".to_string());
+    }
+    let norm = normalize_catalog_path(parent_path);
+    let connection_id = normalize_stamp(connection_id);
+    let execution_host_id = normalize_stamp(execution_host_id);
+    if !is_remote_workspace(connection_id.as_deref(), execution_host_id.as_deref()) {
+        let folder = PathBuf::from(&norm);
+        if !folder.is_dir() {
+            return Err(format!("Not a directory: {parent_path}"));
+        }
+    }
+
+    let folder_name = PathBuf::from(&norm)
+        .file_name()
+        .and_then(|entry| entry.to_str())
+        .filter(|entry| !entry.is_empty())
+        .unwrap_or("folder")
+        .to_string();
+    let now = now_ms();
+
+    let group_id = match project_group_id.map(str::trim).filter(|id| !id.is_empty()) {
+        Some(group_id) => {
+            if !envelope.project_groups.iter().any(|group| group.id == group_id) {
+                return Err(format!("Project group not found: {group_id}"));
+            }
+            group_id.to_string()
+        }
+        None => {
+            let group = CatalogProjectGroup {
+                id: new_id(),
+                name: folder_name.clone(),
+                parent_path: Some(norm.clone()),
+                connection_id: connection_id.clone(),
+                execution_host_id: execution_host_id.clone(),
+                parent_group_id: None,
+                created_from: "manual".to_string(),
+                tab_order: 0,
+                is_collapsed: false,
+                color: None,
+                created_at: now,
+                updated_at: now,
+            };
+            let id = group.id.clone();
+            envelope.project_groups.push(group);
+            id
+        }
+    };
+
+    let already_open = envelope.folder_workspaces.iter().any(|workspace| {
+        workspace.project_group_id == group_id
+            && normalize_catalog_path(&workspace.folder_path) == norm
+    });
+    if already_open {
+        return Ok(());
+    }
+
+    let workspace_name = name
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(str::to_string)
+        .unwrap_or_else(|| format!("{folder_name} workspace"));
+    envelope.folder_workspaces.push(CatalogFolderWorkspace {
+        id: new_id(),
+        project_group_id: group_id,
+        name: workspace_name,
+        folder_path: norm,
+        connection_id,
+        execution_host_id,
+        sort_order: now,
+        created_at: now,
+        updated_at: now,
+    });
+    Ok(())
+}
+
+/// Outcome of `import_nested_repos`: the group created for a group import (absent
+/// for a separate import or when every selected repository was already known)
+/// plus the normalized paths that were added and those that were skipped.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct NestedRepoImportResult {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<CatalogProjectGroup>,
+    pub added: Vec<String>,
+    pub skipped: Vec<String>,
+}
+
+/// Adds the repositories selected in the nested-import checklist to the catalog
+/// in one mutation (`import_nested_repos`).
+///
+/// Atomicity: every path is validated before the envelope is touched, so one bad
+/// path rejects the whole import and the caller writes nothing. Paths already in
+/// the catalog (as a repo or folder workspace) and duplicates in the request are
+/// reported as `skipped`, never duplicated. `group_name` creates one `manual`
+/// group and assigns every added repo to it; without it the repos stay ungrouped
+/// (`separate` import). An empty group is never created.
+pub fn import_nested_repos_into_catalog(
+    paths: &[String],
+    group_name: Option<&str>,
+    envelope: &mut CatalogEnvelope,
+) -> Result<NestedRepoImportResult, String> {
+    if paths.is_empty() {
+        return Ok(NestedRepoImportResult::default());
+    }
+
+    let mut candidates: Vec<(String, String)> = Vec::with_capacity(paths.len());
+    for raw in paths {
+        let trimmed = raw.trim();
+        if trimmed.is_empty() {
+            return Err("Empty repository path".to_string());
+        }
+        let norm = normalize_catalog_path(trimmed);
+        let folder = PathBuf::from(&norm);
+        if !folder.is_dir() {
+            return Err(format!("Not a directory: {trimmed}"));
+        }
+        if !folder.join(".git").exists() {
+            return Err(format!("Not a git repository: {trimmed}"));
+        }
+        let display_name = folder
+            .file_name()
+            .and_then(|entry| entry.to_str())
+            .filter(|entry| !entry.is_empty())
+            .unwrap_or("repo")
+            .to_string();
+        candidates.push((norm, display_name));
+    }
+
+    let known_repos: std::collections::HashSet<String> = envelope
+        .repos
+        .iter()
+        .map(|repo| normalize_catalog_path(&repo.path))
+        .collect();
+    let known_folders: std::collections::HashSet<String> = envelope
+        .folder_workspaces
+        .iter()
+        .map(|workspace| normalize_catalog_path(&workspace.folder_path))
+        .collect();
+
+    let mut seen = std::collections::HashSet::new();
+    let mut to_add: Vec<(String, String)> = Vec::new();
+    let mut skipped: Vec<String> = Vec::new();
+    for (norm, display_name) in candidates {
+        if !seen.insert(norm.clone())
+            || known_repos.contains(&norm)
+            || known_folders.contains(&norm)
+        {
+            skipped.push(norm);
+            continue;
+        }
+        to_add.push((norm, display_name));
+    }
+
+    if to_add.is_empty() {
+        return Ok(NestedRepoImportResult {
+            group: None,
+            added: Vec::new(),
+            skipped,
+        });
+    }
+
+    let now = now_ms();
+    let group = group_name
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(|name| {
+            let group = CatalogProjectGroup {
+                id: new_id(),
+                name: name.to_string(),
+                parent_path: None,
+                connection_id: None,
+                execution_host_id: None,
+                parent_group_id: None,
+                created_from: "manual".to_string(),
+                tab_order: 0,
+                is_collapsed: false,
+                color: None,
+                created_at: now,
+                updated_at: now,
+            };
+            envelope.project_groups.push(group.clone());
+            group
+        });
+
+    let mut added = Vec::with_capacity(to_add.len());
+    for (norm, display_name) in to_add {
+        envelope.repos.push(CatalogRepo {
+            id: new_id(),
+            path: norm.clone(),
+            display_name,
+            added_at: now,
+            kind: Some("git".to_string()),
+            connection_id: None,
+            execution_host_id: None,
+            worktree_base_path: None,
+            project_group_id: group.as_ref().map(|group| group.id.clone()),
+            repo_icon: None,
+            imported_external_worktree_paths: None,
+            external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
+            external_worktree_visibility: None,
+            external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
+            custom_worktree_visibility_sources: None,
+            worktree_visibility_source_preferences: None,
+        });
+        added.push(norm);
+    }
+
+    Ok(NestedRepoImportResult {
+        group,
+        added,
+        skipped,
+    })
+
+}
+
 /// Applies the external-worktree inbox state to the repo at `repo_path`
 /// (normalized). An unknown path is an error instead of a silent no-op, so a
 /// caller can never believe it persisted state that went nowhere.
@@ -1636,5 +1891,207 @@ mod tests {
         assert!(repo.agent_worktree_visibility.is_none());
         assert!(repo.custom_worktree_visibility_sources.is_none());
         assert!(repo.worktree_visibility_source_preferences.is_none());
+    }
+
+    fn unique_test_dir(tag: &str) -> PathBuf {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("hydra-catalog-{tag}-{stamp}"))
+    }
+
+    fn git_child(root: &PathBuf, name: &str) -> PathBuf {
+        let child = root.join(name);
+        std::fs::create_dir_all(child.join(".git")).unwrap();
+        child
+    }
+
+    #[test]
+    fn add_folder_workspace_creates_manual_group_and_is_idempotent() {
+        let root = unique_test_dir("fw-create");
+        let folder = root.join("notes");
+        std::fs::create_dir_all(&folder).unwrap();
+        let mut env = CatalogEnvelope::empty();
+
+        add_folder_workspace_to_catalog(
+            folder.to_str().unwrap(),
+            None,
+            Some("Design notes"),
+            None,
+            None,
+            &mut env,
+        )
+        .expect("first create");
+
+        assert_eq!(env.project_groups.len(), 1);
+        assert_eq!(env.project_groups[0].created_from, "manual");
+        assert_eq!(env.project_groups[0].name, "notes");
+        let expected_group_parent = catalog_path_normalized(&folder);
+        assert_eq!(
+            env.project_groups[0].parent_path.as_deref(),
+            Some(expected_group_parent.as_str())
+        );
+        assert_eq!(env.folder_workspaces.len(), 1);
+        assert_eq!(env.folder_workspaces[0].name, "Design notes");
+        assert_eq!(
+            env.folder_workspaces[0].project_group_id,
+            env.project_groups[0].id
+        );
+
+        // Re-opening the same folder in the same group must not add rows.
+        let group_id = env.project_groups[0].id.clone();
+        add_folder_workspace_to_catalog(
+            folder.to_str().unwrap(),
+            Some(&group_id),
+            Some("Renamed"),
+            None,
+            None,
+            &mut env,
+        )
+        .expect("second create");
+        assert_eq!(env.project_groups.len(), 1);
+        assert_eq!(env.folder_workspaces.len(), 1);
+        assert_eq!(env.folder_workspaces[0].name, "Design notes");
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn add_folder_workspace_requires_a_known_group() {
+        let root = unique_test_dir("fw-group");
+        let folder = root.join("notes");
+        std::fs::create_dir_all(&folder).unwrap();
+        let mut env = CatalogEnvelope::empty();
+
+        let error = add_folder_workspace_to_catalog(
+            folder.to_str().unwrap(),
+            Some("missing-group"),
+            None,
+            None,
+            None,
+            &mut env,
+        )
+        .expect_err("unknown group must be refused");
+        assert!(error.contains("missing-group"), "{error}");
+        assert!(env.folder_workspaces.is_empty());
+        assert!(env.project_groups.is_empty());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn add_folder_workspace_for_remote_host_skips_the_local_probe() {
+        let mut env = CatalogEnvelope::empty();
+        add_folder_workspace_to_catalog(
+            "/srv/does-not-exist-here",
+            None,
+            None,
+            Some("ssh-target-1"),
+            None,
+            &mut env,
+        )
+        .expect("remote folder does not need a local directory");
+        assert_eq!(env.folder_workspaces.len(), 1);
+        assert_eq!(
+            env.folder_workspaces[0].connection_id.as_deref(),
+            Some("ssh-target-1")
+        );
+        assert_eq!(env.folder_workspaces[0].name, "does-not-exist-here workspace");
+    }
+
+    fn catalog_path_normalized(folder: &PathBuf) -> String {
+        normalize_catalog_path(folder.to_str().unwrap())
+    }
+
+    #[test]
+    fn import_nested_repos_adds_selection_and_skips_known() {
+        let root = unique_test_dir("nested-import");
+        let a = git_child(&root, "repo-a");
+        let b = git_child(&root, "repo-b");
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(repo_at(a.to_str().unwrap()));
+
+        let result = import_nested_repos_into_catalog(
+            &[
+                a.to_str().unwrap().to_string(),
+                b.to_str().unwrap().to_string(),
+            ],
+            Some("Workspace"),
+            &mut env,
+        )
+        .expect("import selected repos");
+
+        assert_eq!(result.added, vec![normalize_catalog_path(b.to_str().unwrap())]);
+        assert_eq!(result.skipped, vec![normalize_catalog_path(a.to_str().unwrap())]);
+        assert_eq!(env.project_groups.len(), 1, "one group for the batch");
+        let group = result.group.expect("group returned with the result");
+        assert_eq!(group.name, "Workspace");
+        let added = env
+            .repos
+            .iter()
+            .find(|repo| repo.path == normalize_catalog_path(b.to_str().unwrap()))
+            .expect("repo-b added");
+        assert_eq!(added.project_group_id.as_deref(), Some(group.id.as_str()));
+        assert_eq!(env.repos.len(), 2);
+
+        // A second import of the same selection skips everything and creates no group.
+        let again = import_nested_repos_into_catalog(
+            &[b.to_str().unwrap().to_string()],
+            Some("Workspace"),
+            &mut env,
+        )
+        .expect("re-import");
+        assert!(again.added.is_empty());
+        assert!(again.group.is_none());
+        assert_eq!(env.project_groups.len(), 1);
+        assert_eq!(env.repos.len(), 2);
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn import_nested_repos_rejects_the_whole_batch_atomically() {
+        let root = unique_test_dir("nested-atomic");
+        let good = git_child(&root, "good");
+        let plain = root.join("plain");
+        std::fs::create_dir_all(&plain).unwrap();
+        let mut env = CatalogEnvelope::empty();
+
+        let error = import_nested_repos_into_catalog(
+            &[
+                good.to_str().unwrap().to_string(),
+                plain.to_str().unwrap().to_string(),
+            ],
+            Some("Workspace"),
+            &mut env,
+        )
+        .expect_err("a non-git path rejects the batch");
+        assert!(error.contains("Not a git repository"), "{error}");
+        assert!(env.repos.is_empty(), "no repo may land before validation");
+        assert!(env.project_groups.is_empty(), "no group may land before validation");
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn import_nested_repos_separate_mode_leaves_repos_ungrouped() {
+        let root = unique_test_dir("nested-separate");
+        let repo = git_child(&root, "solo");
+        let mut env = CatalogEnvelope::empty();
+
+        let result = import_nested_repos_into_catalog(
+            &[repo.to_str().unwrap().to_string()],
+            None,
+            &mut env,
+        )
+        .expect("separate import");
+
+        assert!(result.group.is_none());
+        assert_eq!(env.project_groups.len(), 0);
+        assert_eq!(env.repos.len(), 1);
+        assert!(env.repos[0].project_group_id.is_none());
+
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

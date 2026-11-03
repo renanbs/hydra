@@ -1267,12 +1267,17 @@ export function WorktreeList({
           status,
           metadata: (() => {
             const record = worktreeMetadataByPath?.[worktree.path];
-            return record
+            // The scan projects the Jira link too, so a card keeps its Jira
+            // section even before `list_worktree_metadata` hydrates.
+            const linkedJiraIssue =
+              record?.linked_jira_issue ?? worktree.linked_jira_issue ?? null;
+            return record || linkedJiraIssue
               ? {
-                  comment: record.comment,
-                  linkedIssue: record.linked_issue,
-                  linkedPR: record.linked_pr,
-                  linkedLinearIssue: record.linked_linear_issue,
+                  comment: record?.comment ?? "",
+                  linkedIssue: record?.linked_issue ?? null,
+                  linkedPR: record?.linked_pr ?? null,
+                  linkedLinearIssue: record?.linked_linear_issue ?? null,
+                  linkedJiraIssue,
                 }
               : null;
           })(),
@@ -2297,6 +2302,8 @@ export function WorktreeList({
               linkedIssue: row.worktree.linkedIssue,
               linkedPR: row.worktree.linkedPR,
               linkedLinearIssue: row.worktree.linkedLinearIssue,
+              linkedJiraIssue:
+                row.worktree.linkedJiraIssue ?? wt.linked_jira_issue ?? null,
             }}
             onSelect={(wt) => {
               // Orca marks the mounted option current before the store update lands,

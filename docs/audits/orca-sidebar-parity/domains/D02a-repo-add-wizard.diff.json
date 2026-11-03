@@ -457,19 +457,14 @@
     "components/sidebar/useAddRepoNestedImportFlow.ts:70"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "Preserva a ordem dos repositórios conforme a ordem do scan via getSelectedNestedRepoPathsInScanOrder",
-     "Emite telemetria 'add_repo_nested_import_action' com modo de importação ('import_group' ou 'import_separate')",
-     "Executa importNestedRepos com parentPath, groupName, projectPaths e connectionId/runtimeEnvironmentId",
-     "Emite telemetria 'add_repo_nested_import_result' com dados detalhados do resultado",
-     "Executa fetchWorktrees para todos os projetos importados com sucesso",
-     "Exibe toast de aviso caso alguns repositórios tenham falhado na importação ('N failed')",
-     "Conclui o fluxo ativando o primeiro repositório importado via onGitRepoReady"
+    "status": "parity",
+    "evidence": [
+     "src-tauri/src/lib.rs"
     ],
-    "notes": "useAddRepoNestedImportFlow/importNestedRepos inexistentes (apenas chave i18n); sem import em grupo/lote. Não localizado."
+    "backend": [],
+    "missing_behaviors": [],
+    "notes": "Atomic import_nested_repos wired in AddRepoDialog.",
+    "note": "Atomic import_nested_repos wired in AddRepoDialog."
    }
   },
   {

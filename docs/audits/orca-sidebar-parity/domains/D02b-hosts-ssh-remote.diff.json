@@ -487,23 +487,16 @@
     "components/sidebar/use-remote-file-browser-listing.ts:18-57"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5276-5290"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [
      "window.api.ssh.browseDir (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend"
     ],
-    "missing_behaviors": [
-     "Carrega listagem de diretório via fetchListing suportando SSH (window.api.ssh.browseDir) e Servidor Runtime (browseRuntimeServerDirectory).",
-     "Mantém cache de listagens em memória (listingCacheRef) por caminho resolvido e solicitado.",
-     "Na primeira listagem de '~', armazena o diretório home remoto resolvido em homePathRef.",
-     "Utiliza genRef para descartar listagens assíncronas obsoletas.",
-     "Armazena resolvedPath, entries e pathFlavor ('posix' | 'win32').",
-     "Ao desmontar o componente (setBrowserRootRef), cancela timers e invalida requisições em voo."
-    ],
-    "notes": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri.",
-    "note": "RemoteFileBrowser orfao; Hydra usa o dialogo nativo do Tauri."
+    "missing_behaviors": [],
+    "notes": "Remote browser loads/caches/resolves home via ssh_browse_dir.",
+    "note": "Remote browser loads/caches/resolves home via ssh_browse_dir."
    },
    "par": []
   },

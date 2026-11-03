@@ -1,7 +1,8 @@
-// Hooks inspection is still host-owned (Orca preload / remote runtime RPC). Hydra's
-// Tauri backend does not expose these commands yet, so the local path goes through
-// an explicit invoke and surfaces an error status instead of silently pretending
-// the repo has no hooks.
+// Hooks inspection is host-owned. Hydra's Tauri backend reads local repositories
+// (`check_runtime_hooks` / `inspect_runtime_setup_script_imports`); remote
+// runtime environments still go through the runtime RPC, and direct SSH hosts
+// are refused by the backend instead of being read from a local path with the
+// same name.
 import { invoke } from '@tauri-apps/api/core'
 import type { GlobalSettings } from '../shared/global-settings-types'
 import type { OrcaHooks } from '../shared/orca-yaml-hook-types'
@@ -18,6 +19,9 @@ function getHookInspectionTarget(
   if (parsedHost?.kind === 'runtime') {
     return { kind: 'environment', environmentId: parsedHost.environmentId }
   }
+  // Why: a direct SSH host has no runtime RPC transport. The local invoke still
+  // carries `hostId`, so the backend can refuse it explicitly rather than
+  // reading a same-named local path and reporting the wrong repo's hooks.
   return parsedHost ? { kind: 'local' } : getActiveRuntimeTarget(settings)
 }
 
@@ -26,6 +30,13 @@ export type HookCheckResult = {
   hasHooks: boolean
   hooks: OrcaHooks | null
   mayNeedUpdate: boolean
+  /** Hashes of the committed scripts; the renderer keys its trust decision on them. */
+  trust?: HookTrustMaterial
+}
+
+export type HookTrustMaterial = {
+  setupContentHash?: string
+  archiveContentHash?: string
 }
 
 export type IssueCommandReadResult = {
@@ -39,40 +50,40 @@ export type IssueCommandReadResult = {
 
 export async function checkRuntimeHooks(
   settings: Pick<GlobalSettings, 'activeRuntimeEnvironmentId'> | null | undefined,
-  repoId: string,
+  repoPath: string,
   hostId?: ExecutionHostId
 ): Promise<HookCheckResult> {
   const target = getHookInspectionTarget(settings, hostId)
   if (target.kind !== 'environment') {
     return invoke<HookCheckResult>('check_runtime_hooks', {
-      repoId,
+      repoPath,
       ...(hostId ? { hostId } : {})
     })
   }
   return callRuntimeRpc<HookCheckResult>(
     target,
     'repo.hooksCheck',
-    { repo: repoId },
+    { repo: repoPath },
     { timeoutMs: 15_000 }
   )
 }
 
 export async function inspectRuntimeSetupScriptImports(
   settings: Pick<GlobalSettings, 'activeRuntimeEnvironmentId'> | null | undefined,
-  repoId: string,
+  repoPath: string,
   hostId?: ExecutionHostId
 ): Promise<SetupScriptImportCandidate[]> {
   const target = getHookInspectionTarget(settings, hostId)
   if (target.kind !== 'environment') {
     return invoke<SetupScriptImportCandidate[]>('inspect_runtime_setup_script_imports', {
-      repoId,
+      repoPath,
       ...(hostId ? { hostId } : {})
     })
   }
   return callRuntimeRpc<SetupScriptImportCandidate[]>(
     target,
     'repo.setupScriptImports',
-    { repo: repoId },
+    { repo: repoPath },
     { timeoutMs: 15_000 }
   )
 }

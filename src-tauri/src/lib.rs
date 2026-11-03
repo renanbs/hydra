@@ -23,6 +23,7 @@ pub mod preflight;
 pub mod theme_import;
 pub mod port_scanner;
 pub mod hooks;
+pub mod runtime_inspection;
 pub mod ssh_hosts;
 pub mod ssh_remote;
 pub mod proc_runner;
@@ -51,8 +52,9 @@ use project_manager::{
     suppress_discovery_for_project, HydraProject,
 };
 use catalog::{
-    add_folder_to_catalog, add_remote_repo_to_catalog, read_catalog,
-    remove_folder_workspace_from_catalog, write_catalog, CatalogEnvelope,
+    add_folder_to_catalog, add_folder_workspace_to_catalog, add_remote_repo_to_catalog,
+    import_nested_repos_into_catalog, read_catalog, remove_folder_workspace_from_catalog,
+    write_catalog, CatalogEnvelope, NestedRepoImportResult,
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
@@ -379,6 +381,52 @@ async fn catalog_add_folder(path: String) -> Result<CatalogEnvelope, String> {
         add_folder_to_catalog(&path, &mut envelope)?;
         write_catalog(&envelope)?;
         Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Creates a folder workspace, optionally under an existing project group. The
+/// command answers with the persisted envelope, like every other catalog write.
+#[tauri::command]
+async fn catalog_add_folder_workspace(
+    parent_path: String,
+    project_group_id: Option<String>,
+    name: Option<String>,
+    connection_id: Option<String>,
+    execution_host_id: Option<String>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        add_folder_workspace_to_catalog(
+            &parent_path,
+            project_group_id.as_deref(),
+            name.as_deref(),
+            connection_id.as_deref(),
+            execution_host_id.as_deref(),
+            &mut envelope,
+        )?;
+        write_catalog(&envelope)?;
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Adds the repositories chosen in the nested-import checklist in a single
+/// catalog write. Validation happens before the envelope is mutated, so one
+/// invalid path rejects the whole import instead of adding a partial selection.
+#[tauri::command]
+async fn import_nested_repos(
+    paths: Vec<String>,
+    group_name: Option<String>,
+) -> Result<NestedRepoImportResult, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        let result =
+            import_nested_repos_into_catalog(&paths, group_name.as_deref(), &mut envelope)?;
+        write_catalog(&envelope)?;
+        Ok(result)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -956,6 +1004,7 @@ async fn save_worktree_metadata(
     linked_issue: Option<i64>,
     linked_pr: Option<i64>,
     linked_linear_issue: Option<String>,
+    linked_jira_issue: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
     let db = state.db.clone();
@@ -966,7 +1015,40 @@ async fn save_worktree_metadata(
             linked_issue,
             linked_pr,
             linked_linear_issue.as_deref(),
+            linked_jira_issue.as_deref(),
         )
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Force-deletes a preserved branch after the host proves it is not checked out,
+/// is not the default branch, and still points at the head the caller showed.
+#[tauri::command]
+async fn force_delete_preserved_branch(
+    repo_path: String,
+    branch_name: String,
+    expected_head: Option<String>,
+) -> Result<worktree_ops::ForceDeletePreservedBranchOutcome, String> {
+    tokio::task::spawn_blocking(move || {
+        worktree_ops::force_delete_preserved_branch(
+            &repo_path,
+            &branch_name,
+            expected_head.as_deref(),
+        )
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Ahead/behind of `worktree_path` against its configured upstream branch.
+#[tauri::command]
+async fn get_worktree_upstream_status(
+    repo_path: String,
+    worktree_path: String,
+) -> Result<worktree_ops::WorktreeUpstreamStatus, String> {
+    tokio::task::spawn_blocking(move || {
+        worktree_ops::get_worktree_upstream_status(&repo_path, &worktree_path)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -2019,6 +2101,8 @@ pub fn run() {
             is_git_repository,
             catalog_add_folder,
             catalog_add_remote_repo,
+            catalog_add_folder_workspace,
+            import_nested_repos,
             catalog_remove_folder_workspace,
             catalog_remove_repo,
             catalog_set_worktree_visibility,
@@ -2046,6 +2130,8 @@ pub fn run() {
             get_worktree_metadata,
             list_worktree_metadata,
             save_worktree_metadata,
+            force_delete_preserved_branch,
+            get_worktree_upstream_status,
             set_worktree_rename_error,
             set_worktree_status,
             set_worktree_flags,
@@ -2106,6 +2192,10 @@ pub fn run() {
             check_github_starred_cmd,
             star_github_repo_cmd,
             open_external_url_cmd,
+            runtime_inspection::check_runtime_hooks,
+            runtime_inspection::inspect_runtime_setup_script_imports,
+            runtime_inspection::cli_install_status,
+            runtime_inspection::gh_viewer,
             ssh_hosts::ssh_list_targets,
             ssh_hosts::ssh_list_removed_target_labels,
             ssh_hosts::ssh_list_suppressed_aliases,

@@ -98,6 +98,7 @@ export interface WorktreeCardProps {
     linkedIssue: number | null
     linkedPR: number | null
     linkedLinearIssue: string | null
+    linkedJiraIssue?: string | null
   } | null
   metaRowChildren?: React.ReactNode
   sessions?: WorktreeSession[]

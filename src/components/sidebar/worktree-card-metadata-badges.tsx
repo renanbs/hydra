@@ -4,18 +4,20 @@
 // The icon row that tells the card at a glance which metadata exists. Each badge is
 // icon-only, so the label lives in the tooltip and in the accessible name.
 import type React from "react";
-import { CalendarClock, CircleDot, SquareTerminal, StickyNote } from "lucide-react";
+import { CalendarClock, CircleDot, SquareKanban, SquareTerminal, StickyNote } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 export type WorktreeCardMetadata = {
   comment: string;
   linkedIssue: number | null;
   linkedLinearIssue: string | null;
+  linkedJiraIssue?: string | null;
 };
 
 export type WorktreeCardDetailInput = {
   comment?: string | null;
   linkedIssue?: number | null;
   linkedLinearIssue?: string | null;
+  linkedJiraIssue?: string | null;
   automationProvenance?: unknown;
   cliProvenance?: unknown;
   hasReview?: boolean;
@@ -26,6 +28,7 @@ export function hasWorktreeCardDetails(input: WorktreeCardDetailInput): boolean 
     (input.comment ?? "").trim().length > 0 ||
       input.linkedIssue ||
       input.linkedLinearIssue ||
+      input.linkedJiraIssue ||
       input.automationProvenance ||
       input.cliProvenance ||
       input.hasReview
@@ -75,6 +78,7 @@ export function WorktreeCardMetaBadges({
       comment: metadata?.comment,
       linkedIssue: metadata?.linkedIssue,
       linkedLinearIssue: metadata?.linkedLinearIssue,
+      linkedJiraIssue: metadata?.linkedJiraIssue,
       automationProvenance: automationCreated,
       cliProvenance: cliCreated,
       hasReview,
@@ -111,6 +115,11 @@ export function WorktreeCardMetaBadges({
       {metadata?.linkedLinearIssue ? (
         <MetaIconBadge label={`Linked Linear ${metadata.linkedLinearIssue}`}>
           <CircleDot className="text-muted-foreground" />
+        </MetaIconBadge>
+      ) : null}
+      {metadata?.linkedJiraIssue ? (
+        <MetaIconBadge label={`Linked Jira ${metadata.linkedJiraIssue}`}>
+          <SquareKanban className="text-muted-foreground" />
         </MetaIconBadge>
       ) : null}
     </div>

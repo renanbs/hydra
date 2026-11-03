@@ -344,7 +344,12 @@ describe("WorktreeList card rename (D04b-010/022)", () => {
     await waitFor(() =>
       expect(onRenameWorktreeTitle).toHaveBeenCalledWith(OTHER_PATH, "Renomeado")
     );
-    expect(invokeMock).not.toHaveBeenCalled();
+    // The card also fetches upstream divergence on mount (D04a-010), so the
+    // rename contract is "no persistence write", not "no IPC at all".
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      "set_worktree_display_name",
+      expect.anything()
+    );
   });
 
   // `workspace.rename` ships no Linux/Windows default (Ctrl+R and Ctrl+Shift+R

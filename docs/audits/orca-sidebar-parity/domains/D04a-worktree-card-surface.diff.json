@@ -567,18 +567,14 @@
     "components/sidebar/WorktreeCardMetaBadges.tsx:152"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-metadata-badges.tsx:60-125",
-     "src/components/sidebar/worktree-card-presentation.tsx:92-108",
-     "src/components/sidebar/worktree-card-presentation.tsx:166-176"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Badge de Jira (o card não projeta linked Jira)"
-    ],
-    "notes": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field.",
-    "note": "Notes, automation, CLI, issue and Linear badges render next to the existing review/ports triggers; Jira awaits its metadata field."
+    "missing_behaviors": [],
+    "notes": "Jira metadata badge has a persisted producer.",
+    "note": "Jira metadata badge has a persisted producer."
    },
    "par": [
     "PAR-62"
@@ -961,16 +957,14 @@
     "components/sidebar/WorktreeCardMeta.tsx:305"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263",
-     "src/store/slices/jira.ts:1"
+     "src-tauri/src/lib.rs"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Seção Jira com View on Jira e título formatado"
-    ],
-    "notes": "Busca: jiraIssueDisplay/JiraIcon no card = 0 hits; o dado existe na store (src/store/slices/jira.ts) e em src/shared/persisted-ui-state-types.ts, sem consumidor no card."
+    "missing_behaviors": [],
+    "notes": "Jira hover section projects the persisted link.",
+    "note": "Jira hover section projects the persisted link."
    },
    "par": [
     "PAR-62"

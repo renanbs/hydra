@@ -30,6 +30,7 @@ import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
 import type { WorktreeSlice as WorktreeSliceMembers } from './slices/worktree-helpers'
+import { createForceDeletePreservedBranch } from './slices/worktrees/teardown/force-delete-preserved-branch'
 import {
   beginPendingCreation,
   removePendingCreation,
@@ -328,6 +329,12 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   createUnifiedTab: (...args: any[]) => any
   /** Local-path create; positional contract follows WorktreeSlice['createWorktree']. */
   createWorktree: (...args: unknown[]) => Promise<{ worktree: Worktree }>
+  /**
+   * D02c-012/013/014: force-delete a branch Git preserved. The host owns every
+   * guard; this member exists on the live store so the preserved-branch toasts
+   * and the review dialog can address it.
+   */
+  forceDeletePreservedBranch: WorktreeSliceMembers['forceDeletePreservedBranch']
   closeBrowserTab: (...args: any[]) => any
   closeFile: (...args: any[]) => any
   closeTab: (...args: any[]) => any
@@ -587,6 +594,10 @@ export const useAppStore = create<AppState>()(
     setActivePendingWorktreeCreation: (creationId) =>
       set((state) => setActivePendingCreation(state, creationId)),
     markWorktreeVisited: () => {},
+    forceDeletePreservedBranch: createForceDeletePreservedBranch(
+      set as never,
+      get as never
+    ),
     createBrowserPage: () => {},
     createBrowserTab: () => {},
     createTab: () => {},
