@@ -21,7 +21,6 @@ import {
   resolveSshConfigHost
 } from '@/store/ssh-bridge'
 import {
-  RuntimePairingUnavailableError,
   listRuntimeEnvironments,
   verifyAndAddRuntimeEnvironmentFromPairingCode
 } from '@/store/runtime-environment-bridge'
@@ -243,14 +242,12 @@ export function AddRemoteHostDialog({
       onOpenChange(null)
     } catch (error) {
       toast.error(
-        error instanceof RuntimePairingUnavailableError
+        error instanceof Error
           ? error.message
-          : error instanceof Error
-            ? error.message
-            : translate(
-                'auto.components.sidebar.AddRemoteHostDialog.serverSaveFailed',
-                'Failed to add remote server.'
-              )
+          : translate(
+              'auto.components.sidebar.AddRemoteHostDialog.serverSaveFailed',
+              'Failed to add remote server.'
+            )
       )
     } finally {
       setIsSaving(false)

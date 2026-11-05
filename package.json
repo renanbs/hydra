@@ -38,6 +38,7 @@
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.8",
+    "tweetnacl": "^1.0.3",
     "zod": "^4.6.5",
     "zustand": "^5.0.15"
   },

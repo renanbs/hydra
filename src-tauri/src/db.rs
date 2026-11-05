@@ -739,6 +739,10 @@ impl DatabaseManager {
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
              );
+             CREATE TABLE IF NOT EXISTS runtime_environments (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
+             );
              CREATE TABLE IF NOT EXISTS worktree_metadata (
                  worktree_path TEXT PRIMARY KEY,
                  display_name TEXT,
@@ -1236,6 +1240,37 @@ impl DatabaseManager {
             Ok(crate::ssh_hosts::PersistedSshState::default())
         }
     }
+    pub fn save_runtime_environments(
+        &self,
+        state: &crate::runtime_envs::PersistedRuntimeEnvironments,
+    ) -> Result<(), String> {
+        let json_str = serde_json::to_string(state)
+            .map_err(|e| format!("Error serializing runtime environments: {e}"))?;
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT OR REPLACE INTO runtime_environments (key, json) VALUES ('default', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving runtime environments: {e}"))?;
+        Ok(())
+    }
+
+    pub fn get_runtime_environments(
+        &self,
+    ) -> Result<crate::runtime_envs::PersistedRuntimeEnvironments, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT json FROM runtime_environments WHERE key = 'default'")
+            .map_err(|e| format!("Error querying runtime environments: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str)
+                .map_err(|e| format!("Error deserializing runtime environments: {e}"))
+        } else {
+            Ok(crate::runtime_envs::PersistedRuntimeEnvironments::default())
+        }
+    }
 
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
@@ -1649,6 +1684,10 @@ impl DatabaseManager {
                  json TEXT NOT NULL
              );
              CREATE TABLE IF NOT EXISTS ssh_state (
+                 key TEXT PRIMARY KEY,
+                 json TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS runtime_environments (
                  key TEXT PRIMARY KEY,
                  json TEXT NOT NULL
              );

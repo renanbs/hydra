@@ -51,8 +51,8 @@ function blockedTitle(reason: 'client-too-old' | 'server-too-old'): string {
 }
 
 // Why: SSH and paired runtime hosts share the sidebar model, but Settings keeps their
-// management pages separate. Hydra only renders the SSH pane, so a runtime host gets no
-// deep link until the paired-servers pane exists.
+// management pages separate — SSH lands on the SSH pane, a runtime host on the paired
+// servers pane with its environment pre-selected.
 function openManageHost(row: HostHeaderRow): void {
   if (row.kind === 'local') {
     window.dispatchEvent(new CustomEvent('hydra:open-settings', { detail: { section: 'general' } }))
@@ -60,6 +60,18 @@ function openManageHost(row: HostHeaderRow): void {
   }
   if (row.kind === 'ssh') {
     window.dispatchEvent(new CustomEvent('hydra:open-settings', { detail: { section: 'ssh' } }))
+    return
+  }
+  if (row.kind === 'runtime') {
+    const parsed = parseExecutionHostId(row.hostId)
+    window.dispatchEvent(
+      new CustomEvent('hydra:open-settings', {
+        detail: {
+          section: 'servers',
+          sectionId: parsed?.kind === 'runtime' ? parsed.environmentId : undefined
+        }
+      })
+    )
   }
 }
 
@@ -255,7 +267,7 @@ export function HostSectionHeaderMenu({ row }: { row: HostHeaderRow }): React.JS
             </DropdownMenuItem>
           </>
         ) : null}
-        {model.actions.includes('remove') && targetId !== null ? (
+        {model.actions.includes('remove') && (targetId !== null || row.kind === 'runtime') ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={() => setRemoveOpen(true)}>
@@ -271,15 +283,29 @@ export function HostSectionHeaderMenu({ row }: { row: HostHeaderRow }): React.JS
         hostId={row.hostId}
         derivedLabel={row.label}
       />
-      {targetId !== null ? (
-        <HostRemoveDialog
-          open={removeOpen}
-          onOpenChange={setRemoveOpen}
-          hostId={row.hostId}
-          label={row.label}
-          targetId={targetId}
-        />
-      ) : null}
+      {row.kind === 'runtime'
+        ? (() => {
+            const parsed = parseExecutionHostId(row.hostId)
+            const environmentId = parsed?.kind === 'runtime' ? parsed.environmentId : null
+            return environmentId !== null ? (
+              <HostRemoveDialog
+                open={removeOpen}
+                onOpenChange={setRemoveOpen}
+                hostId={row.hostId}
+                label={row.label}
+                runtimeEnvironmentId={environmentId}
+              />
+            ) : null
+          })()
+        : targetId !== null ? (
+          <HostRemoveDialog
+            open={removeOpen}
+            onOpenChange={setRemoveOpen}
+            hostId={row.hostId}
+            label={row.label}
+            targetId={targetId}
+          />
+        ) : null}
     </DropdownMenu>
   )
 }

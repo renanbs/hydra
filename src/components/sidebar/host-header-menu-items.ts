@@ -10,10 +10,10 @@
 //   the durable connection record; no PTY is bound to a target, so there is no session to
 //   close). Only the action that changes state is offered — Disconnect when connected,
 //   Connect/Reconnect otherwise — so neither is a dead item.
-// - manage: the Settings deep link. SSH lands on the SSH pane; local lands on General. A
-//   runtime host would need the paired-servers pane, which Hydra does not render yet, so it
-//   gets no manage/remove entry instead of a link to nothing.
-// - remove: `ssh_remove_target`, SSH only.
+// - manage: the Settings deep link. SSH lands on the SSH pane; local lands on General; a
+//   runtime host lands on the paired servers pane with its environment pre-selected.
+// - remove: `ssh_remove_target` for SSH; paired servers deep-link into the servers pane
+//   (Orca parity — runtime removal needs the pane's context), so both kinds offer it.
 import type { ExecutionHostKind } from '../../shared/execution-host'
 import type { ExecutionHostHealth } from '../../shared/execution-host-registry'
 import type { RuntimeCompatVerdict } from '../../shared/protocol-compat'
@@ -47,6 +47,8 @@ export function buildHostHeaderMenuModel(input: HostHeaderMenuInput): HostHeader
   if (input.kind === 'ssh') {
     // Only the action that changes state: Disconnect when up, Connect/Reconnect otherwise.
     actions.push(input.sshConnected ? 'ssh-disconnect' : 'ssh-reconnect')
+    actions.push('manage', 'remove')
+  } else if (input.kind === 'runtime') {
     actions.push('manage', 'remove')
   } else if (input.kind === 'local') {
     actions.push('manage')

@@ -24,6 +24,7 @@ pub mod theme_import;
 pub mod port_scanner;
 pub mod hooks;
 pub mod runtime_inspection;
+pub mod runtime_envs;
 pub mod ssh_hosts;
 pub mod ssh_remote;
 pub mod proc_runner;
@@ -2244,6 +2245,9 @@ pub fn run() {
             ssh_hosts::ssh_reconnect_target,
             ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,
+            runtime_envs::runtime_verify_and_add_from_pairing_code,
+            runtime_envs::runtime_list_environments,
+            runtime_envs::runtime_remove_environment,
             ssh_remote::ssh_browse_dir,
             ssh_remote::ssh_remote_clone,
             ssh_remote::ssh_remote_create_project,

@@ -48,10 +48,10 @@ describe('buildHostHeaderMenuModel', () => {
     expect(model.blocked).toBeNull()
   })
 
-  it('offers only Rename for a runtime host until the servers pane exists', () => {
+  it('offers Rename + Manage + Remove for a runtime host with the servers pane', () => {
     const model = buildHostHeaderMenuModel({ kind: 'runtime', health: 'available' })
 
-    expect(model.actions).toEqual(['rename'])
+    expect(model.actions).toEqual(['rename', 'manage', 'remove'])
     expect(model.blocked).toBeNull()
   })
 

@@ -60,6 +60,49 @@ afterAll(() => {
   }
 })
 
+// Fake browser WebSocket for the E2EE pairing transport: records what the dialog sends
+// and lets the test drive the remote side (open / message / close) deterministically.
+class WebSocketMock {
+  static instances: WebSocketMock[] = []
+  sent: unknown[] = []
+  private listeners = new Map<string, ((event: { data?: unknown }) => void)[]>()
+  constructor(public url: string) {
+    WebSocketMock.instances.push(this)
+  }
+  addEventListener(type: string, listener: (event: { data?: unknown }) => void): void {
+    const current = this.listeners.get(type) ?? []
+    current.push(listener)
+    this.listeners.set(type, current)
+  }
+  send(data: unknown): void {
+    this.sent.push(data)
+  }
+  close(): void {}
+  emitOpen(): void {
+    for (const listener of this.listeners.get('open') ?? []) {
+      listener({})
+    }
+  }
+  emitMessage(data: string): void {
+    for (const listener of this.listeners.get('message') ?? []) {
+      listener({ data })
+    }
+  }
+  emitClose(): void {
+    for (const listener of this.listeners.get('close') ?? []) {
+      listener({})
+    }
+  }
+}
+const previousWebSocket = Reflect.get(globalThis, 'WebSocket')
+Object.defineProperty(globalThis, 'WebSocket', {
+  configurable: true,
+  writable: true,
+  value: WebSocketMock
+})
+afterEach(() => {
+  WebSocketMock.instances = []
+})
 
 type RegistryRow = { id: string; label: string; generation: number } & Partial<SshTargetCreateInput>
 
@@ -520,31 +563,135 @@ describe('AddRemoteHostDialog server mode (Orca parity)', () => {
     )
   })
 
-  it('reports the missing pairing backend instead of pretending the server was saved', async () => {
+  it('verifies the link live, then saves through the backend and closes', async () => {
+    const tweetnacl = await import('tweetnacl')
+    const remoteKeys = tweetnacl.box.keyPair()
+    const toB64 = (bytes: Uint8Array): string => Buffer.from(bytes).toString('base64')
+    const link = pairingLink({ v: 2, endpoint: 'wss://100.64.0.2:6767', deviceToken: 'token', publicKeyB64: toB64(remoteKeys.publicKey) })
+    invokeMock.mockImplementation((cmd: string, args?: Record<string, unknown>) => {
+      if (cmd === 'runtime_verify_and_add_from_pairing_code') {
+        expect(args?.['name']).toBe('Dev box')
+        expect(String(args?.['pairingCode'] ?? '')).toContain('orca://pair?code=')
+        return Promise.resolve({ id: 'env-1', name: 'Dev box' })
+      }
+      if (cmd === 'runtime_list_environments') {
+        return Promise.resolve([{ id: 'env-1', name: 'Dev box' }])
+      }
+      return Promise.reject(new Error(`unexpected command: ${cmd}`))
+    })
+    const { onOpenChange } = renderServerDialog()
+
+    fireEvent.change(screen.getByLabelText('Name in Orca'), { target: { value: 'Dev box' } })
+    fireEvent.change(screen.getByLabelText('Access link'), { target: { value: link } })
+    await act(async () => {})
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => {})
+
+    // Live E2EE verification runs against a fake remote before any persistence.
+    // The fake remote answers with a full handshake: ready, then an encrypted
+    // `e2ee_authenticated` built with the client's own hello key (the test is the
+    // network here, so it can complete the box both ways).
+    const nacl = await import('tweetnacl')
+    expect(WebSocketMock.instances.length).toBe(1)
+    const ws = WebSocketMock.instances[0]!
+    expect(ws.sent.length).toBe(0)
+    ws.emitOpen()
+    expect(ws.sent.length).toBe(1)
+    ws.emitMessage(JSON.stringify({ type: 'e2ee_ready' }))
+    expect(ws.sent.length).toBe(2)
+    await act(async () => {})
+    // The auth frame the dialog sends must be NaCl-box-encrypted, not plaintext.
+    const authFrame = ws.sent[1] as string
+    expect(typeof authFrame).toBe('string')
+    expect(authFrame).not.toContain('e2ee_auth')
+    const serverKeys = { publicKey: remoteKeys.publicKey, secretKey: remoteKeys.secretKey }
+    const toBytes = (b64: string): Uint8Array =>
+      new Uint8Array(Buffer.from(b64, 'base64'))
+    const helloFrame = JSON.parse(ws.sent[0] as string) as { publicKeyB64?: unknown }
+    if (typeof helloFrame.publicKeyB64 !== 'string') {
+      throw new Error('fake remote expected a hello frame carrying publicKeyB64')
+    }
+    const clientKey = toBytes(helloFrame.publicKeyB64)
+    const shared = nacl.box.before(clientKey, serverKeys.secretKey)
+    const box = (text: string): string => {
+      const nonce = nacl.randomBytes(nacl.box.nonceLength)
+      const cipher = nacl.box.after(new Uint8Array(Buffer.from(text)), nonce, new Uint8Array(shared))
+      const bundle = new Uint8Array(nonce.length + cipher.length)
+      bundle.set(nonce)
+      bundle.set(cipher, nonce.length)
+      return toB64(bundle)
+    }
+    ws.emitMessage(box(JSON.stringify({ type: 'e2ee_authenticated' })))
+    await act(async () => {})
+    await act(async () => {})
+    const statusFrame = ws.sent[2] as string
+    expect(typeof statusFrame).toBe('string')
+    expect(statusFrame).not.toContain('status.get')
+    // The fake remote answers status.get with a minimal compatible RuntimeStatus.
+    const openBox = (frame: string): string => {
+      const bundle = toBytes(frame)
+      const opened = nacl.box.open.after(
+        new Uint8Array(bundle.slice(nacl.box.nonceLength)),
+        new Uint8Array(bundle.slice(0, nacl.box.nonceLength)),
+        new Uint8Array(shared)
+      )
+      if (!opened) {
+        throw new Error('test fake remote could not open the client box')
+      }
+      return Buffer.from(opened).toString()
+    }
+    const request = JSON.parse(openBox(statusFrame)) as { id: string }
+    ws.emitMessage(
+      box(
+        JSON.stringify({
+          id: request.id,
+          result: {
+            runtimeId: 'remote-1',
+            rendererGraphEpoch: 1,
+            graphStatus: 'ready',
+            liveTabCount: 0,
+            liveLeafCount: 0,
+            runtimeProtocolVersion: 3,
+            minCompatibleRuntimeClientProtocolVersion: 2
+          }
+        })
+      )
+    )
+    await act(async () => {})
+    expect(invokeMock).toHaveBeenCalledWith('runtime_verify_and_add_from_pairing_code', {
+      name: 'Dev box',
+      pairingCode: expect.stringContaining('orca://pair?code='),
+      allowLoopback: false
+    })
+    expect(invokeMock).toHaveBeenCalledWith('runtime_list_environments')
+    expect(toastSuccess).toHaveBeenCalledWith('Remote server added.')
+    expect(onOpenChange).toHaveBeenCalledWith(null)
+  })
+
+  it('surfaces a verification failure and never reaches the backend', async () => {
     invokeMock.mockImplementation((cmd: string) =>
-      cmd === 'runtime_verify_and_add_from_pairing_code'
-        ? Promise.reject(new Error('Command runtime_verify_and_add_from_pairing_code not found'))
-        : Promise.reject(new Error(`unexpected command: ${cmd}`))
+      Promise.reject(new Error(`unexpected command: ${cmd}`))
     )
     const { onOpenChange } = renderServerDialog()
 
     fireEvent.change(screen.getByLabelText('Name in Orca'), { target: { value: 'Dev box' } })
     fireEvent.change(screen.getByLabelText('Access link'), {
       target: {
-        value: pairingLink({ v: 2, endpoint: 'wss://100.64.0.2:6767', deviceToken: 'token' })
+        value: pairingLink({ v: 2, endpoint: 'wss://100.64.0.2:6767', deviceToken: 'token', publicKeyB64: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' })
       }
     })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await act(async () => {})
 
-    expect(invokeMock).toHaveBeenCalledWith('runtime_verify_and_add_from_pairing_code', {
-      name: 'Dev box',
-      pairingCode: expect.stringContaining('orca://pair?code='),
-      allowLoopback: false
-    })
-    expect(toastError).toHaveBeenCalledWith(
-      'Orca server pairing is unavailable in this build.'
+    expect(WebSocketMock.instances.length).toBe(1)
+    WebSocketMock.instances[0]!.emitClose()
+    await act(async () => {})
+
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      'runtime_verify_and_add_from_pairing_code',
+      expect.anything()
     )
+    expect(toastError).toHaveBeenCalledWith('Remote Orca runtime closed the connection.')
     expect(onOpenChange).not.toHaveBeenCalled()
   })
 })
