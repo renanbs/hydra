@@ -573,6 +573,31 @@ async fn catalog_set_repo_icon(
 }
 
 #[tauri::command]
+async fn catalog_reassign_ssh_targets(
+    readoptions: Vec<ssh_hosts::SshRepoReadoption>,
+) -> Result<CatalogEnvelope, String> {
+    tokio::task::spawn_blocking(move || {
+        let mut envelope = read_catalog();
+        let mut moved = 0;
+        for readoption in readoptions {
+            moved += catalog::reassign_ssh_target_rows(
+                &mut envelope,
+                &readoption.old_target_id,
+                &readoption.new_target_id,
+            );
+        }
+        // Why skip the write when nothing moved: a repeat readoption must not
+        // churn the catalog file (and the sidebar's identity keys).
+        if moved > 0 {
+            write_catalog(&envelope)?;
+        }
+        Ok(envelope)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn list_projects() -> Vec<HydraProject> {
     list_local_projects()
 }
@@ -2118,6 +2143,7 @@ pub fn run() {
             catalog_set_worktree_visibility,
             catalog_set_worktree_visibility_sources,
             catalog_set_repo_icon,
+            catalog_reassign_ssh_targets,
             register_existing_project,
             remove_project,
             get_project_worktree_base,
@@ -2216,10 +2242,12 @@ pub fn run() {
             ssh_hosts::ssh_list_config_hosts,
             ssh_hosts::ssh_resolve_config_host,
             ssh_hosts::ssh_reconnect_target,
+            ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,
             ssh_remote::ssh_browse_dir,
             ssh_remote::ssh_remote_clone,
             ssh_remote::ssh_remote_create_project,
+            ssh_remote::ssh_remote_probe_git,
             ssh_remote::ssh_remote_delete_worktree,
         ])
         .run(tauri::generate_context!())

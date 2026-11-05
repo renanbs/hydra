@@ -35,6 +35,8 @@ export interface TabItem {
   isPinned?: boolean;
   color?: string | null;
   executable?: string;
+  /** Arguments for the launched process (folder-workspace launch plans). */
+  args?: string[];
   agentName?: string;
   agentId?: string;
   splitLayout?: SplitLayout;

@@ -134,6 +134,14 @@ export type SshReconnectResult = {
   error?: string | null
 }
 
+/** What an explicit user disconnect reports back. */
+export type SshDisconnectResult = {
+  connectionId: string
+  status: 'disconnected'
+  /** Always 0 today: no terminal session is bound to a target (no SSH relay). */
+  closedSessions: number
+}
+
 export type SshForgetWorkspaceResult = {
   connectionId: string
   worktreePath: string

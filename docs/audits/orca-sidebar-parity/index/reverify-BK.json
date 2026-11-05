@@ -2497,84 +2497,134 @@
    "note": "Pure metadata payload wired into save path."
   },
   {
-   "id": "D01-006",
+   "id": "D02a-001",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Startup-gated scan with repo-count policy and runtime-oscillation guard."
+   "note": "activeModal lifecycle, dropped path, clone abort, generation guard, hosted focus."
   },
   {
-   "id": "D01-012",
+   "id": "D02a-016",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Primary shortcut label + tour target + composer handoff."
+   "note": "Parent picker button/tooltip + fullscreen remote browser."
   },
   {
-   "id": "D01-017",
+   "id": "D02a-025",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Setup guide progress, ring, sidebar entry and modal."
+   "note": "Scan root opens as folder workspace with edited name + telemetry."
   },
   {
-   "id": "D01-036",
+   "id": "D02a-027",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Help menu Milestones/Onboarding wired to setup guide."
+   "note": "ProjectAddedDialog handoff with hydration and StrictMode guard."
   },
   {
-   "id": "D01-027",
+   "id": "D02a-028",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Agent dashboard bucket counts and sidebar entry."
+   "note": "Default/detected checkout reveal, temp flags, activation, telemetry."
   },
   {
-   "id": "D01-028",
+   "id": "D02a-029",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Dashboard drawer + Tauri popout route with fallback."
+   "note": "Hidden linked externals revealed + authoritative refresh."
   },
   {
-   "id": "D01-029",
+   "id": "D02a-030",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Dashboard host visibility and board exclusivity."
+   "note": "Skip finalization updates active repo, filters and branch flags."
   },
   {
-   "id": "D01-039",
+   "id": "D02a-033",
    "status": "parity",
    "evidence": [
     "src/components/sidebar",
     "src-tauri/src"
    ],
    "missing_behaviors": [],
-   "note": "Real restart_app command + menu toast/error/disable."
+   "note": "Owner → executionHostId with requireAuthoritative refresh options."
+  },
+  {
+   "id": "D02b-003",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Manual SSH save applies readoptions + metadata/telemetry/toasts."
+  },
+  {
+   "id": "D02b-007",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Bulk import applies readoptions/metadata without reAdopt."
+  },
+  {
+   "id": "D02b-012",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Connect/Reconnect/Disconnect via real ssh commands with spinner/toasts."
+  },
+  {
+   "id": "D02b-018",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Catalog-backed cascade with host scope, abort on failure, cleanup/toasts."
+  },
+  {
+   "id": "D02b-021",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "SSH target row with status dot, fallback label, inline connect."
   }
  ]
 }

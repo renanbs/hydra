@@ -32,6 +32,8 @@ export interface TerminalContextActions {
 interface TerminalDrawerProps {
   sessionId: string;
   executable?: string;
+  /** Explicit process arguments; defaults to the interactive shell flags. */
+  args?: string[];
   cwd?: string;
   settings?: HydraSettings;
   onContextMenu?: (x: number, y: number, actions: TerminalContextActions) => void;
@@ -105,6 +107,7 @@ function buildXtermTheme(settings: HydraSettings | undefined): ITheme {
 export function TerminalDrawer({
   sessionId,
   executable = "bash",
+  args,
   cwd,
   settings,
   onContextMenu,
@@ -446,7 +449,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
         return false;
       });
     } catch {}
-    const shellArgs = executable === "bash" ? ["--noprofile", "--norc"] : [];
+    const shellArgs = args ?? (executable === "bash" ? ["--noprofile", "--norc"] : []);
     // Claude Code colors its logo only after the host answers CSI c (device
     // attributes). That query is not in the vt100 snapshot, and the first
     // terminal:output burst can fire before this listener is subscribed, so
@@ -503,7 +506,7 @@ function shouldEnableLigatures(_fontFamily: string | undefined, mode: string | u
       fitAddonRef.current = null;
       xtermRef.current = null;
     };
-  }, [sessionId, executable, cwd]);
+  }, [args, sessionId, executable, cwd]);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     // Right-click to paste faithful to Orca TerminalInteractionSection

@@ -22,6 +22,14 @@ import {
 } from "./sidebar/worktree-name-suggestions";
 import { useRetiredWorktreeNames } from "@/hooks/useRetiredWorktreeNames";
 import { useFolderWorkspaceComposerPathStatus } from "./sidebar/folder-workspace-composer-path-status";
+import { isTuiAgent } from "../shared/tui-agent-config";
+import type { FolderWorkspace } from "../shared/folder-workspace-types";
+import type { LinkedWorkItemSummary } from "../lib/new-workspace";
+import {
+  submitFolderWorkspaceCreate,
+  type FolderWorkspaceCreateInput,
+  type FolderWorkspaceSubmitResult,
+} from "./sidebar/folder-workspace-composer-submit";
 
 interface NewWorkspaceComposerProps {
   isOpen: boolean;
@@ -53,6 +61,14 @@ interface NewWorkspaceComposerProps {
     executable: string,
     repoPath: string
   ) => void;
+  /** Project-group backing a non-git project (D02a-034). */
+  folderProjectGroupId?: string | null;
+  initialLinkedWorkItem?: LinkedWorkItemSummary | null;
+  /** Catalog write adapter supplied by App (it owns the catalog state). */
+  onCreateFolderWorkspace?: (
+    input: FolderWorkspaceCreateInput
+  ) => Promise<FolderWorkspace | null>;
+  onFolderWorkspaceCreated?: (result: FolderWorkspaceSubmitResult) => void | false;
 }
 
 export function NewWorkspaceComposer({
@@ -68,6 +84,10 @@ export function NewWorkspaceComposer({
   onClose,
   onCreated,
   refreshLocalBaseRefOnWorktreeCreate = false,
+  folderProjectGroupId = null,
+  initialLinkedWorkItem = null,
+  onCreateFolderWorkspace,
+  onFolderWorkspaceCreated,
 }: NewWorkspaceComposerProps) {
   const [name, setName] = useState("");
   const [customBranch, setCustomBranch] = useState("");
@@ -168,10 +188,48 @@ export function NewWorkspaceComposer({
       return;
     }
     if (!isGit) {
-      setError(
-        folderPathStatus.pathStatusProjectError ??
-          "Creating a workspace in a folder project needs the folder-workspace bridge, which this build does not ship."
-      );
+      if (createBlocked) {
+        setError(
+          folderPathStatus.pathStatusProjectError ??
+            "This folder cannot be opened as a workspace."
+        );
+        return;
+      }
+      if (!folderProjectGroupId || !onCreateFolderWorkspace || !onFolderWorkspaceCreated) {
+        setError("This project has no group workspace to create in.");
+        return;
+      }
+      const quickAgent = isTuiAgent(chosenAgent.id) ? chosenAgent.id : null;
+      setError(null);
+      void submitFolderWorkspaceCreate({
+        projectGroup: {
+          id: folderProjectGroupId,
+          name: proj.name,
+          parentPath: proj.path,
+          connectionId: proj.connectionId ?? null,
+          executionHostId: proj.executionHostId ?? null,
+        },
+        name: name,
+        lastAutoName: previousSuggestionRef.current,
+        linkedWorkItem: initialLinkedWorkItem,
+        note: note.trim(),
+        quickAgent,
+        autoRenameBranchFromWork: false,
+        agentCmdOverrides: undefined,
+        createFolderWorkspace: onCreateFolderWorkspace,
+        activateFolderWorkspace: (activation) => {
+          const accepted = onFolderWorkspaceCreated({
+            workspace: activation.workspace,
+            startupPlan: activation.startupPlan,
+            launchDraftPrompt: activation.launchDraftPrompt,
+            launchPlan: null,
+          });
+          return accepted;
+        },
+        onOpenChange: (open) => {
+          if (!open) onClose();
+        },
+      });
       return;
     }
 
