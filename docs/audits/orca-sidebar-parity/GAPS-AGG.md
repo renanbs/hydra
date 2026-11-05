@@ -1,21 +1,14 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 34 capabilities
+## MISSING — 27 capabilities
 
 
-### D01-shell-chrome (11)
+### D01-shell-chrome (4)
 
-- **D01-006** — Gating de inicialização para varredura de repositórios e proteção contra oscilação de status de runtime | falta: bloqueio de fetchAllWorktrees enquanto startupWorktreeRefreshCompleted === false; varredura total só quando a quantidade de repositórios muda após a inicialização; guarda contra disparos repetidos na oscilação de runtimeStatusByEnvironmentId | components/sidebar/index.tsx:54-55
-- **D01-017** — Entrada do checklist de Onboarding (Setup Guide) com anel de progresso e persistência | falta: resolução de visibilidade (shouldShowSetupGuideEntry / getSetupGuideSidebarEntryReady); anel de progresso SetupGuideProgressRing com contagem de etapas; abertura do modal 'setup-guide' com telemetrySource='sidebar'; ocultação via menu de contexto persistindo setupGuideSidebarDismissed | components/sidebar/SetupGuideSidebarEntry.tsx:20-124
 - **D01-020** — Detecção de disponibilidade de provedores de tarefas via preflight e status Linear | falta: refreshPreflightStatus() na montagem do botão de tarefas; checkLinearConnection() e normalização de visibleTaskProviders; restauração do provedor default considerando o CLI glab e a conexão Linear; resolveVisibleTaskProvider | components/sidebar/SidebarTaskNavButton.tsx:11-12
 - **D01-024** — Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação | falta: botão Smartphone/'Orca Mobile' condicionado a settings.showMobileButton; badge 'New' até a primeira visualização (useMobileSidebarOnboardingBadge); botão inline EyeOff 'Hide from sidebar' após pareamento; dismiss do badge + openMobilePage() | components/sidebar/SidebarNav.tsx:2
-- **D01-027** — Entrada do Agent Dashboard com contadores agregados por bucket de estado | falta: botão LayoutDashboard/'Agent Dashboard' condicionado a experimentalAgentDashboardPopout; contadores por bucket (attention/working/done/idle) via useAgentBucketCounts; data-contextual-tour-target='agents-sidebar' | components/sidebar/AgentDashboardSidebarEntry.tsx:1-60,91-94
-- **D01-028** — Abertura do Agent Dashboard em janela destacada (Popout) ou gaveta lateral | falta: window.api.dashboard.openPopout() no modo popout; alternância de agentDashboardDrawerOpen(_setAgentDashboardDrawerOpen) no modo gaveta | components/sidebar/AgentDashboardSidebarEntry.tsx:64-78
-- **D01-029** — Coordenação de visibilidade do Agent Dashboard Host e exclusividade mútua com Kanban | falta: fechar a gaveta do dashboard quando sidebarOpen vira false; fechar o Workspace Board quando a gaveta abre (e vice-versa); renderizar AgentDashboardDrawer acoplado ao sidebar apenas com sidebarOpen === true | components/sidebar/AgentDashboardSidebarHost.tsx:1-43
-- **D01-036** — Itens de navegação interna do menu de ajuda: Atalhos, Feedback, Marcos e Onboarding | falta: 'Keyboard Shortcuts' -> openSettingsTarget({pane:'shortcuts'}) + openSettingsPage(); 'Send Feedback' -> modal SidebarFeedbackDialog; 'Milestones' com SetupGuideProgressRing quando coreDoneCount < coreTotal; 'Onboarding' -> showOnboardingFromRenderer() com throttle de 500ms | components/sidebar/SidebarSettingsHelpMenu.tsx:7
 - **D01-038** — Verificação de atualizações com suporte a canais RC e Performance via modificadores | falta: item 'Check for Updates' com captura de Shift/Cmd no pointerdown; getUpdateCheckClickOptions (stable / includePrerelease / includePerfPrerelease); window.api.updater.check(); spinner Loader2 e disable durante checking/downloading | components/sidebar/SidebarSettingsHelpMenu.tsx:8
-- **D01-039** — Reinicialização da aplicação (Restart Orca) com feedback visual de toast | falta: item 'Restart Orca' com toast 'Restarting Orca…'; window.api.app.restart() (relaunch + exit); toast de erro "Couldn't restart Orca." e disable durante o restart | components/sidebar/SidebarSettingsHelpMenu.tsx:11
 - **D01-043** — Submissão de feedback via IPC e tratamento de confirmação de entrega de imagens | falta: window.api.feedback.submit (evita CORS no Electron); toast de aviso quando imagesDelivered === false; toast de sucesso + reset + close; toast de erro de rede/IPC | components/sidebar/SidebarFeedbackDialog.tsx:4
 
 ### D02a-repo-add-wizard (4)
@@ -65,12 +58,8 @@
 
 - **D15a-011** — Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM | falta: Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai; Invoca resumeWorkspace na API do backend para reativar VM efêmera; Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor | components/sidebar/sleep-worktree-flow.ts:44
 
-## PARTIAL — 26 capabilities
+## PARTIAL — 25 capabilities
 
-
-### D01-shell-chrome (1)
-
-- **D01-012** — Botão 'New workspace' com atalho primário de teclado e integração com tour contextual | falta: label do atalho primário a partir de keybindings (formatOptionalPrimaryShortcutLabel('workspace.create')) — Hydra tem 'Mod+N' hardcoded (SidebarHeader.tsx:129); data-contextual-tour-target='workspace-create-control'; openWorkspaceCreationComposerWithTourHandoff() | components/sidebar/sidebar-header-actions.tsx:2
 
 ### D02a-repo-add-wizard (2)
 
