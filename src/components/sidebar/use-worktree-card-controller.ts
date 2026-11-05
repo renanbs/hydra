@@ -93,6 +93,15 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleOpenIssueInBrowser: (url: string) => void
   handleOpenReviewInBrowser: (url: string) => void
   handleToggleUnreadQuick: (event: React.MouseEvent<HTMLButtonElement>) => void
+  handleOpenAutomation: (event: React.MouseEvent) => void
+  handleOpenAutomationRun: (event: React.MouseEvent) => void
+  automationProvenance: {
+    automationId: string
+    automationNameSnapshot: string
+    automationRunId: string
+    automationRunTitleSnapshot: string
+    hostId?: import('../../shared/execution-host').ExecutionHostId
+  } | null
 }
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps | WorktreeCardProps): WorktreeCardController {
@@ -301,6 +310,52 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     []
   )
   const handleOpenReviewInBrowser = handleOpenIssueInBrowser
+  // D04a-045/D04b-012 Rosetta (Orca `use-worktree-card-foundation:handleOpenAutomation[Run]`):
+  // navigate to the automation (or run) recorded on the provenance — the
+  // automation's host, not the workspace's, owns the navigation.
+  const openAutomationsPage = useAppStore(
+    (state) => (state as unknown as { openAutomationsPage?: () => void }).openAutomationsPage
+  )
+  const setPendingAutomationRunNavigation = useAppStore(
+    (state) =>
+      (state as unknown as { setPendingAutomationRunNavigation?: (nav: unknown) => void }).setPendingAutomationRunNavigation
+  )
+  const automationProvenance =
+    (worktree as unknown as { automationProvenance?: import('./worktree-card-controller-extras').WorktreeCardControllerExtras['automationProvenance'] }).automationProvenance ?? null
+  const handleOpenAutomation = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!automationProvenance || !openAutomationsPage || !setPendingAutomationRunNavigation) {
+        return
+      }
+      const hostId =
+        automationProvenance.hostId ?? (worktree as unknown as { hostId?: string }).hostId
+      setPendingAutomationRunNavigation({
+        automationId: automationProvenance.automationId,
+        runId: null,
+        ...(hostId ? { hostId } : {})
+      })
+      openAutomationsPage()
+    },
+    [automationProvenance, openAutomationsPage, setPendingAutomationRunNavigation, worktree]
+  )
+  const handleOpenAutomationRun = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!automationProvenance || !openAutomationsPage || !setPendingAutomationRunNavigation) {
+        return
+      }
+      const hostId =
+        automationProvenance.hostId ?? (worktree as unknown as { hostId?: string }).hostId
+      setPendingAutomationRunNavigation({
+        automationId: automationProvenance.automationId,
+        runId: automationProvenance.automationRunId,
+        ...(hostId ? { hostId } : {})
+      })
+      openAutomationsPage()
+    },
+    [automationProvenance, openAutomationsPage, setPendingAutomationRunNavigation, worktree]
+  )
   // D04b-010 Rosetta (Orca `use-worktree-card-activation-actions:handleToggleUnreadQuick`):
   // the legacy bell button stays unmounted (newCardStyle constant-true,
   // D04a-023 n/a), but the handler is wired so the surface can bind it.
@@ -528,6 +583,9 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleOpenIssueInBrowser,
     handleOpenReviewInBrowser,
     handleToggleUnreadQuick,
+    handleOpenAutomation,
+    handleOpenAutomationRun,
+    automationProvenance,
     onDelete: handleDelete,
     onAssignWorkspaceStatus,
     onDragOver,
