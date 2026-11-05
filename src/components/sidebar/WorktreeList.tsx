@@ -7,7 +7,7 @@ import { cn } from "../../lib/utils";
 import { getShortcutPlatform } from "../../lib/shortcut-platform";
 import { keybindingMatchesAction } from "../../shared/keybindings";
 import type { KeybindingOverrides } from "../../shared/keybindings";
-import { SectionHeader } from "./SectionHeader";
+import { SectionHeader, type RepoHeaderCreateState } from "./SectionHeader";
 import { WorktreeCard } from "./WorktreeCard";
 import { invoke } from "@tauri-apps/api/core";
 import type { WorktreeRenameRequest } from "./worktree-card-model";
@@ -317,6 +317,8 @@ export interface WorktreeListProps {
    */
   deleteStateByWorktreeId?: Record<string, WorktreeDeleteState | undefined>;
   onOpenNewWorkspaceModal: (proj: HydraProject) => void;
+  /** Per-project header `+` state (Orca `getRepoHeaderCreateState`). */
+  createStateByProjectId?: ReadonlyMap<string, RepoHeaderCreateState>;
   onOpenAddRepoDialog: () => void;
   onClearFilter?: () => void;
   /**
@@ -567,6 +569,7 @@ export function WorktreeList({
   onRenameWorktreeTitle,
   deleteStateByWorktreeId = EMPTY_DELETE_STATE,
   onOpenNewWorkspaceModal,
+  createStateByProjectId,
   onOpenAddRepoDialog,
   onClearFilter,
   onClearSidebarFilters,
@@ -1394,6 +1397,7 @@ export function WorktreeList({
           onToggleCollapse={slot.toggleCollapse}
           onSelectProject={onSelectProject}
           onOpenNewWorkspace={onOpenNewWorkspaceModal}
+          createState={createStateByProjectId?.get(proj.id) ?? null}
           onContextMenu={onProjectContextMenu}
           isDropTarget={isDropTarget}
           sectionEnd={headerSectionBounds.repoSectionEndByRepoId.get(proj.id)}
@@ -1413,6 +1417,7 @@ export function WorktreeList({
       isCollapsedKey,
       onSelectProject,
       onOpenNewWorkspaceModal,
+      createStateByProjectId,
       onProjectContextMenu,
       projectDropTarget,
       draggedProjectId,

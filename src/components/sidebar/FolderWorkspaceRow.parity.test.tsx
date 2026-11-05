@@ -7,6 +7,8 @@
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { getFolderWorkspacePathStatusDescription } from "@/lib/folder-workspace-path-status";
 import { FolderWorkspaceRow } from "./FolderWorkspaceRow";
 import { workspaceStatusFrom } from "../../lib/workspace-status-signals";
 
@@ -14,12 +16,14 @@ const FOLDER_PATH = "/home/renan/src/clubedepontos/malhaclub/code";
 
 function renderRow(props: Partial<Parameters<typeof FolderWorkspaceRow>[0]> = {}) {
   return render(
-    <FolderWorkspaceRow
-      name="MalhaClub Dev workspace"
-      folderPath={FOLDER_PATH}
-      status="inactive"
-      {...props}
-    />
+    <TooltipProvider delayDuration={0}>
+      <FolderWorkspaceRow
+        name="MalhaClub Dev workspace"
+        folderPath={FOLDER_PATH}
+        status="inactive"
+        {...props}
+      />
+    </TooltipProvider>
   );
 }
 
@@ -55,12 +59,73 @@ describe("FolderWorkspaceRow (Orca parity)", () => {
 
   it("shows the FolderX badge only when the folder is gone", () => {
     renderRow({ pathMissing: true });
-    expect(screen.getByLabelText(`Folder not found: ${FOLDER_PATH}`)).toBeInTheDocument();
+    const badge = screen.getByLabelText("Folder not found");
+    expect(badge).toBeInTheDocument();
+    // Confirmed stale paths paint destructive.
+    expect(badge.className).toContain("text-destructive");
 
     const present = renderRow();
+    expect(present.container.querySelector('[aria-label="Folder not found"]')).toBeNull();
+  });
+
+  it("tells a confirmed stale path from an ambiguous connection", () => {
+    const stale = renderRow({
+      pathStatus: { path: FOLDER_PATH, exists: false, reason: "missing" },
+    });
+    expect(screen.getByLabelText("Folder not found")).toHaveClass("text-destructive");
+
+    const ambiguous = renderRow({
+      pathStatus: { path: FOLDER_PATH, exists: false, reason: "ambiguous-connection" },
+    });
+    const ambiguousBadge = screen.getByLabelText("Cannot determine connection");
+    expect(ambiguousBadge).not.toHaveClass("text-destructive");
+    // Distinct explanation, not the stale-path copy.
+    expect(getFolderWorkspacePathStatusDescription({
+      path: FOLDER_PATH,
+      exists: false,
+      reason: "ambiguous-connection",
+    })).not.toBe(
+      getFolderWorkspacePathStatusDescription({
+        path: FOLDER_PATH,
+        exists: false,
+        reason: "missing",
+      })
+    );
+    // Exactly one badge per render: the stale row's label must not leak here.
     expect(
-      present.container.querySelector(`[aria-label="Folder not found: ${FOLDER_PATH}"]`)
+      ambiguous.container.querySelector('[aria-label="Folder not found"]')
     ).toBeNull();
+    expect(stale.container.querySelector('[aria-label="Cannot determine connection"]')).toBeNull();
+  });
+
+  it("blocks activation for both stale and ambiguous statuses", () => {
+    for (const reason of ["missing", "ambiguous-connection"] as const) {
+      const onActivate = vi.fn();
+      const { unmount } = renderRow({
+        pathStatus: { path: FOLDER_PATH, exists: false, reason },
+        onActivate,
+      });
+      const row = screen.getByRole("button", { name: "MalhaClub Dev workspace" });
+      expect(row).toHaveAttribute("aria-disabled", "true");
+      row.click();
+      expect(onActivate).not.toHaveBeenCalled();
+      unmount();
+    }
+
+    const onActivate = vi.fn();
+    renderRow({ onActivate });
+    const healthy = screen.getByRole("button", { name: "MalhaClub Dev workspace" });
+    expect(healthy).not.toHaveAttribute("aria-disabled");
+    healthy.click();
+    expect(onActivate).toHaveBeenCalledTimes(1);
+  });
+
+  it("never badges a status that proves the path exists", () => {
+    const { container } = renderRow({
+      pathStatus: { path: FOLDER_PATH, exists: true },
+    });
+    expect(container.querySelector('[aria-label="Folder not found"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Cannot determine connection"]')).toBeNull();
   });
 
   it("carries no card chrome (Orca draws no border at rest)", () => {

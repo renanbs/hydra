@@ -8,12 +8,14 @@ export interface ProjectGroupDeleteDialogProps {
   groupName: string;
   projectCount: number;
   projectNames?: string[];
-  onOpenChange: (open: boolean) => void;
   /**
-   * Orca `ProjectGroupDeleteDialog`: the caller may also delete the projects the
-   * group contains; `removeContained` is that choice.
+   * Orca `ProjectGroupDeleteDialog`: the caller owns the choice so deleting the
+   * dialog's group can fan out to its contained projects.
    */
-  onConfirm: (removeContained: boolean) => Promise<void> | void;
+  removeContainedProjects: boolean;
+  onRemoveContainedProjectsChange: (removeContainedProjects: boolean) => void;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => Promise<void> | void;
 }
 
 export function ProjectGroupDeleteDialog({
@@ -21,12 +23,13 @@ export function ProjectGroupDeleteDialog({
   groupName,
   projectCount,
   projectNames = [],
+  removeContainedProjects,
+  onRemoveContainedProjectsChange,
   onOpenChange,
   onConfirm,
 }: ProjectGroupDeleteDialogProps): React.JSX.Element | null {
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const [deleting, setDeleting] = useState(false);
-  const [removeContained, setRemoveContained] = useState(false);
   // Why: `onConfirm` may close the dialog; a late `setDeleting` would then update an
   // unmounted component.
   const mountedRef = useRef(true);
@@ -40,7 +43,6 @@ export function ProjectGroupDeleteDialog({
   useEffect(() => {
     if (open) {
       setDeleting(false);
-      setRemoveContained(false);
       requestAnimationFrame(() => {
         confirmButtonRef.current?.focus();
       });
@@ -63,14 +65,14 @@ export function ProjectGroupDeleteDialog({
     if (deleting) return;
     setDeleting(true);
     try {
-      await onConfirm(removeContained);
+      await onConfirm();
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to delete project group:", error);
     } finally {
       if (mountedRef.current) setDeleting(false);
     }
-  }, [deleting, onConfirm, onOpenChange, removeContained]);
+  }, [deleting, onConfirm, onOpenChange]);
 
   if (!open) return null;
 
@@ -128,17 +130,19 @@ export function ProjectGroupDeleteDialog({
             <label className="flex items-start gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
-                checked={removeContained}
+                checked={removeContainedProjects}
                 disabled={deleting}
-                onChange={(e) => setRemoveContained(e.target.checked)}
+                onChange={(e) => onRemoveContainedProjectsChange(e.target.checked)}
                 className="mt-0.5 size-3.5 accent-red-500"
               />
               <span className="text-[11px] text-neutral-300">
-                Also delete the {projectCount} contained {projectCount === 1 ? "project" : "projects"} from the sidebar
+                {projectCount === 1
+                  ? "Remove 1 contained project"
+                  : `Remove ${projectCount} contained projects`}
               </span>
             </label>
             <div className="text-[11px] text-neutral-400">
-              {removeContained
+              {removeContainedProjects
                 ? "Member projects are removed from the sidebar. Project folders on disk are not deleted."
                 : "Project folders on disk are not deleted. Member projects will remain in the sidebar, ungrouped."}
             </div>

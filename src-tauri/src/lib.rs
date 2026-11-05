@@ -414,13 +414,63 @@ async fn set_project_worktree_base(path: String, base_path: Option<String>) -> R
 async fn list_worktrees(repo_path: String) -> Result<Vec<GitWorktreeInfo>, String> {
     list_git_worktrees(&repo_path)
 }
+/// Structured rejection for `scan_worktrees`.
+///
+/// The renderer paints the failure kind, and only offers "Copy command" when the
+/// payload actually names a fix (`fixCommand`); an unknown failure stays a plain
+/// message. Mirrors `src/shared/worktree-scan-failure.ts`.
+#[derive(serde::Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct WorktreeScanFailure {
+    pub failure_kind: &'static str,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fix_command: Option<&'static str>,
+}
+
+fn classify_worktree_scan_failure(message: &str) -> &'static str {
+    let lower = message.to_ascii_lowercase();
+    if lower.contains("agreeing to the xcode/ios license requires admin privileges") {
+        "xcode-license"
+    } else if lower.contains("no developer tools were found") {
+        "developer-tools"
+    } else if lower.contains("unknown system error -86")
+        || lower.contains("ebadarch")
+        || lower.contains("bad cpu type in executable")
+    {
+        "architecture-mismatch"
+    } else {
+        "unknown"
+    }
+}
+
+fn worktree_scan_fix_command(failure_kind: &str) -> Option<&'static str> {
+    match failure_kind {
+        "xcode-license" => Some("sudo xcodebuild -license"),
+        "developer-tools" => Some("xcode-select --install"),
+        _ => None,
+    }
+}
+
+impl WorktreeScanFailure {
+    fn from_message(message: String) -> Self {
+        let failure_kind = classify_worktree_scan_failure(&message);
+        Self {
+            failure_kind,
+            message,
+            fix_command: worktree_scan_fix_command(failure_kind),
+        }
+    }
+}
+
 #[tauri::command]
-async fn scan_worktrees(repo_path: String) -> Result<ProjectWorktreeScanResult, String> {
-    tokio::task::spawn_blocking(move || {
-        scan_project_worktrees(&repo_path)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+async fn scan_worktrees(
+    repo_path: String,
+) -> Result<ProjectWorktreeScanResult, WorktreeScanFailure> {
+    tokio::task::spawn_blocking(move || scan_project_worktrees(&repo_path))
+        .await
+        .map_err(|e| WorktreeScanFailure::from_message(e.to_string()))?
+        .map_err(WorktreeScanFailure::from_message)
 }
 
 /// PR status for `branch` in `repo_path`, via the optional `gh` CLI.

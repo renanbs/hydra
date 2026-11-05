@@ -7,17 +7,7 @@
 import { useEffect, useRef } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
 import type { HostSectionRow } from '../../host-section-rows'
-
-/** Path a reveal names — a workspace path or a folder workspace path. */
-function rowMatchesRevealPath(row: HostSectionRow, revealPath: string): boolean {
-  if (row.type === 'item') {
-    return row.worktree.path === revealPath
-  }
-  if (row.type === 'folder-workspace') {
-    return row.folderWorkspace.folderPath === revealPath
-  }
-  return false
-}
+import { findRevealRowIndex } from '../listing/reveal-row-lookup'
 
 export function useWorktreeListRevealScroll(args: {
   rows: readonly HostSectionRow[]
@@ -39,7 +29,7 @@ export function useWorktreeListRevealScroll(args: {
       return
     }
     lastRevealedPathRef.current = revealPath
-    const index = rows.findIndex((row) => rowMatchesRevealPath(row, revealPath))
+    const index = findRevealRowIndex(rows, revealPath)
     if (index === -1) {
       return
     }

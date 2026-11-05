@@ -30,3 +30,19 @@ export function ProjectHeaderActions({
     />
   )
 }
+
+/**
+ * Orca `header-event-guards.stopRepoHeaderMenuEvent`: menu content lives in a
+ * portal, but React still bubbles its events through the header that owns the
+ * trigger. Block them so opening a menu never arms row drag or collapse.
+ */
+export function stopRepoHeaderMenuEvent(event: React.SyntheticEvent<HTMLElement>): void {
+  event.stopPropagation()
+}
+
+/** Keep Enter/Space on a header action from toggling the header itself. */
+export function stopRepoHeaderKeyboardToggle(event: React.KeyboardEvent<HTMLElement>): void {
+  if (event.key === "Enter" || event.key === " ") {
+    event.stopPropagation()
+  }
+}

@@ -114,4 +114,53 @@ describe("RepoSectionHeader (Orca parity)", () => {
     expect(onOpenNewWorkspace).toHaveBeenCalledTimes(1);
     expect(withCreate.container).toBeTruthy();
   });
+
+  it("disables the `+` behind a focusable span carrying the create tooltip (D03a-085)", () => {
+    const onOpenNewWorkspace = vi.fn();
+    const { container } = renderRepo({
+      onOpenNewWorkspace,
+      createState: {
+        disabled: true,
+        tooltip: "Reconnect SSH target before creating workspaces",
+        ariaLabel: "Reconnect SSH target before creating workspaces for hydra",
+      },
+    });
+
+    const trigger = container.querySelector("[data-repo-header-create-disabled]");
+    expect(trigger).not.toBeNull();
+    expect(trigger).toHaveAttribute("tabindex", "0");
+    expect(trigger).toHaveAttribute(
+      "title",
+      "Reconnect SSH target before creating workspaces"
+    );
+    expect(trigger).toHaveAttribute(
+      "aria-label",
+      "Reconnect SSH target before creating workspaces for hydra"
+    );
+
+    const button = screen.getByRole("button", {
+      name: "Reconnect SSH target before creating workspaces for hydra",
+    });
+    expect(button).toBeDisabled();
+
+    trigger!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onOpenNewWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("uses the createState tooltip and aria label when the `+` is enabled", () => {
+    const onOpenNewWorkspace = vi.fn();
+    renderRepo({
+      onOpenNewWorkspace,
+      createState: {
+        disabled: false,
+        tooltip: "Create workspace for hydra",
+        ariaLabel: "Create workspace for hydra",
+      },
+    });
+
+    const button = screen.getByRole("button", { name: "Create workspace for hydra" });
+    expect(button).toHaveAttribute("title", "Create workspace for hydra");
+    button.click();
+    expect(onOpenNewWorkspace).toHaveBeenCalledTimes(1);
+  });
 });
