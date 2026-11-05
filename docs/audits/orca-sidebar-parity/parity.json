@@ -5773,18 +5773,18 @@
    "components/sidebar/WorktreeList.tsx:298-316"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:onOpenSettingsSection — abre Settings global (sem pane repo dedicada; gap de superfície)",
-    "src/App.tsx:ConfirmRemoveFolderDialog — monta para primary checkout (remove projeto, mantém pasta)",
-    "src/components/sidebar/NewWorkspaceComposer — abre com initialProjectGroupId do grupo (parentPath do grupo)"
+    "src/components/sidebar/RepoSettingsDialog.tsx — repo-scoped settings surface (não o modal global): base path, visibilidade non-Hydra, remoção + seção Local commands",
+    "src/components/sidebar/RepositoryLocalCommandsSection.tsx — Rosetta RepositoryHookScriptSetting: setup/archive editors, env-var chips, shared orca.yaml read-only, autosave 700ms, sectionId repo-local-commands",
+    "src/components/sidebar/RepoSettingsDialog.parity.test.tsx — 3 testes (seed, sectionId+autofocus, persist via updateRepo)",
+    "src/components/sidebar/RepositoryLocalCommandsSection.parity.test.tsx — 3 testes (copy, blur commit, shared read-only)",
+    "src/components/sidebar/open-setup-script-settings.ts — deep-link setSearchQuery('') → openSettingsTarget repo/host/repo-local-commands → openSettingsPage"
    ],
    "backend": [
     "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
    ],
-   "missing_behaviors": [
-    "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings, sem pane repo dedicada"
-   ],
+   "missing_behaviors": [],
    "notes": "Abertura de diálogos parcial.",
    "note": "Abertura de diálogos parcial."
   },
