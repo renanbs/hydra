@@ -5727,19 +5727,17 @@
    "components/sidebar/WorktreeList.tsx:343-356"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:428",
-    "src/App.tsx:3517"
+    "src/components/sidebar/worktree-selection.ts — modelo puro (replace/toggle/range/marque/select-all/prune/re-anchor); use-worktree-list-selection publica selectedWorktreeIdentities + contexto",
+    "src/components/sidebar/worktree-status-menu-items.ts — Move (Statuses) To em lote via assignWorktreeStatuses; Pin/Un Pin em lote no contexto multi via pinWorktrees",
+    "src/App.tsx:assignWorktreeStatuses — um persistWorktreeStatusBatch por lote; pinWorktrees — um invoke por path com rollback por path",
+    "src/components/sidebar/worktree-list/drag/* — drops de status/pin/nest/board com ids do batch + lineage; board: handleDropWorktrees/handlePinWorktrees/commitWorktreeIdsAtEndOfStatus em lote",
+    "src/components/sidebar/workspace-board/WorkspaceBoardDrawer.tsx — onAssignWorktreeStatuses/onPinWorktrees com fallback individual",
+    "src/components/sidebar/worktree-flags.ts:createWorktreeFlagBatchApplier + 2 testes (lote com falha parcial, lote vazio)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "seleção múltipla de worktrees (useSidebarWorktreeSelection)",
-    "moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex",
-    "pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406)",
-    "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-    "carregamento automático da linhagem ao mover pai entre raias"
-   ],
+   "missing_behaviors": [],
    "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
    "note": "Mutações de status/pino parciais; seleção múltipla ausente."
   },
@@ -5777,16 +5775,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:261",
-    "src/App.tsx:1612"
+    "src/App.tsx:onOpenSettingsSection — abre Settings global (sem pane repo dedicada; gap de superfície)",
+    "src/App.tsx:ConfirmRemoveFolderDialog — monta para primary checkout (remove projeto, mantém pasta)",
+    "src/components/sidebar/NewWorkspaceComposer — abre com initialProjectGroupId do grupo (parentPath do grupo)"
    ],
    "backend": [
     "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
    ],
    "missing_behaviors": [
-    "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings)",
-    "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
-    "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
+    "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings, sem pane repo dedicada"
    ],
    "notes": "Abertura de diálogos parcial.",
    "note": "Abertura de diálogos parcial."
@@ -6406,8 +6403,12 @@
    "components/sidebar/worktree-snapshot-prune-batch.ts:6-24"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/lib/worktree-sleep-intent.ts:forgetWorktreeSleepIntents — purge em lote sem wake; um clear por marker (mesma forma do batch de prune do Orca, sem IPC novo)",
+    "src/App.tsx:onDeleted — forgetWorktreeSleepIntents(rows.map(path)) na remoção múltipla",
+    "src/lib/worktree-sleep-intent.parity.test.ts — 2 testes (purge total, skip sem marker)"
+   ],
    "backend": [],
    "missing_behaviors": [],
    "notes": "Não localizado após busca por beginWorktreeSnapshotPruneBatch/finishRemovalSnapshotPruneBatch/recordRemovalSnapshotPrune e 'workspaceCleanup' em src/ e src-tauri/: nenhuma API equivalente (window.api expõe fs/ui, não workspaceCleanup)."
