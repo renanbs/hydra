@@ -12,6 +12,11 @@ import { toast } from 'sonner'
 import { useAppStore } from '../../store'
 import { openExternalUrl } from '../../lib/sidebar-desktop-contracts'
 import { useWorktreeCardLifecycleEffects } from './use-worktree-card-lifecycle-effects'
+import { getConfiguredWorktreeCardJiraIssueDisplay } from './worktree-card-jira-issue-display'
+import {
+  coerceWorktreeCardVisibleTitle,
+  getWorktreeCardTitleDisplay
+} from './worktree-card-title-display'
 import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
 import {
   selectRuntimeAwareSshStatus,
@@ -93,6 +98,8 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleOpenIssueInBrowser: (url: string) => void
   handleOpenReviewInBrowser: (url: string) => void
   handleToggleUnreadQuick: (event: React.MouseEvent<HTMLButtonElement>) => void
+  jiraIssueDisplay: import('./worktree-card-meta-types').WorktreeCardJiraIssueDisplay | null
+  linearIssueDisplay: import('./worktree-card-meta-types').WorktreeCardLinearIssueDisplay | null
   handleOpenAutomation: (event: React.MouseEvent) => void
   handleOpenAutomationRun: (event: React.MouseEvent) => void
   automationProvenance: {
@@ -385,9 +392,32 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     shouldRefreshHostedReview: true
   })
 
+  // D04a-102/D04b-014 Rosetta (Orca `use-worktree-card-linked-details`): project
+  // linkedWorkItem into the hover displays. Jira is gated on the jira-issue
+  // property (compact preset drops it); the title composes stored name + branch
+  // + linked item titles like the Orca new-card title.
+  const cardProperties = compactCards
+    ? (['status', 'unread'] as const)
+    : (['status', 'unread', 'issue', 'linear-issue', 'jira-issue', 'pr', 'automation', 'cli', 'comment', 'ports', 'inline-agents'] as const)
+  const jiraIssueDisplay = getConfiguredWorktreeCardJiraIssueDisplay(
+    worktree as unknown as never,
+    cardProperties as unknown as readonly never[]
+  )
+  const linkedLinearTitle =
+    (worktree as unknown as { linkedLinearIssue?: string }).linkedLinearIssue ?? null
+  const linearIssueDisplay = linkedLinearTitle
+    ? { identifier: linkedLinearTitle, title: '' }
+    : null
   const visibleCardTitle =
-    worktree.display_name?.trim() ||
-    worktree.displayName?.trim() ||
+    getWorktreeCardTitleDisplay({
+      storedDisplayName: worktree.display_name ?? worktree.displayName,
+      branchName,
+      linearIssueTitle: (linearIssueDisplay as { title?: string } | null)?.title,
+      jiraIssueTitle: (jiraIssueDisplay as { title?: string } | null)?.title,
+      issueTitle: undefined,
+      reviewTitle: (prDisplay as unknown as { title?: string } | null)?.title
+    }) ||
+    coerceWorktreeCardVisibleTitle(worktree.display_name ?? worktree.displayName) ||
     branchName ||
     worktree.path.split('/').filter(Boolean).pop() ||
     'worktree'
@@ -583,6 +613,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleOpenIssueInBrowser,
     handleOpenReviewInBrowser,
     handleToggleUnreadQuick,
+    jiraIssueDisplay,
+    linearIssueDisplay,
     handleOpenAutomation,
     handleOpenAutomationRun,
     automationProvenance,

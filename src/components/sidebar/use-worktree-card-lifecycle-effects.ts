@@ -10,6 +10,7 @@
 import { useEffect } from 'react'
 import { installWindowVisibilityInterval, isWindowVisible } from '../../lib/window-visibility-interval'
 import { useAppStore } from '../../store'
+import { HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS, isWebClient } from './worktree-card-model'
 
 export type WorktreeCardLifecycleDeps = {
   worktreeId: string
@@ -30,7 +31,6 @@ export type WorktreeCardLifecycleDeps = {
   showJiraIssue?: boolean
 }
 
-const HOSTED_REVIEW_POLL_MS = 60_000
 const GITHUB_ISSUE_POLL_MS = 5 * 60_000
 
 /**
@@ -55,7 +55,11 @@ export function useWorktreeCardLifecycleEffects(deps: WorktreeCardLifecycleDeps)
   const prefetchLinearIssues = useAppStore((s) => (s as unknown as { prefetchLinearIssues?: (identifiers: string[]) => void }).prefetchLinearIssues)
 
   // Hosted review: initial fetch + visibility-gated poll when the card wants it.
+  // Rosetta Orca: paired web clients skip per-card decoration RPCs at startup.
   useEffect(() => {
+    if (isWebClient()) {
+      return
+    }
     if (!branch || !repoPath || !shouldRefreshHostedReview || !fetchHostedReviewForBranch) {
       return
     }
@@ -64,7 +68,7 @@ export function useWorktreeCardLifecycleEffects(deps: WorktreeCardLifecycleDeps)
       run: () => {
         fetchHostedReviewForBranch({ repoPath, branch, ...(repoId ? { repoId } : {}) })
       },
-      intervalMs: HOSTED_REVIEW_POLL_MS,
+      intervalMs: HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS,
       jitterOnVisible: true
     })
   }, [branch, fetchHostedReviewForBranch, repoId, repoPath, shouldRefreshHostedReview])

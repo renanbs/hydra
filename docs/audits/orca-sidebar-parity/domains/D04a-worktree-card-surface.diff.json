@@ -430,18 +430,14 @@
     "components/sidebar/worktree-card-secondary-rows.tsx:116"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:314",
-     "src/components/sidebar/use-worktree-card-controller.ts:313"
+     "src/components/sidebar/worktree-card-secondary-rows.tsx — banner âmbar remoteBranchConflict + prompt LinearAgentSkillSetupPrompt no card ativo",
+     "src/components/sidebar/worktree-card-parent-content.tsx — WorktreeLineageChildChip (chevron/aria-expanded) + children com -ml-[1.125rem] no estilo legado",
+     "D04a-010 alimenta remoteBranchConflict real do store (não mais false)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Banner âmbar de conflito de branch remoto (PAR-19)",
-     "Prompt de setup do Linear agent skill quando o card está ativo",
-     "Chip de worktrees filhas com chevron/aria-expanded",
-     "Container deslocado -ml-[1.125rem] no estilo legado"
-    ],
+    "missing_behaviors": [],
     "notes": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes.",
     "note": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes."
    },
@@ -858,16 +854,13 @@
     "components/sidebar/WorktreeCardIssueDetailSection.tsx:39"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290",
-     "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
+     "src/components/sidebar/WorktreeCardIssueDetailSection.tsx — Rosetta: menu More issue actions (Open in Orca browser, Copy link), Edit issue, Open in Orca, View on GitHub, closeHover antes de cada ação",
+     "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — seção Issue #12 coberta"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Menu de ações da issue",
-     "Abertura externa da issue"
-    ],
+    "missing_behaviors": [],
     "notes": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL.",
     "note": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL."
    }
@@ -882,17 +875,12 @@
     "components/sidebar/WorktreeCardReviewDetailSection.tsx:68"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:248-263"
+     "src/components/sidebar/WorktreeCardReviewDetailSection.tsx — Rosetta: menu More PR/MR actions + Open/View on provider, terminologia MR/PR por provedor (pr-display getReviewLabel), rodapé ReviewStateBadge + ReviewChecksBadge, closeHover antes de cada ação"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Menu de ações More PR/MR actions e botões Open/View on provider",
-     "Terminologia MR/PR por provedor",
-     "Rodapé com ReviewStateBadge e ReviewChecksBadge",
-     "closeHover antes de cada ação"
-    ],
+    "missing_behaviors": [],
     "notes": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent.",
     "note": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent."
    },
@@ -909,15 +897,13 @@
     "components/sidebar/WorktreeCardMeta.tsx:261"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:292-300"
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx — seção Linear com link + ações Open in Orca / View on Linear, fallback de URL por org key",
+     "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — seção Linear ENG-7 coberta"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Link para o item Linear",
-     "Ações de abrir"
-    ],
+    "missing_behaviors": [],
     "notes": "The Linear identifier renders; no URL is derived.",
     "note": "The Linear identifier renders; no URL is derived."
    },
@@ -2116,20 +2102,15 @@
     "components/sidebar/worktree-card-pr-display.ts:107"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:1265",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:64-65"
+     "src/components/sidebar/worktree-card-pr-display.ts — Rosetta: supressão GitHub com exceção de link explícito, fallbacks Loading PR/MR, provedores gitlab/bitbucket/azure-devops/gitea, validação merged-head, reconciliação por chave",
+     "src/components/sidebar/worktree-card-pr-display.parity.test.ts"
     ],
     "backend": [
      "invoke('pr_status') -> src-tauri/src/lib.rs:410"
     ],
-    "missing_behaviors": [
-     "Supressão de PR do GitHub por metadado, com exceção para link explícito",
-     "Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea",
-     "Validação de PR merged pelo head",
-     "Reconciliação de caches por chave"
-    ],
+    "missing_behaviors": [],
     "notes": "The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe.",
     "note": "The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe."
    },
@@ -2146,15 +2127,14 @@
     "components/sidebar/worktree-card-jira-issue-display.ts:28"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263",
-     "src/store/slices/jira.ts:1"
+     "src/components/sidebar/worktree-card-jira-issue-display.ts — Rosetta: projeção identifier/título sem repetição",
+     "src/components/sidebar/use-worktree-card-controller.ts — getConfiguredWorktreeCardJiraIssueDisplay com gate jira-issue (compact dropa)",
+     "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — Jira OPS-9 com/sem URL cobertos"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Projeção do Jira (identifier/título sem repetição) condicionada à propriedade jira-issue"
-    ],
+    "missing_behaviors": [],
     "notes": "Busca: jiraIssueDisplay/getConfiguredWorktreeCardJiraIssueDisplay no card = 0 hits."
    },
    "par": [
@@ -2217,16 +2197,13 @@
     "components/sidebar/worktree-card-status-inputs.ts:10"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:910",
-     "src/lib/workspace-status-signals.ts:14"
+     "src/components/sidebar/worktree-card-status-inputs.ts — Rosetta: selectRuntimePaneTitlesForWorktree, selectLivePtyIdsForWorktree, selectTerminalLayoutRootsForWorktree + batch, identidade estável",
+     "src/components/sidebar/use-worktree-activity-status.ts — consome os três seletores"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Seletores por worktree (títulos de pane, PTY ids vivos, raízes de layout) com identidade estável",
-     "Batch selectWorktreeActivityStatuses com igualdade rasa"
-    ],
+    "missing_behaviors": [],
     "notes": "Sem seletores por worktree (pane/PTY/layout) com identidade estável.",
     "note": "Sem seletores por worktree (pane/PTY/layout) com identidade estável."
    }
@@ -2243,17 +2220,12 @@
     "components/sidebar/worktree-card-model.ts:109"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-model.ts:14",
-     "src/components/sidebar/worktree-card-model.ts:145-169"
+     "src/components/sidebar/worktree-card-model.ts — HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS consumido pelo lifecycle (poll 60s), EMPTY_WORKSPACE_PORTS nos defaults, isWebClient no modelo"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor",
-     "EMPTY_WORKSPACE_PORTS sem consumidor",
-     "isWebClient sem consumidor no card"
-    ],
+    "missing_behaviors": [],
     "notes": "Props, defaults, rename matching and the sparse-directory preview are used by the card.",
     "note": "Props, defaults, rename matching and the sparse-directory preview are used by the card."
    }
