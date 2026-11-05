@@ -1,5 +1,4 @@
-// @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
-import type { AppState } from '../index'
+import type { AppState } from '../types'
 import type { SshConnectionStatus } from '../../shared/ssh-types'
 import {
   isConnectedRuntimeHostState,

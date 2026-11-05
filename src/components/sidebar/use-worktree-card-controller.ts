@@ -8,6 +8,13 @@ import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
 import { usePromptCacheCountdownStartedAt, usePromptCacheTtlMs } from './CacheTimer'
 import { useWorktreeUpstreamStatus } from '../../hooks/useWorktreeUpstreamStatus'
+import { useAppStore } from '../../store'
+import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
+import {
+  selectRuntimeAwareSshStatus,
+  selectRuntimeAwareSshTargetLabel,
+  selectRuntimeAwareSshTargetRemoved
+} from '../../store/slices/runtime-environment-ssh-selectors'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   repo: HydraProject | undefined
@@ -54,6 +61,11 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   workspacePorts: WorkspacePort[]
   isDeleting: boolean
   isRuntimeDisconnected: boolean
+  sshTargetLabel: string
+  sshStatus: string | null
+  sshTargetRemoved: boolean
+  sshOwnerEnvironmentId: string | null
+  parsedRepoHost: ParsedExecutionHost | null
   isQueuedForDeletion: boolean
   deleteLabel: string
   titleRenaming: boolean
@@ -172,6 +184,33 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
   )
 
   const effectiveRepo = repo || project
+  const worktreeId = worktree.id ?? worktree.path
+
+  // D04a-012/D04a-013 Rosetta (Orca `use-worktree-card-foundation.ts:135-166`):
+  // runtime-aware SSH selectors for the card title-row control. Local targets
+  // read the local maps; runtime-owned targets read their environment bucket.
+  const connectionId = effectiveRepo?.connectionId ?? null
+  const parsedRepoHost = parseExecutionHostId(effectiveRepo?.executionHostId ?? null)
+  const sshOwnerEnvironmentId = useAppStore(() =>
+    connectionId && parsedRepoHost?.kind === 'runtime'
+      ? ((parsedRepoHost as { environmentId?: string }).environmentId ?? null)
+      : null
+  )
+  const sshStatus = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshStatus(state as never, sshOwnerEnvironmentId, connectionId)
+      : null
+  )
+  const sshTargetRemoved = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshTargetRemoved(state as never, sshOwnerEnvironmentId, connectionId)
+      : false
+  )
+  const sshTargetLabel = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshTargetLabel(state as never, sshOwnerEnvironmentId, connectionId)
+      : ''
+  )
 
   const branchName = (worktree.branch ?? '').trim()
   const isDetached =
@@ -195,6 +234,19 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     head: worktree.head_commit,
     enabled: !isFolder && !hostContextLabel && Boolean(effectiveRepo?.path)
   })
+  // D04a-010/D04b-012 Rosetta: conflict op from the store (Orca
+  // `gitConflictOperationByWorktree`), remote-branch collision, and the lineage
+  // chip derived from count + toggle — not hardcoded placeholders.
+  const conflictOperation = useAppStore(
+    (state) => (state as unknown as { gitConflictOperationByWorktree?: Record<string, string> }).gitConflictOperationByWorktree?.[worktreeId] ?? ''
+  )
+  const remoteBranchConflictRaw = useAppStore(
+    (state) =>
+      (state as unknown as { remoteBranchConflictByWorktreeId?: Record<string, unknown> }).remoteBranchConflictByWorktreeId?.[worktreeId] ?? false
+  ) as boolean | { remote: string; branchName: string } | null
+  const remoteBranchConflict = Boolean(remoteBranchConflictRaw)
+  const showLineageChildChip = lineageChildCount > 0 && onLineageToggle !== undefined
+
   const visibleCardTitle =
     worktree.display_name?.trim() ||
     worktree.displayName?.trim() ||
@@ -348,7 +400,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
           : undefined,
     branch: branchName,
     detachedHeadDisplay,
-    conflictOperation: '',
+    conflictOperation,
     upstreamStatus,
     cacheStartedAt,
     cacheTtlMs,
@@ -358,12 +410,17 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     status: status ?? 'inactive',
     prDisplay: prDisplay ?? null,
     showInlineAgentList: Boolean(onSelectSession || (sessions && sessions.length > 0)),
-    showLineageChildChip: false,
-    remoteBranchConflict: false,
+    showLineageChildChip,
+    remoteBranchConflict,
     visibleCardTitle,
     workspacePorts: ports,
     isDeleting,
     isRuntimeDisconnected,
+    sshTargetLabel,
+    sshStatus,
+    sshTargetRemoved,
+    sshOwnerEnvironmentId,
+    parsedRepoHost,
     isQueuedForDeletion,
     deleteLabel,
     titleRenaming,
