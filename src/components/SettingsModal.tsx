@@ -16,6 +16,7 @@ import { GLOBAL_WORKTREE_VISIBILITY_SETTINGS_TARGET_ID } from "../lib/settings-n
 import { KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID } from "./sidebar/local-base-ref-suggestion-toast";
 import { AppearancePane } from "./settings/AppearancePane";
 import { SshPane } from "./settings/SshPane";
+import { RuntimeServersPane } from "./settings/RuntimeServersPane";
 
 export type { HydraSettings };
 
@@ -69,7 +70,7 @@ interface SettingsModalProps {
   initialSectionId?: string;
 }
 
-export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh";
+export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh" | "servers";
 
 export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection, initialSectionId }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
@@ -281,6 +282,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
     ]},
     { id: "remote", title: "Remote", items: [
       { id: "ssh", label: "SSH Hosts", icon: Server },
+      { id: "servers", label: "Paired Servers", icon: Server },
     ]},
     { id: "capabilities", title: "AI Capabilities", items: [
       { id: "agents", label: "Agents", icon: Bot },
@@ -354,6 +356,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
               {activeId==="git" && <><FolderGit2 className="size-4" /> Workspace & Git</>}
               {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal</>}
               {activeId==="ssh" && <><Server className="size-4 text-emerald-500" /> SSH Hosts</>}
+              {activeId==="servers" && <><Server className="size-4 text-emerald-500" /> Paired Servers</>}
             </h2>
             <button onClick={onClose} className="rounded-md p-1.5 hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
           </div>
@@ -1143,6 +1146,15 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                     <p className="text-[13px] text-muted-foreground">Machines Hydra can reach over SSH, from ~/.ssh/config or added by hand.</p>
                   </div>
                   <SshPane />
+                </div>
+              )}
+              {activeId==="servers" && (
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <h3 className="text-[20px] font-semibold tracking-tight">Paired Servers</h3>
+                    <p className="text-[13px] text-muted-foreground">Orca runtimes paired from another computer.</p>
+                  </div>
+                  <RuntimeServersPane />
                 </div>
               )}
             </div>

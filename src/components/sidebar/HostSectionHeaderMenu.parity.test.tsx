@@ -126,7 +126,50 @@ describe('HostSectionHeaderMenu (Orca parity)', () => {
     window.removeEventListener('hydra:open-settings', listener)
   })
 
-  it('keeps the skew warning for a runtime host without offering removal', () => {
+  it('deep-links a runtime host Manage host… to the servers pane with its environment', () => {
+    const listener = vi.fn()
+    window.addEventListener('hydra:open-settings', listener)
+    renderMenu(
+      hostRow({ hostId: 'runtime:vm-1', kind: 'runtime', label: 'VM one', health: 'available' })
+    )
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for VM one' }), {
+      key: 'Enter'
+    })
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Manage host…' }))
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(
+      (listener.mock.calls[0]![0] as CustomEvent<{ section: string; sectionId: string }>).detail
+    ).toEqual({ section: 'servers', sectionId: 'vm-1' })
+    window.removeEventListener('hydra:open-settings', listener)
+  })
+
+  it('routes runtime host removal through the servers pane instead of deleting inline', () => {
+    renderMenu(
+      hostRow({ hostId: 'runtime:vm-1', kind: 'runtime', label: 'VM one', health: 'available' })
+    )
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Host actions for VM one' }), {
+      key: 'Enter'
+    })
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Remove host…' }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(
+      screen.getByText('This opens the paired servers settings where you can remove this server.')
+    ).toBeInTheDocument()
+    const listener = vi.fn()
+    window.addEventListener('hydra:open-settings', listener)
+    fireEvent.click(screen.getByRole('button', { name: 'Open settings' }))
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(
+      (listener.mock.calls[0]![0] as CustomEvent<{ section: string; sectionId: string }>).detail
+    ).toEqual({ section: 'servers', sectionId: 'vm-1' })
+    window.removeEventListener('hydra:open-settings', listener)
+  })
+
+  it('keeps the skew warning for a runtime host and still offers pane-backed removal', () => {
     renderMenu(
       hostRow({
         hostId: 'runtime:vm-1',
@@ -144,7 +187,7 @@ describe('HostSectionHeaderMenu (Orca parity)', () => {
     const warning = screen.getByRole('menuitem', { name: 'Update server required' })
     expect(warning).toBeInTheDocument()
     expect(warning).toHaveAttribute('title', describeRuntimeCompatBlock(BLOCKED_VERDICT))
-    expect(screen.queryByRole('menuitem', { name: 'Remove host…' })).toBeNull()
+    expect(screen.getByRole('menuitem', { name: 'Remove host…' })).toBeInTheDocument()
   })
 
   it('disconnects a connected SSH host and drops its live state', async () => {

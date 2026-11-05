@@ -32,7 +32,6 @@ import { resolveWorkspaceBoardFullLaneDropIndex } from './workspace-board-filter
 import { registerWorkspaceBoardSidebarDropGroups } from './workspace-board-sidebar-drop'
 import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync'
 import { shouldWriteManualOrderForGroupDrop, buildManualOrderUpdatesForGroupDrop } from '../worktree-manual-order'
-import { commitWorkspaceStatusDocumentDrop } from './commit-workspace-status-drop'
 
 export type WorkspaceBoardDrawerProps = {
   /** Whether the user has the board open (the sheet's own `open` state). */
@@ -85,11 +84,22 @@ export type WorkspaceBoardDrawerProps = {
    */
   onAssignWorktreeStatus: (worktreePath: string, status: WorkspaceStatus) => void | Promise<void>
   /**
+   * Batch variant of the status write (Orca `moveWorktreesToStatus`): one call
+   * for the whole drop instead of one per card. Optional — the drawer falls back
+   * to the single-path writer when the host does not provide it.
+   */
+  onAssignWorktreeStatuses?: (
+    worktreePaths: readonly string[],
+    status: WorkspaceStatus
+  ) => void | Promise<void>
+  /**
    * The app's own pin write (`set_worktree_flags` with `is_pinned`). A card dropped on the
    * board's pin strip commits through it — by pointer or by native HTML5 drop — so the board
    * never grows a second writer for the pin, and a pin drop never writes a status (D08-028).
    */
   onPinWorktree: (worktreePath: string) => void
+  /** Batch variant (Orca `pinWorktrees`): pins a whole drop in one call. */
+  onPinWorktrees?: (worktreePaths: readonly string[]) => void
   /**
    * Opens the workspace composer (the sidebar's own modal) with the clicked lane's status
    * preselected (D08-021/D08-030). The board never grows a second modal mechanism; the
@@ -153,7 +163,9 @@ function WorkspaceBoardDrawerContent({
   compactCards,
   allWorktrees,
   onAssignWorktreeStatus,
+  onAssignWorktreeStatuses,
   onPinWorktree,
+  onPinWorktrees,
   onCreateWorktree,
   onOpenChange,
   onSelectWorktree,
@@ -194,27 +206,27 @@ function WorkspaceBoardDrawerContent({
   // which host's row a write belongs to.
   const pinWorktrees = useCallback(
     (worktreeIds: readonly string[]) => {
-      let wrote = false
-      // One dispatcher for every drop surface: batch writers win when present, else
-      // the helper falls back to one pin write per dragged workspace.
-      commitWorkspaceStatusDocumentDrop({
-        worktreeIds,
-        status: null,
-        isPinDrop: true,
-        onMoveWorktreeToStatus: () => {},
-        onPinWorktree: (worktreeId) => {
-          const card = worktreeById.get(worktreeId)
-          if (card) {
-            wrote = true
-            void onPinWorktree(card.worktree.path)
-          }
-        },
-      })
-      if (wrote) {
-        void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
+      const paths: string[] = []
+      for (const worktreeId of worktreeIds) {
+        const card = worktreeById.get(worktreeId)
+        if (card) {
+          paths.push(card.worktree.path)
+        }
       }
+      if (paths.length === 0) {
+        return
+      }
+      // Orca `pinWorktrees`: one batch write for the whole strip drop.
+      if (onPinWorktrees) {
+        onPinWorktrees(paths)
+      } else {
+        for (const path of paths) {
+          void onPinWorktree(path)
+        }
+      }
+      void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
     },
-    [onPinWorktree, worktreeById]
+    [onPinWorktree, onPinWorktrees, worktreeById]
   )
   const statusActions = useWorkspaceBoardStatusActions({ allWorktrees, onAssignWorktreeStatus })
   const boardCards = useMemo(() => lanes.flatMap((lane) => lane.cards), [lanes])
@@ -363,17 +375,34 @@ function WorkspaceBoardDrawerContent({
       status: WorkspaceStatus
       dropIndex: number
     }): void => {
+      // Orca `moveWorktreesToStatus`: one batch write for the whole drop when the
+      // host provides it; the per-card loop stays as the fallback.
+      const batchable = args.targets.filter(
+        (target) =>
+          resolveWorkspaceBoardCardDragCommit({
+            sourceStatus: target.status,
+            targetStatus: args.status,
+          }) !== null
+      )
       let wrote = false
-      for (const target of args.targets) {
-        const commitStatus = resolveWorkspaceBoardCardDragCommit({
-          sourceStatus: target.status,
-          targetStatus: args.status,
-        })
-        if (!commitStatus) {
-          continue
-        }
+      if (batchable.length > 0 && onAssignWorktreeStatuses) {
         wrote = true
-        void onAssignWorktreeStatus(target.worktreePath, commitStatus)
+        void onAssignWorktreeStatuses(
+          batchable.map((target) => target.worktreePath),
+          args.status
+        )
+      } else {
+        for (const target of args.targets) {
+          const commitStatus = resolveWorkspaceBoardCardDragCommit({
+            sourceStatus: target.status,
+            targetStatus: args.status,
+          })
+          if (!commitStatus) {
+            continue
+          }
+          wrote = true
+          void onAssignWorktreeStatus(target.worktreePath, commitStatus)
+        }
       }
       // A same-lane drop only reorders; the manual-order rule decides whether that
       // is a write, and a cross-lane drop that actually moved cards also qualifies.
@@ -394,23 +423,28 @@ function WorkspaceBoardDrawerContent({
     [
       maybeSyncTaskStatuses,
       onAssignWorktreeStatus,
+      onAssignWorktreeStatuses,
       recordBoardAction,
       writeManualOrderForBoardDrop,
     ]
   )
 
-  /** Pins a pointer-drag batch in one pass: a pin write per card, one telemetry record. */
+  /** Pins a pointer-drag batch in one pass: one batch write, one telemetry record. */
   const handlePinWorktrees = useCallback(
     (targets: readonly WorkspaceBoardCardDragTarget[]): void => {
       if (targets.length === 0) {
         return
       }
-      for (const target of targets) {
-        void onPinWorktree(target.worktreePath)
+      if (onPinWorktrees) {
+        onPinWorktrees(targets.map((target) => target.worktreePath))
+      } else {
+        for (const target of targets) {
+          void onPinWorktree(target.worktreePath)
+        }
       }
       recordBoardAction()
     },
-    [onPinWorktree, recordBoardAction]
+    [onPinWorktree, onPinWorktrees, recordBoardAction]
   )
 
   /**

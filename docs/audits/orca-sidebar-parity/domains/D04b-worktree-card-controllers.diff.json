@@ -220,23 +220,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:162-186",
-     "src/components/sidebar/use-worktree-card-controller.ts:225-233",
-     "src/components/sidebar/worktree-card-header.tsx:113-135",
-     "src/App.tsx:3860-3877"
+     "src/components/sidebar/use-worktree-card-controller.ts — handleToggleUnreadQuick wired via updateWorktreeMeta (bell legado segue desmontado: newCardStyle constante, D04a-023 n/a)",
+     "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx"
     ],
     "backend": [
      "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
     ],
     "missing_behaviors": [
-     "Guard de seleção de texto/evento fora do contêiner no clique simples",
-     "Registro de breadcrumb de crash sidebar_worktree_activate",
-     "Ativação assíncrona activateWorktreeFromSidebar",
-     "Duplo-clique abrindo modal edit-meta (Hydra abre renomeação inline)",
-     "Persistência do novo nome via updateWorktreeMeta (update-worktree-meta.ts:1 Auto-stub; handler do mount ausente)",
-     "Toggle rápido de não-lido (handleToggleUnreadQuick): showUnreadQuickAction é computado em worktree-card-presentation.tsx:88 mas nunca renderizado"
+     "duplo-clique abre inline rename (Hydra) vs modal edit-meta (Orca); click via onSelect/onActivate (efeito equivalente a activateWorktreeFromSidebar); breadcrumb de crash é stub"
     ],
-    "reason": "",
     "notes": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op).",
     "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
    }
@@ -322,22 +314,13 @@
     "components/sidebar/use-worktree-card-lifecycle-effects.ts:228"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-model.ts:124",
-     "src/components/sidebar/CacheTimer.tsx:18",
-     "src/store/slices/hosted-review.ts:2"
+     "src/components/sidebar/use-worktree-card-lifecycle-effects.ts — Rosetta: initial fetch + polls com installWindowVisibilityInterval + jitter, hover refetch, GitHub 5min, Linear focus/visibility listeners",
+     "src/components/sidebar/use-worktree-card-lifecycle-effects.parity.test.tsx — 3 testes"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Polling de revisões hospedadas com installWindowVisibilityInterval + jitter e pausa com janela oculta/web client",
-     "Busca sob demanda de revisão hospedada ao abrir hoverDetailsOpen",
-     "Polling de issue GitHub (5 min) condicionado a isWindowVisible",
-     "Busca sob demanda de issue GitHub no hover",
-     "Busca inicial de issue Linear + listeners window focus / document visibilitychange",
-     "Busca sob demanda de issue Linear no hover"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card.",
     "note": "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidores; sem polling no card."
    }
@@ -425,22 +408,15 @@
     "components/sidebar/use-worktree-card-secondary-details.ts:240"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/components/sidebar/CacheTimer.tsx:10",
-     "src/components/sidebar/use-worktree-card-controller.ts:305",
-     "src/store/slices/ui/ui-slice-task-actions.ts:43"
+     "src/components/sidebar/use-worktree-card-controller.ts — handleUnlinkReview (GitHub com tombstone suppressedGitHubPR, GitLab/Bitbucket/Azure/Gitea sem), handleOpenIssue/ReviewInBrowser via openExternalUrl, showUnreadEmphasis = showStatus && isUnread",
+     "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx — 4 testes"
     ],
     "backend": [],
     "missing_behaviors": [
-     "showUnreadEmphasis condicionado ao toggle de status (Hydra fixa showUnreadEmphasis = isUnread)",
-     "compactInlineAgentRows",
-     "showAggregateCacheTimer + usePromptCacheCountdownStartedAt + promptCacheTtlMs",
-     "openTaskPage (GitHub e Linear) no card",
-     "openWorkspaceBrowserTab para links externos",
-     "handleUnlinkReview com tombstone suppressedGitHubPR e remoção de links GitLab/Bitbucket/Azure/Gitea"
+     "compactInlineAgentRows/openTaskPage seguem via App; cache timer agregado já existia via CacheTimer"
     ],
-    "reason": "",
     "notes": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card.",
     "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
    }

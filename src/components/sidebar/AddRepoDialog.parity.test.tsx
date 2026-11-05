@@ -8,10 +8,18 @@ const { invokeMock, openMock, toastMock } = vi.hoisted(() => ({
   toastMock: { info: vi.fn(), success: vi.fn(), warning: vi.fn(), error: vi.fn() }
 }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
+vi.mock("../../store/paired-server-repo-bridge", () => ({
+  clonePairedServerRepository: vi.fn(),
+  createPairedServerProject: vi.fn()
+}));
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open: openMock }));
 vi.mock("sonner", () => ({ toast: toastMock }));
 
 import { AddRepoDialog, type AddRepoProjectAddedKind } from "./AddRepoDialog";
+import {
+  clonePairedServerRepository,
+  createPairedServerProject
+} from "../../store/paired-server-repo-bridge";
 import { useAppStore } from "../../store";
 import { DEFAULT_HYDRA_SETTINGS } from "../../shared/settings-types";
 
@@ -215,6 +223,30 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
     );
   });
 
+  it("opens the nested root folder through the folder workspace path", async () => {
+    openMock.mockResolvedValue(["/acme"]);
+    const { onProjectAdded } = openDialog();
+    fireEvent.click(screen.getByRole("button", { name: /browse folder/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Found 2 repositories in /acme.")).toBeInTheDocument()
+    );
+    // Deselect every repo so the review offers the folder path instead.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Deselect all" }));
+    await waitFor(() =>
+      expect(screen.getByText(/No repositories are selected/)).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open as Folder" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith(
+        "catalog_add_folder_workspace",
+        expect.objectContaining({ parentPath: "/acme" })
+      )
+    );
+    await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/acme", "folder"));
+  });
+
   it("scans a folder with nested repositories and imports the selection separately", async () => {
     openMock.mockResolvedValue(["/acme"]);
     const { onProjectAdded } = openDialog();
@@ -272,6 +304,102 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
       )
     );
     await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/a", "project"));
+  });
+});
+
+describe("AddRepoDialog on a paired server (D02a-014/018)", () => {
+  function usePairedServerHost(): void {
+    useAppStore.setState({
+      settings: { ...DEFAULT_HYDRA_SETTINGS, workspace_dir: "/work/workspaces" },
+      sshTargetLabels: new Map(),
+      sshConnectionStates: new Map(),
+      runtimeEnvironments: [{ id: "env-1", name: "dev-box" }],
+      runtimeStatusByEnvironmentId: new Map([
+        ["env-1", { status: null, snapshot: { transport: "ready" } }]
+      ])
+    });
+  }
+
+  async function selectPairedServerHost(): Promise<void> {
+    fireEvent.click(screen.getByRole("button", { name: /local linux/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /dev-box/i }));
+  }
+
+  it("clones on the paired server through repo.clone and stamps the row runtime", async () => {
+    usePairedServerHost();
+    vi.mocked(clonePairedServerRepository).mockResolvedValue({ path: "/srv/code/widgets" });
+    invokeMock.mockImplementation((command: string, args?: Record<string, unknown>) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "catalog_add_remote_repo") {
+        return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] });
+      }
+      return Promise.resolve(undefined);
+    });
+    const { onProjectAdded } = openDialog();
+    await selectPairedServerHost();
+    fireEvent.click(screen.getByText("Clone from URL"));
+    fireEvent.change(screen.getByPlaceholderText(/https:\/\/github.com/), {
+      target: { value: "https://github.com/acme/widgets.git" }
+    });
+    fireEvent.change(screen.getByLabelText("Destination Directory"), {
+      target: { value: "/srv/code" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Clone Project" }));
+
+    await waitFor(() =>
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/code/widgets",
+        "project",
+        expect.objectContaining({
+          executionHostId: "runtime:env-1",
+          source: "clone_url"
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("catalog_add_remote_repo", {
+        path: "/srv/code/widgets",
+        connectionId: "runtime:env-1",
+        executionHostId: "runtime:env-1",
+        kind: "git",
+        displayName: null
+      })
+    );
+  });
+
+  it("creates the project on the paired server through repo.create", async () => {
+    usePairedServerHost();
+    vi.mocked(createPairedServerProject).mockResolvedValue({ path: "/srv/projects/demo" });
+    invokeMock.mockImplementation((command: string) => {
+      if (command === "check_preflight_tools_cmd") {
+        return Promise.resolve({ git_installed: true, gh_installed: true, gh_authenticated: true });
+      }
+      if (command === "catalog_add_remote_repo") {
+        return Promise.resolve({ schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] });
+      }
+      return Promise.resolve(undefined);
+    });
+    const { onProjectAdded } = openDialog();
+    await selectPairedServerHost();
+    fireEvent.click(screen.getByText("Create new project"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "demo" } });
+    fireEvent.change(screen.getByLabelText("Host parent folder"), {
+      target: { value: "/srv/projects" }
+    });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Create Project" })).toBeEnabled()
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Create Project" }));
+
+    await waitFor(() =>
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/projects/demo",
+        "project",
+        expect.objectContaining({ executionHostId: "runtime:env-1", source: "create_project" })
+      )
+    );
   });
 });
 

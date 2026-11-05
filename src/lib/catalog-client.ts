@@ -48,6 +48,28 @@ export function addRemoteCatalogRepo(args: {
 }
 
 /**
+ * Registers a checkout that lives on a paired runtime server. Same row shape as
+ * the SSH path; the `connectionId` carries `runtime:<environmentId>` so the
+ * host-scoped removal keeps working, and `executionHostId` carries the full
+ * `runtime:<id>` stamp the sidebar scopes on.
+ */
+export function addPairedServerCatalogRepo(args: {
+  path: string;
+  environmentId: string;
+  kind?: "git" | "folder";
+  displayName?: string;
+}): Promise<CatalogEnvelope> {
+  const connectionId = `runtime:${args.environmentId}`;
+  return invoke<CatalogEnvelope>("catalog_add_remote_repo", {
+    path: args.path,
+    connectionId,
+    executionHostId: `runtime:${encodeURIComponent(args.environmentId)}`,
+    kind: args.kind ?? "git",
+    displayName: args.displayName ?? null,
+  });
+}
+
+/**
  * Drops a repo row. `connectionId` scopes the removal to one host, because two
  * hosts can hold the same absolute path.
  */

@@ -216,16 +216,12 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/worktree-card-meta-row.tsx:62-99",
-     "src/components/sidebar/use-worktree-card-controller.ts:148-154",
-     "src/components/sidebar/use-worktree-card-controller.ts:337"
+     "src/components/sidebar/use-worktree-card-controller.ts — conflictOperation real do store (gitConflictOperationByWorktree), remoteBranchConflict derivado, showLineageChildChip = count>0 && toggle (era hardcoded)",
+     "src/components/sidebar/worktree-card-meta-row.tsx — ahead/behind chips, detached âmbar com tooltip lateral, host badge (já existiam; controller agora alimenta)"
     ],
     "backend": [],
     "missing_behaviors": [
-     "hostContextLabel nunca é fornecido — o WorktreeHostContextBadge é dormente",
-     "conflictOperation fixo em '' — o badge de conflito nunca renderiza",
-     "Sem chips ahead/behind no card",
-     "Detached HEAD é um chip mono sem alerta âmbar/tooltip lateral"
+     "hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos"
     ],
     "notes": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not.",
     "note": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."
@@ -268,18 +264,14 @@
     "components/sidebar/worktree-card-header.tsx:107"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/worktree-card-header.tsx:90-206",
-     "src-tauri/src/catalog.rs:71"
+     "src/components/sidebar/WorktreeCardSshHostControl.tsx — Rosetta: Server/ServerOff, pill Retry/Reconnect (connecting/deploying-relay/reconnecting), targetRemoved + auth-failed com tooltips próprios, iconOnly, Enter/Espaço stop, click guard",
+     "src/components/sidebar/worktree-card-header.tsx — monta o controle para repo.connectionId; runtime mantém glifo passivo",
+     "src/components/sidebar/WorktreeCardSshHostControl.parity.test.tsx — 5 testes"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Glifos Server/ServerOff e pill de Retry/Reconnect com estados connecting/deploying-relay/reconnecting",
-     "targetRemoved, auth-failed e tooltips diferenciados",
-     "iconOnly para compacto/novo estilo",
-     "Stop de Enter/Espaço e guarda de clique em voo"
-    ],
+    "missing_behaviors": [],
     "notes": "PR54-58 adicionaram registry/dialog/settings SSH, mas nenhum controle host SSH no card.",
     "note": "PR54-58 adicionaram registry/dialog/settings SSH, mas nenhum controle host SSH no card."
    }
@@ -294,16 +286,14 @@
     "components/sidebar/WorktreeCardSshHostControl.tsx:130"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src-tauri/src/catalog.rs:71",
-     "src/components/sidebar/worktree-card-header.tsx:90-206"
+     "src/components/sidebar/WorktreeCardSshHostControl.tsx — fluxo connect: local via window.api.ssh + timeout UI + mirror setSshConnectionState; toast de falha + resync (listTargets antes de listRemovedTargetLabels)",
+     "src/ssh/ssh-connect-ui-timeout.ts — Rosetta com SSH_RECONNECT_UI_TIMEOUT_MS 180s"
     ],
     "backend": [],
     "missing_behaviors": [
-     "Fluxo connectRuntimeEnvironmentSshTarget / window.api.ssh.connect com timeout de UI",
-     "Espelhamento em setSshConnectionState para reattach de PTY diferido",
-     "Toast de falha + resync (listTargets antes de listRemovedTargetLabels)"
+     "runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra)"
     ],
     "notes": "Sem fluxo de conexão SSH no renderer/card.",
     "note": "Sem fluxo de conexão SSH no renderer/card."
@@ -992,15 +982,14 @@
     "components/sidebar/WorktreeCardAutomationDetailSection.tsx:101"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263"
+     "src/components/sidebar/WorktreeCardAutomationDetailSection.tsx — Rosetta: check available/missing/unavailable, Open automation/Run gated",
+     "src/components/sidebar/WorktreeCardDetailsHover.tsx + worktree-card-parent-content.tsx — seção montada, handlers do controller",
+     "src/components/sidebar/WorktreeCardAutomationDetailSection.parity.test.tsx — 3 testes"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Checagem de disponibilidade da automação (available/automation-missing/unavailable)",
-     "Ações Open automation / Open run"
-    ],
+    "missing_behaviors": [],
     "notes": "src/components/automations/** existe mas não é consumido pelo card. Busca: WorktreeCardAutomationDetailSection/listAutomationsForTarget no card = 0 hits; src/components/automations/** existe mas não é consumido pelo card."
    }
   },

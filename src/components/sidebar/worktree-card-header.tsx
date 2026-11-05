@@ -15,6 +15,8 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import type { WorktreeCardWithExtras } from './worktree-card-controller-extras'
 import { useWorktreeSleeping } from './use-worktree-sleeping'
+import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
+import type { SshConnectionStatus } from '../../shared/ssh-types'
 
 // Why: pinned repo icon and compact inline badge share this chip shell so both repo cues read as the same affordance.
 function RepoIdentityChip({
@@ -147,6 +149,21 @@ export function WorktreeCardHeader({
             />
           </RepoIdentityChip>
         )}
+
+        {/* D04a-012 Rosetta: SSH hosts get the connect control; runtime
+            ("server") hosts keep the passive glyph (no renderer-reachable
+            connect API). */}
+        {card.repo?.connectionId ? (
+          <WorktreeCardSshHostControl
+            targetId={card.repo.connectionId}
+            targetLabel={card.sshTargetLabel || card.repo.displayName || card.repo.connectionId}
+            status={(card.sshStatus as SshConnectionStatus | null) ?? null}
+            targetRemoved={card.sshTargetRemoved ?? false}
+            sshOwnerEnvironmentId={card.sshOwnerEnvironmentId ?? null}
+            iconOnly={Boolean(card.compactCards)}
+            onPointerDown={card.stopQuickActionPointerPropagation}
+          />
+        ) : null}
 
         {/* Why passive: a runtime ("server") host has no renderer-reachable connect
             API, so the glyph states the host and its health but is not a control. */}

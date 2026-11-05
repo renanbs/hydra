@@ -38,6 +38,7 @@ import {
 import type { SshForgetWorkspaceResult, SshReconnectResult } from "./shared/ssh-types";
 import {
   createWorktreeFlagApplier,
+  createWorktreeFlagBatchApplier,
   reconcileProjectFlagSet,
   reconcileWorktreeFlagSet,
   type ProjectFlagTarget,
@@ -166,7 +167,7 @@ import {
   serializeWorktreeSleepIntentPayload,
 } from "./lib/worktree-sleep-state-persistence";
 import { destroyWorkspaceWebviews } from "./store/slices/browser-webview-cleanup";
-import { forgetWorktreeSleepIntent } from "./lib/worktree-sleep-intent";
+import { forgetWorktreeSleepIntents } from "./lib/worktree-sleep-intent";
 import { wakeEphemeralVmForSleptWorktree } from "./lib/sidebar-worktree-activation";
 import {
   CLOSE_ALL_CONTEXT_MENUS_EVENT,
@@ -2970,8 +2971,9 @@ export default function App() {
           const repoPaths = rows.map((row) => row.repoPath).filter(Boolean);
           for (const row of rows) deletedPaths.add(row.path);
           // A deleted workspace must not leave a durable sleep marker behind: a
-          // later workspace reusing the path would boot asleep.
-          for (const row of rows) forgetWorktreeSleepIntent(row.path);
+          // later workspace reusing the path would boot asleep. One coordinated
+          // batch for a multi-removal (Orca's snapshot prune batch shape).
+          forgetWorktreeSleepIntents(rows.map((row) => row.path));
           refreshAfterDelete(repoPaths);
           setDeleteStateByWorktreeId((prev) => {
             const next = { ...prev };
@@ -5540,6 +5542,17 @@ export default function App() {
       }),
     [projects]
   );
+  const applyPinnedWorktreeFlagBatch = useMemo(
+    () =>
+      createWorktreeFlagBatchApplier({
+        field: "is_pinned",
+        setWorktreeFlagged: setPinnedWorktrees,
+        setProjectFlagged: setPinnedProjects,
+        findProjectIdByPath: (path) => projects.find((p) => p.path === path)?.id,
+        invoke,
+      }),
+    [projects]
+  );
   const applyUnreadWorktreeFlag = useMemo(
     () =>
       createWorktreeFlagApplier({
@@ -5561,6 +5574,20 @@ export default function App() {
     if (pinnedWorktrees.has(path)) return;
     togglePinWorktree(path);
   };
+  // D03b-015 (Orca `pinWorktrees`): fixa o lote de uma vez — um invoke por path
+  // com rollback por path — em vez de um toggle por workspace.
+  const pinWorktrees = useCallback(
+    (paths: readonly string[]) => {
+      const fresh = paths.filter((path) => !pinnedWorktrees.has(path));
+      if (fresh.length === 0) {
+        return;
+      }
+      void applyPinnedWorktreeFlagBatch(
+        fresh.map((path) => ({ path, currentlyFlagged: false }))
+      );
+    },
+    [applyPinnedWorktreeFlagBatch, pinnedWorktrees]
+  );
   const toggleUnreadWorktree = (path: string) => {
     void applyUnreadWorktreeFlag(path, unreadWorktrees.has(path));
   };
@@ -6084,7 +6111,16 @@ export default function App() {
               disabled: isContextDeleting,
               onClick: () => {},
             } as ContextMenuItem]
-          : []),
+          : [{
+              // D03b-015: multi-selection pins in one batch write (Orca `pinWorktrees`
+              // set semantics: pin when any is unpinned, else unpin all).
+              label: contextPaths.some((path) => !pinnedWorktrees.has(path)) ? "Pin" : "Unpin",
+              icon: <Pin className="w-3.5 h-3.5" />,
+              separator: true,
+              disabled: isContextDeleting,
+              onClick: () => pinWorktrees(contextPaths),
+            } as ContextMenuItem]
+        ),
         {
           label: getWorktreeParentPickerLabel(lineageParent ?? null),
           icon: <FolderTree className="w-3.5 h-3.5" />,
@@ -6449,7 +6485,9 @@ export default function App() {
                 onProjectContextMenu={handleProjectContextMenu}
                 onWorktreeContextMenu={handleWorktreeContextMenu}
                 onAssignWorktreeStatus={assignWorktreeStatus}
+                onAssignWorktreeStatuses={assignWorktreeStatuses}
                 onPinWorktree={pinWorktree}
+                onPinWorktrees={pinWorktrees}
                 onCreateWorktree={handleCreateWorktreeInStatus}
                 onReorderSessions={handleReorderSessions}
                 onReorderProjects={handleReorderProjects}

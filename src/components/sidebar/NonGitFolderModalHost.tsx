@@ -8,7 +8,7 @@ type NonGitFolderModalState = {
   closeModal: () => void
   addNonGitFolder: (
     path: string,
-    options?: { displayName?: string; runtimeEnvironmentId?: string }
+    options?: { displayName?: string; runtimeEnvironmentId?: string; connectionId?: string }
   ) => Promise<unknown>
 }
 
@@ -32,13 +32,20 @@ export function NonGitFolderModalHost(): React.JSX.Element | null {
   const displayName = getString(state.modalData.displayName) ?? undefined
   const runtimeEnvironmentId =
     getString(state.modalData.runtimeEnvironmentId) ?? undefined
+  const connectionId = getString(state.modalData.connectionId) ?? undefined
   if (!folderPath) return null
+
+  const hostLabel = connectionId
+    ? `SSH ${connectionId}`
+    : runtimeEnvironmentId
+      ? `runtime ${runtimeEnvironmentId}`
+      : null
 
   return (
     <NonGitFolderDialog
       open
       folderPath={folderPath}
-      hostLabel={runtimeEnvironmentId ? `runtime ${runtimeEnvironmentId}` : null}
+      hostLabel={hostLabel}
       onOpenChange={(open) => {
         if (!open) state.closeModal()
       }}
@@ -46,7 +53,8 @@ export function NonGitFolderModalHost(): React.JSX.Element | null {
         state.closeModal()
         void state.addNonGitFolder(folderPath, {
           ...(displayName ? { displayName } : {}),
-          ...(runtimeEnvironmentId ? { runtimeEnvironmentId } : {})
+          ...(runtimeEnvironmentId ? { runtimeEnvironmentId } : {}),
+          ...(connectionId ? { connectionId } : {})
         })
       }}
     />

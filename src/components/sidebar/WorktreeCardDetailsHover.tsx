@@ -38,6 +38,7 @@ import {
 import { DetailHeader, MetadataActionIcon } from './worktree-card-detail-controls'
 import { WorktreeCardHoverIdentityHeader } from './WorktreeCardHoverIdentityHeader'
 import { WorktreeCardIssueDetailSection } from './WorktreeCardIssueDetailSection'
+import { WorktreeCardAutomationDetailSection } from './WorktreeCardAutomationDetailSection'
 import { WorktreeCardReviewDetailSection } from './WorktreeCardReviewDetailSection'
 import { LinearStateBadge } from './WorktreeCardMetadataStatusBadges'
 import { WorktreeCardPortsDetails } from './WorktreeCardPorts'
@@ -90,6 +91,15 @@ export interface WorktreeCardDetailsHoverProps {
   onOpenIssueInBrowser?: (url: string) => void
   onOpenReviewInBrowser?: (url: string) => void
   onUnlinkReview?: () => void
+  automationProvenance?: {
+    automationId: string
+    automationNameSnapshot: string
+    automationRunId: string
+    automationRunTitleSnapshot: string
+    hostId?: import('../../shared/execution-host').ExecutionHostId
+  } | null
+  onOpenAutomation?: (event: React.MouseEvent) => void
+  onOpenAutomationRun?: (event: React.MouseEvent) => void
   openDelay?: number
   closeDelay?: number
   hoverControl?: WorktreeCardDetailsHoverControl
@@ -166,6 +176,9 @@ export function WorktreeCardDetailsHover(
     onOpenIssueInBrowser,
     onOpenReviewInBrowser,
     onUnlinkReview,
+    automationProvenance,
+    onOpenAutomation,
+    onOpenAutomationRun,
     openDelay = 250,
     closeDelay = 120,
     hoverControl,
@@ -365,6 +378,7 @@ export function WorktreeCardDetailsHover(
       linearDisplay ||
       jiraDisplay ||
       reviewDisplay ||
+      automationProvenance ||
       cliCreated ||
       hasComment(comment) ||
       ports.length > 0
@@ -536,6 +550,14 @@ export function WorktreeCardDetailsHover(
             onUnlinkReview={onUnlinkReview}
             closeHover={closeHover}
           />
+
+          {automationProvenance ? (
+            <WorktreeCardAutomationDetailSection
+              provenance={automationProvenance}
+              onOpenAutomation={onOpenAutomation}
+              onOpenAutomationRun={onOpenAutomationRun}
+            />
+          ) : null}
 
           {cliCreated ? (
             <WorktreeCardDetailSection>

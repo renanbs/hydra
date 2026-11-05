@@ -21,6 +21,18 @@ vi.mock('../../hooks/useInstalledAgentSkills', () => ({
 
 import { LinearAgentSkillSetupPrompt } from './LinearAgentSkillSetupPrompt'
 
+// Radix Dialog measures its content on mount; jsdom has no ResizeObserver.
+class ResizeObserverNoop {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+Object.defineProperty(globalThis, 'ResizeObserver', {
+  configurable: true,
+  writable: true,
+  value: ResizeObserverNoop
+})
+
 describe('Linear agent skill setup prompt (Orca parity)', () => {
   beforeEach(() => {
     window.localStorage.clear()
@@ -44,6 +56,28 @@ describe('Linear agent skill setup prompt (Orca parity)', () => {
     skillState.loading = true
     rerender(<LinearAgentSkillSetupPrompt linked />)
     expect(screen.queryByText(/Set up Linear agent skill/)).toBeNull()
+  })
+
+
+  it('opens the setup dialog with Set up and re-checks on demand', async () => {
+    const { unmount } = render(<LinearAgentSkillSetupPrompt linked />)
+    expect(screen.getByRole('button', { name: 'Set up' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Re-check' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set up' }))
+    expect(
+      await screen.findByText('Enable agents to read and edit the attached Linear ticket.')
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Copy command' })).toBeInTheDocument()
+    unmount()
+  })
+
+  it('renders nothing inline in modal surface until the reminder opens the dialog', () => {
+    const { container, unmount } = render(
+      <LinearAgentSkillSetupPrompt linked surface="modal" />
+    )
+    expect(container.querySelector('[data-linear-agent-skill-setup-prompt]')).toBeNull()
+    unmount()
   })
 
   it('dismisses permanently through localStorage', () => {

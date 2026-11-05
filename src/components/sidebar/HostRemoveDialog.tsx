@@ -39,8 +39,10 @@ type HostRemoveDialogProps = {
   hostId: ExecutionHostId
   /** The label the host shows, used in the dialog copy and the success toast. */
   label: string
-  /** Registry id to delete. */
-  targetId: string
+  /** Registry id to delete (SSH hosts). */
+  targetId?: string
+  /** Paired environment id (runtime hosts — Orca deep-links removal into the servers pane). */
+  runtimeEnvironmentId?: string
 }
 
 export function HostRemoveDialog({
@@ -48,8 +50,99 @@ export function HostRemoveDialog({
   onOpenChange,
   hostId,
   label,
+  targetId,
+  runtimeEnvironmentId
+}: HostRemoveDialogProps): React.JSX.Element | null {
+  // Runtime hosts remove through the paired servers pane: the Orca servers pane owns
+  // active-environment switching and the removal error context, so the sidebar menu
+  // deep-links there instead of duplicating that flow (Orca `handleRemoveRuntime` parity).
+  if (runtimeEnvironmentId !== undefined) {
+    return (
+      <RuntimeHostRemoveRedirect
+        open={open}
+        onOpenChange={onOpenChange}
+        label={label}
+        environmentId={runtimeEnvironmentId}
+      />
+    )
+  }
+  if (targetId === undefined) {
+    return null
+  }
+  return (
+    <SshHostRemoveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      hostId={hostId}
+      label={label}
+      targetId={targetId}
+    />
+  )
+}
+
+function RuntimeHostRemoveRedirect({
+  open,
+  onOpenChange,
+  label,
+  environmentId
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  label: string
+  environmentId: string
+}): React.JSX.Element {
+  const handleOpenSettings = (): void => {
+    window.dispatchEvent(
+      new CustomEvent('hydra:open-settings', {
+        detail: { section: 'servers', sectionId: environmentId }
+      })
+    )
+    onOpenChange(false)
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {translate(
+              'auto.components.sidebar.HostRemoveDialog.3c4d5e6f7a',
+              'Remove {{value0}}?',
+              { value0: label }
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            {translate(
+              'auto.components.sidebar.HostRemoveDialog.4d5e6f7a8b',
+              'This opens the paired servers settings where you can remove this server.'
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            {translate('auto.components.sidebar.HostRemoveDialog.6f7a8b9c0d', 'Cancel')}
+          </Button>
+          <Button type="button" variant="destructive" onClick={handleOpenSettings}>
+            {translate('auto.components.sidebar.HostRemoveDialog.7a8b9c0d1e', 'Open settings')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function SshHostRemoveDialog({
+  open,
+  onOpenChange,
+  hostId,
+  label,
   targetId
-}: HostRemoveDialogProps): React.JSX.Element {
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  hostId: ExecutionHostId
+  label: string
+  targetId: string
+}): React.JSX.Element {
   const [busy, setBusy] = useState(false)
   // Why: removing the host only (keeping workspaces) is the safe, reversible default.
   // Deleting the remote workspaces is destructive, so it lives behind an Advanced

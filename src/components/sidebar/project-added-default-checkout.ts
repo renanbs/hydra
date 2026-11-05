@@ -7,7 +7,12 @@
 // command for hidden checkouts, and App's own activation.
 import { relativePathInsideRoot } from '../../shared/cross-platform-path'
 import { LOCAL_EXECUTION_HOST_ID, type ExecutionHostId } from '../../shared/execution-host'
-import type { AddRepoDefaultCheckoutHandoffSource } from '../../shared/telemetry-events'
+import type {
+  AddRepoDefaultCheckoutHandoffSource,
+  AddRepoExistingWorkspaceSource,
+} from '../../shared/telemetry-events'
+import type { ExistingWorkspaceTelemetryWorktree } from '../../shared/add-repo-existing-workspaces-telemetry'
+import { buildAddRepoExistingWorkspacesDetectedEvent } from '../../shared/add-repo-existing-workspaces-telemetry'
 import { track } from '../../lib/telemetry'
 
 type HandoffResult = 'opened_default_checkout' | 'revealed_project'
@@ -38,6 +43,56 @@ export type DetectedRepoWorktrees = {
   visible: HandoffWorktree[]
   hidden: HandoffWorktree[]
   authoritative: boolean
+}
+
+// D02a-031 Rosetta (Orca `useCompleteGitRepoAdd`): the trigger reads the
+// *detection* worktree snapshot for the owner host and emits the count-only
+// `add_repo_existing_workspaces_detected` signal before the handoff. One-shot
+// per repo id — the handoff may be retried (ProjectAddedDialog hydration) and
+// the signal must not double-count.
+const existingWorkspacesTrackedRepoIds = new Set<string>()
+
+/** Test seam: clears the one-shot set between cases. */
+export function resetAddRepoExistingWorkspacesTrackedForTests(): void {
+  existingWorkspacesTrackedRepoIds.clear()
+}
+
+function isExistingWorkspacesSource(
+  source: AddRepoDefaultCheckoutHandoffSource
+): source is AddRepoExistingWorkspaceSource {
+  return (
+    source === 'local_folder_picker' ||
+    source === 'runtime_server_path' ||
+    source === 'ssh_remote_path' ||
+    source === 'clone_url' ||
+    source === 'create_project'
+  )
+}
+
+export function emitAddRepoExistingWorkspacesDetected(args: {
+  repoId: string
+  source: AddRepoDefaultCheckoutHandoffSource
+  worktrees: readonly HandoffWorktree[]
+  executionHostId?: ExecutionHostId
+  trackFn?: typeof track
+}): void {
+  const { repoId, source, worktrees, executionHostId } = args
+  if (!isExistingWorkspacesSource(source)) {
+    return
+  }
+  if (existingWorkspacesTrackedRepoIds.has(repoId)) {
+    return
+  }
+  const ownerWorktrees = getProjectWorktreesForHost(worktrees, executionHostId)
+  const event = buildAddRepoExistingWorkspacesDetectedEvent(
+    source,
+    ownerWorktrees as readonly ExistingWorkspaceTelemetryWorktree[]
+  )
+  if (!event) {
+    return
+  }
+  existingWorkspacesTrackedRepoIds.add(repoId)
+  ;(args.trackFn ?? track)('add_repo_existing_workspaces_detected', event)
 }
 
 export type ProjectAddedHandoffDeps = {
@@ -237,6 +292,18 @@ export async function openProjectDefaultCheckout(args: {
     defaultCheckout = detected.worktree
     reason = detected.reason
   }
+
+  // D02a-031: the detection signal fires on the loaded snapshot (all
+  // visible + hidden rows, owner-host filtered inside the trigger) before the
+  // checkout handoff consumes the detection.
+  const detectedSnapshot = deps.getWorktrees(repoId)
+  emitAddRepoExistingWorkspacesDetected({
+    repoId,
+    source,
+    worktrees: detectedSnapshot ? [...detectedSnapshot.visible, ...detectedSnapshot.hidden] : [],
+    ...(executionHostId ? { executionHostId } : {}),
+    trackFn: deps.track,
+  })
 
   if (defaultCheckout) {
     const revealFailure = await revealDetectedHiddenLinkedExternalWorktrees(

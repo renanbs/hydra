@@ -8,6 +8,16 @@ import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
 import { usePromptCacheCountdownStartedAt, usePromptCacheTtlMs } from './CacheTimer'
 import { useWorktreeUpstreamStatus } from '../../hooks/useWorktreeUpstreamStatus'
+import { toast } from 'sonner'
+import { useAppStore } from '../../store'
+import { openExternalUrl } from '../../lib/sidebar-desktop-contracts'
+import { useWorktreeCardLifecycleEffects } from './use-worktree-card-lifecycle-effects'
+import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
+import {
+  selectRuntimeAwareSshStatus,
+  selectRuntimeAwareSshTargetLabel,
+  selectRuntimeAwareSshTargetRemoved
+} from '../../store/slices/runtime-environment-ssh-selectors'
 
 export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   repo: HydraProject | undefined
@@ -54,6 +64,11 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   workspacePorts: WorkspacePort[]
   isDeleting: boolean
   isRuntimeDisconnected: boolean
+  sshTargetLabel: string
+  sshStatus: string | null
+  sshTargetRemoved: boolean
+  sshOwnerEnvironmentId: string | null
+  parsedRepoHost: ParsedExecutionHost | null
   isQueuedForDeletion: boolean
   deleteLabel: string
   titleRenaming: boolean
@@ -74,6 +89,19 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleWorkspaceQuickAction: () => void
   stopQuickActionPointerPropagation: (e: React.MouseEvent | React.PointerEvent) => void
   showUnreadEmphasis: boolean
+  handleUnlinkReview: () => void
+  handleOpenIssueInBrowser: (url: string) => void
+  handleOpenReviewInBrowser: (url: string) => void
+  handleToggleUnreadQuick: (event: React.MouseEvent<HTMLButtonElement>) => void
+  handleOpenAutomation: (event: React.MouseEvent) => void
+  handleOpenAutomationRun: (event: React.MouseEvent) => void
+  automationProvenance: {
+    automationId: string
+    automationNameSnapshot: string
+    automationRunId: string
+    automationRunTitleSnapshot: string
+    hostId?: import('../../shared/execution-host').ExecutionHostId
+  } | null
 }
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps | WorktreeCardProps): WorktreeCardController {
@@ -172,6 +200,33 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
   )
 
   const effectiveRepo = repo || project
+  const worktreeId = worktree.id ?? worktree.path
+
+  // D04a-012/D04a-013 Rosetta (Orca `use-worktree-card-foundation.ts:135-166`):
+  // runtime-aware SSH selectors for the card title-row control. Local targets
+  // read the local maps; runtime-owned targets read their environment bucket.
+  const connectionId = effectiveRepo?.connectionId ?? null
+  const parsedRepoHost = parseExecutionHostId(effectiveRepo?.executionHostId ?? null)
+  const sshOwnerEnvironmentId = useAppStore(() =>
+    connectionId && parsedRepoHost?.kind === 'runtime'
+      ? ((parsedRepoHost as { environmentId?: string }).environmentId ?? null)
+      : null
+  )
+  const sshStatus = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshStatus(state as never, sshOwnerEnvironmentId, connectionId)
+      : null
+  )
+  const sshTargetRemoved = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshTargetRemoved(state as never, sshOwnerEnvironmentId, connectionId)
+      : false
+  )
+  const sshTargetLabel = useAppStore((state) =>
+    connectionId
+      ? selectRuntimeAwareSshTargetLabel(state as never, sshOwnerEnvironmentId, connectionId)
+      : ''
+  )
 
   const branchName = (worktree.branch ?? '').trim()
   const isDetached =
@@ -195,6 +250,141 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     head: worktree.head_commit,
     enabled: !isFolder && !hostContextLabel && Boolean(effectiveRepo?.path)
   })
+  // D04a-010/D04b-012 Rosetta: conflict op from the store (Orca
+  // `gitConflictOperationByWorktree`), remote-branch collision, and the lineage
+  // chip derived from count + toggle — not hardcoded placeholders.
+  const conflictOperation = useAppStore(
+    (state) => (state as unknown as { gitConflictOperationByWorktree?: Record<string, string> }).gitConflictOperationByWorktree?.[worktreeId] ?? ''
+  )
+  const remoteBranchConflictRaw = useAppStore(
+    (state) =>
+      (state as unknown as { remoteBranchConflictByWorktreeId?: Record<string, unknown> }).remoteBranchConflictByWorktreeId?.[worktreeId] ?? false
+  ) as boolean | { remote: string; branchName: string } | null
+  const remoteBranchConflict = Boolean(remoteBranchConflictRaw)
+  // D04b-016 Rosetta (Orca `use-worktree-card-secondary-details`): unread
+  // emphasis is owned by the status toggle (`showStatus && isUnread`). Hydra's
+  // showStatus is constant-true today, so this reduces to isUnread — but the
+  // conjunction documents the owner, so a future status-toggle port keeps the
+  // gate instead of re-hardcoding emphasis.
+  const showStatus = true
+  const showUnreadEmphasis = showStatus && isUnread
+  const showLineageChildChip = lineageChildCount > 0 && onLineageToggle !== undefined
+
+  // D04b-016 Rosetta (Orca `use-worktree-card-secondary-details:handleUnlinkReview`):
+  // the hover's Unlink action clears the linked review and — for GitHub —
+  // records the tombstone so the branch lookup does not re-suggest it.
+  const updateWorktreeMeta = useAppStore(
+    (state) =>
+      (state as unknown as { updateWorktreeMeta: (id: string, updates: Record<string, unknown>, options?: { executionHostId?: string }) => Promise<{ ok: true } | { ok: false; error: string }> }).updateWorktreeMeta
+  )
+  const handleUnlinkReview = useCallback(async (): Promise<void> => {
+    const provider = (prDisplay as unknown as { provider?: string } | null)?.provider
+    const number = (prDisplay as unknown as { number?: number } | null)?.number
+    const hostId = ((worktree as unknown as { hostId?: string }).hostId ?? 'local') as 'local'
+    if (provider === 'github') {
+      const result = await updateWorktreeMeta(
+        worktreeId,
+        { linkedPR: null, suppressedGitHubPR: typeof number === 'number' ? number : null },
+        { executionHostId: hostId }
+      )
+      if (!result.ok) {
+        toast.error(result.error)
+      }
+      return
+    }
+    if (provider === 'gitlab' || provider === 'bitbucket' || provider === 'azure-devops' || provider === 'gitea') {
+      const field =
+        provider === 'gitlab' ? 'linkedGitLabMR'
+        : provider === 'bitbucket' ? 'linkedBitbucketPR'
+        : provider === 'azure-devops' ? 'linkedAzureDevOpsPR'
+        : 'linkedGiteaPR'
+      await updateWorktreeMeta(worktreeId, { [field]: null } as never, { executionHostId: hostId })
+    }
+  }, [prDisplay, updateWorktreeMeta, worktree, worktreeId])
+  const handleOpenIssueInBrowser = useCallback(
+    (url: string): void => {
+      void openExternalUrl(url).catch(() => {
+        toast.error('Unable to open URL.')
+      })
+    },
+    []
+  )
+  const handleOpenReviewInBrowser = handleOpenIssueInBrowser
+  // D04a-045/D04b-012 Rosetta (Orca `use-worktree-card-foundation:handleOpenAutomation[Run]`):
+  // navigate to the automation (or run) recorded on the provenance — the
+  // automation's host, not the workspace's, owns the navigation.
+  const openAutomationsPage = useAppStore(
+    (state) => (state as unknown as { openAutomationsPage?: () => void }).openAutomationsPage
+  )
+  const setPendingAutomationRunNavigation = useAppStore(
+    (state) =>
+      (state as unknown as { setPendingAutomationRunNavigation?: (nav: unknown) => void }).setPendingAutomationRunNavigation
+  )
+  const automationProvenance =
+    (worktree as unknown as { automationProvenance?: import('./worktree-card-controller-extras').WorktreeCardControllerExtras['automationProvenance'] }).automationProvenance ?? null
+  const handleOpenAutomation = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!automationProvenance || !openAutomationsPage || !setPendingAutomationRunNavigation) {
+        return
+      }
+      const hostId =
+        automationProvenance.hostId ?? (worktree as unknown as { hostId?: string }).hostId
+      setPendingAutomationRunNavigation({
+        automationId: automationProvenance.automationId,
+        runId: null,
+        ...(hostId ? { hostId } : {})
+      })
+      openAutomationsPage()
+    },
+    [automationProvenance, openAutomationsPage, setPendingAutomationRunNavigation, worktree]
+  )
+  const handleOpenAutomationRun = useCallback(
+    (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      if (!automationProvenance || !openAutomationsPage || !setPendingAutomationRunNavigation) {
+        return
+      }
+      const hostId =
+        automationProvenance.hostId ?? (worktree as unknown as { hostId?: string }).hostId
+      setPendingAutomationRunNavigation({
+        automationId: automationProvenance.automationId,
+        runId: automationProvenance.automationRunId,
+        ...(hostId ? { hostId } : {})
+      })
+      openAutomationsPage()
+    },
+    [automationProvenance, openAutomationsPage, setPendingAutomationRunNavigation, worktree]
+  )
+  // D04b-010 Rosetta (Orca `use-worktree-card-activation-actions:handleToggleUnreadQuick`):
+  // the legacy bell button stays unmounted (newCardStyle constant-true,
+  // D04a-023 n/a), but the handler is wired so the surface can bind it.
+  const handleToggleUnreadQuick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>): void => {
+      event.preventDefault()
+      event.stopPropagation()
+      const hostId = ((worktree as unknown as { hostId?: string }).hostId ?? 'local') as 'local'
+      void updateWorktreeMeta(worktreeId, { isUnread: !isUnread }, { executionHostId: hostId })
+    },
+    [isUnread, updateWorktreeMeta, worktree, worktreeId]
+  )
+
+  // D04b-013: card data lifecycle (initial fetch + visibility-gated polls +
+  // hover refetch for hosted review / GitHub issue / Linear issue).
+  useWorktreeCardLifecycleEffects({
+    worktreeId,
+    repoPath: effectiveRepo?.path ?? '',
+    ...(effectiveRepo?.id ? { repoId: effectiveRepo.id } : {}),
+    ...(branchName ? { branch: branchName } : {}),
+    ...(typeof (worktree as unknown as { linkedIssue?: unknown }).linkedIssue === 'number'
+      ? { linkedIssue: (worktree as unknown as { linkedIssue: number }).linkedIssue }
+      : {}),
+    ...(((worktree as unknown as { linkedLinearIssue?: unknown }).linkedLinearIssue)
+      ? { linkedLinearIssue: (worktree as unknown as { linkedLinearIssue: string }).linkedLinearIssue }
+      : {}),
+    shouldRefreshHostedReview: true
+  })
+
   const visibleCardTitle =
     worktree.display_name?.trim() ||
     worktree.displayName?.trim() ||
@@ -348,7 +538,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
           : undefined,
     branch: branchName,
     detachedHeadDisplay,
-    conflictOperation: '',
+    conflictOperation,
     upstreamStatus,
     cacheStartedAt,
     cacheTtlMs,
@@ -358,12 +548,17 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     status: status ?? 'inactive',
     prDisplay: prDisplay ?? null,
     showInlineAgentList: Boolean(onSelectSession || (sessions && sessions.length > 0)),
-    showLineageChildChip: false,
-    remoteBranchConflict: false,
+    showLineageChildChip,
+    remoteBranchConflict,
     visibleCardTitle,
     workspacePorts: ports,
     isDeleting,
     isRuntimeDisconnected,
+    sshTargetLabel,
+    sshStatus,
+    sshTargetRemoved,
+    sshOwnerEnvironmentId,
+    parsedRepoHost,
     isQueuedForDeletion,
     deleteLabel,
     titleRenaming,
@@ -383,7 +578,14 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleDelete,
     handleWorkspaceQuickAction: handleDelete,
     stopQuickActionPointerPropagation: (e: React.MouseEvent | React.PointerEvent) => e.stopPropagation(),
-    showUnreadEmphasis: isUnread,
+    showUnreadEmphasis,
+    handleUnlinkReview,
+    handleOpenIssueInBrowser,
+    handleOpenReviewInBrowser,
+    handleToggleUnreadQuick,
+    handleOpenAutomation,
+    handleOpenAutomationRun,
+    automationProvenance,
     onDelete: handleDelete,
     onAssignWorkspaceStatus,
     onDragOver,

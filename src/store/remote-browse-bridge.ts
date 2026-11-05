@@ -2,12 +2,13 @@
 //
 // SSH is backed by `ssh_browse_dir` (`src-tauri/src/ssh_remote.rs`), which lists
 // one level through the host's OpenSSH client and resolves `~`. A paired runtime
-// server has no directory RPC yet, so that transport still rejects with an
-// explicit typed error: the picker renders it as its error state and Save stays
-// disabled instead of selecting a path it never listed.
-import { invoke } from '@tauri-apps/api/core'
+// server lists through the E2EE `runtime_browse_server_directory` RPC over the
+// browser WebSocket transport; when the server does not implement it, that
+// rejection renders as the picker's error state and Save stays disabled instead
+// of selecting a path it never listed.
 import type { FilesystemPathFlavor } from '../shared/filesystem-entry-types'
 import { browseSshDirectory as browseRemoteSshDirectory } from './ssh-remote-bridge'
+import { callPairedServerRpc } from './runtime-environment-bridge'
 
 export type RemoteBrowseEntry = {
   name: string
@@ -86,7 +87,9 @@ export async function browseRuntimeServerDirectory(
 ): Promise<RemoteBrowseResult> {
   try {
     return normalizeRuntimeBrowseResult(
-      await invoke('runtime_browse_server_directory', { runtimeEnvironmentId, dirPath })
+      await callPairedServerRpc('runtime_browse_server_directory', runtimeEnvironmentId, {
+        dirPath
+      })
     )
   } catch (error) {
     if (isUnknownCommandError(error)) {

@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   finishProjectAddWithDefaultCheckout,
   getProjectDefaultCheckout,
   getProjectWorktreesForHost,
   hasDetectedHiddenLinkedExternalWorktrees,
   openProjectDefaultCheckout,
+  resetAddRepoExistingWorkspacesTrackedForTests,
   type ProjectAddedHandoffDeps,
 } from "./project-added-default-checkout";
 
@@ -133,5 +134,83 @@ describe("project added default checkout (D02a-028/029/030)", () => {
         "local"
       )
     ).toBe(true);
+  });
+});
+
+describe("add repo existing workspaces telemetry (D02a-031)", () => {
+  beforeEach(() => {
+    resetAddRepoExistingWorkspacesTrackedForTests();
+  });
+
+  it("emits the count-only signal before opening the checkout", async () => {
+    const trackFn = vi.fn();
+    const handoff = deps({
+      getWorktrees: () => ({
+        visible: [
+          { id: "wt-main", path: "/repo", branch: "main", isMainWorktree: true },
+          { id: "wt-linked", path: "/repo-feature", branch: "feature/x", isMainWorktree: false },
+        ],
+        hidden: [],
+        authoritative: true,
+      }),
+      track: trackFn,
+    });
+
+    await openProjectDefaultCheckout({
+      repoId: "repo_sig",
+      source: "local_folder_picker",
+      deps: handoff,
+    });
+
+    const detected = trackFn.mock.calls.find(
+      ([name]) => name === "add_repo_existing_workspaces_detected"
+    );
+    expect(detected?.[1]).toMatchObject({
+      source: "local_folder_picker",
+      existing_workspace_count: 2,
+      existing_linked_workspace_count: 1,
+    });
+    expect(JSON.stringify(detected?.[1])).not.toContain("feature/x");
+  });
+
+  it("does not double-track the same repo id", async () => {
+    const trackFn = vi.fn();
+    const snapshot = {
+      visible: [
+        { id: "wt-main", path: "/repo", branch: "main", isMainWorktree: true },
+        { id: "wt-linked", path: "/repo-feature", branch: "feature", isMainWorktree: false },
+      ],
+      hidden: [],
+      authoritative: true as const,
+    };
+    const handoff = deps({ getWorktrees: () => snapshot, track: trackFn });
+
+    await openProjectDefaultCheckout({ repoId: "repo_once", source: "local_folder_picker", deps: handoff });
+    await openProjectDefaultCheckout({ repoId: "repo_once", source: "local_folder_picker", deps: handoff });
+
+    expect(
+      trackFn.mock.calls.filter(([name]) => name === "add_repo_existing_workspaces_detected")
+    ).toHaveLength(1);
+  });
+
+  it("skips the signal for clone/create sources", async () => {
+    const trackFn = vi.fn();
+    const handoff = deps({
+      getWorktrees: () => ({
+        visible: [
+          { id: "wt-main", path: "/repo", branch: "main", isMainWorktree: true },
+          { id: "wt-linked", path: "/repo-feature", branch: "feature", isMainWorktree: false },
+        ],
+        hidden: [],
+        authoritative: true,
+      }),
+      track: trackFn,
+    });
+
+    await openProjectDefaultCheckout({ repoId: "repo_clone", source: "clone_url", deps: handoff });
+
+    expect(
+      trackFn.mock.calls.filter(([name]) => name === "add_repo_existing_workspaces_detected")
+    ).toHaveLength(0);
   });
 });

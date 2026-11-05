@@ -583,11 +583,15 @@
     "components/sidebar/use-complete-git-repo-add.ts:22"
    ],
    "hydra": {
-    "status": "out-of-scope",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/shared/add-repo-existing-workspaces-telemetry.ts — Rosetta add-repo-existing-workspaces-telemetry.ts (builders + gate, conta máx 50, privacy count-only)",
+     "src/components/sidebar/project-added-default-checkout.ts — emitAddRepoExistingWorkspacesDetected one-shot por repo id, antes do handoff (Orca useCompleteGitRepoAdd)",
+     "src/shared/add-repo-existing-workspaces-telemetry.parity.test.ts — 4 testes port 1:1 do Orca",
+     "src/components/sidebar/project-added-default-checkout.parity.test.ts — 3 testes do trigger (emite, one-shot, skip clone/create)"
+    ],
     "backend": [],
-    "missing_behaviors": [],
-    "reason": "Decisão de produto contra paridade (telemetria): Hydra (Tauri local) não possui sink de telemetria; src/lib/telemetry.ts:26 chama window.api.telemetryTrack, bridge ausente no runtime (src/types/window-api.d.ts:5-7) e a doc aponta para onorca.dev. O protocolo cita telemetria como caso de out-of-scope."
+    "missing_behaviors": []
    }
   },
   {
