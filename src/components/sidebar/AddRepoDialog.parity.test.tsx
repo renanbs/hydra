@@ -223,6 +223,30 @@ describe("AddRepoDialog workspace defaults (D02a)", () => {
     );
   });
 
+  it("opens the nested root folder through the folder workspace path", async () => {
+    openMock.mockResolvedValue(["/acme"]);
+    const { onProjectAdded } = openDialog();
+    fireEvent.click(screen.getByRole("button", { name: /browse folder/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Found 2 repositories in /acme.")).toBeInTheDocument()
+    );
+    // Deselect every repo so the review offers the folder path instead.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Deselect all" }));
+    await waitFor(() =>
+      expect(screen.getByText(/No repositories are selected/)).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open as Folder" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith(
+        "catalog_add_folder_workspace",
+        expect.objectContaining({ parentPath: "/acme" })
+      )
+    );
+    await waitFor(() => expect(onProjectAdded).toHaveBeenCalledWith("/acme", "folder"));
+  });
+
   it("scans a folder with nested repositories and imports the selection separately", async () => {
     openMock.mockResolvedValue(["/acme"]);
     const { onProjectAdded } = openDialog();

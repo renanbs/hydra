@@ -924,8 +924,33 @@ export function AddRepoDialog({
     setBusyLabel("Opening project...");
     setError(null);
     try {
-      // Orca `completeNestedFolderOpen`: the root becomes a folder workspace
-      // (synthetic manual group when it has none), not a repo row.
+      // Orca `completeNestedFolderOpen`: on a remote host the root goes through
+      // the non-git confirm modal (SSH connectionId / runtime environmentId ride the
+      // modal payload); locally it becomes a folder workspace directly.
+      if (isSshHost && sshTargetId) {
+        useAppStore.getState().openModal('confirm-non-git-folder', {
+          folderPath: nestedScan.selectedPath,
+          connectionId: sshTargetId,
+          ...(displayName ? { displayName } : {})
+        })
+        if (gen === addGenRef.current) {
+          setIsAdding(false)
+          setBusyLabel(null)
+        }
+        return
+      }
+      if (isRuntimeHost && runtimeEnvironmentId) {
+        useAppStore.getState().openModal('confirm-non-git-folder', {
+          folderPath: nestedScan.selectedPath,
+          runtimeEnvironmentId,
+          ...(displayName ? { displayName } : {})
+        })
+        if (gen === addGenRef.current) {
+          setIsAdding(false)
+          setBusyLabel(null)
+        }
+        return
+      }
       await addCatalogFolderWorkspace({
         parentPath: nestedScan.selectedPath,
         name: displayName ?? null

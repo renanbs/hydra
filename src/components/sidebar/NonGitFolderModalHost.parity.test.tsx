@@ -41,6 +41,16 @@ describe('NonGitFolderModalHost (D02c-009 / D02c-010)', () => {
     })
   })
 
+  it('carries the SSH connection through the confirm with its host label', () => {
+    const { addNonGitFolder } = openModal({
+      folderPath: '/srv/notes',
+      connectionId: 'srv'
+    })
+    expect(screen.getByText(/on SSH srv/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Open as folder project' }))
+    expect(addNonGitFolder).toHaveBeenCalledWith('/srv/notes', { connectionId: 'srv' })
+  })
+
   it('renders nothing for another modal or an empty path', () => {
     useAppStore.setState({
       activeModal: 'none',
