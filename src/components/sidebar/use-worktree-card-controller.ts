@@ -11,6 +11,7 @@ import { useWorktreeUpstreamStatus } from '../../hooks/useWorktreeUpstreamStatus
 import { toast } from 'sonner'
 import { useAppStore } from '../../store'
 import { openExternalUrl } from '../../lib/sidebar-desktop-contracts'
+import { useWorktreeCardLifecycleEffects } from './use-worktree-card-lifecycle-effects'
 import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
 import {
   selectRuntimeAwareSshStatus,
@@ -299,6 +300,22 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     []
   )
   const handleOpenReviewInBrowser = handleOpenIssueInBrowser
+
+  // D04b-013: card data lifecycle (initial fetch + visibility-gated polls +
+  // hover refetch for hosted review / GitHub issue / Linear issue).
+  useWorktreeCardLifecycleEffects({
+    worktreeId,
+    repoPath: effectiveRepo?.path ?? '',
+    ...(effectiveRepo?.id ? { repoId: effectiveRepo.id } : {}),
+    ...(branchName ? { branch: branchName } : {}),
+    ...(typeof (worktree as unknown as { linkedIssue?: unknown }).linkedIssue === 'number'
+      ? { linkedIssue: (worktree as unknown as { linkedIssue: number }).linkedIssue }
+      : {}),
+    ...(((worktree as unknown as { linkedLinearIssue?: unknown }).linkedLinearIssue)
+      ? { linkedLinearIssue: (worktree as unknown as { linkedLinearIssue: string }).linkedLinearIssue }
+      : {}),
+    shouldRefreshHostedReview: true
+  })
 
   const visibleCardTitle =
     worktree.display_name?.trim() ||
