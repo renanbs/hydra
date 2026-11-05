@@ -418,6 +418,56 @@ pub fn remove_ssh_workspace_records(
     before - envelope.folder_workspaces.len()
 }
 
+/// Re-points the rows owned by a removed SSH target onto the target that
+/// re-adopted its alias. Scoped by connection id *and* the `ssh:<id>` execution
+/// stamp, so a row on another host — even at the same absolute path — keeps its
+/// owner. Returns how many rows moved.
+pub fn reassign_ssh_target_rows(
+    envelope: &mut CatalogEnvelope,
+    old_target_id: &str,
+    new_target_id: &str,
+) -> usize {
+    let old_id = old_target_id.trim();
+    let new_id = new_target_id.trim();
+    if old_id.is_empty() || new_id.is_empty() || old_id == new_id {
+        return 0;
+    }
+    let old_execution = format!("ssh:{old_id}");
+    let new_execution = format!("ssh:{new_id}");
+    let mut moved = 0;
+
+    for repo in &mut envelope.repos {
+        let owns_connection = repo.connection_id.as_deref() == Some(old_id);
+        let owns_execution = repo.execution_host_id.as_deref() == Some(old_execution.as_str());
+        if !owns_connection && !owns_execution {
+            continue;
+        }
+        repo.connection_id = Some(new_id.to_string());
+        // Why also fill a missing stamp: a row written before host scoping has
+        // only the connection id, and leaving the stamp absent would read local.
+        if owns_execution || repo.execution_host_id.is_none() {
+            repo.execution_host_id = Some(new_execution.clone());
+        }
+        moved += 1;
+    }
+
+    for workspace in &mut envelope.folder_workspaces {
+        let owns_connection = workspace.connection_id.as_deref() == Some(old_id);
+        let owns_execution =
+            workspace.execution_host_id.as_deref() == Some(old_execution.as_str());
+        if !owns_connection && !owns_execution {
+            continue;
+        }
+        workspace.connection_id = Some(new_id.to_string());
+        if owns_execution || workspace.execution_host_id.is_none() {
+            workspace.execution_host_id = Some(new_execution.clone());
+        }
+        moved += 1;
+    }
+
+    moved
+}
+
 pub fn add_folder_to_catalog(path: &str, envelope: &mut CatalogEnvelope) -> Result<(), String> {
     use std::path::PathBuf as PB;
     let norm = normalize_catalog_path(path);
@@ -1497,11 +1547,84 @@ mod tests {
         }
     }
 
+    fn folder_workspace_at(id: &str, path: &str, connection: Option<&str>) -> CatalogFolderWorkspace {
+        CatalogFolderWorkspace {
+            id: id.to_string(),
+            project_group_id: "group-1".to_string(),
+            name: "workspace".to_string(),
+            folder_path: path.to_string(),
+            connection_id: connection.map(|value| value.to_string()),
+            execution_host_id: connection.map(|value| format!("ssh:{value}")),
+            sort_order: 0,
+            created_at: 1,
+            updated_at: 1,
+        }
+    }
+
+    #[test]
+    fn reassign_ssh_target_rows_moves_only_the_old_host_rows() {
+        let mut env = CatalogEnvelope::empty();
+        env.repos.push(CatalogRepo {
+            connection_id: Some("ssh-old".to_string()),
+            execution_host_id: Some("ssh:ssh-old".to_string()),
+            ..repo_at("/srv/app")
+        });
+        env.repos
+            .push(CatalogRepo {
+                id: "r2".to_string(),
+                ..repo_at("/srv/app")
+            });
+        env.folder_workspaces.push(folder_workspace_at(
+            "fw-1",
+            "/srv/docs",
+            Some("ssh-old"),
+        ));
+        env.folder_workspaces.push(folder_workspace_at(
+            "fw-2",
+            "/srv/docs",
+            Some("ssh-other"),
+        ));
+
+        assert_eq!(reassign_ssh_target_rows(&mut env, "ssh-old", "ssh-new"), 2);
+
+        let moved_repo = env
+            .repos
+            .iter()
+            .find(|repo| repo.id == "r1")
+            .expect("moved repo");
+        assert_eq!(moved_repo.connection_id.as_deref(), Some("ssh-new"));
+        assert_eq!(moved_repo.execution_host_id.as_deref(), Some("ssh:ssh-new"));
+        // A row at the same path on another host keeps its owner.
+        let local_repo = env
+            .repos
+            .iter()
+            .find(|repo| repo.id == "r2")
+            .expect("local repo");
+        assert_eq!(local_repo.connection_id, None);
+
+        let moved_workspace = env
+            .folder_workspaces
+            .iter()
+            .find(|workspace| workspace.id == "fw-1")
+            .expect("moved workspace");
+        assert_eq!(moved_workspace.connection_id.as_deref(), Some("ssh-new"));
+        let other_workspace = env
+            .folder_workspaces
+            .iter()
+            .find(|workspace| workspace.id == "fw-2")
+            .expect("other host workspace");
+        assert_eq!(other_workspace.connection_id.as_deref(), Some("ssh-other"));
+
+        // Idempotent: a second pass has nothing left to move.
+        assert_eq!(reassign_ssh_target_rows(&mut env, "ssh-old", "ssh-new"), 0);
+        assert_eq!(reassign_ssh_target_rows(&mut env, "", "ssh-new"), 0);
+        assert_eq!(reassign_ssh_target_rows(&mut env, "ssh-new", "ssh-new"), 0);
+    }
+
     #[test]
     fn set_repo_icon_roundtrips_emoji_and_clears() {
         let mut env = CatalogEnvelope::empty();
         env.repos.push(repo_at("/x/repo"));
-
         set_repo_icon(
             &mut env,
             "r1",

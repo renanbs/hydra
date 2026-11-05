@@ -316,6 +316,18 @@ pub struct SshReconnectResult {
     pub error: Option<String>,
 }
 
+/// What an explicit user disconnect reports back.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshDisconnectResult {
+    pub connection_id: String,
+    pub status: String,
+    /// Why zero: the registry has no PTY-over-SSH relay, so no terminal session
+    /// is bound to a target. Reported instead of hidden so the renderer never
+    /// claims it ended terminals that do not exist.
+    pub closed_sessions: usize,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SshForgetWorkspaceResult {
@@ -398,6 +410,64 @@ pub fn ssh_now_millis() -> i64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis() as i64)
         .unwrap_or(0)
+}
+
+/// Repo/folder ownership changes implied by re-adding a removed SSH host.
+///
+/// A removal keeps a tombstone and the user may still have workspaces pinned to
+/// the old target id; registering the same alias again is what re-adoption
+/// means. Only rows that still point at a tombstone of the *same alias* move —
+/// a different host that happens to share a tombstone label must keep its rows,
+/// and a target re-added under a new label must not inherit them.
+///
+/// The catalog is the only projection Hydra composes for host rows, so it is the
+/// source checked here instead of relying on persisted SSH state.
+pub fn build_ssh_repo_readoptions(
+    tombstones: &[RemovedSshTargetTombstone],
+    new_target: &SshTarget,
+    catalog: &crate::catalog::CatalogEnvelope,
+) -> Vec<SshRepoReadoption> {
+    let alias = normalize_ssh_config_alias(
+        new_target.config_host.as_deref().unwrap_or(&new_target.label),
+    );
+    if alias.is_empty() {
+        return Vec::new();
+    }
+    let mut seen = HashSet::new();
+    let mut readoptions = Vec::new();
+    for tombstone in tombstones {
+        let tombstone_alias = normalize_ssh_config_alias(
+            tombstone.config_host.as_deref().unwrap_or(&tombstone.label),
+        );
+        if tombstone_alias != alias
+            || tombstone.old_target_id == new_target.id
+            || !seen.insert(tombstone.old_target_id.clone())
+        {
+            continue;
+        }
+        let old_id = tombstone.old_target_id.as_str();
+        let repo_ids: Vec<String> = catalog
+            .repos
+            .iter()
+            .filter(|repo| repo.connection_id.as_deref() == Some(old_id))
+            .map(|repo| repo.id.clone())
+            .collect();
+        let owns_folder_rows = catalog
+            .folder_workspaces
+            .iter()
+            .any(|workspace| workspace.connection_id.as_deref() == Some(old_id));
+        // Why skip empty: a readoption with nothing to re-point would make the
+        // renderer write the catalog for no reason.
+        if repo_ids.is_empty() && !owns_folder_rows {
+            continue;
+        }
+        readoptions.push(SshRepoReadoption {
+            old_target_id: tombstone.old_target_id.clone(),
+            new_target_id: new_target.id.clone(),
+            repo_ids,
+        });
+    }
+    readoptions
 }
 
 /// Catalog paths are compared with one separator and no trailing slash, so a
@@ -1588,12 +1658,25 @@ pub async fn ssh_add_target(
         let alias_to_reclaim = full.config_host.as_deref().unwrap_or(&full.label);
         reclaim_alias(&mut persisted.deleted_ssh_config_aliases, Some(alias_to_reclaim));
 
+        // Why: workspaces pinned to a removed target re-adopt onto the host the
+        // user just re-added; the catalog is only read when tombstones exist, so
+        // a plain add never pays for it.
+        let repo_readoptions = if persisted.removed_ssh_target_tombstones.is_empty() {
+            Vec::new()
+        } else {
+            build_ssh_repo_readoptions(
+                &persisted.removed_ssh_target_tombstones,
+                &full,
+                &crate::catalog::read_catalog(),
+            )
+        };
+
         persisted.ssh_targets.push(full.clone());
         db.save_ssh_state(&persisted)?;
 
         Ok(SshTargetAddResult {
             target: full,
-            repo_readoptions: vec![],
+            repo_readoptions,
         })
     })
     .await
@@ -1750,10 +1833,34 @@ pub async fn ssh_import_config(
             &config_hosts,
             re_adopt.unwrap_or(false),
         );
+        // Why: import can re-adopt several aliases at once (each target it
+        // creates/refreshes), so every changed target contributes to one list.
+        let repo_readoptions = if persisted.removed_ssh_target_tombstones.is_empty() {
+            Vec::new()
+        } else {
+            let catalog = crate::catalog::read_catalog();
+            let mut readoptions: Vec<SshRepoReadoption> = Vec::new();
+            for target in &changed {
+                for readoption in build_ssh_repo_readoptions(
+                    &persisted.removed_ssh_target_tombstones,
+                    target,
+                    &catalog,
+                ) {
+                    let duplicate = readoptions.iter().any(|existing| {
+                        existing.old_target_id == readoption.old_target_id
+                            && existing.new_target_id == readoption.new_target_id
+                    });
+                    if !duplicate {
+                        readoptions.push(readoption);
+                    }
+                }
+            }
+            readoptions
+        };
         db.save_ssh_state(&persisted)?;
         Ok(SshConfigImportResult {
             targets: changed,
-            repo_readoptions: vec![],
+            repo_readoptions,
         })
     })
     .await
@@ -1837,6 +1944,50 @@ pub async fn ssh_reconnect_target(
             status,
             latency_ms,
             error,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Records an explicit user disconnect for one target.
+///
+/// Hydra's SSH registry is a probe/registry surface, not a relay: no PTY or
+/// tunnel is bound to a target, so there is no live session to close. What is
+/// real is the durable connection record — writing `disconnected` stops the
+/// last-observed state from claiming a connection the user ended, and the
+/// renderer drops its in-memory state from the same action. A ghost target
+/// (removed while the menu was open) is an error, like reconnect.
+#[tauri::command]
+pub async fn ssh_disconnect_target(
+    connection_id: String,
+    state: State<'_, AppState>,
+) -> Result<SshDisconnectResult, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut persisted = db.get_ssh_state()?;
+        if !persisted
+            .ssh_targets
+            .iter()
+            .any(|target| target.id == connection_id)
+        {
+            return Err(format!("SSH target not found: {connection_id}"));
+        }
+        upsert_ssh_connection_record(
+            &mut persisted,
+            SshConnectionRecord {
+                connection_id: connection_id.clone(),
+                status: "disconnected".to_string(),
+                latency_ms: 0,
+                error: None,
+                updated_at: ssh_now_millis(),
+            },
+        );
+        db.save_ssh_state(&persisted)?;
+        Ok(SshDisconnectResult {
+            connection_id,
+            status: "disconnected".to_string(),
+            closed_sessions: 0,
         })
     })
     .await
@@ -2017,6 +2168,17 @@ mod tests {
         assert!(tombstone_json.contains("\"configHost\":\"alias1\""));
         assert!(tombstone_json.contains("\"removedAt\":1700000000000"));
 
+        // Disconnect payload: the renderer distinguishes it from a probe result.
+        let disconnect = SshDisconnectResult {
+            connection_id: "ssh-1".to_string(),
+            status: "disconnected".to_string(),
+            closed_sessions: 0,
+        };
+        let disconnect_json = serde_json::to_string(&disconnect).unwrap();
+        assert!(disconnect_json.contains("\"connectionId\":\"ssh-1\""));
+        assert!(disconnect_json.contains("\"status\":\"disconnected\""));
+        assert!(disconnect_json.contains("\"closedSessions\":0"));
+
         let summary = SshConfigHostSummary {
             alias: "myhost".to_string(),
             hostname: "myhost.com".to_string(),
@@ -2184,6 +2346,109 @@ mod tests {
         // 3. Re-add target with same alias -> lifts/reclaims suppressed alias
         reclaim_alias(&mut state.deleted_ssh_config_aliases, Some("MyServer"));
         assert!(state.deleted_ssh_config_aliases.is_empty());
+    }
+
+    #[test]
+    fn build_ssh_repo_readoptions_only_readopts_the_same_alias() {
+        let mut catalog = crate::catalog::CatalogEnvelope::empty();
+        catalog.repos.push(crate::catalog::CatalogRepo {
+            id: "repo-old".to_string(),
+            path: "/srv/app".to_string(),
+            connection_id: Some("ssh-old".to_string()),
+            execution_host_id: Some("ssh:ssh-old".to_string()),
+            display_name: "app".to_string(),
+            added_at: 1,
+            kind: Some("git".to_string()),
+            worktree_base_path: None,
+            project_group_id: None,
+            repo_icon: None,
+            imported_external_worktree_paths: None,
+            external_worktree_discovery_suppressed_at: None,
+            external_worktree_inbox_baseline_paths: None,
+            external_worktree_visibility_prompt_dismissed_at: None,
+            external_worktree_visibility: None,
+            external_worktree_visibility_legacy: None,
+            agent_worktree_visibility: None,
+            custom_worktree_visibility_sources: None,
+            worktree_visibility_source_preferences: None,
+        });
+        catalog.folder_workspaces.push(crate::catalog::CatalogFolderWorkspace {
+            id: "fw-old".to_string(),
+            project_group_id: "group".to_string(),
+            name: "docs".to_string(),
+            folder_path: "/srv/docs".to_string(),
+            connection_id: Some("ssh-old".to_string()),
+            execution_host_id: Some("ssh:ssh-old".to_string()),
+            sort_order: 0,
+            created_at: 1,
+            updated_at: 1,
+        });
+
+        let new_target = SshTarget {
+            id: "ssh-new".to_string(),
+            label: "build".to_string(),
+            owner: None,
+            config_host: Some("Build".to_string()),
+            host: "10.0.0.2".to_string(),
+            port: 22,
+            username: "deploy".to_string(),
+            identity_file: None,
+            identity_agent: None,
+            identities_only: None,
+            gssapi_authentication: None,
+            proxy_command: None,
+            jump_host: None,
+            source: Some("manual".to_string()),
+            relay_grace_period_seconds: None,
+            last_required_passphrase: None,
+            port_forwards: None,
+            system_ssh_connection_reuse: None,
+            generation: Some(2),
+        };
+        let tombstone = |id: &str, alias: &str| RemovedSshTargetTombstone {
+            old_target_id: id.to_string(),
+            config_host: Some(alias.to_string()),
+            host: "10.0.0.1".to_string(),
+            port: 22,
+            username: "deploy".to_string(),
+            label: alias.to_string(),
+            removed_at: 10,
+        };
+
+        // Case-insensitive alias match reclaims the rows still on the old id.
+        let readoptions = build_ssh_repo_readoptions(
+            &[tombstone("ssh-old", "build"), tombstone("ssh-other", "other-host")],
+            &new_target,
+            &catalog,
+        );
+        assert_eq!(readoptions.len(), 1);
+        assert_eq!(readoptions[0].old_target_id, "ssh-old");
+        assert_eq!(readoptions[0].new_target_id, "ssh-new");
+        assert_eq!(readoptions[0].repo_ids, vec!["repo-old".to_string()]);
+
+        // A tombstone of another alias, or one with no catalog rows, adds nothing.
+        assert!(build_ssh_repo_readoptions(
+            &[tombstone("ssh-other", "other-host")],
+            &new_target,
+            &catalog,
+        )
+        .is_empty());
+        assert!(build_ssh_repo_readoptions(
+            &[tombstone("ssh-empty", "build")],
+            &new_target,
+            &catalog,
+        )
+        .is_empty());
+        // Tombstones are still consumed once each: no duplicate readoptions.
+        assert_eq!(
+            build_ssh_repo_readoptions(
+                &[tombstone("ssh-old", "build"), tombstone("ssh-old", "build")],
+                &new_target,
+                &catalog,
+            )
+            .len(),
+            1
+        );
     }
 
     #[test]

@@ -288,7 +288,9 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
 
   async function selectSshHost(): Promise<void> {
     fireEvent.click(screen.getByRole("button", { name: /local linux/i }));
-    fireEvent.click(await screen.findByRole("option", { name: /build-box/i }));
+    // D02b-021: a connected SSH host renders as the wizard's SshTargetRow, which is a
+    // button (not a listbox option) and only interactive while connected.
+    fireEvent.click(await screen.findByRole("button", { name: /build-box/i }));
   }
 
   it("clones on the host and registers the remote project row with its host stamps", async () => {
@@ -334,7 +336,15 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
       })
     );
     await waitFor(() =>
-      expect(onProjectAdded).toHaveBeenCalledWith("/srv/code/widgets", "project")
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/code/widgets",
+        "project",
+        expect.objectContaining({
+          connectionId: "srv",
+          executionHostId: "ssh:srv",
+          source: "clone_url"
+        })
+      )
     );
   });
 
@@ -392,6 +402,9 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
     fireEvent.change(screen.getByLabelText("Host parent folder"), {
       target: { value: "/srv/projects" }
     });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Create Project" })).toBeEnabled()
+    );
     fireEvent.click(screen.getByRole("button", { name: "Create Project" }));
 
     await waitFor(() =>
@@ -409,7 +422,11 @@ describe("AddRepoDialog on an SSH host (D02a/D02b-022)", () => {
       )
     );
     await waitFor(() =>
-      expect(onProjectAdded).toHaveBeenCalledWith("/srv/projects/demo", "project")
+      expect(onProjectAdded).toHaveBeenCalledWith(
+        "/srv/projects/demo",
+        "project",
+        expect.objectContaining({ connectionId: "srv", source: "create_project" })
+      )
     );
   });
 

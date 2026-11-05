@@ -1,14 +1,15 @@
 // Parity guard for the remove dialog. Orca's dialog counts the host's workspaces from
 // live store state and only offers the destructive "also delete these workspaces" switch
 // when there is something to delete. Hydra has no remote workspace removal yet, so this
-// port keeps the count (it drives the copy the user is warned with) and drops the switch
-// entirely rather than showing a control with nothing behind it. What it locks out: a
-// delete-workspaces option with no backend, a count read from a stale cached badge, and a
-// removal that leaves the host's label, connection state or tabs behind.
+// port keeps the count (it drives the copy the user is warned with). What it locks out: a
+// count read from a stale cached badge, a count that ignores catalog-backed rows the live
+// store cannot see, a removal that leaves the host's label/connection state/tabs behind,
+// and a sidebar that never re-reads the catalog after the cascade dropped rows.
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useAppStore } from '@/store'
+import { PROJECTS_REFRESH_EVENT } from '@/lib/refresh-projects-awaitable'
 import type { SshConnectionState } from '../../shared/ssh-types'
 import { HostRemoveDialog } from './HostRemoveDialog'
 
@@ -30,6 +31,7 @@ const SSH_CONNECTION: SshConnectionState = {
 }
 
 let registry: { id: string; label: string; generation: number }[] = []
+let catalog = { schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] }
 
 function resetStore(overrides: Record<string, unknown> = {}): void {
   useAppStore.setState({
@@ -59,6 +61,7 @@ async function confirmRemoval(): Promise<void> {
 
 beforeEach(() => {
   registry = [{ id: 'srv', label: 'Build server', generation: 1 }]
+  catalog = { schemaVersion: 1, projectGroups: [], folderWorkspaces: [], repos: [] }
   invokeMock.mockReset()
   toastSuccess.mockReset()
   toastError.mockReset()
@@ -73,6 +76,8 @@ beforeEach(() => {
         return Promise.resolve(registry)
       case 'ssh_list_removed_target_labels':
         return Promise.resolve(registry.length === 0 ? { srv: 'Build server' } : {})
+      case 'catalog_get':
+        return Promise.resolve(catalog)
       default:
         return Promise.reject(new Error(`unexpected command: ${cmd}`))
     }
@@ -116,7 +121,6 @@ describe('HostRemoveDialog (Orca parity)', () => {
     await confirmRemoval()
 
     expect(toastError).not.toHaveBeenCalled()
-    expect(invokeMock).toHaveBeenCalledTimes(3)
     expect(invokeMock).toHaveBeenCalledWith('ssh_remove_target', { id: 'srv' })
     expect(invokeMock).toHaveBeenCalledWith('ssh_list_targets')
     expect(invokeMock).toHaveBeenCalledWith('ssh_list_removed_target_labels')
@@ -128,6 +132,48 @@ describe('HostRemoveDialog (Orca parity)', () => {
     expect(state.removedSshTargetLabels.get('srv')).toBe('Build server')
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(toastSuccess).toHaveBeenCalledWith('Removed Build server')
+  })
+
+  it('counts catalog-backed rows the live store cannot see and refreshes App', async () => {
+    catalog = {
+      schemaVersion: 1,
+      projectGroups: [],
+      folderWorkspaces: [
+        {
+          id: 'fw-docs',
+          projectGroupId: 'g1',
+          name: 'docs',
+          folderPath: '/srv/docs',
+          connectionId: 'srv',
+          executionHostId: 'ssh:srv',
+          sortOrder: 0,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      ],
+      repos: [
+        {
+          id: 'cat-app',
+          path: '/srv/apps/app',
+          displayName: 'app',
+          addedAt: 1,
+          connectionId: 'srv',
+          executionHostId: 'ssh:srv'
+        }
+      ]
+    }
+    const refresh = vi.fn()
+    window.addEventListener(PROJECTS_REFRESH_EVENT, refresh)
+    renderDialog()
+
+    await act(async () => {})
+
+    expect(screen.getByText(/Its 2 workspaces stay in Orca/)).toBeInTheDocument()
+
+    await confirmRemoval()
+
+    expect(refresh).toHaveBeenCalled()
+    window.removeEventListener(PROJECTS_REFRESH_EVENT, refresh)
   })
 
   it('keeps the host when the backend refuses the deletion', async () => {

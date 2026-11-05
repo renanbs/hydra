@@ -29,6 +29,9 @@ const BROWSE_TIMEOUT: Duration = Duration::from_secs(45);
 const CLONE_TIMEOUT: Duration = Duration::from_secs(30 * 60);
 const CREATE_TIMEOUT: Duration = Duration::from_secs(120);
 const DELETE_TIMEOUT: Duration = Duration::from_secs(180);
+/// A capability probe is one `command -v` plus `git rev-parse`; it only needs
+/// to outlast the connection handshake.
+const PROBE_TIMEOUT: Duration = Duration::from_secs(30);
 
 const REMOTE_PROGRAM_NAME: &str = "hydra-remote";
 
@@ -66,6 +69,15 @@ pub struct SshRemoteCloneResult {
 pub struct SshRemoteCreateProjectResult {
     /// Absolute path of the created project directory on the remote host.
     pub path: String,
+}
+
+/// Host capabilities the Add Project create step needs before it can offer to
+/// initialize a repository on an SSH host.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SshRemoteGitProbe {
+    pub git_available: bool,
+    pub is_git_repository: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -164,6 +176,26 @@ if [ "$init" = "1" ]; then
   git -C "$target" init >/dev/null || exit 75
 fi
 printf "P\0%s\0" "$target"
+"#;
+
+/// Reports whether Git exists on the host and whether the path is already a
+/// checkout. Truthiness is encoded as `1`/`0` so no locale or error text leaks
+/// into the renderer.
+const GIT_PROBE_SCRIPT: &str = r#"
+path=$1
+case $path in
+  "~") path=$HOME ;;
+  "~/"*) path=$HOME/${path#"~/"} ;;
+esac
+available=0
+repository=0
+if command -v git >/dev/null 2>&1; then
+  available=1
+  if [ -d "$path" ] && git -C "$path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    repository=1
+  fi
+fi
+printf "G\0%s\0R\0%s\0" "$available" "$repository"
 "#;
 
 const WORKTREE_LIST_SCRIPT: &str = r#"
@@ -529,6 +561,27 @@ pub fn create_remote_project_with_runner(
     })
 }
 
+pub fn probe_remote_git_with_runner(
+    runner: &dyn RemoteCommandRunner,
+    target: &SshTarget,
+    path: &str,
+) -> Result<SshRemoteGitProbe, String> {
+    let path = validate_remote_dir_path("path", path)?;
+    let output = run_remote(runner, target, GIT_PROBE_SCRIPT, &[path], PROBE_TIMEOUT)?;
+    let fields: Vec<&str> = output.stdout.split('\0').collect();
+    let flag = |marker: &str| {
+        fields
+            .windows(2)
+            .find(|pair| pair[0] == marker)
+            .map(|pair| pair[1] == "1")
+            .unwrap_or(false)
+    };
+    Ok(SshRemoteGitProbe {
+        git_available: flag("G"),
+        is_git_repository: flag("R"),
+    })
+}
+
 pub fn delete_remote_worktree_with_runner(
     runner: &dyn RemoteCommandRunner,
     target: &SshTarget,
@@ -670,6 +723,22 @@ pub async fn ssh_remote_create_project(
     .map_err(|error| error.to_string())?
 }
 
+/// Probes Git and checkout state on the host for the create-project step.
+#[tauri::command]
+pub async fn ssh_remote_probe_git(
+    connection_id: String,
+    path: String,
+    state: State<'_, AppState>,
+) -> Result<SshRemoteGitProbe, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let target = load_target(&db, &connection_id)?;
+        probe_remote_git_with_runner(&SystemRemoteCommandRunner, &target, &path)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 /// Removes a worktree on the host and reports any branch that survived.
 #[tauri::command]
 pub async fn ssh_remote_delete_worktree(
@@ -777,6 +846,29 @@ mod tests {
 
     fn listing_stdout() -> String {
         "P\0/home/deploy\0f\012\0notes.md\0d\00\0projects\0f\00\0a file with space.txt\0".to_string()
+    }
+
+    #[test]
+    fn probe_reports_git_availability_and_checkout_state() {
+        let stdout = format!("G\0{}\0R\0{}\0", "1", "0");
+        let runner = FakeRunner::with_outputs(vec![ok(&stdout)]);
+        let probe = probe_remote_git_with_runner(&runner, &target(), "~/orca/projects")
+            .expect("probe parses");
+
+        assert!(probe.git_available);
+        assert!(!probe.is_git_repository);
+        assert!(runner.commands()[0].contains("~/orca/projects"));
+    }
+
+    #[test]
+    fn probe_reports_missing_git_without_a_checkout() {
+        let stdout = format!("G\0{}\0R\0{}\0", "0", "0");
+        let runner = FakeRunner::with_outputs(vec![ok(&stdout)]);
+        let probe =
+            probe_remote_git_with_runner(&runner, &target(), "/srv/app").expect("probe parses");
+
+        assert!(!probe.git_available);
+        assert!(!probe.is_git_repository);
     }
 
     #[test]

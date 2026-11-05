@@ -14,18 +14,6 @@
    "note": "Clone parent strips the trailing workspaces segment (POSIX, Windows drive and root cases) and fills only on the first local entry; covered by tests."
   },
   {
-   "id": "D02a-017",
-   "status": "partial",
-   "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:56-66",
-    "src/components/sidebar/AddRepoDialog.parity.test.tsx:74-90"
-   ],
-   "missing_behaviors": [
-    "pasta padrão por host de runtime (browseRuntimeServerDirectory) e sondagem de Git no host remoto"
-   ],
-   "note": "Local default comes from settings.workspace_dir and Git availability is probed via check_preflight_tools_cmd; remote hosts still unaudited."
-  },
-  {
    "id": "D02a-004",
    "status": "parity",
    "evidence": [
@@ -33,6 +21,16 @@
    ],
    "missing_behaviors": [],
    "note": "Implemented per the D02A port report and integrated in the mounted sidebar."
+  },
+  {
+   "id": "D02a-017",
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar",
+    "src-tauri/src"
+   ],
+   "missing_behaviors": [],
+   "note": "Remote ~/orca/projects default + ssh git probe."
   }
  ]
 }

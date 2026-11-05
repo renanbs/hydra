@@ -73,9 +73,8 @@ export async function clearSshHostWorkspaces(args: {
     }
   }
 
-  // Why abort before the catalog writes: the dialog keeps the host whenever a
-  // workspace failed, so dropping repo rows now would leave the kept host with
-  // no rows to retry from.
+  // Why abort before the repo rows: a failed worktree keeps the host, so dropping its
+  // root row now would leave the kept host with no row to retry from.
   if (failedIds.length > 0) {
     return { failedIds, error, preservedBranches }
   }
@@ -93,6 +92,34 @@ export async function clearSshHostWorkspaces(args: {
       await removeCatalogRepo(repo.path, connectionId)
     } catch (err) {
       failedIds.push(repoId)
+      error ??= err instanceof Error ? err.message : String(err)
+    }
+  }
+
+  // Why abort before the catalog rows too: each remaining row is another workspace the
+  // kept host can retry, and a partially cleared host is harder to reason about.
+  if (failedIds.length > 0) {
+    return { failedIds, error, preservedBranches }
+  }
+
+  // Why last: a catalog repo root must not disappear while a child worktree or a store
+  // repo row still points at it. Catalog rows the store already knows were deduped by the
+  // resolution, so each workspace is removed once.
+  for (const row of args.resolution.catalogRows ?? []) {
+    try {
+      if (row.kind === 'folder') {
+        // Local-only forget: it drops the catalog folder row, closes any session bound
+        // to the path, and never touches the remote directory.
+        await invoke('ssh_forget_workspace', {
+          connectionId,
+          worktreePath: row.path
+        })
+      } else {
+        // Host-scoped: two hosts can hold the same absolute path.
+        await removeCatalogRepo(row.path, connectionId)
+      }
+    } catch (err) {
+      failedIds.push(row.id)
       error ??= err instanceof Error ? err.message : String(err)
     }
   }

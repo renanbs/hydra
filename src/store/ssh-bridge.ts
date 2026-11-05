@@ -4,13 +4,16 @@ import type {
   SshConfigHostListResult,
   SshConfigHostResolution,
   SshConfigImportResult,
+  SshDisconnectResult,
   SshReconnectResult,
   SshRemoveTargetResult,
+  SshRepoReadoption,
   SshTarget,
   SshTargetAddResult,
   SshTargetCreateInput,
   SshTargetUpdateInput
 } from '../shared/ssh-types'
+import { PROJECTS_REFRESH_EVENT } from '../lib/refresh-projects-awaitable'
 import { useAppStore } from './index'
 
 /**
@@ -107,4 +110,40 @@ export async function importSshConfig(): Promise<SshConfigImportResult> {
  */
 export async function reconnectSshTarget(targetId: string): Promise<SshReconnectResult> {
   return invoke<SshReconnectResult>('ssh_reconnect_target', { connectionId: targetId })
+}
+
+/**
+ * End the connection for one target.
+ *
+ * Main writes `disconnected` to the durable connection record; the renderer drops its
+ * in-memory state from the caller. There is no PTY/tunnel bound to a target in Hydra, so
+ * no terminal session is closed (`closedSessions` stays 0) — the value is reported rather
+ * than hidden, so callers never claim they ended terminals that do not exist.
+ */
+export async function disconnectSshTarget(targetId: string): Promise<SshDisconnectResult> {
+  return invoke<SshDisconnectResult>('ssh_disconnect_target', { connectionId: targetId })
+}
+
+/**
+ * Move the workspace rows still pinned to a removed target onto the host that re-adopted
+ * its alias.
+ *
+ * Why the catalog and not store repo rows: the catalog is the only host-aware projection
+ * the live store composes, so a readoption is applied where the sidebar actually reads
+ * ownership. `repoIds` is the payload's evidence of what moved; the catalog write is
+ * scoped by connection id, so an unrelated row keeps its host. Recording the readoptions
+ * keeps the applied set inspectable, and the refresh makes the sidebar drop the old scope
+ * without a reload.
+ */
+export async function applySshRepoReadoptions(
+  readoptions: readonly SshRepoReadoption[]
+): Promise<void> {
+  if (readoptions.length === 0) {
+    return
+  }
+  await invoke<unknown>('catalog_reassign_ssh_targets', { readoptions: [...readoptions] })
+  useAppStore.getState().recordSshRepoReadoptions(readoptions)
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(PROJECTS_REFRESH_EVENT))
+  }
 }
