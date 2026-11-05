@@ -8,7 +8,9 @@ import type { PrDisplay } from './pr-display'
 import type { ResolvedWorktreeCardProps, WorktreeCardProps, WorktreeRenameRequest } from './worktree-card-model'
 import { usePromptCacheCountdownStartedAt, usePromptCacheTtlMs } from './CacheTimer'
 import { useWorktreeUpstreamStatus } from '../../hooks/useWorktreeUpstreamStatus'
+import { toast } from 'sonner'
 import { useAppStore } from '../../store'
+import { openExternalUrl } from '../../lib/sidebar-desktop-contracts'
 import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
 import {
   selectRuntimeAwareSshStatus,
@@ -86,6 +88,9 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleWorkspaceQuickAction: () => void
   stopQuickActionPointerPropagation: (e: React.MouseEvent | React.PointerEvent) => void
   showUnreadEmphasis: boolean
+  handleUnlinkReview: () => void
+  handleOpenIssueInBrowser: (url: string) => void
+  handleOpenReviewInBrowser: (url: string) => void
 }
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps | WorktreeCardProps): WorktreeCardController {
@@ -245,7 +250,55 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
       (state as unknown as { remoteBranchConflictByWorktreeId?: Record<string, unknown> }).remoteBranchConflictByWorktreeId?.[worktreeId] ?? false
   ) as boolean | { remote: string; branchName: string } | null
   const remoteBranchConflict = Boolean(remoteBranchConflictRaw)
+  // D04b-016 Rosetta (Orca `use-worktree-card-secondary-details`): unread
+  // emphasis is owned by the status toggle (`showStatus && isUnread`). Hydra's
+  // showStatus is constant-true today, so this reduces to isUnread — but the
+  // conjunction documents the owner, so a future status-toggle port keeps the
+  // gate instead of re-hardcoding emphasis.
+  const showStatus = true
+  const showUnreadEmphasis = showStatus && isUnread
   const showLineageChildChip = lineageChildCount > 0 && onLineageToggle !== undefined
+
+  // D04b-016 Rosetta (Orca `use-worktree-card-secondary-details:handleUnlinkReview`):
+  // the hover's Unlink action clears the linked review and — for GitHub —
+  // records the tombstone so the branch lookup does not re-suggest it.
+  const updateWorktreeMeta = useAppStore(
+    (state) =>
+      (state as unknown as { updateWorktreeMeta: (id: string, updates: Record<string, unknown>, options?: { executionHostId?: string }) => Promise<{ ok: true } | { ok: false; error: string }> }).updateWorktreeMeta
+  )
+  const handleUnlinkReview = useCallback(async (): Promise<void> => {
+    const provider = (prDisplay as unknown as { provider?: string } | null)?.provider
+    const number = (prDisplay as unknown as { number?: number } | null)?.number
+    const hostId = ((worktree as unknown as { hostId?: string }).hostId ?? 'local') as 'local'
+    if (provider === 'github') {
+      const result = await updateWorktreeMeta(
+        worktreeId,
+        { linkedPR: null, suppressedGitHubPR: typeof number === 'number' ? number : null },
+        { executionHostId: hostId }
+      )
+      if (!result.ok) {
+        toast.error(result.error)
+      }
+      return
+    }
+    if (provider === 'gitlab' || provider === 'bitbucket' || provider === 'azure-devops' || provider === 'gitea') {
+      const field =
+        provider === 'gitlab' ? 'linkedGitLabMR'
+        : provider === 'bitbucket' ? 'linkedBitbucketPR'
+        : provider === 'azure-devops' ? 'linkedAzureDevOpsPR'
+        : 'linkedGiteaPR'
+      await updateWorktreeMeta(worktreeId, { [field]: null } as never, { executionHostId: hostId })
+    }
+  }, [prDisplay, updateWorktreeMeta, worktree, worktreeId])
+  const handleOpenIssueInBrowser = useCallback(
+    (url: string): void => {
+      void openExternalUrl(url).catch(() => {
+        toast.error('Unable to open URL.')
+      })
+    },
+    []
+  )
+  const handleOpenReviewInBrowser = handleOpenIssueInBrowser
 
   const visibleCardTitle =
     worktree.display_name?.trim() ||
@@ -440,7 +493,10 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleDelete,
     handleWorkspaceQuickAction: handleDelete,
     stopQuickActionPointerPropagation: (e: React.MouseEvent | React.PointerEvent) => e.stopPropagation(),
-    showUnreadEmphasis: isUnread,
+    showUnreadEmphasis,
+    handleUnlinkReview,
+    handleOpenIssueInBrowser,
+    handleOpenReviewInBrowser,
     onDelete: handleDelete,
     onAssignWorkspaceStatus,
     onDragOver,
