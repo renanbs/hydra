@@ -116,11 +116,34 @@ export interface WorktreeFlagApplierDeps {
 export function createWorktreeFlagApplier(
   deps: WorktreeFlagApplierDeps
 ): (path: string, currentlyFlagged: boolean) => Promise<void> {
-  const argKey = INVOKE_ARG_BY_FIELD[deps.field];
+  const applyBatch = createWorktreeFlagBatchApplier(deps);
   return async (path: string, currentlyFlagged: boolean): Promise<void> => {
-    const next = !currentlyFlagged;
-    const projectId = deps.findProjectIdByPath?.(path);
-    const mutate = (flagged: boolean): void => {
+    await applyBatch([{ path, currentlyFlagged }]);
+  };
+}
+
+/**
+ * Lote otimista (Orca `pinWorktrees`): um `invoke` por path, rollback por path
+ * no que falhar, reveal do primeiro que mudou pela chamada.
+ */
+export function createWorktreeFlagBatchApplier(
+  deps: WorktreeFlagApplierDeps
+): (entries: readonly { path: string; currentlyFlagged: boolean }[]) => Promise<void> {
+  const argKey = INVOKE_ARG_BY_FIELD[deps.field];
+  return async (
+    entries: readonly { path: string; currentlyFlagged: boolean }[]
+  ): Promise<void> => {
+    if (entries.length === 0) {
+      return;
+    }
+    const projectIdByPath = new Map<string, string>();
+    for (const entry of entries) {
+      const projectId = deps.findProjectIdByPath?.(entry.path);
+      if (projectId !== undefined) {
+        projectIdByPath.set(entry.path, projectId);
+      }
+    }
+    const mutate = (path: string, projectId: string | undefined, flagged: boolean): void => {
       deps.setWorktreeFlagged((previous) => setWorktreeFlagMembership(previous, path, flagged));
       if (projectId !== undefined && deps.setProjectFlagged) {
         deps.setProjectFlagged((previous) =>
@@ -128,11 +151,20 @@ export function createWorktreeFlagApplier(
         );
       }
     };
-    mutate(next);
-    try {
-      await deps.invoke(SET_WORKTREE_FLAGS_COMMAND, { worktreePath: path, [argKey]: next });
-    } catch {
-      mutate(currentlyFlagged);
+    for (const entry of entries) {
+      mutate(entry.path, projectIdByPath.get(entry.path), !entry.currentlyFlagged);
     }
+    await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          await deps.invoke(SET_WORKTREE_FLAGS_COMMAND, {
+            worktreePath: entry.path,
+            [argKey]: !entry.currentlyFlagged,
+          });
+        } catch {
+          mutate(entry.path, projectIdByPath.get(entry.path), entry.currentlyFlagged);
+        }
+      })
+    );
   };
 }

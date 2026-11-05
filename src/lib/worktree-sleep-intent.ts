@@ -120,6 +120,22 @@ export function clearWorktreeSleepIntent(worktreeId: string | null): void {
   }
 }
 
+// D03b-046: the multi-removal batch. Orca coordinates its snapshot prune through a
+// `beginRemovalSnapshotPruneBatch` IPC; Hydra's durable sleep half is one SQLite row
+// per workspace, so the batch is one loop over the same per-path forget — no new
+// backend call, and panes of removed rows are never woken.
+export function forgetWorktreeSleepIntents(worktreeIds: readonly string[]): string[] {
+  const purged: string[] = []
+  for (const worktreeId of worktreeIds) {
+    if (!worktreeId || !hasWorktreeSleepIntent(worktreeId)) {
+      continue
+    }
+    forgetWorktreeSleepIntent(worktreeId)
+    purged.push(worktreeId)
+  }
+  return purged
+}
+
 // Why: a purged worktree must not wake its panes; they are being unmounted. Its
 // persisted row must go too, or a future workspace reusing the path starts asleep.
 export function forgetWorktreeSleepIntent(worktreeId: string): void {

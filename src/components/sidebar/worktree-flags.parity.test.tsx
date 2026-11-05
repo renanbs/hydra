@@ -13,6 +13,7 @@ import type { WorkspaceDisplayOptions } from "./WorkspaceOptionsMenu";
 import type { GitWorktreeInfo, HydraProject } from "./types";
 import {
   createWorktreeFlagApplier,
+  createWorktreeFlagBatchApplier,
   reconcileProjectFlagSet,
   reconcileWorktreeFlagSet,
   type WorktreeFlagPayload,
@@ -195,6 +196,51 @@ describe("worktree flags — toggle persistido (D07 G7)", () => {
 
     await applyRemoval("/repo/hydra", true);
     expect([...removing.state.current]).toEqual(["/repo/hydra"]);
+  });
+});
+
+describe("worktree flags — lote pin/unpin (D03b-015)", () => {
+  it("fixa vários paths em um invoke por path com rollback só no que falhou", async () => {
+    const worktrees = createSetHarness();
+    const projects = createSetHarness();
+    const calls: Array<{ command: string; args: Record<string, unknown> }> = [];
+    const invoke = <T,>(command: string, args: Record<string, unknown>): Promise<T> => {
+      calls.push({ command, args });
+      if (args.worktreePath === "/repo/b") {
+        return Promise.reject(new Error("invoke failed")) as Promise<T>;
+      }
+      return Promise.resolve(undefined as T);
+    };
+    const applyBatch = createWorktreeFlagBatchApplier({
+      field: "is_pinned",
+      setWorktreeFlagged: worktrees.set,
+      setProjectFlagged: projects.set,
+      findProjectIdByPath: (path) => (path === PROJECT.path ? PROJECT.id : path),
+      invoke,
+    });
+
+    await applyBatch([
+      { path: "/repo/a", currentlyFlagged: false },
+      { path: "/repo/b", currentlyFlagged: false },
+    ]);
+
+    expect(calls).toHaveLength(2);
+    expect(worktrees.state.current.has("/repo/a")).toBe(true);
+    expect(worktrees.state.current.has("/repo/b")).toBe(false);
+  });
+
+  it("ignora lote vazio sem tocar no invoke", async () => {
+    const worktrees = createSetHarness();
+    const spy = createInvokeSpy();
+    const applyBatch = createWorktreeFlagBatchApplier({
+      field: "is_pinned",
+      setWorktreeFlagged: worktrees.set,
+      invoke: spy.invoke,
+    });
+
+    await applyBatch([]);
+
+    expect(spy.calls).toHaveLength(0);
   });
 });
 
