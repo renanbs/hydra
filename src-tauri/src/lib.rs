@@ -2247,6 +2247,7 @@ pub fn run() {
             ssh_hosts::ssh_forget_workspace,
             runtime_envs::runtime_verify_and_add_from_pairing_code,
             runtime_envs::runtime_list_environments,
+            runtime_envs::runtime_environment_offer,
             runtime_envs::runtime_remove_environment,
             ssh_remote::ssh_browse_dir,
             ssh_remote::ssh_remote_clone,

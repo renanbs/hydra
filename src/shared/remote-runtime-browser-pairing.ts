@@ -132,6 +132,10 @@ export type RemotePairingVerifyResult =
   | { ok: true; runtimeStatus: Record<string, unknown> }
   | { ok: false; kind: string; message: string }
 
+export type RemoteRuntimeRpcResult =
+  | { ok: true; result: unknown }
+  | { ok: false; kind: string; message: string }
+
 /**
  * Verify a pairing offer against the remote Orca runtime over a browser
  * WebSocket: hello → ready → encrypted auth → encrypted `status.get`.
@@ -308,4 +312,193 @@ export function parseAndVerifyPairingCode(
     return Promise.resolve({ ok: false, kind: 'access-link-invalid', message: 'Invalid pairing code.' })
   }
   return verifyRemotePairing(parsed.value.pairing, clientCapabilities)
+}
+
+type RpcFrameHandlers = {
+  requestId: string
+  invalidResponseMessage: string
+  rejectedMessage: string
+  onResult: (result: unknown) => void
+}
+
+/**
+ * One E2EE JSON-RPC call over a fresh browser WebSocket: hello → ready →
+ * encrypted auth → encrypted `{ id, deviceToken, method, params }`. The remote
+ * answers `{ id, result }` or `{ id, error }`. Used for post-pairing methods
+ * like `repo.clone` / `repo.create` on a paired server.
+ */
+export function callRemoteRuntimeRpc(
+  offer: PairingOffer,
+  method: string,
+  params: unknown,
+  clientCapabilities: readonly string[] = [],
+  timeoutMs = 60_000
+): Promise<RemoteRuntimeRpcResult> {
+  const { promise, resolve } = Promise.withResolvers<RemoteRuntimeRpcResult>()
+  let settled = false
+  let socket: WebSocket | null = null
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const finish = (result: RemoteRuntimeRpcResult): void => {
+    if (settled) {
+      return
+    }
+    settled = true
+    clearTimeout(timer)
+    try {
+      socket?.close()
+    } catch {
+      // ignore best-effort close
+    }
+    resolve(result)
+  }
+  const fail = (kind: string, message: string): void => finish({ ok: false, kind, message })
+
+  const keyPair = nacl.box.keyPair()
+  if (!offer.publicKeyB64) {
+    fail('access-link-invalid', 'This access link carries no host identity key.')
+    return promise
+  }
+  let sharedKey: Uint8Array
+  try {
+    sharedKey = nacl.box.before(publicKeyFromBase64(offer.publicKeyB64), keyPair.secretKey)
+  } catch (error) {
+    fail(
+      'access-link-invalid',
+      error instanceof Error ? error.message : 'This access link is no longer valid.'
+    )
+    return promise
+  }
+  const key = sharedKey
+  const requestId = crypto.randomUUID()
+
+  timer = setTimeout(() => {
+    fail('connection-interrupted', `Timed out waiting for the remote Orca runtime to answer ${method}.`)
+  }, timeoutMs)
+
+  try {
+    socket = new WebSocket(offer.endpoint)
+  } catch (error) {
+    fail(
+      'host-unreachable',
+      error instanceof Error
+        ? error.message
+        : `${REMOTE_RUNTIME_CONNECT_FAILURE_PHRASE} at ${offer.endpoint}.`
+    )
+    return promise
+  }
+  const ws = socket
+  const handlers: RpcFrameHandlers = {
+    requestId,
+    invalidResponseMessage: `The remote host returned an invalid ${method} response.`,
+    rejectedMessage: `The remote host rejected the ${method} request.`,
+    onResult: (result: unknown) => finish({ ok: true, result })
+  }
+
+  let state: 'awaiting_ready' | 'awaiting_authenticated' | 'awaiting_result' = 'awaiting_ready'
+
+  ws.addEventListener('open', () => {
+    ws.send(JSON.stringify({ type: 'e2ee_hello', publicKeyB64: bytesToBase64(keyPair.publicKey) }))
+  })
+  ws.addEventListener('error', () => {
+    fail('host-unreachable', `${REMOTE_RUNTIME_CONNECT_FAILURE_PHRASE} at ${offer.endpoint}.`)
+  })
+  ws.addEventListener('close', () => {
+    if (!settled) {
+      fail('connection-interrupted', 'Remote Orca runtime closed the connection.')
+    }
+  })
+  ws.addEventListener('message', (event) => {
+    if (settled) {
+      return
+    }
+    const frame = typeof event.data === 'string' ? event.data : null
+    if (frame === null || frame.length > MAX_FRAME_BYTES) {
+      fail('connection-interrupted', 'The remote host returned an invalid response.')
+      return
+    }
+    if (state === 'awaiting_ready') {
+      if (classifyReadyFrame(frame) !== 'ready') {
+        fail('host-identity-mismatch', 'Orca reached the host, but that host does not match this access link.')
+        return
+      }
+      state = 'awaiting_authenticated'
+      ws.send(
+        encryptText(
+          JSON.stringify({
+            type: 'e2ee_auth',
+            deviceToken: offer.deviceToken,
+            clientCapabilities
+          }),
+          key
+        )
+      )
+      return
+    }
+    const plaintext = decryptText(frame, key)
+    if (plaintext === null) {
+      fail('connection-interrupted', 'Remote Orca runtime returned an undecryptable frame.')
+      return
+    }
+    if (state === 'awaiting_authenticated') {
+      const verdict = parseAuthenticatedFrame(plaintext)
+      if (verdict !== 'authenticated') {
+        fail(
+          'access-link-invalid',
+          verdict === 'rejected'
+            ? 'This access link is no longer valid. Generate a new link on the other host.'
+            : 'The remote host returned an invalid auth frame.'
+        )
+        return
+      }
+      state = 'awaiting_result'
+      ws.send(
+        encryptText(
+          JSON.stringify({
+            id: handlers.requestId,
+            deviceToken: offer.deviceToken,
+            method,
+            params
+          }),
+          key
+        )
+      )
+      return
+    }
+    handleRpcResultFrame(plaintext, handlers, fail)
+  })
+  return promise
+}
+
+function handleRpcResultFrame(
+  plaintext: string,
+  handlers: RpcFrameHandlers,
+  fail: (kind: string, message: string) => void
+): void {
+  let response: unknown
+  try {
+    response = JSON.parse(plaintext) as unknown
+  } catch {
+    fail('connection-interrupted', handlers.invalidResponseMessage)
+    return
+  }
+  if (response === null || typeof response !== 'object' || !('result' in response || 'error' in response)) {
+    fail('connection-interrupted', handlers.invalidResponseMessage)
+    return
+  }
+  const record = response as { id?: unknown; result?: unknown; error?: unknown }
+  if (record.id !== undefined && record.id !== handlers.requestId) {
+    return
+  }
+  if (record.error !== undefined && record.error !== null) {
+    const message =
+      typeof record.error === 'object' &&
+      record.error !== null &&
+      'message' in record.error &&
+      typeof record.error.message === 'string'
+        ? record.error.message
+        : handlers.rejectedMessage
+    fail('connection-interrupted', message)
+    return
+  }
+  handlers.onResult('result' in record ? record.result : undefined)
 }

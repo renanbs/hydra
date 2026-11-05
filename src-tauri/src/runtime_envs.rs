@@ -285,6 +285,24 @@ pub async fn runtime_list_environments(
         .map(|persisted| persisted.environments)
         .map_err(|e| format!("Failed to read paired servers: {e}"))
 }
+/// Full-secret read for one environment: the renderer needs the stored offer
+/// (endpoint + device token + host key) to open the E2EE transport for
+/// `repo.clone` / `repo.create` on that server. Scoped to a single id so a
+/// list surface never carries secrets.
+#[tauri::command]
+pub async fn runtime_environment_offer(
+    state: State<'_, AppState>,
+    environment_id: String,
+) -> Result<PairedRuntimeEnvironment, String> {
+    state
+        .db
+        .get_runtime_environments()
+        .map_err(|e| format!("Failed to read paired servers: {e}"))?
+        .environments
+        .into_iter()
+        .find(|entry| entry.id == environment_id)
+        .ok_or_else(|| "Paired server not found.".to_string())
+}
 
 #[tauri::command]
 pub async fn runtime_remove_environment(

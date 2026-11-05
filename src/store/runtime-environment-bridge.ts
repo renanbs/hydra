@@ -14,7 +14,7 @@ import {
 } from '../shared/protocol-version'
 import { evaluateRuntimeCompat } from '../shared/protocol-compat'
 import { parseHostAccessLink } from '../shared/remote-pairing-address'
-import { verifyRemotePairing } from '../shared/remote-runtime-browser-pairing'
+import { callRemoteRuntimeRpc, verifyRemotePairing } from '../shared/remote-runtime-browser-pairing'
 
 /** One paired runtime host, as the Add-remote-server flow needs it. */
 export type RuntimeEnvironmentSummary = {
@@ -122,4 +122,66 @@ export async function listRuntimeEnvironments(): Promise<RuntimeEnvironmentSumma
 /** Remove a paired server by id. Returns false when it was already gone. */
 export async function removeRuntimeEnvironment(environmentId: string): Promise<boolean> {
   return invoke<boolean>('runtime_remove_environment', { environmentId })
+}
+
+/** Stored offer (with secrets) for one paired server, to open the E2EE transport. */
+export type RuntimeEnvironmentOffer = {
+  id: string
+  endpoints: {
+    id: string
+    endpoint: string
+    deviceToken?: string | null
+    publicKeyB64?: string | null
+  }[]
+  preferredEndpointId?: string | null
+}
+
+async function runtimeEnvironmentOffer(environmentId: string): Promise<RuntimeEnvironmentOffer> {
+  return invoke<RuntimeEnvironmentOffer>('runtime_environment_offer', { environmentId })
+}
+
+function preferredOffer(offer: RuntimeEnvironmentOffer): {
+  endpoint: string
+  deviceToken: string
+  publicKeyB64?: string
+} {
+  const endpoint =
+    offer.endpoints.find((entry) => entry.id === offer.preferredEndpointId) ?? offer.endpoints[0]
+  if (!endpoint) {
+    throw new Error('That paired server has no access endpoint.')
+  }
+  if (!endpoint.deviceToken) {
+    throw new Error('That paired server is missing its pairing secret. Pair it again.')
+  }
+  return {
+    endpoint: endpoint.endpoint,
+    deviceToken: endpoint.deviceToken,
+    ...(endpoint.publicKeyB64 ? { publicKeyB64: endpoint.publicKeyB64 } : {})
+  }
+}
+
+/**
+ * One E2EE JSON-RPC call against a paired server (`repo.clone`, `repo.create`,
+ * …): resolves the stored offer, opens the transport from PR1, and returns the
+ * remote `result`. Throws the remote `error.message` when the call fails.
+ */
+export async function callPairedServerRpc<TResult>(
+  environmentId: string,
+  method: string,
+  params: unknown,
+  timeoutMs = 60_000
+): Promise<TResult> {
+  const stored = await runtimeEnvironmentOffer(environmentId)
+  const { endpoint, deviceToken, publicKeyB64 } = preferredOffer(stored)
+  const response = await callRemoteRuntimeRpc(
+    { v: 2, endpoint, deviceToken, ...(publicKeyB64 ? { publicKeyB64 } : {}) },
+    method,
+    params,
+    [...ELECTRON_REMOTE_RUNTIME_CLIENT_CAPABILITIES],
+    timeoutMs
+  )
+  if (!response.ok) {
+    throw new Error(response.message)
+  }
+  return response.result as TResult
 }
