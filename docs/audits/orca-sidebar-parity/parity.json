@@ -1447,21 +1447,18 @@
    "components/sidebar/useAddRepoCloneFlow.ts:153"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:71-90"
+    "src/components/sidebar/AddRepoDialog.tsx:handleClone — local via cloneRepository/clone_abort, SSH via cloneSshRepository, runtime via clonePairedServerRepository (repo.clone E2EE 10min)",
+    "src/store/paired-server-repo-bridge.ts:clonePairedServerRepository — repo.clone + validação do envelope { repo }/{ error }",
+    "src/shared/remote-runtime-browser-pairing.ts:callRemoteRuntimeRpc — hello → ready → auth → RPC cifrado genérico",
+    "src/components/sidebar/AddRepoDialog.parity.test.tsx:clones on the paired server — onProjectAdded com executionHostId runtime:env-1 + catalog_add_remote_repo com connectionId runtime:env-1",
+    "src/components/sidebar/RemoteFileBrowser.tsx — destino clone no servidor via picker (source runtime)"
    ],
    "backend": [
     "invoke('clone_project') -> src-tauri/src/lib.rs:445"
    ],
-   "missing_behaviors": [
-    "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real)",
-    "Roteamento SSH (cloneRemote) e runtime (runtimeRpc repo.clone)",
-    "Upsert no store com runtimeEnvironmentId/sshConnectionId",
-    "Toast 'Repository cloned'",
-    "Atualização de worktrees + onGitRepoReady('clone_url')",
-    "extractIpcErrorMessage"
-   ],
+   "missing_behaviors": [],
    "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1537,21 +1534,17 @@
    "components/sidebar/useCreateRepo.ts:124"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:92-111"
+    "src/components/sidebar/AddRepoDialog.tsx:handleCreate — local via create_project, SSH via createSshProject, runtime via createPairedServerProject (repo.create E2EE 60s) + dedup catalogContainsPath + toasts",
+    "src/store/paired-server-repo-bridge.ts:createPairedServerProject — repo.create { parentPath, name, kind: git }",
+    "src/lib/catalog-client.ts:addPairedServerCatalogRepo — connectionId runtime:<env> + executionHostId runtime:<env>",
+    "src/components/sidebar/AddRepoDialog.parity.test.tsx:creates the project on the paired server — onProjectAdded com source create_project"
    ],
    "backend": [
     "invoke('create_project') -> src-tauri/src/lib.rs:428"
    ],
-   "missing_behaviors": [
-    "pickDirectory nativo para escolher pasta pai",
-    "Criação SSH (createRemote) e runtime (runtimeRpc repo.create)",
-    "Toasts de dedup 'Project already added' / 'Project created'",
-    "Atualização autoritativa de worktrees + onGitRepoReady",
-    "Ativação de workspace sintético para projetos de pasta",
-    "Ref de geração/montagem para submissões obsoletas"
-   ],
+   "missing_behaviors": [],
    "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1813,15 +1806,16 @@
    "components/sidebar/add-repo-store-upsert.ts:28"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID)",
-    "Verifica duplicidade baseada em getRepoHostIdentity",
-    "Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos",
-    "Atualiza atomicamente as fatias repos, projects e projectHostSetups no store"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/add-repo-store-upsert.ts:repoWithCapturedOwner — injeta executionHostId (ssh:/runtime:/local) capturado no início do add",
+    "src/components/sidebar/add-repo-store-upsert.ts:upsertAddedRepoWithProjectHostSetup — dedup via getRepoHostIdentity + projeção projectHostSetupProjectionFromRepos em setState atômico (repos/projects/projectHostSetups)",
+    "src/components/sidebar/add-repo-store-upsert.ts:applyCatalogToStore — projeção de leitura completa do catálogo (catalog_get) nas três fatias",
+    "src/App.tsx:handleProjectAdded + applyCatalogEnvelope/handleRefreshProjects/boot — todo caminho de add e todo refresh de catálogo passam pela projeção",
+    "src/components/sidebar/catalog-store-projection.parity.test.ts — 3 testes (id/stamps, basename, projeção)"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "upsertAddedRepoWithProjectHostSetup inexistente; o fluxo wired (App.tsx:4029-4052) apenas relê o catálogo (projects/groups/folderWorkspaces), sem repos/projectHostSetups/host-identity dedup. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1853,18 +1847,17 @@
    "components/sidebar/folder-workspace-composer-submit.ts:47"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'",
-    "Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta",
-    "Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch)",
-    "Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas",
-    "Marca o workspace para auto-renomeação pela primeira mensagem do agente se aplicável",
-    "Ativa e revela o novo workspace de pasta via activateAndRevealFolderWorkspace",
-    "Entrega prompts de rascunho (draft) ou follow-up no terminal do agente"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-composer-submit.ts:submitFolderWorkspaceCreate — nome (linked/auto/fallback), plano de agente, draft, trust preflight, create + reveal, rename pela 1ª mensagem",
+    "src/lib/agent-trust-preflight.ts:preflightAgentTrust — trust do agente para o caminho da pasta",
+    "src/lib/agent-session-launch-plan.ts:planAgentSessionLaunch — sessão TUI ou native chat estruturada",
+    "src/components/NewWorkspaceComposer.tsx:handleSubmit — chama submitFolderWorkspaceCreate e ativa via onFolderWorkspaceCreated",
+    "src/App.tsx:handleFolderWorkspaceCreated — fecha composer, ativa workspace, lança agente via terminal",
+    "src/components/sidebar/folder-workspace-composer-submit.parity.test.ts — 4 testes (nome, create+reveal, win32, null)"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "submitFolderWorkspaceCreate inexistente; createFolderWorkspace do store (folder-workspace-mutations.ts:62) nunca é chamado por componente (grep em src/components = 0). Sem compositor de workspace de pasta. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1878,14 +1871,15 @@
    "components/sidebar/folder-workspace-agent-startup.ts:34"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC",
-    "Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft)",
-    "Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-agent-startup.ts:getFolderWorkspaceAgentLaunchPlatform — SSH+Windows→win32, WSL UNC→linux, senão cliente",
+    "src/components/sidebar/folder-workspace-agent-startup.ts:resolveFolderWorkspaceLaunchDraft — draft do contexto da tarefa vinculada",
+    "src/components/sidebar/folder-workspace-agent-startup.ts:buildFolderWorkspaceLinkedStartupPlan — draft launch com escape por plataforma ou plano com prompt",
+    "src/components/sidebar/folder-workspace-agent-startup.parity.test.ts — 4 testes"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "folder-workspace-agent-startup/planAgentSessionLaunch para folder workspaces inexistentes no fluxo wired; sem compositor. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1920,15 +1914,15 @@
    "components/sidebar/folder-workspace-composer-helpers.ts:88"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId",
-    "Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary",
-    "Gera seleção inteligente de nome do workspace com getSmartNameSelection",
-    "Fornece label estável 'Create workspace' para o botão de ação primária"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-composer-helpers.ts:getFolderSourceRepos — git repos do mesmo host sob a pasta/grupo",
+    "src/components/sidebar/folder-workspace-composer-helpers.ts:toGitHub/GitLab/LinearLinkedWorkItem + toFolderWorkspaceLinkedTask — conversão padronizada",
+    "src/components/sidebar/folder-workspace-composer-helpers.ts:getSmartNameSelection + getFolderWorkspacePrimaryActionLabel ('Create workspace')",
+    "src/components/sidebar/folder-workspace-composer-helpers.parity.test.ts — 5 testes (filtro, host, vazio, conversão, label)"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "folder-workspace-composer-helpers (getFolderSourceRepos/getSmartNameSelection/'Create workspace') inexistentes; sem compositor de pasta. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
