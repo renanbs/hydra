@@ -92,6 +92,7 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleUnlinkReview: () => void
   handleOpenIssueInBrowser: (url: string) => void
   handleOpenReviewInBrowser: (url: string) => void
+  handleToggleUnreadQuick: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps | WorktreeCardProps): WorktreeCardController {
@@ -300,6 +301,18 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     []
   )
   const handleOpenReviewInBrowser = handleOpenIssueInBrowser
+  // D04b-010 Rosetta (Orca `use-worktree-card-activation-actions:handleToggleUnreadQuick`):
+  // the legacy bell button stays unmounted (newCardStyle constant-true,
+  // D04a-023 n/a), but the handler is wired so the surface can bind it.
+  const handleToggleUnreadQuick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>): void => {
+      event.preventDefault()
+      event.stopPropagation()
+      const hostId = ((worktree as unknown as { hostId?: string }).hostId ?? 'local') as 'local'
+      void updateWorktreeMeta(worktreeId, { isUnread: !isUnread }, { executionHostId: hostId })
+    },
+    [isUnread, updateWorktreeMeta, worktree, worktreeId]
+  )
 
   // D04b-013: card data lifecycle (initial fetch + visibility-gated polls +
   // hover refetch for hosted review / GitHub issue / Linear issue).
@@ -514,6 +527,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleUnlinkReview,
     handleOpenIssueInBrowser,
     handleOpenReviewInBrowser,
+    handleToggleUnreadQuick,
     onDelete: handleDelete,
     onAssignWorkspaceStatus,
     onDragOver,
