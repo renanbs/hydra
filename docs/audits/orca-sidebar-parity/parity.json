@@ -2227,22 +2227,19 @@
    "components/sidebar/AddRemoteHostDialog.tsx:246-298"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:6171-6174"
+    "src/shared/remote-runtime-browser-pairing.ts:137 — verifyRemotePairing: hello → e2ee_ready → encrypted auth → encrypted status.get (NaCl box via tweetnacl)",
+    "src/store/runtime-environment-bridge.ts:62 — verifyAndAddRuntimeEnvironmentFromPairingCode: live E2EE verify + compat gate + backend persist",
+    "src-tauri/src/runtime_envs.rs:214 — runtime_verify_and_add_from_pairing_code + runtime_list_environments/remove (SQLite runtime_environments)",
+    "src/components/sidebar/AddRemoteHostDialog.tsx:201 — saveRemoteServer: nome/link/loopback guard → verify → list → toast 'Remote server added', fecha",
+    "src/components/settings/RuntimeServersPane.tsx:1 — pane Paired Servers com add/remove via backend real"
    ],
    "backend": [
     "window.api.runtimeEnvironments.verifyAndAddFromPairingCode / .list (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "no store real: runtimeEnvironments = null (src/store/index.ts:428) e setRuntimeEnvironments = () => {} (no-op, src/store/index.ts:463)"
    ],
-   "missing_behaviors": [
-    "Valida se nome e código de pareamento foram preenchidos.",
-    "Valida se o link é válido e se a proteção de loopback foi respeitada.",
-    "Invoca window.api.runtimeEnvironments.verifyAndAddFromPairingCode({ name, pairingCode, allowLoopback }).",
-    "Em caso de erro de pareamento, emite toast explicativo via translateRemotePairingFailureDescription.",
-    "Em caso de sucesso, consulta lista atualizada com window.api.runtimeEnvironments.list() e atualiza store via setRuntimeEnvironments.",
-    "Dispara atualização de snapshots de status via readRuntimeHostStatusSnapshots(), emite toast 'Remote server added.' e fecha o dialog."
-   ],
+   "missing_behaviors": [],
    "notes": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes.",
    "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
   },
@@ -2303,19 +2300,14 @@
    "components/sidebar/host-header-menu-items.ts:50"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/HostSectionHeaderMenu.tsx:99-117",
-    "src/App.tsx:1396-1405"
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:56 — openManageHost: runtime → { section: 'servers', sectionId: environmentId }",
+    "src/components/SettingsModal.tsx:72 — HydraNavId inclui 'servers'; RuntimeServersPane montado com data-settings-section={environment.id}",
+    "src/components/sidebar/host-header-menu-items.ts:51 — modelo inclui manage para runtime"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Item presente para todos os tipos de host (local, SSH, runtime).",
-    "Para host SSH, abre configurações no painel 'ssh'.",
-    "Para host Runtime, abre configurações no painel 'servers' com o environmentId selecionado.",
-    "Para host local, abre configurações no painel 'general'.",
-    "Executa openSettingsPage() para exibir a página de preferências."
-   ],
+   "missing_behaviors": [],
    "notes": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general).",
    "note": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general)."
   },
@@ -2351,17 +2343,15 @@
    "components/sidebar/HostRemoveDialog.tsx:88-95"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/HostRemoveDialog.tsx:18-55",
-    "src/components/sidebar/ssh-host-remove-resolution.ts:29-56"
+    "src/components/sidebar/host-header-menu-items.ts:51 — modelo inclui remove para runtime",
+    "src/components/sidebar/HostSectionHeaderMenu.tsx:286 — ramo runtime monta HostRemoveDialog com runtimeEnvironmentId",
+    "src/components/sidebar/HostRemoveDialog.tsx:56 — ramo runtime: copy + botão 'Open settings' deep-linkando servers/{environmentId} (Orca handleRemoveRuntime parity)",
+    "src/components/settings/RuntimeServersPane.tsx:98 — remoção real confirmada via runtime_remove_environment"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "resolveHostRemoval identifica o tipo: SSH retorna { kind: 'ssh', targetId }, Runtime retorna { kind: 'runtime', environmentId } e Local retorna null (ação de remoção não oferecida para local).",
-    "Para host Runtime, o dialog orienta o usuário e oferece botão 'Open settings' que deep-linka para o painel de servidores nas configurações.",
-    "Para host SSH, abre o modal completo de remoção inline com opção de limpeza de workspaces."
-   ],
+   "missing_behaviors": [],
    "notes": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local.",
    "note": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local."
   },
