@@ -55,6 +55,9 @@ export function WorktreeCardParentContent({
     handleOpenIssueInBrowser,
     handleOpenReviewInBrowser,
     handleUnlinkReview,
+    automationProvenance,
+    handleOpenAutomation,
+    handleOpenAutomationRun,
     handleRenameTitle
   } = card
   const { titleOnlyCard, parentContentMarginLeft, showCombinedStatusSlot } = presentation
@@ -93,6 +96,9 @@ export function WorktreeCardParentContent({
         onOpenIssueInBrowser={handleOpenIssueInBrowser}
         onOpenReviewInBrowser={handleOpenReviewInBrowser}
         onUnlinkReview={affiliateListMode ? undefined : handleUnlinkReview}
+        automationProvenance={automationProvenance}
+        onOpenAutomation={affiliateListMode ? undefined : handleOpenAutomation}
+        onOpenAutomationRun={affiliateListMode ? undefined : handleOpenAutomationRun}
         cliCreated={cliCreated}
       >
         {identityContent}

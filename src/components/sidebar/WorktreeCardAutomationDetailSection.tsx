@@ -20,7 +20,7 @@ import {
 } from '../automations/automation-host-client'
 
 type WorktreeCardAutomationDetailSectionProps = {
-  provenance: AutomationWorkspaceProvenance
+  provenance: Pick<AutomationWorkspaceProvenance, 'automationId' | 'automationNameSnapshot' | 'automationRunId' | 'automationRunTitleSnapshot' | 'hostId'>
   onOpenAutomation?: (event: React.MouseEvent) => void
   onOpenAutomationRun?: (event: React.MouseEvent) => void
 }
