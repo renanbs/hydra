@@ -344,7 +344,12 @@ export function WorktreeSidebar({
   } | null>(null);
   const [removeProjectTarget, setRemoveProjectTarget] = useState<HydraProject | null>(null);
   // D03b-017: repo-scoped settings surface, opened from the project menu.
-  const [repoSettingsTarget, setRepoSettingsTarget] = useState<HydraProject | null>(null);
+  // The section id carries a deep-link (Orca openSettingsTarget sectionId): the
+  // local-commands editor autofocuses when the dialog opens on its anchor.
+  const [repoSettingsTarget, setRepoSettingsTarget] = useState<{
+    project: HydraProject;
+    sectionId?: string | null;
+  } | null>(null);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
   const [hiddenWorktreeErrorByProject, setHiddenWorktreeErrorByProject] = useState<
@@ -2481,7 +2486,7 @@ export function WorktreeSidebar({
                 setProjectMenuSubmenu(null);
                 // Orca `handleOpenRepoSettings`: a repo-scoped settings surface, not the
                 // global modal with no repo context.
-                setRepoSettingsTarget(proj);
+                setRepoSettingsTarget({ project: proj });
               }}
               className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-worktree-sidebar-accent text-worktree-sidebar-foreground text-left transition cursor-pointer"
             >
@@ -2985,7 +2990,8 @@ export function WorktreeSidebar({
 
       <RepoSettingsDialog
         open={repoSettingsTarget != null}
-        project={repoSettingsTarget}
+        project={repoSettingsTarget?.project ?? null}
+        initialSectionId={repoSettingsTarget?.sectionId ?? null}
         onOpenChange={(open) => {
           if (!open) setRepoSettingsTarget(null);
         }}

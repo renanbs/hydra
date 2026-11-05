@@ -5,14 +5,21 @@
 // dialog is the sidebar's own repo-scoped surface: it exposes exactly the repo-level
 // writers Hydra has today (base worktree path, non-Hydra worktree visibility, removal),
 // instead of sending the user to the global modal with no repo context.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Eye, FolderInput, Save, Settings, Trash2, X } from "lucide-react";
+import { useAppStore } from "../../store";
+import type { Repo } from "../../shared/repo-types";
+import type { RepoHookSettings } from "../../shared/orca-yaml-hook-types";
+import { getDefaultRepoHookSettings } from "../../shared/constants";
 import type { HydraProject } from "./types";
+import { RepositoryLocalCommandsSection } from "./RepositoryLocalCommandsSection";
 
 export interface RepoSettingsDialogProps {
   open: boolean;
   project: HydraProject | null;
+  /** Deep-link anchor: when set, the matching field autofocuses after mount. */
+  initialSectionId?: string | null;
   /** Opens the repo's non-Hydra worktree visibility dialog (the project's other settings). */
   onOpenWorktreeVisibility?: (project: HydraProject) => void;
   /** Starts the project-removal confirmation flow. */
@@ -23,18 +30,90 @@ export interface RepoSettingsDialogProps {
 export function RepoSettingsDialog({
   open,
   project,
+  initialSectionId = null,
   onOpenWorktreeVisibility,
   onRemoveProject,
   onOpenChange,
 }: RepoSettingsDialogProps): React.JSX.Element | null {
   const [basePathDraft, setBasePathDraft] = useState("");
+  const [setupDraft, setSetupDraft] = useState("");
+  const [archiveDraft, setArchiveDraft] = useState("");
+  const [hookError, setHookError] = useState<string | null>(null);
+  const hookSaveTimerRef = useRef<number | null>(null);
+  const hookDirtyRef = useRef(false);
+  const hookRepoKeyRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const repos = useAppStore((state) => (state as unknown as { repos: Repo[] }).repos);
+  const updateRepo = useAppStore(
+    (state) =>
+      (
+        state as unknown as {
+          updateRepo: (
+            repoId: string,
+            updates: { hookSettings: RepoHookSettings }
+          ) => Promise<boolean>
+        }
+      ).updateRepo
+  );
+  const repo: Repo | null = project
+    ? (repos.find((entry) => entry.path === project.path) ?? null)
+    : null;
+  const repoKey = repo ? `${repo.id}` : null;
+  const hookSettings: RepoHookSettings = repo?.hookSettings ?? getDefaultRepoHookSettings();
 
   useEffect(() => {
     if (!open || !project) return;
     setBasePathDraft(project.worktree_base_path ?? "");
+    setSetupDraft(repo?.hookSettings?.scripts?.setup ?? "");
+    setArchiveDraft(repo?.hookSettings?.scripts?.archive ?? "");
+    setHookError(null);
+    hookDirtyRef.current = false;
+    hookRepoKeyRef.current = repoKey;
     setError(null);
-  }, [open, project]);
+  }, [open, project, repo, repoKey]);
+
+  // Rosetta Orca `queueScriptDraftPersist`: coalesce typing bursts (700ms) —
+  // repo persistence may be an SSH RPC.
+  useEffect(() => {
+    if (!open) return;
+    return () => {
+      if (hookSaveTimerRef.current !== null) {
+        window.clearTimeout(hookSaveTimerRef.current);
+        hookSaveTimerRef.current = null;
+      }
+      if (hookDirtyRef.current && repoKey && hookRepoKeyRef.current === repoKey) {
+        hookDirtyRef.current = false
+        void persistHookScripts();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, repoKey]);
+
+  const queueHookPersist = (): void => {
+    hookDirtyRef.current = true;
+    if (hookSaveTimerRef.current !== null) {
+      window.clearTimeout(hookSaveTimerRef.current);
+    }
+    hookSaveTimerRef.current = window.setTimeout(() => {
+      hookSaveTimerRef.current = null;
+      if (!hookDirtyRef.current) return;
+      hookDirtyRef.current = false;
+      void persistHookScripts();
+    }, 700);
+  };
+
+  const persistHookScripts = async (): Promise<void> => {
+    if (!repo) return;
+    const nextSettings: RepoHookSettings = {
+      ...hookSettings,
+      scripts: { setup: setupDraft, archive: archiveDraft },
+    };
+    const ok = await updateRepo(repo.id, { hookSettings: nextSettings });
+    if (!ok) {
+      setHookError("Could not save the local commands for this project.");
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -103,6 +182,38 @@ export function RepoSettingsDialog({
             {error}
           </p>
         ) : null}
+
+        <div className="mt-4">
+          <RepositoryLocalCommandsSection
+            repoId={project.id}
+            setupScript={setupDraft}
+            archiveScript={archiveDraft}
+            onSetupChange={(next) => {
+              setSetupDraft(next);
+              setHookError(null);
+              queueHookPersist();
+            }}
+            onArchiveChange={(next) => {
+              setArchiveDraft(next);
+              setHookError(null);
+              queueHookPersist();
+            }}
+            onCommit={() => {
+              if (hookSaveTimerRef.current !== null) {
+                window.clearTimeout(hookSaveTimerRef.current);
+                hookSaveTimerRef.current = null;
+              }
+              hookDirtyRef.current = false;
+              void persistHookScripts();
+            }}
+            autoFocusSectionId={initialSectionId}
+          />
+          {hookError ? (
+            <p className="mt-2 rounded bg-destructive/10 px-2 py-1.5 text-[11px] text-destructive">
+              {hookError}
+            </p>
+          ) : null}
+        </div>
 
         <label className="mt-4 block space-y-1">
           <span className="flex items-center gap-1.5 text-[11px] font-medium">
