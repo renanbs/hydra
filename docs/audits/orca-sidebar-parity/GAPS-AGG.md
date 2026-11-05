@@ -1,7 +1,7 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 22 capabilities
+## MISSING — 19 capabilities
 
 
 ### D01-shell-chrome (4)
@@ -35,12 +35,6 @@
 
 - **D03b-046** — Coordenação de lote de expurgo de snapshots de workspace via IPC durante remoção múltipla | components/sidebar/worktree-snapshot-prune-batch.ts:6-24
 
-### D04a-worktree-card-surface (3)
-
-- **D04a-020** — Renderiza as linhas secundárias do card: banner de conflito de branch remoto, prompt de Linear e chip de worktrees filhas | falta: Banner âmbar de conflito de branch remoto (PAR-19); Prompt de setup do Linear agent skill quando o card está ativo; Chip de worktrees filhas com chevron/aria-expanded; Container deslocado -ml-[1.125rem] no estilo legado | components/sidebar/worktree-card-secondary-rows.tsx:41
-- **D04a-102** — Projeta os metadados persistidos do Jira para o card (e só quando a propriedade Jira está ligada) | falta: Projeção do Jira (identifier/título sem repetição) condicionada à propriedade jira-issue | components/sidebar/worktree-card-jira-issue-display.ts:13
-- **D04a-105** — Seleciona, por worktree, os títulos de pane, PTY ids vivos e raízes de layout de terminal com identidade estável | falta: Seletores por worktree (títulos de pane, PTY ids vivos, raízes de layout) com identidade estável; Batch selectWorktreeActivityStatuses com igualdade rasa | components/sidebar/worktree-card-status-inputs.ts:25
-
 ### D08-kanban-board (2)
 
 - **D08-043** — Sincronização de status de tarefas com Linear via hook com notificações toast de sucesso/aviso/erro | falta: Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição; Sincroniza de forma assíncrona em background; Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados); Toast 'Task status sync failed' em falha de mutação/erro do provedor | components/sidebar/use-workspace-board-task-status-sync.ts:13
@@ -50,7 +44,7 @@
 
 - **D15a-011** — Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM | falta: Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai; Invoca resumeWorkspace na API do backend para reativar VM efêmera; Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor | components/sidebar/sleep-worktree-flow.ts:44
 
-## PARTIAL — 27 capabilities
+## PARTIAL — 22 capabilities
 
 
 ### D02a-repo-add-wizard (2)
@@ -72,16 +66,11 @@
 - **D03b-015** — Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista | falta: seleção múltipla de worktrees (useSidebarWorktreeSelection); moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex; pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406); dropWorktreesOnWorkspaceBoard (sem Kanban) | components/sidebar/WorktreeList.tsx:178-187
 - **D03b-017** — Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar | falta: handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings); confirmação 'confirm-remove-folder': App.tsx:1612 remove direto; handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500) | backend: invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181 | components/sidebar/WorktreeList.tsx:195-235
 
-### D04a-worktree-card-surface (8)
+### D04a-worktree-card-surface (3)
 
 - **D04a-010** — Renderiza a linha de metadados do card com repo, host, identidade (branch/caminho/detached HEAD), badge de conflito e cache timer | falta: hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos | components/sidebar/worktree-card-meta-row.tsx:48
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra) | components/sidebar/WorktreeCardSshHostControl.tsx:86
-- **D04a-040** — Exibe a seção de issue do workspace com menu de ações, edição e abertura externa | falta: Menu de ações da issue; Abertura externa da issue | components/sidebar/WorktreeCardIssueDetailSection.tsx:30
-- **D04a-041** — Exibe a seção de review (PR/MR) com menu de ações, unlink e abertura por provedor | falta: Menu de ações More PR/MR actions e botões Open/View on provider; Terminologia MR/PR por provedor; Rodapé com ReviewStateBadge e ReviewChecksBadge; closeHover antes de cada ação | components/sidebar/WorktreeCardReviewDetailSection.tsx:33
-- **D04a-042** — Exibe a seção Linear do hover com link e ações de abrir | falta: Link para o item Linear; Ações de abrir | components/sidebar/WorktreeCardMeta.tsx:235
 - **D04a-098** — Valida e envia o payload de metadados, qualificando o save pelo host quando necessário | falta: Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha) | components/sidebar/WorktreeMetaDialog.tsx:200
-- **D04a-101** — Resolve qual review (PR/MR) o card deve exibir, com supressão de PR do GitHub e fallbacks de loading | falta: Supressão de PR do GitHub por metadado, com exceção para link explícito; Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea; Validação de PR merged pelo head; Reconciliação de caches por chave | backend: invoke('pr_status') -> src-tauri/src/lib.rs:410 | components/sidebar/worktree-card-pr-display.ts:83
-- **D04a-106** — Modelo de props/defaults do card e helpers de caminho/estilo | falta: HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor; EMPTY_WORKSPACE_PORTS sem consumidor; isWebClient sem consumidor no card | components/sidebar/worktree-card-model.ts:14
 
 ### D04b-worktree-card-controllers (7)
 
