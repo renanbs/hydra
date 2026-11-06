@@ -30,6 +30,10 @@ import {
   trackSshConnect,
   useSshConnectInFlight
 } from '@/ssh/ssh-connect-in-flight'
+import {
+  connectRuntimeEnvironmentSshTarget,
+  resyncRuntimeEnvironmentSshTargets
+} from '@/runtime/runtime-environment-ssh-target'
 import type { SshConnectionStatus } from '../../shared/ssh-types'
 
 export type WorktreeCardSshHostControlProps = {
@@ -100,12 +104,12 @@ export function WorktreeCardSshHostControl({
     }
     try {
       if (sshOwnerEnvironmentId) {
-        // Runtime-owned targets route through the paired-server bridge, which
-        // writes bucket state itself, mirroring the Orca runtime path.
-        const request =
-          (window as unknown as { api?: { ssh?: { connect?: (args: { targetId: string; environmentId: string }) => Promise<unknown> } } }).api?.ssh?.connect?.({ targetId, environmentId: sshOwnerEnvironmentId }) ??
-          Promise.resolve(null)
-        await trackSshConnect(targetId, request)
+        // D04a-013 Rosetta (Orca `connectRuntimeEnvironmentSshTarget`): the
+        // environment's own RPC dials and writes bucket state itself.
+        await trackSshConnect(
+          targetId,
+          connectRuntimeEnvironmentSshTarget(sshOwnerEnvironmentId, targetId)
+        )
       } else {
         // Why: track the connect request, not this bounded wait — the backend is still
         // dialing after the UI timeout fires, so releasing here would let the next click
@@ -143,7 +147,9 @@ export function WorktreeCardSshHostControl({
       // the removed state instead of offering the same failing Connect forever.
       // Apply the target list first — a removed-labels failure must not discard it.
       if (sshOwnerEnvironmentId) {
-        // Runtime resync is owned by the paired-server bridge; nothing to do here.
+        // D04a-013 Rosetta (Orca `resyncRuntimeEnvironmentSshTargets`): stale
+        // overlay converges to the ghost/re-adopted state after a failed dial.
+        void resyncRuntimeEnvironmentSshTargets(sshOwnerEnvironmentId).catch(() => {})
       } else {
         void (async () => {
           const api = (window as unknown as { api?: { ssh?: { listTargets?: () => Promise<unknown[]>; listRemovedTargetLabels?: () => Promise<Record<string, string>> } } }).api?.ssh
