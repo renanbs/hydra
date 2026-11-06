@@ -4,12 +4,8 @@
 ## MISSING — 0 capabilities
 
 
-## PARTIAL — 4 capabilities
+## PARTIAL — 3 capabilities
 
-
-### D02b-hosts-ssh-remote (1)
-
-- **D02b-010** — Verificação, pareamento e salvamento de servidor remoto Orca Server | falta: readRuntimeHostStatusSnapshots() pos-sucesso (store tem a acao; dialog nao chama — proxima: wire no adapter) | backend: window.api.runtimeEnvironments.verifyAndAddFromPairingCode / .list (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend; no store real: r | components/sidebar/AddRemoteHostDialog.tsx:246-298
 
 ### D02c-project-groups-scripts (1)
 
