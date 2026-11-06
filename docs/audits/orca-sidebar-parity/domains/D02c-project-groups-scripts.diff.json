@@ -560,16 +560,15 @@
     "components/sidebar/open-setup-script-settings.ts:25"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/settings/TerminalTccAttributionNotice.tsx:49-65 — primitivas openSettingsTarget/openSettingsPage/setSettingsSearchQuery existem e são usadas por outras superfícies"
+     "src/reference/components/sidebar/open-setup-script-settings.ts + src/reference/components/settings/repository-settings-targets.ts — verbatim Orca (pin src/reference/REVISION)",
+     "src/components/sidebar/open-setup-script-settings.ts — adapter: mesma sequência Orca (clear search → target pane:repo → open page), section-id via repo-section-ids",
+     "src/components/sidebar/WorktreeSidebar.tsx — consome settingsNavigationTarget pane:repo abrindo RepoSettingsDialog no sectionId (Hydra não tem pane repo no SettingsModal)",
+     "src/components/sidebar/open-setup-script-settings.parity.test.ts — ordem search→target→page + âncora"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
-     "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
-     "Abre a página de configurações (openSettingsPage())"
-    ],
+    "missing_behaviors": [],
     "notes": "Buscas: open-setup-script-settings.ts, openSetupScriptSettings, seção 'local commands'/localCommands no SettingsModal. Nenhuma função/seção equivalente."
    }
   },
