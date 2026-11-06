@@ -651,6 +651,8 @@ function WorkspaceBoardDrawerContent({
       onPinDragLeave={nativeDrag.handlePinDragLeave}
       onPinDrop={nativeDrag.handlePinDrop}
       statusActions={statusActions}
+      syncTaskStatusFromWorkspaceBoard={syncEnabled}
+      onSyncTaskStatusFromWorkspaceBoardChange={(value) => (useAppStore.getState() as unknown as { setSyncTaskStatusFromWorkspaceBoard?: (v: boolean) => void }).setSyncTaskStatusFromWorkspaceBoard?.(value)}
       query={query}
       isFiltering={isFiltering}
       isTooLarge={isQueryTooLarge}

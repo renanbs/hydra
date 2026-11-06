@@ -1,6 +1,6 @@
-// The board's status settings menu: Orca's `WorkspaceKanbanSettingsMenu` minus the
-// Linear sync switch (no sync engine in Hydra — the control would be inert), and wired
-// so every edit lands on the board's own lanes.
+// The board's status settings menu: Orca's `WorkspaceKanbanSettingsMenu` with the
+// Linear sync switch wired to the live sync engine, and every edit landing on
+// the board's own lanes.
 import type { ReactNode } from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -121,14 +121,13 @@ describe('WorkspaceBoardSettingsMenu', () => {
     vi.useRealTimers()
   })
 
-  it('renders no control this increment does not ship', () => {
+  it('renders the board/issue sync switch wired to the live engine', () => {
     renderBoard()
 
     expect(screen.getByRole('button', { name: 'Workspace board settings' })).toBeInTheDocument()
     expect(screen.getByText('Statuses')).toBeInTheDocument()
-    // The Linear task-sync switch has no engine behind it in Hydra: it is not rendered.
-    expect(document.body.querySelector('[role="switch"]')).toBeNull()
-    expect(screen.queryByText('Sync board and issue status')).toBeNull()
+    expect(screen.getByText('Sync board and issue status')).toBeInTheDocument()
+    expect(document.body.querySelector('[role="switch"]')).not.toBeNull()
   })
 
   it('adds a lane, renames it and reorders it on the board', () => {
