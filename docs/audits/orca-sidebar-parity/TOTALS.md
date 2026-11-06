@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 741 | 96.9% |
+| parity | 744 | 97.3% |
 | partial | 12 | 1.6% |
-| missing | 4 | 0.5% |
+| missing | 1 | 0.1% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -18,7 +18,7 @@
 | D01-shell-chrome | 52 | 50 | 1 | 0 | 1 | 0 |
 | D02a-repo-add-wizard | 42 | 34 | 2 | 0 | 6 | 0 |
 | D02b-hosts-ssh-remote | 30 | 29 | 1 | 0 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 22 | 1 | 3 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 25 | 1 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 48 | 2 | 0 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 108 | 2 | 0 | 1 | 0 |

@@ -71,19 +71,15 @@
     "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:11275-11280"
+     "src/reference/components/sidebar/LinearAgentSkillSetupDialog.tsx + AgentSkillSetupPanel + OnboardingInlineCommandTerminal + agent-skill-terminal-snapshot (verbatim)",
+     "src/components/sidebar/InlineCommandTerminal.tsx (adapter: session Hydra + TerminalDrawer + auto-submit + cleanup)",
+     "LinearAgentSkillSetupDialog.tsx (terminal embutido 240px + copy/run fallback; success/dismiss/close)",
+     "5 testes dialog"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
-     "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
-     "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
-     "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
-     "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
-     "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
-    ],
+    "missing_behaviors": [],
     "notes": "LinearAgentSkillPane orfao, sem componente.",
     "note": "LinearAgentSkillPane orfao, sem componente."
    }
@@ -100,21 +96,15 @@
     "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "src/reference/components/sidebar/LinearAgentSkillSetupPrompt.tsx (verbatim)",
+     "prompt com CLI check (loadOrcaCliAvailableOnPath via cli_install_status + orca no probe), geracao anti-race, Re-check revalida CLI+skill, dismiss, lazy dialog, modal/inline",
+     "src/lib/agent-skill-cli-prerequisite.ts (adapter; orca no AGENT_CLI_IDS Rust+TS)",
+     "4 testes prompt"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
-     "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
-     "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
-     "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
-     "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
-     "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
-     "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
-     "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
-    ],
+    "missing_behaviors": [],
     "notes": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES.",
     "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
    }
@@ -173,18 +163,14 @@
     "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "src/reference reminder-toast (verbatim)",
+     "linear-agent-skill-setup-reminder-toast.ts (primeira ativacao abre modal; toast Set up <=3x; dismiss; cleanup)",
+     "reminders tests"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
-     "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
-     "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
-     "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
-     "Limpa o toast ao desmontar a visualização modal"
-    ],
+    "missing_behaviors": [],
     "notes": "Lembretes/toasts do skill Linear ausentes.",
     "note": "Lembretes/toasts do skill Linear ausentes."
    }

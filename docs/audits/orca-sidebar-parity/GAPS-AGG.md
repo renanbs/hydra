@@ -1,14 +1,8 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 4 capabilities
+## MISSING — 1 capabilities
 
-
-### D02c-project-groups-scripts (3)
-
-- **D02c-003** — Dialog modal para instalação e configuração do skill de agente Linear com terminal integrado | falta: Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'; Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.'); Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'; Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE) | components/sidebar/LinearAgentSkillSetupDialog.tsx:36
-- **D02c-004** — Prompt inline e modal para detecção, verificação e setup de skill do agente Linear | falta: Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL; Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES; Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills; Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime | components/sidebar/LinearAgentSkillSetupPrompt.tsx:46
-- **D02c-007** — Lembretes e notificações toast de setup do skill do Linear com limite de repetições | falta: Abre automaticamente o modal de setup na primeira ativação elegível do runtime; Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente; Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes); Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação | components/sidebar/linear-agent-skill-setup-reminder-toast.ts:26
 
 ### D15-misc-a (1)
 
