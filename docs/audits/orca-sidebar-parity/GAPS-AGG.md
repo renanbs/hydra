@@ -1,22 +1,8 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 19 capabilities
+## MISSING — 11 capabilities
 
-
-### D01-shell-chrome (4)
-
-- **D01-020** — Detecção de disponibilidade de provedores de tarefas via preflight e status Linear | falta: refreshPreflightStatus() na montagem do botão de tarefas; checkLinearConnection() e normalização de visibleTaskProviders; restauração do provedor default considerando o CLI glab e a conexão Linear; resolveVisibleTaskProvider | components/sidebar/SidebarTaskNavButton.tsx:11-12
-- **D01-024** — Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação | falta: botão Smartphone/'Orca Mobile' condicionado a settings.showMobileButton; badge 'New' até a primeira visualização (useMobileSidebarOnboardingBadge); botão inline EyeOff 'Hide from sidebar' após pareamento; dismiss do badge + openMobilePage() | components/sidebar/SidebarNav.tsx:2
-- **D01-038** — Verificação de atualizações com suporte a canais RC e Performance via modificadores | falta: item 'Check for Updates' com captura de Shift/Cmd no pointerdown; getUpdateCheckClickOptions (stable / includePrerelease / includePerfPrerelease); window.api.updater.check(); spinner Loader2 e disable durante checking/downloading | components/sidebar/SidebarSettingsHelpMenu.tsx:8
-- **D01-043** — Submissão de feedback via IPC e tratamento de confirmação de entrega de imagens | falta: window.api.feedback.submit (evita CORS no Electron); toast de aviso quando imagesDelivered === false; toast de sucesso + reset + close; toast de erro de rede/IPC | components/sidebar/SidebarFeedbackDialog.tsx:4
-
-### D02a-repo-add-wizard (4)
-
-- **D02a-032** — Sincroniza o store de repositórios, projetos e configurações de host durante adições diretas por IPC | falta: Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID); Verifica duplicidade baseada em getRepoHostIdentity; Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos; Atualiza atomicamente as fatias repos, projects e projectHostSetups no store | components/sidebar/add-repo-store-upsert.ts:28
-- **D02a-034** — Submete a criação de workspace de pasta com vinculação de tarefas (GitHub/GitLab/Linear/Jira) e inicialização de agente | falta: Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'; Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta; Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch); Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas | components/sidebar/folder-workspace-composer-submit.ts:47
-- **D02a-035** — Configura plataforma de execução, rascunho de prompt e quoting de shell para inicialização de agentes em pastas | falta: Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC; Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft); Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX | components/sidebar/folder-workspace-agent-startup.ts:15
-- **D02a-037** — Mapeia repositórios de origem do grupo e converte itens de trabalho vinculados (GitHub, GitLab, Linear) | falta: Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId; Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary; Gera seleção inteligente de nome do workspace com getSmartNameSelection; Fornece label estável 'Create workspace' para o botão de ação primária | components/sidebar/folder-workspace-composer-helpers.ts:31
 
 ### D02b-hosts-ssh-remote (1)
 
@@ -44,13 +30,17 @@
 
 - **D15a-011** — Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM | falta: Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai; Invoca resumeWorkspace na API do backend para reativar VM efêmera; Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor | components/sidebar/sleep-worktree-flow.ts:44
 
-## PARTIAL — 22 capabilities
+## PARTIAL — 23 capabilities
 
+
+### D01-shell-chrome (1)
+
+- **D01-024** — Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação | falta: botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados) | components/sidebar/SidebarNav.tsx:2
 
 ### D02a-repo-add-wizard (2)
 
-- **D02a-014** — Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso | falta: Assinatura de window.api.repos.onCloneProgress (progresso em tempo real); Roteamento SSH (cloneRemote) e runtime (runtimeRpc repo.clone); Upsert no store com runtimeEnvironmentId/sshConnectionId; Toast 'Repository cloned' | backend: invoke('clone_project') -> src-tauri/src/lib.rs:445 | components/sidebar/useAddRepoCloneFlow.ts:24
-- **D02a-018** — Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime | falta: pickDirectory nativo para escolher pasta pai; Criação SSH (createRemote) e runtime (runtimeRpc repo.create); Toasts de dedup 'Project already added' / 'Project created'; Atualização autoritativa de worktrees + onGitRepoReady | backend: invoke('create_project') -> src-tauri/src/lib.rs:428 | components/sidebar/useCreateRepo.ts:18
+- **D02a-014** — Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso | falta: Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc) | backend: invoke('clone_project') -> src-tauri/src/lib.rs:445 | components/sidebar/useAddRepoCloneFlow.ts:24
+- **D02a-018** — Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime | falta: ativação de workspace sintético para pasta — via composer, não no create | backend: invoke('create_project') -> src-tauri/src/lib.rs:428 | components/sidebar/useCreateRepo.ts:18
 
 ### D02b-hosts-ssh-remote (2)
 
