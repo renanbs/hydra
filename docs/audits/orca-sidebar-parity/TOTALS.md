@@ -4,8 +4,7 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 751 | 98.2% |
-| partial | 6 | 0.8% |
+| parity | 757 | 99.0% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -16,11 +15,11 @@
 |---|---|---|---|---|---|---|
 | D01-shell-chrome | 52 | 51 | 0 | 0 | 1 | 0 |
 | D02a-repo-add-wizard | 42 | 36 | 0 | 0 | 6 | 0 |
-| D02b-hosts-ssh-remote | 30 | 29 | 1 | 0 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 25 | 1 | 0 | 0 | 0 |
+| D02b-hosts-ssh-remote | 30 | 30 | 0 | 0 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 26 | 0 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
-| D03b-sidebar-list-orchestration | 50 | 48 | 2 | 0 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 108 | 2 | 0 | 1 | 0 |
+| D03b-sidebar-list-orchestration | 50 | 50 | 0 | 0 | 0 | 0 |
+| D04a-worktree-card-surface | 111 | 110 | 0 | 0 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 23 | 0 | 0 | 0 | 0 |
 | D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |

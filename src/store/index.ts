@@ -29,6 +29,8 @@ import { createDiffCommentsSlice, type DiffCommentsSlice } from './slices/diffCo
 import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
+import { createRuntimeStatusSlice, type RuntimeStatusSlice } from './slices/runtime-status'
+import { createRuntimeEnvironmentSshSlice, type RuntimeEnvironmentSshSlice } from './slices/runtime-environment-ssh'
 import type { WorktreeSlice as WorktreeSliceMembers } from './slices/worktree-helpers'
 import { createFetchAllWorktrees } from './slices/worktrees/listing/fetch-all-worktrees'
 import { createForceDeletePreservedBranch } from './slices/worktrees/teardown/force-delete-preserved-branch'
@@ -55,7 +57,7 @@ export const EMPTY_TABS: TabItem[] = [];
  * `any`/placeholder literals. The live store literal spreads it, so the slice is the single
  * source for every ssh* key.
  */
-export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
+export interface AppState extends SshSlice, RuntimeEnvironmentSshSlice, RuntimeStatusSlice, DiffCommentsSlice, GitHubSlice {
   /**
    * Renderer-only background worktree creates (D03b-021/022). The values are supplied by
    * `createWorktreeSlice` at runtime; they are declared here because the live store shape
@@ -190,7 +192,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   recentlyClosedTabKindsByWorktree: Record<string, any>
   recentlyClosedTerminalTabsByWorktree: Record<string, any>
   runtimePaneTitlesByTabId: Record<string, any>
-  runtimeStatusByEnvironmentId: Record<string, any>
   sleepingAgentSessionsByPaneKey: Record<string, any>
   tabBarOrderByWorktree: Record<string, any>
   terminalLayoutsByTabId: Record<string, any>
@@ -212,13 +213,10 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   isRefreshingAgents: boolean
   isRefreshingLocalAgentsByContext: boolean
   isRefreshingRuntimeAgents: boolean
-  runtimeEnvironmentCatalogHydrated: boolean
-  runtimeEnvironmentCatalogSettled: boolean
   /**
    * D01-006: startup owns the first authoritative worktree scan. The sidebar's
    * repo-count refresh and the settings-driven full refresh stay gated until App
    * marks the startup scan settled, so a partial startup catalog can never race
-   * it with a second all-repo scan.
    */
   startupWorktreeRefreshCompleted: boolean
   markStartupWorktreeRefreshCompleted: () => void
@@ -230,7 +228,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   allWorktrees: any[]
   filterRepoIds: any[]
   remoteDetectedAgentIds: any[]
-  removedRuntimeEnvironmentIds: any[]
   runtimeDetectedAgentIds: any[]
   suppressedPtyExitIds: any[]
   transientClearedAgentStatusConnectionIds: Record<string, true>
@@ -264,7 +261,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   projectGroups: any
   rightSidebarExplorerView: any
   rightSidebarTab: any
-  runtimeEnvironments: any
   runtimeTerminalQuickCommands: any
   sortBy: 'name' | 'smart' | 'recent' | 'repo' | 'manual'
   /** User-defined workspace statuses (UI slice) — the workspace board's lanes. */
@@ -319,8 +315,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   setHideDetachedHeadWorkspaces: (...args: any[]) => any
   setPendingLiveDiskVerification: (...args: any[]) => any
   setRemoteBrowserPageHandle: (...args: any[]) => any
-  setRuntimeEnvironmentStatus: (...args: any[]) => any
-  setRuntimeEnvironments: (...args: any[]) => any
   setSettingsSearchQuery: (...args: any[]) => any
   setTabBarOrder: (...args: any[]) => any
   setTabColor: (...args: any[]) => any
@@ -363,7 +357,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   acknowledgeAgents: (...args: any[]) => any
   acknowledgedAgentsByPaneKey: Record<string, any>
   activateTab: (...args: any[]) => any
-  applyRuntimeHostStatusSnapshot: (...args: any[]) => any
   ensureRemoteDetectedAgents: (...args: any[]) => any
   ensureRuntimeDetectedAgents: (...args: any[]) => any
   fetchBrowserSessionProfiles: (...args: any[]) => any
@@ -382,7 +375,6 @@ export interface AppState extends SshSlice, DiffCommentsSlice, GitHubSlice {
   recordWorktreeVisit: (...args: any[]) => any
   refreshRemoteDetectedAgents: (...args: any[]) => any
   refreshRuntimeDetectedAgents: (...args: any[]) => any
-  refreshRuntimeEnvironmentStatus: (...args: any[]) => any
   registerAgentLaunchConfig: (...args: any[]) => any
   remountTerminalTabForRecovery: (...args: any[]) => any
   reopenClosedBrowserTab: (...args: any[]) => any
@@ -461,6 +453,8 @@ export const useAppStore = create<AppState>()(
     // The SSH slice is composed directly: its shape is real (see `SshSlice`), so the
     // live literal must not re-declare any key it provides.
     ...createSshSlice(set, get, store),
+    ...createRuntimeStatusSlice(set, get, store),
+    ...createRuntimeEnvironmentSshSlice(set, get, store),
     tabsByWorktree: {},
     activeTabIdByWorktree: {},
     mruTabIds: [],
@@ -511,7 +505,6 @@ export const useAppStore = create<AppState>()(
     recentlyClosedTabKindsByWorktree: {},
     recentlyClosedTerminalTabsByWorktree: {},
     runtimePaneTitlesByTabId: {},
-    runtimeStatusByEnvironmentId: {},
     sleepingAgentSessionsByPaneKey: {},
     tabBarOrderByWorktree: {},
     terminalLayoutsByTabId: {},
@@ -526,8 +519,6 @@ export const useAppStore = create<AppState>()(
     isRefreshingAgents: false,
     isRefreshingLocalAgentsByContext: false,
     isRefreshingRuntimeAgents: false,
-    runtimeEnvironmentCatalogHydrated: false,
-    runtimeEnvironmentCatalogSettled: false,
     // Startup owns the first scan; App marks this once it settles (D01-006).
     startupWorktreeRefreshCompleted: false,
     markStartupWorktreeRefreshCompleted: () =>
@@ -541,7 +532,6 @@ export const useAppStore = create<AppState>()(
     workspaceSessionReady: false,
     allWorktrees: [],
     remoteDetectedAgentIds: [],
-    removedRuntimeEnvironmentIds: [],
     runtimeDetectedAgentIds: [],
     suppressedPtyExitIds: [],
     transientClearedAgentStatusConnectionIds: {},
@@ -572,7 +562,6 @@ export const useAppStore = create<AppState>()(
     projectGroups: null,
     rightSidebarExplorerView: null,
     rightSidebarTab: null,
-    runtimeEnvironments: null,
     runtimeTerminalQuickCommands: null,
     unreadAgentCompletionPanes: {},
     unreadTerminalTabs: null,
@@ -593,8 +582,6 @@ export const useAppStore = create<AppState>()(
     setExternalMutation: () => {},
     setPendingLiveDiskVerification: () => {},
     setRemoteBrowserPageHandle: () => {},
-    setRuntimeEnvironmentStatus: () => {},
-    setRuntimeEnvironments: () => {},
     setSettingsSearchQuery: () => {},
     setTabBarOrder: () => {},
     setTabColor: () => {},
@@ -692,7 +679,6 @@ export const useAppStore = create<AppState>()(
     closeTab: () => {},
     closeUnifiedTab: () => {},
     activateTab: () => {},
-    applyRuntimeHostStatusSnapshot: () => {},
     ensureRemoteDetectedAgents: () => {},
     ensureRuntimeDetectedAgents: () => {},
     fetchBrowserSessionProfiles: () => {},
@@ -711,7 +697,6 @@ export const useAppStore = create<AppState>()(
     recordWorktreeVisit: () => {},
     refreshRemoteDetectedAgents: () => {},
     refreshRuntimeDetectedAgents: () => {},
-    refreshRuntimeEnvironmentStatus: () => {},
     registerAgentLaunchConfig: () => {},
     remountTerminalTabForRecovery: () => {},
     reopenClosedBrowserTab: () => {},

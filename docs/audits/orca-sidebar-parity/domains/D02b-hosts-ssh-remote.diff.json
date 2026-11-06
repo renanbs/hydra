@@ -193,20 +193,18 @@
     "components/sidebar/AddRemoteHostDialog.tsx:246-298"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
      "src/reference/components/sidebar/AddRemoteHostDialog.tsx (verbatim)",
-     "src/components/sidebar/AddRemoteHostDialog.tsx (adapter: valida campos/link/loopback, bridge E2EE verifyAndAddRuntimeEnvironmentFromPairingCode, list + store, toast Remote server added, fecha)",
-     "src/lib/remote-pairing-copy.ts (translateRemotePairingFailureDescription: 6 falhas nomeadas com endpoint)",
-     "src/store/runtime-environment-bridge.ts (E2EE live + persist + erro traduzido)"
+     "AddRemoteHostDialog: readRuntimeHostStatusSnapshots() pos-pareamento (Orca :286)",
+     "createRuntimeStatusSlice composta no store (tipo + literal); @ts-nocheck removido",
+     "WorktreeList: cast never removido, Map real flui"
     ],
     "backend": [
      "window.api.runtimeEnvironments.verifyAndAddFromPairingCode / .list (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
      "no store real: runtimeEnvironments = null (src/store/index.ts:428) e setRuntimeEnvironments = () => {} (no-op, src/store/index.ts:463)"
     ],
-    "missing_behaviors": [
-     "readRuntimeHostStatusSnapshots() pos-sucesso (store tem a acao; dialog nao chama — proxima: wire no adapter)"
-    ],
+    "missing_behaviors": [],
     "notes": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes.",
     "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
    },

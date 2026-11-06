@@ -305,6 +305,7 @@ import {
   Workflow,
   Unlink,
   Moon,
+  Settings,
   ExternalLink,
   FolderOpen,
   Sliders,
@@ -2527,7 +2528,16 @@ export default function App() {
     [clearWorktreeLineageParents]
   );
 
+  // D03b-017 Rosetta (Orca `handleRemoveProject` → `confirm-remove-folder`):
+  // the project menu always confirms — Git refuses to remove the primary
+  // checkout, so removal means dropping the catalog entry with files on disk.
   const handleRemoveProject = (proj: HydraProject) => {
+    setConfirmRemoveFolder({
+      repoPath: proj.path,
+      displayName: proj.displayName || proj.name || proj.path,
+    });
+  };
+  const confirmRemoveProjectEntry = (proj: HydraProject) => {
     invoke("catalog_remove_repo", {
       path: proj.path,
       // Why: two hosts can hold the same absolute path, so a host-owned row must
@@ -5711,8 +5721,11 @@ export default function App() {
             } } as ContextMenuItem, { label: "Remove from Parent", icon: <Unlink className="w-3.5 h-3.5" />, onClick: () => unnestWorktreePaths([proj.path]) } as ContextMenuItem] : []),
         ...(developerRevealed ? [{ label: "Developer", isLabel: true, separator: true, onClick: () => {} } as ContextMenuItem, { label: `Path: ${proj.path}`, icon: <Copy className="w-3.5 h-3.5" />, onClick: () => navigator.clipboard.writeText(proj.path).catch(console.error) } as ContextMenuItem, { label: `Is Git: ${proj.is_git ? "yes" : "no"} · Branch: ${proj.current_branch}`, icon: <GitBranch className="w-3.5 h-3.5" />, onClick: () => {} } as ContextMenuItem] : []),
         { label: "Sleep", icon: <Moon className="w-3.5 h-3.5" />, separator: true, onClick: () => sleepWorktreePaths([proj.path]) },
+        // D03b-017 Rosetta (Orca `handleOpenRepoSettings`): Hydra has no
+        // per-repo settings pane, so this opens Settings (adapter) — the
+        // per-repo scope travels via the selected project.
+        { label: "Project Settings...", icon: <Settings className="w-3.5 h-3.5" />, onClick: () => { handleSelectProject(proj); setIsSettingsOpen(true); } },
         { label: "Delete Worktree", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, disabled: true, title: "Primary worktree — can't be deleted. Remove the project instead.", onClick: () => {}, separator: true },
-        { label: "Remove Project from Hydra", icon: <Trash2 className="w-3.5 h-3.5" />, danger: true, onClick: () => handleRemoveProject(proj) },
       ]
     });
   };
@@ -6994,6 +7007,21 @@ export default function App() {
         folderProjectGroupId={
           activeProject ? projectGroupMap[activeProject.id] ?? null : null
         }
+        // D03b-017 Rosetta (Orca `handleCreateFolderWorkspace(projectGroup)`):
+        // the group's own parent roots folder creates — the first folder
+        // workspace proves the folder-backed group, mirroring the pipeline.
+        folderProjectGroupParentPath={
+          activeProject
+            ? (() => {
+                const groupId = projectGroupMap[activeProject.id];
+                if (!groupId) return null;
+                return (
+                  folderWorkspaces.find((entry) => entry.projectGroupId === groupId)
+                    ?.folderPath ?? null
+                );
+              })()
+            : null
+        }
         onCreateFolderWorkspace={createFolderWorkspaceFromComposer}
         onFolderWorkspaceCreated={handleFolderWorkspaceCreated}
       />
@@ -7153,7 +7181,7 @@ export default function App() {
           const target = confirmRemoveFolder;
           if (!target) return;
           const project = projectsRef.current.find((entry) => entry.path === target.repoPath);
-          if (project) handleRemoveProject(project);
+          if (project) confirmRemoveProjectEntry(project);
         }}
       />
 

@@ -214,15 +214,14 @@
     "components/sidebar/worktree-card-meta-row.tsx:100"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts — conflictOperation real do store (gitConflictOperationByWorktree), remoteBranchConflict derivado, showLineageChildChip = count>0 && toggle (era hardcoded)",
-     "src/components/sidebar/worktree-card-meta-row.tsx — ahead/behind chips, detached âmbar com tooltip lateral, host badge (já existiam; controller agora alimenta)"
+     "Orca build-rows.ts:111: labels sobre o conjunto global",
+     "WorktreeList: getMixedWorktreeHostContextLabels(visibleWorktrees) global",
+     "mixed-host-labels.parity.test.ts: mixed rotula todos, single-host undefined"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos"
-    ],
+    "missing_behaviors": [],
     "notes": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not.",
     "note": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."
    },
@@ -286,15 +285,16 @@
     "components/sidebar/WorktreeCardSshHostControl.tsx:130"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardSshHostControl.tsx — fluxo connect: local via window.api.ssh + timeout UI + mirror setSshConnectionState; toast de falha + resync (listTargets antes de listRemovedTargetLabels)",
-     "src/ssh/ssh-connect-ui-timeout.ts — Rosetta com SSH_RECONNECT_UI_TIMEOUT_MS 180s"
+     "src/reference/runtime/runtime-environment-ssh-state.ts (verbatim)",
+     "src/runtime/runtime-environment-ssh-target.ts: connect via ssh.connect RPC + bucket, resync via listTargetSummaries",
+     "WorktreeCardSshHostControl roteia runtime-owned pelo adapter",
+     "slice runtime-environment-ssh composta no store (AppState + literal); @ts-nocheck removido",
+     "runtime-environment-ssh-target.parity.test.ts 3/3 + store 110/110"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra)"
-    ],
+    "missing_behaviors": [],
     "notes": "Sem fluxo de conexão SSH no renderer/card.",
     "note": "Sem fluxo de conexão SSH no renderer/card."
    }

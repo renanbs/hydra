@@ -2204,20 +2204,18 @@
    "components/sidebar/AddRemoteHostDialog.tsx:246-298"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
     "src/reference/components/sidebar/AddRemoteHostDialog.tsx (verbatim)",
-    "src/components/sidebar/AddRemoteHostDialog.tsx (adapter: valida campos/link/loopback, bridge E2EE verifyAndAddRuntimeEnvironmentFromPairingCode, list + store, toast Remote server added, fecha)",
-    "src/lib/remote-pairing-copy.ts (translateRemotePairingFailureDescription: 6 falhas nomeadas com endpoint)",
-    "src/store/runtime-environment-bridge.ts (E2EE live + persist + erro traduzido)"
+    "AddRemoteHostDialog: readRuntimeHostStatusSnapshots() pos-pareamento (Orca :286)",
+    "createRuntimeStatusSlice composta no store (tipo + literal); @ts-nocheck removido",
+    "WorktreeList: cast never removido, Map real flui"
    ],
    "backend": [
     "window.api.runtimeEnvironments.verifyAndAddFromPairingCode / .list (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "no store real: runtimeEnvironments = null (src/store/index.ts:428) e setRuntimeEnvironments = () => {} (no-op, src/store/index.ts:463)"
    ],
-   "missing_behaviors": [
-    "readRuntimeHostStatusSnapshots() pos-sucesso (store tem a acao; dialog nao chama — proxima: wire no adapter)"
-   ],
+   "missing_behaviors": [],
    "notes": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes.",
    "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
   },
@@ -2857,18 +2855,17 @@
    "components/sidebar/NonGitFolderDialog.tsx:154"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim Orca)",
-    "src/components/sidebar/NonGitFolderDialog.tsx (adapter: controlled-props dialog; SSH/runtime via NonGitFolderModalHost)",
-    "NonGitFolderDialog.parity.test.tsx + NonGitFolderModalHost.parity.test.tsx"
+    "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim)",
+    "addNonGitFolder: ramo SSH dedicado via catalog_add_remote_repo kind folder + upsert + fetchWorktrees ssh: + ativacao (Orca addRemote)",
+    "NonGitFolderModalHost ja passa connectionId; AddRepoPathOptions.connectionId",
+    "nongit-ssh-branch.parity.test.ts 1/1"
    ],
    "backend": [
     "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
    ],
-   "missing_behaviors": [
-    "ramo SSH dedicado addRemote (Hydra roteia SSH via catalog_add_remote_repo)"
-   ],
+   "missing_behaviors": [],
    "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
    "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
   },
@@ -5717,17 +5714,16 @@
    "components/sidebar/WorktreeList.tsx:343-356"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
-    "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
+    "move single/batch: assignWorktreeStatus(es) batch (App) + handleDropWorktrees batch no board (WorkspaceBoardDrawer:396)",
+    "drop lista->board: workspace-board-sidebar-drop.ts (D08-002/040)",
+    "move-to-status submenu: worktree-status-menu-items + handleAssignWorktreeStatus batch",
+    "task sync no move: useWorkspaceBoardTaskStatusSync no board (Drawer:321,436)",
+    "linhagem: lineageParentIdByChildId disponivel nas rows; sem autoload no Orca move (residual espurio)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
-    "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-    "carregamento automatico de linhagem ao mover (acoplado ao board)"
-   ],
+   "missing_behaviors": [],
    "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
    "note": "Mutações de status/pino parciais; seleção múltipla ausente."
   },
@@ -5763,19 +5759,16 @@
    "components/sidebar/WorktreeList.tsx:298-316"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:261",
-    "src/App.tsx:1612"
+    "Menu projeto: Project Settings... (abre Settings; Hydra sem pane repo = adapter)",
+    "Menu projeto: Remove Project from Hydra via ConfirmRemoveFolderDialog (antes removia direto)",
+    "Composer: folderProjectGroupParentPath (primeira folder workspace do grupo; Orca projectGroup.parentPath)"
    ],
    "backend": [
     "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
    ],
-   "missing_behaviors": [
-    "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings)",
-    "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
-    "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
-   ],
+   "missing_behaviors": [],
    "notes": "Abertura de diálogos parcial.",
    "note": "Abertura de diálogos parcial."
   },
@@ -6711,15 +6704,14 @@
    "components/sidebar/worktree-card-meta-row.tsx:100"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts — conflictOperation real do store (gitConflictOperationByWorktree), remoteBranchConflict derivado, showLineageChildChip = count>0 && toggle (era hardcoded)",
-    "src/components/sidebar/worktree-card-meta-row.tsx — ahead/behind chips, detached âmbar com tooltip lateral, host badge (já existiam; controller agora alimenta)"
+    "Orca build-rows.ts:111: labels sobre o conjunto global",
+    "WorktreeList: getMixedWorktreeHostContextLabels(visibleWorktrees) global",
+    "mixed-host-labels.parity.test.ts: mixed rotula todos, single-host undefined"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos"
-   ],
+   "missing_behaviors": [],
    "notes": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not.",
    "note": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."
   },
@@ -6786,15 +6778,16 @@
    "components/sidebar/WorktreeCardSshHostControl.tsx:130"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardSshHostControl.tsx — fluxo connect: local via window.api.ssh + timeout UI + mirror setSshConnectionState; toast de falha + resync (listTargets antes de listRemovedTargetLabels)",
-    "src/ssh/ssh-connect-ui-timeout.ts — Rosetta com SSH_RECONNECT_UI_TIMEOUT_MS 180s"
+    "src/reference/runtime/runtime-environment-ssh-state.ts (verbatim)",
+    "src/runtime/runtime-environment-ssh-target.ts: connect via ssh.connect RPC + bucket, resync via listTargetSummaries",
+    "WorktreeCardSshHostControl roteia runtime-owned pelo adapter",
+    "slice runtime-environment-ssh composta no store (AppState + literal); @ts-nocheck removido",
+    "runtime-environment-ssh-target.parity.test.ts 3/3 + store 110/110"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra)"
-   ],
+   "missing_behaviors": [],
    "notes": "Sem fluxo de conexão SSH no renderer/card.",
    "note": "Sem fluxo de conexão SSH no renderer/card."
   },

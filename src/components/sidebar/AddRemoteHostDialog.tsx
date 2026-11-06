@@ -234,6 +234,10 @@ export function AddRemoteHostDialog({
           name: environment.name
         })) as never
       )
+      // D02b-010 Rosetta (Orca `AddRemoteHostDialog.tsx:286`): hydrate host
+      // status snapshots right after pairing so the new server's sections,
+      // badges and SSH overlays converge without waiting for the next poll.
+      await useAppStore.getState().readRuntimeHostStatusSnapshots?.()
       useAppStore.getState().recordFeatureInteraction?.('ssh')
       toast.success(
         translate('auto.components.sidebar.AddRemoteHostDialog.serverSaved', 'Remote server added.')

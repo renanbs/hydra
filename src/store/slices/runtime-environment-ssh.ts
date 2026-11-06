@@ -1,4 +1,3 @@
-// @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../types'
 import type { SshConnectionState, SshTargetSummary } from '../../shared/ssh-types'
@@ -270,11 +269,11 @@ export const createRuntimeEnvironmentSshSlice: StateCreator<
       return { sshStateByEnvironment: next }
     }),
 
-  retainEnvironmentSshState: (environmentIds) =>
+  retainEnvironmentSshState: (environmentIds: Iterable<string>) =>
     set((s: any) => {
       const keep = new Set(environmentIds)
       let changed = false
-      const next = new Map(s.sshStateByEnvironment)
+      const next = new Map<string, RuntimeEnvironmentSshBucket>(s.sshStateByEnvironment)
       for (const id of next.keys()) {
         if (!keep.has(id)) {
           advanceEnvironmentSshStateGeneration(id)

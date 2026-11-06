@@ -1,4 +1,3 @@
-// @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../index'
 import type { RuntimeStatusSlice } from './runtime-status-types'
@@ -75,12 +74,12 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
     // Why: diff against the accumulated in-memory saved list (not a second disk
     // read) so a main-initiated removal that never calls setRuntimeEnvironments
     // still enters the diff on the next list read. #8881.
-    const nextIds = new Set(environments.map((environment) => environment.id))
+    const nextIds = new Set<string>(environments.map((environment: any) => environment.id))
     const removedIds = get()
       .runtimeEnvironments.map((environment: any) => environment.id)
       .filter((id: any) => !nextIds.has(id))
-    set((s) => {
-      const keep = new Set(environments.map((environment) => environment.id))
+    set((s: Pick<AppState, 'runtimeStatusByEnvironmentId' | 'removedRuntimeEnvironmentIds' | 'runtimeEnvironments' | 'runtimeEnvironmentCatalogHydrated' | 'runtimeEnvironmentCatalogSettled'>) => {
+      const keep = new Set<string>(environments.map((environment: any) => environment.id))
       const nextStatuses = new Map(s.runtimeStatusByEnvironmentId)
       let statusesChanged = false
       for (const id of nextStatuses.keys()) {
@@ -99,7 +98,7 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
       // Add just-removed ids as tombstones and clear any that were re-added, so an
       // in-flight catalog merge for a removed env can be dropped without mistaking a
       // not-yet-hydrated env for a removed one (#8881).
-      const nextRemoved = new Set(s.removedRuntimeEnvironmentIds)
+      const nextRemoved = new Set<string>(s.removedRuntimeEnvironmentIds)
       let removedChanged = false
       for (const id of removedIds) {
         if (!nextRemoved.has(id)) {
@@ -160,7 +159,7 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
 
   applyRuntimeHostStatusSnapshot: (snapshot) =>
     applyRuntimeHostStatusSnapshot(snapshot, get(), (entry) => {
-      set((s) => ({
+      set((s: Pick<AppState, 'runtimeStatusByEnvironmentId'>) => ({
         runtimeStatusByEnvironmentId: new Map(s.runtimeStatusByEnvironmentId).set(
           snapshot.environmentId,
           entry
@@ -188,7 +187,7 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
     if (status.status !== null) {
       clearRecentRuntimeCompatibilityFailure(environmentId, status.status)
     }
-    set((s) => {
+    set((s: Pick<AppState, 'runtimeStatusByEnvironmentId' | 'removedRuntimeEnvironmentIds' | 'runtimeEnvironments' | 'runtimeEnvironmentCatalogHydrated' | 'runtimeEnvironmentCatalogSettled' | 'settings'>) => {
       const sessionEnded = status.status === null && previous?.status != null
       // A reachable answer where we held none (never asked, or recorded unreachable) or
       // where the runtime id moved starts a runtime session.
@@ -254,7 +253,7 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
       }
     })
     if (runtimeRestarted) {
-      void ensureBrowserClientHostForRestartedRuntime(get(), environmentId)
+      void ensureBrowserClientHostForRestartedRuntime(get() as never, environmentId)
     }
     if (options?.suppressDisconnectToast) {
       dismissRuntimeDisconnectedToast(environmentId)
@@ -267,7 +266,7 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
 
   clearRuntimeEnvironmentStatus: (environmentId) => {
     dismissRuntimeDisconnectedToast(environmentId)
-    set((s) => {
+    set((s: Pick<AppState, 'runtimeStatusByEnvironmentId' | 'removedRuntimeEnvironmentIds' | 'runtimeEnvironments' | 'runtimeEnvironmentCatalogHydrated' | 'runtimeEnvironmentCatalogSettled'>) => {
       runtimeStatusConnectionGeneration.advanceRuntimeEnvironmentConnectionGeneration(environmentId)
       if (!s.runtimeStatusByEnvironmentId.has(environmentId)) {
         return s
@@ -278,14 +277,14 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
     })
   },
 
-  retainRuntimeEnvironmentStatuses: (environmentIds) => {
-    const keep = new Set(environmentIds)
+  retainRuntimeEnvironmentStatuses: (environmentIds: Iterable<string>) => {
+    const keep = new Set<string>(environmentIds)
     for (const id of get().runtimeStatusByEnvironmentId.keys()) {
       if (!keep.has(id)) {
         dismissRuntimeDisconnectedToast(id)
       }
     }
-    set((s) => {
+    set((s: Pick<AppState, 'runtimeStatusByEnvironmentId' | 'removedRuntimeEnvironmentIds' | 'runtimeEnvironments' | 'runtimeEnvironmentCatalogHydrated' | 'runtimeEnvironmentCatalogSettled'>) => {
       let changed = false
       const next = new Map(s.runtimeStatusByEnvironmentId)
       for (const id of next.keys()) {
@@ -309,11 +308,11 @@ export const createRuntimeStatusSlice: StateCreator<AppState, [], [], RuntimeSta
         if (entry.status) {
           // Why here: hydration can ask before the environment is reachable, and a restored
           // client-hosted page only comes back once this desktop attaches as its host.
-          void ensureBrowserClientHostsForRestoredPages(get())
+          void ensureBrowserClientHostsForRestoredPages(get() as never)
           // Why alongside: the same restart that hands those rows back also restores rows the user
           // already closed while this environment was down, so the closes it never heard have to be
           // replayed before its persisted records can put them on screen again.
-          void replayClientHostedBrowserCloseIntents(environmentId, get())
+          void replayClientHostedBrowserCloseIntents(environmentId, get as never)
         }
       },
       (snapshot) => get().applyRuntimeHostStatusSnapshot(snapshot)

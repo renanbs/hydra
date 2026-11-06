@@ -63,6 +63,8 @@ interface NewWorkspaceComposerProps {
   ) => void;
   /** Project-group backing a non-git project (D02a-034). */
   folderProjectGroupId?: string | null;
+  /** D03b-017: the group's own parent roots folder creates (Orca `projectGroup.parentPath`). */
+  folderProjectGroupParentPath?: string | null;
   initialLinkedWorkItem?: LinkedWorkItemSummary | null;
   /** Catalog write adapter supplied by App (it owns the catalog state). */
   onCreateFolderWorkspace?: (
@@ -85,6 +87,7 @@ export function NewWorkspaceComposer({
   onCreated,
   refreshLocalBaseRefOnWorktreeCreate = false,
   folderProjectGroupId = null,
+  folderProjectGroupParentPath = null,
   initialLinkedWorkItem = null,
   onCreateFolderWorkspace,
   onFolderWorkspaceCreated,
@@ -205,7 +208,10 @@ export function NewWorkspaceComposer({
         projectGroup: {
           id: folderProjectGroupId,
           name: proj.name,
-          parentPath: proj.path,
+          // D03b-017: the group's own parent roots the create (Orca
+          // `handleCreateFolderWorkspace(projectGroup)`); falls back to the
+          // project path when the group carries no root.
+          parentPath: folderProjectGroupParentPath ?? proj.path,
           connectionId: proj.connectionId ?? null,
           executionHostId: proj.executionHostId ?? null,
         },

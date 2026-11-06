@@ -212,7 +212,7 @@
   },
   {
    "id": "D04a-010",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-072",
@@ -468,7 +468,7 @@
  "PAR-51": [
   {
    "id": "D04a-010",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D11-009",
@@ -478,7 +478,7 @@
  "PAR-57": [
   {
    "id": "D04a-010",
-   "status": "partial"
+   "status": "parity"
   }
  ],
  "PAR-67": [

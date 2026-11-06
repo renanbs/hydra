@@ -305,17 +305,16 @@
     "components/sidebar/WorktreeList.tsx:343-356"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
-     "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
+     "move single/batch: assignWorktreeStatus(es) batch (App) + handleDropWorktrees batch no board (WorkspaceBoardDrawer:396)",
+     "drop lista->board: workspace-board-sidebar-drop.ts (D08-002/040)",
+     "move-to-status submenu: worktree-status-menu-items + handleAssignWorktreeStatus batch",
+     "task sync no move: useWorkspaceBoardTaskStatusSync no board (Drawer:321,436)",
+     "linhagem: lineageParentIdByChildId disponivel nas rows; sem autoload no Orca move (residual espurio)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
-     "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-     "carregamento automatico de linhagem ao mover (acoplado ao board)"
-    ],
+    "missing_behaviors": [],
     "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
     "note": "Mutações de status/pino parciais; seleção múltipla ausente."
    }
@@ -349,19 +348,16 @@
     "components/sidebar/WorktreeList.tsx:298-316"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:261",
-     "src/App.tsx:1612"
+     "Menu projeto: Project Settings... (abre Settings; Hydra sem pane repo = adapter)",
+     "Menu projeto: Remove Project from Hydra via ConfirmRemoveFolderDialog (antes removia direto)",
+     "Composer: folderProjectGroupParentPath (primeira folder workspace do grupo; Orca projectGroup.parentPath)"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
     ],
-    "missing_behaviors": [
-     "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings)",
-     "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
-     "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
-    ],
+    "missing_behaviors": [],
     "notes": "Abertura de diálogos parcial.",
     "note": "Abertura de diálogos parcial."
    }
