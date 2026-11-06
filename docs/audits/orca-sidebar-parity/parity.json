@@ -16731,14 +16731,15 @@
    "components/sidebar/sleep-worktree-activation-race.test.ts:81"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai",
-    "Invoca resumeWorkspace na API do backend para reativar VM efêmera",
-    "Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor"
+   "status": "parity",
+   "evidence": [
+    "src/reference/lib/sidebar-worktree-activation.ts + src/reference/components/sidebar/sleep-worktree-activation-race.test.ts (verbatim)",
+    "src/lib/sidebar-worktree-activation.ts (adapter: resumeEphemeralVmOnActivation puro + wakeEphemeralVmForSleptWorktree; wake apos ativacao, falha mantem selecionado + toast)",
+    "src/components/sidebar/sleep-worktree-flow.ts (adapter: teardown browsers->terminais->VM, guards, batch)",
+    "src/lib/sidebar-worktree-activation-race.parity.test.ts (3 testes: sem ativacao atrasada, resume failure, toast)"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "Não localizado após busca em 5 passos: (1) homônimos sleep-worktree-flow/sidebar-worktree-activation inexistentes em src/**; (2) 'resumeWorkspace'/'slept'/'shutdownWorktreeBrowsers'/'shutdownWorktreeTerminals' → 0 hits em produção (só fixtures: src/hooks/ipc-events-*.ts mencionam onSleepWorktree como stub); (3) nenhum store/hook executa sleep/resume de worktree — há apenas sleepingAgentSessionsByPaneKey (src/store/index.ts:123) e o filtro showSleepingWorkspaces (visible-worktrees.ts:168), que escondem linhas inertes, não suspendem/reativam VM; (4) backend ausente: index/hydra_tauri_commands.json lista 110 comandos e nenhum de sleep/resume/vm/ephemeral; 'ephemeralVm' no TS é só campo/seleção de receita do composer (src/hooks/composer-state/*, src/components/settings/ephemeral-vms-search.ts); (5) sem equivalente."
   },
   "par": [

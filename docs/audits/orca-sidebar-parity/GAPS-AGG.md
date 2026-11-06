@@ -1,12 +1,8 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 1 capabilities
+## MISSING — 0 capabilities
 
-
-### D15-misc-a (1)
-
-- **D15a-011** — Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM | falta: Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai; Invoca resumeWorkspace na API do backend para reativar VM efêmera; Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor | components/sidebar/sleep-worktree-flow.ts:44
 
 ## PARTIAL — 12 capabilities
 
