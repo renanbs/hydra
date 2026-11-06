@@ -350,6 +350,36 @@ export function WorktreeSidebar({
     project: HydraProject;
     sectionId?: string | null;
   } | null>(null);
+  // D02c-023 Rosetta: consume the Orca `{pane:'repo'}` settings target.
+  // Hydra's `SettingsModal` renders no `repo` pane — the repo-scoped surface
+  // is this dialog. A target carrying a `sectionId` (the local-commands
+  // anchor) opens it directly and the global page open becomes a no-op.
+  const settingsNavigationTarget = useAppStore((s) => (s as unknown as {
+    settingsNavigationTarget?: {
+      pane: string
+      repoId?: string | null
+      sectionId?: string
+    } | null
+  }).settingsNavigationTarget)
+  const clearSettingsTarget = useAppStore((s) => (s as unknown as {
+    clearSettingsTarget?: () => void
+  }).clearSettingsTarget)
+  useEffect(() => {
+    if (!settingsNavigationTarget || settingsNavigationTarget.pane !== 'repo') {
+      return
+    }
+    const repoId = settingsNavigationTarget.repoId ?? null
+    const match = repoId
+      ? (projects.find((candidate) => candidate.id === repoId) ?? null)
+      : null
+    if (match) {
+      setRepoSettingsTarget({
+        project: match,
+        sectionId: settingsNavigationTarget.sectionId ?? null
+      })
+    }
+    clearSettingsTarget?.()
+  }, [settingsNavigationTarget, clearSettingsTarget, projects]);
   const [suppressInboxTarget, setSuppressInboxTarget] = useState<HydraProject | null>(null);
   const [suppressInboxPending, setSuppressInboxPending] = useState(false);
   const [hiddenWorktreeErrorByProject, setHiddenWorktreeErrorByProject] = useState<

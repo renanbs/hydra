@@ -1,14 +1,15 @@
+// Adapter over `src/reference/components/sidebar/open-setup-script-settings.ts`
+// (verbatim Orca, pinned in `src/reference/REVISION`).
+//
+// Rosetta D02c-023: the reference routes `{pane:'repo'}` through the global
+// Settings surface (`openSettingsTarget` + `openSettingsPage`). Hydra has no
+// `repo` pane in `SettingsModal` — the repo-scoped surface is
+// `RepoSettingsDialog` (owned by `WorktreeSidebar`). This adapter keeps the
+// exact Orca call sequence (clear search → publish target → open page) so the
+// reference stays byte-identical; `WorktreeSidebar` consumes a `pane:'repo'`
+// `settingsNavigationTarget` by opening that dialog on `sectionId`.
 import type { ExecutionHostId } from '../../shared/execution-host'
-
-/**
- * Section anchor for the repository's local hook commands. Hydra has no
- * dedicated repo settings pane yet, so the id is the navigation contract the
- * settings surface must eventually honor; opening the page still clears any
- * stale search that would hide the section.
- */
-export function getRepositoryLocalCommandsSectionId(repoId: string): string {
-  return `repo-local-commands:${repoId}`
-}
+import { getRepositoryLocalCommandsSectionId } from './repo-section-ids'
 
 export function openSetupScriptSettings(input: {
   repoId: string
