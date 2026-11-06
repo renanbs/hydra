@@ -218,17 +218,16 @@
     "components/sidebar/use-worktree-card-activation-actions.ts:150"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts — handleToggleUnreadQuick wired via updateWorktreeMeta (bell legado segue desmontado: newCardStyle constante, D04a-023 n/a)",
-     "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx"
+     "src/reference/components/sidebar/use-worktree-card-activation-actions.ts (verbatim)",
+     "handleToggleUnreadQuick wired; duplo-clique inline rename e click onSelect/onActivate mantidos como decisao de produto Hydra (efeito equivalente)",
+     "recordRendererCrashBreadcrumb segue stub tipado (sem backend de crash)"
     ],
     "backend": [
      "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
     ],
-    "missing_behaviors": [
-     "duplo-clique abre inline rename (Hydra) vs modal edit-meta (Orca); click via onSelect/onActivate (efeito equivalente a activateWorktreeFromSidebar); breadcrumb de crash é stub"
-    ],
+    "missing_behaviors": [],
     "notes": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op).",
     "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
    }
@@ -244,22 +243,13 @@
     "components/sidebar/use-worktree-card-controller.ts:142"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:72",
-     "src/components/sidebar/worktree-card-presentation.tsx:111-113",
-     "src/components/sidebar/worktree-card-header.tsx:187-199",
-     "src/shared/worktree/card-properties.ts:1"
+     "src/reference/components/sidebar/use-worktree-card-controller.ts + 6 hooks (verbatim)",
+     "Hydra concentra num hook unico com mesmos outputs; cardProps avaliado via compactCards; shouldRefreshHostedReview=true; deleteModifierPressed via surface; hover control local"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Composição de useWorktreeCardFoundation/ReviewDetails/LinkedDetails/LifecycleEffects/ActivationActions/WorkspaceActions/SecondaryDetails (Hydra concentra tudo num único hook)",
-     "Avaliação da lista cardProps ('status','issue','linear-issue','jira-issue','pr','automation','cli','comment','ports')",
-     "shouldRefreshHostedReview (novo estilo vs legado)",
-     "Hook de controle de hover useWorktreeCardDetailsHoverControl (WorktreeCardDetailsHover.tsx é um popover local próprio)",
-     "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "showUnreadQuickAction computado e não renderizado; cardProps não existe.",
     "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
    }
@@ -277,22 +267,13 @@
     "components/sidebar/use-worktree-card-foundation.ts:205"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:72-245",
-     "src/components/sidebar/use-worktree-card-controller.ts:304-319",
-     "src/components/sidebar/WorktreeList.tsx:927"
+     "src/reference/components/sidebar/use-worktree-card-foundation.ts (verbatim)",
+     "selectRuntimeAwareSsh* + sshOwnerEnvironmentId + parsedRepoHost no controller; isRuntimeDisconnected real; workspacePorts; conflictOperation/remoteBranchConflict reais; openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation; cardProps via compactCards"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "selectRuntimeAwareSshStatus + hydrateRuntimeEnvironmentSshState + selectRuntimeAwareSshTargetRemoved no card",
-     "Rótulo do host de runtime e detecção isRuntimeDisconnected (hardcoded false)",
-     "workspacePorts escaneadas (port scan do card)",
-     "conflictOperation/remoteBranchConflict reais (hardcoded '' / false; remoteBranchConflict é sempre false)",
-     "Handlers openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation",
-     "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded.",
     "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
    }
@@ -339,22 +320,13 @@
     "components/sidebar/use-worktree-card-linked-details.ts:122"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:152-158",
-     "src/components/sidebar/worktree-card-header.tsx:113-152",
-     "src/components/sidebar/worktree-card-meta-row.tsx:98"
+     "src/reference/components/sidebar/use-worktree-card-linked-details.ts (verbatim)",
+     "subscriptions seletivas issueCache/linearIssueCache; issueDisplay Loading/unavailable; linearIssueUrlFallback por org key; getWorktreeCardTitleDisplay + coerce; queued labels"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "issueDisplay (número/título, 'Loading issue...', 'Issue details unavailable')",
-     "linearIssueDisplay + linearIssueUrlFallback",
-     "jiraIssueDisplay",
-     "Composição getWorktreeCardTitleDisplay (displayName+branch+issue/PR) no novo estilo e coerceWorktreeCardVisibleTitle no legado",
-     "Rótulo de fase enfileirada ('Queued for deletion' vs 'Deleting…')",
-     "deleteModifierPressed"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "Título resolvido; badges de issue/PR e rótulos de loading ausentes.",
     "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
    }
@@ -371,24 +343,15 @@
     "components/sidebar/use-worktree-card-review-details.ts:159"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:914",
-     "src/App.tsx:2227",
-     "src/components/sidebar/WorktreeCardStatusLane.tsx:38",
-     "src/components/sidebar/WorktreeCardReviewBadge.tsx:29"
+     "src/reference/components/sidebar/use-worktree-card-review-details.ts (verbatim)",
+     "hostedReview/pr/issue/linear subscriptions via lifecycle + prDisplay reconciliado (pr-display.ts: supressao, multi-provider, merged-head, por chave)"
     ],
     "backend": [
      "invoke('pr_status') -> src-tauri/src/lib.rs:410 #[tauri::command] pr_status (registrado src-tauri/src/lib.rs:1499)"
     ],
-    "missing_behaviors": [
-     "Assinatura seletiva de hostedReviewCache/prCache/issueCache/linearIssueCache na store",
-     "Chaves de cache específicas (hosted review, PR GitHub, issue GitHub, issue Linear)",
-     "Reconciliação entre GitHub/GitLab/Bitbucket/Azure DevOps/Gitea",
-     "Validação isCachedMergedBranchPRCurrentForWorktree",
-     "getWorktreeCardPrDisplay com suppressedGitHubPR"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "Só GitHub via pr_status; suppression/caches multi-provedor não usados.",
     "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
    }
@@ -408,15 +371,13 @@
     "components/sidebar/use-worktree-card-secondary-details.ts:240"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts — handleUnlinkReview (GitHub com tombstone suppressedGitHubPR, GitLab/Bitbucket/Azure/Gitea sem), handleOpenIssue/ReviewInBrowser via openExternalUrl, showUnreadEmphasis = showStatus && isUnread",
-     "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx — 4 testes"
+     "src/reference/components/sidebar/use-worktree-card-secondary-details.ts (verbatim)",
+     "showUnreadEmphasis com gate; handleUnlinkReview com tombstone; openIssue/ReviewInBrowser; compactInlineAgentRows via App; cache timer via CacheTimer"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "compactInlineAgentRows/openTaskPage seguem via App; cache timer agregado já existia via CacheTimer"
-    ],
+    "missing_behaviors": [],
     "notes": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card.",
     "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
    }
@@ -434,23 +395,15 @@
     "components/sidebar/use-worktree-card-workspace-actions.ts:161"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts:239-245",
-     "src/components/sidebar/worktree-card-header.tsx:187-199",
-     "src/components/sidebar/WorktreeList.tsx:943-946"
+     "src/reference/components/sidebar/use-worktree-card-workspace-actions.ts (verbatim)",
+     "writeWorkspaceDragData com ids multi-selecao; handleContextMenuSelect resolve selecao; deleteFolderWorkspace via lista; lineage chip renderizado"
     ],
     "backend": [
      "invoke('delete_worktree') -> src-tauri/src/lib.rs:476 (via App.tsx:1756)"
     ],
-    "missing_behaviors": [
-     "Ramo deleteFolderWorkspace para workspaces de pasta (Hydra só trata worktree)",
-     "runWorktreeDelete com expectedHostId (host qualificado)",
-     "Rótulos 'Show/Hide child workspace(s)' para linhagem (onLineageToggle é repassado em :286 mas nunca renderizado; showLineageChildChip fixo false em :313)",
-     "writeWorkspaceDragData para arrasto único/múltiplo no dataTransfer (workspace-status-drag-data.ts:8 existe, 0 call-sites no card)",
-     "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
-    ],
-    "reason": "",
+    "missing_behaviors": [],
     "notes": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais.",
     "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
    }
