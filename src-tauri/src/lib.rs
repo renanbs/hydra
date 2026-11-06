@@ -1982,12 +1982,21 @@ async fn resolve_tool_approval(
 }
 
 #[tauri::command]
-async fn list_tool_approvals(
-    session_id: Option<String>,
-    state: State<'_, AppState>,
-) -> Result<Vec<ToolApprovalRecord>, String> {
-    state.db.list_tool_approvals(session_id.as_deref())
+async fn mobile_list_devices() -> Result<serde_json::Value, String> {
+    // D01-024: Hydra has no mobile pairing server yet; an empty list is the
+    // correct "no devices paired" state (distinct from a load error, which the
+    // adapter surfaces via catch). The command exists so the badge's
+    // `hasPairedDevice` reads live data instead of a hardcoded false.
+    Ok(serde_json::json!({ "devices": [] }))
 }
+
+ #[tauri::command]
+ async fn list_tool_approvals(
+     session_id: Option<String>,
+     state: State<'_, AppState>,
+ ) -> Result<Vec<ToolApprovalRecord>, String> {
+     state.db.list_tool_approvals(session_id.as_deref())
+ }
 
 #[tauri::command]
 async fn create_tool_approval(
@@ -2218,6 +2227,7 @@ pub fn run() {
             close_split_terminal,
             resolve_tool_approval,
             list_tool_approvals,
+            mobile_list_devices,
             get_session_state_history,
             create_tool_approval,
             theme_import::preview_ghostty_import,

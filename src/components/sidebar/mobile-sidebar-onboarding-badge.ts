@@ -1,6 +1,10 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/mobile-sidebar-onboarding-badge.ts
+// Reference: `src/reference/components/sidebar/mobile-sidebar-onboarding-badge.ts`
+// (verbatim Orca, pinned in `src/reference/REVISION`). D01-024: the badge and
+// inline hide read the live paired-device list instead of a hardcoded false.
 import { useCallback, useState } from 'react'
+import { usePairedMobileDevices } from '../mobile/paired-mobile-devices'
 
 const DISMISS_KEY = 'hydra.mobile.sidebar-onboarding-dismissed'
 
@@ -22,9 +26,8 @@ export function shouldShowMobileSidebarOnboardingBadge(
 /**
  * One-time "New" badge on the Orca Mobile entry until its first view.
  *
- * `hasPairedDevice` stays false because Hydra has no command that lists paired
- * mobile devices; the inline hide affordance waits for that surface instead of
- * guessing from a QR generation.
+ * `hasPairedDevice` reads the live device list; the inline EyeOff shows once a
+ * device is paired (Orca `hasPairedDevice` gate on the hide affordance).
  */
 export function useMobileSidebarOnboardingBadge(enabled = true): {
   visible: boolean
@@ -32,6 +35,7 @@ export function useMobileSidebarOnboardingBadge(enabled = true): {
   dismiss: () => void
 } {
   const [dismissed, setDismissed] = useState<boolean>(() => readDismissed())
+  const mobileDevices = usePairedMobileDevices({ enabled })
 
   const dismiss = useCallback(() => {
     if (dismissed) {
@@ -46,8 +50,12 @@ export function useMobileSidebarOnboardingBadge(enabled = true): {
   }, [dismissed])
 
   return {
-    visible: shouldShowMobileSidebarOnboardingBadge(enabled, dismissed),
-    hasPairedDevice: false,
+    visible:
+      shouldShowMobileSidebarOnboardingBadge(enabled, dismissed) &&
+      mobileDevices.loaded &&
+      !mobileDevices.error &&
+      !mobileDevices.hasPairedDevice,
+    hasPairedDevice: mobileDevices.hasPairedDevice,
     dismiss
   }
 }

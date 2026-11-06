@@ -1,9 +1,14 @@
-import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
-import {
-  shouldShowMobileSidebarOnboardingBadge,
-  useMobileSidebarOnboardingBadge,
-} from "./mobile-sidebar-onboarding-badge";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(async () => ({ devices: [] }))
+}));
+
+ import {
+   shouldShowMobileSidebarOnboardingBadge,
+   useMobileSidebarOnboardingBadge,
+ } from "./mobile-sidebar-onboarding-badge";
 
 const DISMISS_KEY = "hydra.mobile.sidebar-onboarding-dismissed";
 
@@ -18,11 +23,11 @@ describe("mobile sidebar onboarding badge (D01-024)", () => {
     expect(shouldShowMobileSidebarOnboardingBadge(false, false)).toBe(false);
   });
 
-  it("never claims a paired device because Hydra has no device list IPC", () => {
+  it("starts hidden until the device list loads, then shows when empty", async () => {
     const { result } = renderHook(() => useMobileSidebarOnboardingBadge(true));
 
+    await waitFor(() => expect(result.current.visible).toBe(true));
     expect(result.current.hasPairedDevice).toBe(false);
-    expect(result.current.visible).toBe(true);
   });
 
   it("dismisses once and persists the dismissal for the next launch", () => {

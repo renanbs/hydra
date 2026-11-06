@@ -1,11 +1,15 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as TauriCore from "@tauri-apps/api/core";
 import { useAppStore } from "@/store";
 import { formatShortcutKeyComboDetails } from "@/hooks/useShortcutLabel";
 import { DEFAULT_HYDRA_SETTINGS, type HydraSettings } from "@/shared/settings-types";
 import { SidebarNav } from "./SidebarNav";
-
+vi.mock("@tauri-apps/api/core", async (importOriginal) => {
+  const mod = await (importOriginal as () => Promise<typeof TauriCore>)();
+  return { ...mod, invoke: vi.fn(async () => ({ devices: [] })) };
+});
 function settings(overrides: Partial<HydraSettings> = {}): HydraSettings {
   return { ...DEFAULT_HYDRA_SETTINGS, ...overrides };
 }
