@@ -4,13 +4,8 @@
 ## MISSING — 0 capabilities
 
 
-## PARTIAL — 8 capabilities
+## PARTIAL — 6 capabilities
 
-
-### D02a-repo-add-wizard (2)
-
-- **D02a-014** — Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso | falta: Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc) | backend: invoke('clone_project') -> src-tauri/src/lib.rs:445 | components/sidebar/useAddRepoCloneFlow.ts:24
-- **D02a-018** — Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime | falta: ativação de workspace sintético para pasta — via composer, não no create | backend: invoke('create_project') -> src-tauri/src/lib.rs:428 | components/sidebar/useCreateRepo.ts:18
 
 ### D02b-hosts-ssh-remote (1)
 

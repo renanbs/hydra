@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 749 | 97.9% |
-| partial | 8 | 1.0% |
+| parity | 751 | 98.2% |
+| partial | 6 | 0.8% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -15,7 +15,7 @@
 | domínio | capabilities | parity | partial | missing | not-applicable | out-of-scope |
 |---|---|---|---|---|---|---|
 | D01-shell-chrome | 52 | 51 | 0 | 0 | 1 | 0 |
-| D02a-repo-add-wizard | 42 | 34 | 2 | 0 | 6 | 0 |
+| D02a-repo-add-wizard | 42 | 36 | 0 | 0 | 6 | 0 |
 | D02b-hosts-ssh-remote | 30 | 29 | 1 | 0 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 25 | 1 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |

@@ -1437,18 +1437,18 @@
    "components/sidebar/useAddRepoCloneFlow.ts:153"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:handleClone — local via cloneRepository/clone_abort, SSH via cloneSshRepository, runtime via clonePairedServerRepository (repo.clone E2EE); toast Repository cloned; notifyProjectAdded com executionHostId + source clone_url",
-    "src/store/paired-server-repo-bridge.ts",
-    "src/store/ssh-remote-bridge.ts"
+    "src/reference/components/sidebar/useAddRepoCloneFlow.ts (verbatim)",
+    "Rust: git clone --progress + parse NN% + emit clone:progress por clone id",
+    "src/lib/clone-client.ts onCloneProgress (adapter da assinatura onCloneProgress)",
+    "AddRepoDialog: subscription durante isCloning; step mostra barra determinada",
+    "SSH/runtime via bridges proprias (cloneSshRepository/createSshProject, paired-server) + catalog + onGitRepoReady clone_url"
    ],
    "backend": [
     "invoke('clone_project') -> src-tauri/src/lib.rs:445"
    ],
-   "missing_behaviors": [
-    "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc)"
-   ],
+   "missing_behaviors": [],
    "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1524,17 +1524,17 @@
    "components/sidebar/useCreateRepo.ts:124"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:handleCreate — local/SSH/runtime com toasts de dedup, atualização de worktrees + onGitRepoReady, pickDirectory nativo",
-    "gen/mount refs contra submissões obsoletas"
+    "src/reference/components/sidebar/useCreateRepo.ts (verbatim)",
+    "AddRepoDialog handleCreate: local/SSH/runtime, dedup Project already added, toast Project created, notifyProjectAdded (onGitRepoReady + default-checkout)",
+    "App handleProjectAdded: kind folder ativa workspace sintetico; git segue handoff",
+    "pickDirectory nativo via plugin-dialog; remotos digitam path no host"
    ],
    "backend": [
     "invoke('create_project') -> src-tauri/src/lib.rs:428"
    ],
-   "missing_behaviors": [
-    "ativação de workspace sintético para pasta — via composer, não no create"
-   ],
+   "missing_behaviors": [],
    "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
   },
   "domain": "D02a-repo-add-wizard"
