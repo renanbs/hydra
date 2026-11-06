@@ -12,12 +12,15 @@ import { toast } from 'sonner'
 import { useAppStore } from '../../store'
 import { openExternalUrl } from '../../lib/sidebar-desktop-contracts'
 import { useWorktreeCardLifecycleEffects } from './use-worktree-card-lifecycle-effects'
+import { writeWorkspaceDragData } from './workspace-status-drag-data'
 import { getConfiguredWorktreeCardJiraIssueDisplay } from './worktree-card-jira-issue-display'
 import {
   coerceWorktreeCardVisibleTitle,
   getWorktreeCardTitleDisplay
 } from './worktree-card-title-display'
 import { parseExecutionHostId, type ParsedExecutionHost } from '../../shared/execution-host'
+import type { IssueInfo } from '../../shared/github/pull-request-types'
+import type { LinearIssue } from '../../shared/linear/issue-types'
 import {
   selectRuntimeAwareSshStatus,
   selectRuntimeAwareSshTargetLabel,
@@ -100,6 +103,8 @@ export interface WorktreeCardController extends ResolvedWorktreeCardProps {
   handleToggleUnreadQuick: (event: React.MouseEvent<HTMLButtonElement>) => void
   jiraIssueDisplay: import('./worktree-card-meta-types').WorktreeCardJiraIssueDisplay | null
   linearIssueDisplay: import('./worktree-card-meta-types').WorktreeCardLinearIssueDisplay | null
+  issueDisplay: import('./worktree-card-meta-types').WorktreeCardIssueDisplay | null
+  linearIssue: LinearIssue | null
   handleOpenAutomation: (event: React.MouseEvent) => void
   handleOpenAutomationRun: (event: React.MouseEvent) => void
   automationProvenance: {
@@ -403,10 +408,65 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     worktree as unknown as never,
     cardProperties as unknown as readonly never[]
   )
+  // D04b-014/D04b-015 Rosetta (Orca `use-worktree-card-linked-details` +
+  // `use-worktree-card-review-details`): subscribe to ONLY the specific cache
+  // entries for this card's links. Linked metadata persists immediately but
+  // provider details arrive async — the display carries Loading/unavailable
+  // states instead of looking unlinked.
+  const linkedIssueNumber =
+    (worktree as unknown as { linkedIssue?: unknown }).linkedIssue ?? null
+  const issueEntry = useAppStore((state) =>
+    typeof linkedIssueNumber === 'number'
+      ? (state as unknown as { issueCache?: Record<string, { data?: IssueInfo | null } | undefined> }).issueCache?.[
+          `issue:${linkedIssueNumber}`
+        ] ??
+        (state as unknown as { issueCache?: Record<string, { data?: IssueInfo | null } | undefined> }).issueCache?.[
+          String(linkedIssueNumber)
+        ]
+      : undefined
+  )
+  const issueFromCache = issueEntry?.data ?? undefined
+  const issueDisplay = (
+    (issueFromCache as { number?: number; title?: string } | null | undefined) ??
+    (typeof linkedIssueNumber === 'number'
+      ? {
+          number: linkedIssueNumber,
+          title: issueFromCache === null ? 'Issue details unavailable' : 'Loading issue...'
+        }
+      : null)
+  ) as import('./worktree-card-meta-types').WorktreeCardIssueDisplay | null
   const linkedLinearTitle =
     (worktree as unknown as { linkedLinearIssue?: string }).linkedLinearIssue ?? null
+  const linearIssueCacheEntry = useAppStore((state) =>
+    linkedLinearTitle
+      ? (state as unknown as { linearIssueCache?: Record<string, { data?: LinearIssue } | undefined> }).linearIssueCache?.[linkedLinearTitle]
+      : undefined
+  )
+  const linearIssue = linkedLinearTitle
+    ? (linearIssueCacheEntry?.data ?? null)
+    : null
+  const linearStatus = useAppStore(
+    (state) => (state as unknown as { linearStatus?: { viewer?: { organizationUrlKey?: string } | null } }).linearStatus
+  )
+  const linearOrgUrlKey = linearStatus?.viewer?.organizationUrlKey
+  const linearIssueUrlFallback =
+    linkedLinearTitle && !linearIssue?.url && linearOrgUrlKey
+      ? `https://linear.app/${encodeURIComponent(linearOrgUrlKey)}/issue/${encodeURIComponent(linkedLinearTitle)}`
+      : undefined
   const linearIssueDisplay = linkedLinearTitle
-    ? { identifier: linkedLinearTitle, title: '' }
+    ? linearIssue
+      ? {
+          identifier: linearIssue.identifier,
+          title: linearIssue.title,
+          url: linearIssue.url,
+          stateName: linearIssue.state?.name,
+          labels: linearIssue.labels
+        }
+      : {
+          identifier: linkedLinearTitle,
+          title: linearIssueCacheEntry ? 'Linear issue details unavailable' : 'Loading Linear issue...',
+          url: linearIssueUrlFallback
+        }
     : null
   const visibleCardTitle =
     getWorktreeCardTitleDisplay({
@@ -457,8 +517,16 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
         e.preventDefault()
         return
       }
+      // D04b-017: the drag payload carries worktree ids (multi-selection
+      // aware) — the board drop targets read ids, and a path-only drag lands nowhere.
+      const dragIds =
+        isMultiSelected && selectedWorktrees && selectedWorktrees.length > 1
+          ? selectedWorktrees.map((item) => item.id ?? item.path)
+          : worktreeId
+      writeWorkspaceDragData(e.dataTransfer, dragIds)
+      const ids = Array.isArray(dragIds) ? dragIds : [dragIds]
       if (onCardDragStart) {
-        onCardDragStart(e, worktree.path, [worktree.path])
+        onCardDragStart(e, worktree.path, ids)
       } else if (onDragStart) {
         onDragStart(e, worktree.path)
       }
@@ -477,15 +545,26 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     [onCardDragEnd, onDragEnd]
   )
 
+  // D04b-017 Rosetta (Orca `handleContextMenuSelect`): resolve the
+  // multi-selection targets at the card — the menu acts on every selected
+  // row, not just the right-clicked one.
   const handleContextMenuSelect = useCallback(
     (e: React.MouseEvent<HTMLElement>, wt: GitWorktreeInfo) => {
       if (onContextMenu && effectiveRepo) {
         onContextMenu(e, wt, effectiveRepo)
-      } else if (onContextMenuSelect) {
+        return
+      }
+      if (onContextMenuSelect) {
+        if (isMultiSelected && selectedWorktrees && selectedWorktrees.length > 1) {
+          for (const item of selectedWorktrees) {
+            onContextMenuSelect(e, item)
+          }
+          return
+        }
         onContextMenuSelect(e, wt)
       }
     },
-    [onContextMenu, effectiveRepo, onContextMenuSelect]
+    [onContextMenu, effectiveRepo, onContextMenuSelect, isMultiSelected, selectedWorktrees]
   )
 
   const handleRenameTitle = useCallback(
@@ -615,6 +694,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps | Wor
     handleToggleUnreadQuick,
     jiraIssueDisplay,
     linearIssueDisplay,
+    issueDisplay,
+    linearIssue,
     handleOpenAutomation,
     handleOpenAutomationRun,
     automationProvenance,
