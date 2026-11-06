@@ -1,5 +1,7 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/OrcaYamlTrustDialog.tsx
+// Reference: `src/reference/components/sidebar/OrcaYamlTrustDialog.tsx`
+// (verbatim Orca, pinned in `src/reference/REVISION`). D02c-011.
 import { useCallback, useState } from 'react'
 import {
   Dialog,

@@ -37,6 +37,9 @@ export class RuntimePairingUnavailableError extends Error {
   }
 }
 
+// D02b-010 Rosetta (Orca `translateRemotePairingFailureDescription`): the
+// reference names the exact failure with the endpoint; the bridge keeps
+// returning Errors (callers toast `.message`) but the copy now matches.
 function translateVerifyFailure(kind: string, fallback: string): Error {
   switch (kind) {
     case 'access-link-invalid':

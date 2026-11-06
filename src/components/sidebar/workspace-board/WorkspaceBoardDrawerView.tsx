@@ -75,6 +75,8 @@ type WorkspaceBoardDrawerViewProps = {
   onContextMenu?: (event: React.MouseEvent, card: WorkspaceBoardCardModel) => void
   /** The board header's filter menu cluster, wired by the drawer to the sidebar writers. */
   headerFilter?: React.ReactNode
+  syncTaskStatusFromWorkspaceBoard: boolean
+  onSyncTaskStatusFromWorkspaceBoardChange: (value: boolean) => void
 }
 
 /**
@@ -130,6 +132,8 @@ export default function WorkspaceBoardDrawerView({
   onSelectSession,
   onContextMenu,
   headerFilter,
+  syncTaskStatusFromWorkspaceBoard,
+  onSyncTaskStatusFromWorkspaceBoardChange,
 }: WorkspaceBoardDrawerViewProps): React.JSX.Element {
   // Why the drawer owns the lane row's scroller: the lanes are virtualized inside it. It is
   // handed to the grid as an element, not a ref — the grid is a child of this scroller, so its
@@ -163,6 +167,8 @@ export default function WorkspaceBoardDrawerView({
         onClose={() => onOpenChange(false)}
         statusActions={statusActions}
         filterMenu={headerFilter}
+        syncTaskStatusFromWorkspaceBoard={syncTaskStatusFromWorkspaceBoard}
+        onSyncTaskStatusFromWorkspaceBoardChange={onSyncTaskStatusFromWorkspaceBoardChange}
       />
       <div
         data-workspace-board-selection-surface=""

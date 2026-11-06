@@ -13,6 +13,7 @@ import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../shared/worktree/types'
 import { getWorkspaceStatusVisualMeta } from '../workspace-status'
 import WorkspaceStatusAppearancePopover from './WorkspaceStatusAppearancePopover'
+import { SettingsSwitch } from '../../settings/SettingsFormControls'
 
 type WorkspaceBoardSettingsMenuProps = {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
@@ -22,13 +23,15 @@ type WorkspaceBoardSettingsMenuProps = {
   onMoveStatus: (statusId: string, direction: -1 | 1) => void
   onRemoveStatus: (statusId: string) => void
   onAddStatus: () => void
+  syncTaskStatusFromWorkspaceBoard: boolean
+  onSyncTaskStatusFromWorkspaceBoardChange: (value: boolean) => void
 }
 
 /**
  * Ported from Orca `WorkspaceKanbanSettingsMenu`: the board header's status CRUD
  * (rename, color/icon, reorder, remove, add). Orca's "Sync board and issue status"
- * switch is deliberately absent — the Linear sync engine it drives does not exist in
- * Hydra, and a switch wired to nothing would be an inert control.
+ * switch drives the Linear sync engine ();
+ * the preference persists per D02 (syncTaskStatusFromWorkspaceBoard).
  */
 export default function WorkspaceBoardSettingsMenu({
   workspaceStatuses,
@@ -38,6 +41,8 @@ export default function WorkspaceBoardSettingsMenu({
   onMoveStatus,
   onRemoveStatus,
   onAddStatus,
+  syncTaskStatusFromWorkspaceBoard,
+  onSyncTaskStatusFromWorkspaceBoardChange,
 }: WorkspaceBoardSettingsMenuProps): React.JSX.Element {
   return (
     <DropdownMenu modal={false}>
@@ -79,6 +84,34 @@ export default function WorkspaceBoardSettingsMenu({
           }
         }}
       >
+        <div className="px-1 pb-2">
+          <div className="flex items-start justify-between gap-3 rounded-md px-1.5 py-1.5 hover:bg-worktree-sidebar-accent/70">
+            <span className="min-w-0 space-y-0.5">
+              <span className="block text-[12px] font-medium leading-4 text-foreground">
+                {translate(
+                  'auto.components.sidebar.WorkspaceKanbanSettingsMenu.87d24a0c2f',
+                  'Sync board and issue status'
+                )}
+              </span>
+              <span className="block text-[11px] leading-4 text-muted-foreground">
+                {translate(
+                  'auto.components.sidebar.WorkspaceKanbanSettingsMenu.4c2eaa78cc',
+                  'Moving a linked workspace updates its Linear issue status when a matching workflow state exists.'
+                )}
+              </span>
+            </span>
+            <SettingsSwitch
+              checked={syncTaskStatusFromWorkspaceBoard}
+              onChange={() =>
+                onSyncTaskStatusFromWorkspaceBoardChange(!syncTaskStatusFromWorkspaceBoard)
+              }
+              ariaLabel={translate(
+                'auto.components.sidebar.WorkspaceKanbanSettingsMenu.87d24a0c2f',
+                'Sync board and issue status'
+              )}
+            />
+          </div>
+        </div>
         <DropdownMenuLabel>
           {translate('auto.components.sidebar.WorkspaceKanbanSettingsMenu.395e541d5d', 'Statuses')}
         </DropdownMenuLabel>

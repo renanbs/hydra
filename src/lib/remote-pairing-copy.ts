@@ -1,6 +1,10 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: lib/remote-pairing-copy.ts. Every surface that explains an access-link problem goes
 // through here so the add-host dialog and the settings form say the same thing.
+// Reference: `src/reference/lib/remote-pairing-copy.ts` (verbatim Orca, pinned
+// in `src/reference/REVISION`). D02b-010: `translateRemotePairingFailureDescription`
+// names the exact failure (mismatch, invalid link, incompatible, interrupted,
+// save-failed, unreachable) instead of a generic toast.
 import type {
   HostAccessLinkErrorKind,
   RemotePairingEndpointKind
@@ -49,5 +53,53 @@ export function translateRemotePairingEndpointKind(kind: RemotePairingEndpointKi
       return translate('auto.lib.remotePairingCopy.public', 'Public address')
     case 'custom':
       return translate('auto.lib.remotePairingCopy.custom', 'Custom hostname')
+  }
+}
+
+export type RemotePairingFailureKind =
+  | 'host-unreachable'
+  | 'host-identity-mismatch'
+  | 'access-link-invalid'
+  | 'protocol-incompatible'
+  | 'connection-interrupted'
+  | 'environment-save-failed'
+
+export function translateRemotePairingFailureDescription(
+  kind: RemotePairingFailureKind,
+  endpoint: string | null
+): string {
+  switch (kind) {
+    case 'host-identity-mismatch':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.identityMismatchHelp',
+        'Orca reached {{endpoint}}, but that host does not match this link. Generate a new link on the other host.',
+        { endpoint: endpoint ?? 'Orca' }
+      )
+    case 'access-link-invalid':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.invalidLinkHelp',
+        'Generate a new access link on the other host and try again.'
+      )
+    case 'protocol-incompatible':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.incompatibleHelp',
+        'Update Orca on this device and the other host, then try again.'
+      )
+    case 'connection-interrupted':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.interruptedHelp',
+        'The connection stopped during verification. Check the network or SSH tunnel and try again.'
+      )
+    case 'environment-save-failed':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.saveFailedHelp',
+        'The host was verified, but Orca could not save it. Check the name and local settings storage, then try again.'
+      )
+    case 'host-unreachable':
+      return translate(
+        'auto.components.settings.RuntimeHostAccessForm.unavailableHelp',
+        'Make sure Orca is running on the other host and that the network or SSH tunnel can reach {{endpoint}}.',
+        { endpoint: endpoint ?? 'Orca' }
+      )
   }
 }

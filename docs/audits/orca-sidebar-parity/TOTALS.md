@@ -4,9 +4,9 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 708 | 92.5% |
-| partial | 27 | 3.5% |
-| missing | 22 | 2.9% |
+| parity | 744 | 97.3% |
+| partial | 12 | 1.6% |
+| missing | 1 | 0.1% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -15,18 +15,18 @@
 
 | domínio | capabilities | parity | partial | missing | not-applicable | out-of-scope |
 |---|---|---|---|---|---|---|
-| D01-shell-chrome | 52 | 47 | 0 | 4 | 1 | 0 |
-| D02a-repo-add-wizard | 42 | 30 | 2 | 4 | 6 | 0 |
-| D02b-hosts-ssh-remote | 30 | 27 | 2 | 1 | 0 | 0 |
-| D02c-project-groups-scripts | 26 | 19 | 1 | 6 | 0 | 0 |
+| D01-shell-chrome | 52 | 50 | 1 | 0 | 1 | 0 |
+| D02a-repo-add-wizard | 42 | 34 | 2 | 0 | 6 | 0 |
+| D02b-hosts-ssh-remote | 30 | 29 | 1 | 0 | 0 | 0 |
+| D02c-project-groups-scripts | 26 | 25 | 1 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
-| D03b-sidebar-list-orchestration | 50 | 47 | 2 | 1 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 99 | 8 | 3 | 1 | 0 |
-| D04b-worktree-card-controllers | 23 | 16 | 7 | 0 | 0 | 0 |
+| D03b-sidebar-list-orchestration | 50 | 48 | 2 | 0 | 0 | 0 |
+| D04a-worktree-card-surface | 111 | 108 | 2 | 0 | 1 | 0 |
+| D04b-worktree-card-controllers | 23 | 23 | 0 | 0 | 0 | 0 |
 | D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |
 | D07-menus-actions | 45 | 45 | 0 | 0 | 0 | 0 |
-| D08-kanban-board | 45 | 41 | 2 | 2 | 0 | 0 |
+| D08-kanban-board | 45 | 45 | 0 | 0 | 0 | 0 |
 | D09-filters-sort | 31 | 31 | 0 | 0 | 0 | 0 |
 | D10-visibility-inbox-notices | 91 | 88 | 3 | 0 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 17 | 0 | 0 | 0 | 0 |

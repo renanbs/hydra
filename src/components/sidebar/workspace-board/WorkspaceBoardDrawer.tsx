@@ -30,7 +30,7 @@ import type { WorkspaceBoardCard as WorkspaceBoardCardModel } from './workspace-
 import { resolveWorkspaceBoardCardDragCommit } from './drag/use-workspace-board-card-pointer-drag'
 import { resolveWorkspaceBoardFullLaneDropIndex } from './workspace-board-filtered-drop-index'
 import { registerWorkspaceBoardSidebarDropGroups } from './workspace-board-sidebar-drop'
-import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync'
+import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync-live'
 import { shouldWriteManualOrderForGroupDrop, buildManualOrderUpdatesForGroupDrop } from '../worktree-manual-order'
 
 export type WorkspaceBoardDrawerProps = {
@@ -312,7 +312,25 @@ function WorkspaceBoardDrawerContent({
     void useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
   }, [])
 
-  const maybeSyncTaskStatuses = useWorkspaceBoardTaskStatusSync({ worktreeById })
+  const syncEnabled = useAppStore(
+    (state) =>
+      (state as unknown as { syncTaskStatusFromWorkspaceBoard?: boolean })
+        .syncTaskStatusFromWorkspaceBoard === true
+  )
+  const boardWorkspaceStatuses = useAppStore((state) => state.workspaceStatuses)
+  const maybeSyncTaskStatuses = useWorkspaceBoardTaskStatusSync({
+    enabled: syncEnabled,
+    worktreesById: new Map(
+      [...worktreeById].map(([worktreeId, card]) => [
+        worktreeId,
+        card.worktree as unknown as {
+          linkedLinearIssue?: string | null
+          linkedLinearIssueWorkspaceId?: string | null
+        }
+      ])
+    ),
+    workspaceStatuses: boardWorkspaceStatuses
+  })
 
   /**
    * Writes the slot's manual order when the gesture is an intentional reorder.
@@ -633,6 +651,8 @@ function WorkspaceBoardDrawerContent({
       onPinDragLeave={nativeDrag.handlePinDragLeave}
       onPinDrop={nativeDrag.handlePinDrop}
       statusActions={statusActions}
+      syncTaskStatusFromWorkspaceBoard={syncEnabled}
+      onSyncTaskStatusFromWorkspaceBoardChange={(value) => (useAppStore.getState() as unknown as { setSyncTaskStatusFromWorkspaceBoard?: (v: boolean) => void }).setSyncTaskStatusFromWorkspaceBoard?.(value)}
       query={query}
       isFiltering={isFiltering}
       isTooLarge={isQueryTooLarge}

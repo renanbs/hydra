@@ -12,7 +12,15 @@ vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), { success: toastSuccess, error: toastError, info: vi.fn() })
 }))
 
-import { LinearAgentSkillSetupDialog } from './LinearAgentSkillSetupDialog'
+// The embedded terminal mounts the real xterm surface (broken optional
+// ligatures dep in this env); the dialog contract is the command it is given.
+vi.mock('./InlineCommandTerminal', () => ({
+  InlineCommandTerminal: ({ command }: { command: string }) => (
+    <div data-testid="inline-terminal">{command}</div>
+  )
+}))
+
+ import { LinearAgentSkillSetupDialog } from './LinearAgentSkillSetupDialog'
 
 // Radix Dialog measures its content on mount; jsdom has no ResizeObserver.
 class ResizeObserverNoop {
@@ -61,11 +69,12 @@ describe('LinearAgentSkillSetupDialog (D02c-003)', () => {
     renderDialog()
 
     expect(screen.getByText('Enable agents to read and edit the attached Linear ticket.')).toBeInTheDocument()
-    expect(screen.getByText(COMMAND)).toBeInTheDocument()
+    expect(screen.getByTestId('inline-terminal')).toHaveTextContent(COMMAND)
+    expect(screen.getByText(COMMAND, { selector: '.font-mono' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copy command' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Re-check' })).toBeInTheDocument()
     expect(
-      screen.getByText(/may check that the Orca CLI command is on PATH/)
+      screen.getByText(/Run this command in your terminal to install the CLI and skill/)
     ).toBeInTheDocument()
   })
 

@@ -307,16 +307,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:428",
-     "src/App.tsx:3517"
+     "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
+     "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
     ],
     "backend": [],
     "missing_behaviors": [
-     "seleção múltipla de worktrees (useSidebarWorktreeSelection)",
-     "moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex",
-     "pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406)",
+     "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
      "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-     "carregamento automático da linhagem ao mover pai entre raias"
+     "carregamento automatico de linhagem ao mover (acoplado ao board)"
     ],
     "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
     "note": "Mutações de status/pino parciais; seleção múltipla ausente."
@@ -953,8 +951,13 @@
     "components/sidebar/worktree-snapshot-prune-batch.ts:6-24"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
+    "status": "parity",
+    "evidence": [
+     "src/reference/components/sidebar/worktree-snapshot-prune-batch.ts — verbatim Orca (pin src/reference/REVISION)",
+     "src/lib/worktree-sleep-intent.ts — forgetWorktreeSleepIntents: batch loop por path; SQLite por workspace dispensa batch IPC; panes de linhas removidas nunca acordam",
+     "src/lib/worktree-sleep-intent.parity.test.ts — batch + skip sem marker",
+     "src/App.tsx — onDeleted chama o batch em remoção múltipla"
+    ],
     "backend": [],
     "missing_behaviors": [],
     "notes": "Não localizado após busca por beginWorktreeSnapshotPruneBatch/finishRemovalSnapshotPruneBatch/recordRemovalSnapshotPrune e 'workspaceCleanup' em src/ e src-tauri/: nenhuma API equivalente (window.api expõe fs/ui, não workspaceCleanup)."

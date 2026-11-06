@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
-import { getRepositoryLocalCommandsSectionId } from './open-setup-script-settings'
+import { getRepositoryLocalCommandsSectionId } from './repo-section-ids'
 
 export type LocalHookName = 'setup' | 'archive'
 

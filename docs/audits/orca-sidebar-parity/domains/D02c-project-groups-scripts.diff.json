@@ -71,19 +71,15 @@
     "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:11275-11280"
+     "src/reference/components/sidebar/LinearAgentSkillSetupDialog.tsx + AgentSkillSetupPanel + OnboardingInlineCommandTerminal + agent-skill-terminal-snapshot (verbatim)",
+     "src/components/sidebar/InlineCommandTerminal.tsx (adapter: session Hydra + TerminalDrawer + auto-submit + cleanup)",
+     "LinearAgentSkillSetupDialog.tsx (terminal embutido 240px + copy/run fallback; success/dismiss/close)",
+     "5 testes dialog"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
-     "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
-     "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
-     "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
-     "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
-     "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
-    ],
+    "missing_behaviors": [],
     "notes": "LinearAgentSkillPane orfao, sem componente.",
     "note": "LinearAgentSkillPane orfao, sem componente."
    }
@@ -100,21 +96,15 @@
     "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "src/reference/components/sidebar/LinearAgentSkillSetupPrompt.tsx (verbatim)",
+     "prompt com CLI check (loadOrcaCliAvailableOnPath via cli_install_status + orca no probe), geracao anti-race, Re-check revalida CLI+skill, dismiss, lazy dialog, modal/inline",
+     "src/lib/agent-skill-cli-prerequisite.ts (adapter; orca no AGENT_CLI_IDS Rust+TS)",
+     "4 testes prompt"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
-     "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
-     "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
-     "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
-     "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
-     "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
-     "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
-     "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
-    ],
+    "missing_behaviors": [],
     "notes": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES.",
     "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
    }
@@ -173,18 +163,14 @@
     "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:6055-6060"
+     "src/reference reminder-toast (verbatim)",
+     "linear-agent-skill-setup-reminder-toast.ts (primeira ativacao abre modal; toast Set up <=3x; dismiss; cleanup)",
+     "reminders tests"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
-     "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
-     "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
-     "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
-     "Limpa o toast ao desmontar a visualização modal"
-    ],
+    "missing_behaviors": [],
     "notes": "Lembretes/toasts do skill Linear ausentes.",
     "note": "Lembretes/toasts do skill Linear ausentes."
    }
@@ -224,16 +210,15 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/NonGitFolderDialog.tsx:1-92",
-     "src/components/sidebar/AddRepoDialog.tsx:57-80",
-     "src-tauri/src/lib.rs:278-290",
-     "src/components/sidebar/NonGitFolderDialog.parity.test.tsx:1-45"
+     "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim Orca)",
+     "src/components/sidebar/NonGitFolderDialog.tsx (adapter: controlled-props dialog; SSH/runtime via NonGitFolderModalHost)",
+     "NonGitFolderDialog.parity.test.tsx + NonGitFolderModalHost.parity.test.tsx"
     ],
     "backend": [
      "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
     ],
     "missing_behaviors": [
-     "Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker)"
+     "ramo SSH dedicado addRemote (Hydra roteia SSH via catalog_add_remote_repo)"
     ],
     "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
     "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
@@ -251,20 +236,15 @@
     "components/sidebar/track-nested-folder-open.ts:18"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/shared/nested-repo-telemetry.ts:26 — 'open_as_folder' definido; :170 buildNestedRepoImportActionTelemetry nunca chamado",
-     "src/shared/telemetry-event-registry.ts:110 — add_repo_nested_import_action registrado, sem emissor",
-     "src/store/slices/repos.ts:60-62 — scanNestedRepos/importNestedRepos expostos no store sem consumidor em *.tsx",
-     "src/store/repos/repo-add-actions.ts:88 — modal 'confirm-non-git-folder' sem renderer"
+     "src/reference/components/sidebar/complete-nested-folder-open.ts + track-nested-folder-open.ts (verbatim)",
+     "src/components/sidebar/complete-nested-folder-open.ts (adapter: telemetria, modal SSH/runtime, handoff local, guards)",
+     "complete-nested-folder-open.parity.test.ts (3 testes)",
+     "AddRepoDialog.tsx (bloco inline extraido para o adapter)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Rastreia telemetria de importação (add_repo_nested_import_action com action: 'open_as_folder')",
-     "Para pastas em host SSH: abre modal 'confirm-non-git-folder' repassando caminho, connectionId e runtimeEnvironmentId",
-     "Para pastas locais: invoca addNonGitFolder gerenciando estado de geração (generation) e fechando modal ao concluir",
-     "Trata erros capturados exibindo toast de erro se a geração do fluxo ainda for a corrente"
-    ],
+    "missing_behaviors": [],
     "notes": "Buscas: complete-nested-folder-open.ts, track-nested-folder-open.ts, addNonGitFolder caller, 'open_as_folder'. Sem fluxo de conclusão de pasta aninhada."
    }
   },
@@ -281,18 +261,15 @@
     "components/sidebar/OrcaYamlTrustDialog.tsx:199"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/i18n/locales/en.json:5237-5245"
+     "src/reference/components/sidebar/OrcaYamlTrustDialog.tsx (verbatim Orca)",
+     "src/components/sidebar/OrcaYamlTrustDialog.tsx (adapter: 4 tipos, titulo novo vs modificado, preview, Always trust, botoes)",
+     "OrcaYamlTrustDialog.parity.test.tsx",
+     "ui-slice-trust-actions.ts (markOrcaHookScriptConfirmed/markOrcaHookRepoAlwaysTrusted)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Diferencia quatro tipos de script: 'setup script', 'archive script', 'issue command' e 'VM recipe' com gatilhos explicativos",
-     "Adapta título e descrição para script novo vs script modificado desde última aprovação (previouslyApproved)",
-     "Exibe pré-visualização formatada do conteúdo do script em container monospace com rolagem",
-     "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
-     "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
-    ],
+    "missing_behaviors": [],
     "notes": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers.",
     "note": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers."
    }
@@ -560,16 +537,15 @@
     "components/sidebar/open-setup-script-settings.ts:25"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/settings/TerminalTccAttributionNotice.tsx:49-65 — primitivas openSettingsTarget/openSettingsPage/setSettingsSearchQuery existem e são usadas por outras superfícies"
+     "src/reference/components/sidebar/open-setup-script-settings.ts + src/reference/components/settings/repository-settings-targets.ts — verbatim Orca (pin src/reference/REVISION)",
+     "src/components/sidebar/open-setup-script-settings.ts — adapter: mesma sequência Orca (clear search → target pane:repo → open page), section-id via repo-section-ids",
+     "src/components/sidebar/WorktreeSidebar.tsx — consome settingsNavigationTarget pane:repo abrindo RepoSettingsDialog no sectionId (Hydra não tem pane repo no SettingsModal)",
+     "src/components/sidebar/open-setup-script-settings.parity.test.ts — ordem search→target→page + âncora"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
-     "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
-     "Abre a página de configurações (openSettingsPage())"
-    ],
+    "missing_behaviors": [],
     "notes": "Buscas: open-setup-script-settings.ts, openSetupScriptSettings, seção 'local commands'/localCommands no SettingsModal. Nenhuma função/seção equivalente."
    }
   },

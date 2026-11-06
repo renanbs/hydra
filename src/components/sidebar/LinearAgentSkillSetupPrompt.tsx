@@ -83,6 +83,11 @@ export function LinearAgentSkillSetupPrompt({
   const skill = useInstalledAgentSkillNames(LINEAR_AGENT_SKILL_NAMES, {
     enabled: linked && !localDismissed
   })
+  // D02c-004 Rosetta (Orca `refreshCliStatus`): the Orca CLI on PATH gates
+  // setup readiness alongside the skill. Generation + identity guarded like
+  // the skill refresh; a failed probe reads as unavailable, never as ready.
+  const [cliAvailable, setCliAvailable] = useState<boolean | null>(null)
+  const [cliLoading, setCliLoading] = useState(linked)
   const [rechecking, setRechecking] = useState(false)
 
   const refreshSkill = useCallback(async (): Promise<void> => {
@@ -101,7 +106,40 @@ export function LinearAgentSkillSetupPrompt({
     }
   }, [skill])
 
-  const missingSetup = linked && !localDismissed && !skill.loading && !skill.installed
+
+  const refreshCliStatus = useCallback(async (): Promise<void> => {
+    const identity = checkIdentityRef.current
+    const generation = ++checkGenerationRef.current
+    setCliLoading(true)
+    try {
+      const { loadOrcaCliAvailableOnPath } = await import('../../lib/agent-skill-cli-prerequisite')
+      const available = await loadOrcaCliAvailableOnPath()
+      if (checkIdentityRef.current !== identity || generation !== checkGenerationRef.current) {
+        return
+      }
+      setCliAvailable(available)
+    } catch {
+      if (checkIdentityRef.current === identity && generation === checkGenerationRef.current) {
+        setCliAvailable(false)
+      }
+    } finally {
+      if (checkIdentityRef.current === identity && generation === checkGenerationRef.current) {
+        setCliLoading(false)
+      }
+    }
+  }, [])
+
+  React.useEffect(() => {
+    void refreshCliStatus()
+  }, [refreshCliStatus])
+
+  const refreshAll = useCallback((): Promise<void> => {
+    return Promise.all([refreshSkill(), refreshCliStatus()]).then(() => undefined)
+  }, [refreshSkill, refreshCliStatus])
+
+
+  const missingSetup =
+    linked && !localDismissed && !cliLoading && !skill.loading && !(cliAvailable === true && skill.installed)
   const missingLabel = getLinearAgentSkillSetupMissingLabel(false, skill.installed)
   const toastTitle = getLinearAgentSkillSetupToastTitle(false, skill.installed)
   const toastDescription = getLinearAgentSkillSetupToastDescription(
@@ -177,7 +215,7 @@ export function LinearAgentSkillSetupPrompt({
           command={ORCA_LINEAR_SKILL_INSTALL_COMMAND}
           installed={skill.installed}
           loading={rechecking || skill.loading}
-          onRecheck={() => void refreshSkill()}
+          onRecheck={() => void refreshAll()}
           onOpenChange={(nextOpen) => {
             if (nextOpen) {
               setSetupDialogOpen(true)
@@ -241,7 +279,7 @@ export function LinearAgentSkillSetupPrompt({
           size="xs"
           className="gap-1"
           disabled={rechecking}
-          onClick={() => void refreshSkill()}
+          onClick={() => void refreshAll()}
         >
           <RefreshCw className={`size-3 ${rechecking ? 'animate-spin' : ''}`} />
           {translate('auto.components.sidebar.LinearAgentSkillSetupPrompt.recheck', 'Re-check')}
@@ -262,7 +300,7 @@ export function LinearAgentSkillSetupPrompt({
             command={ORCA_LINEAR_SKILL_INSTALL_COMMAND}
             installed={skill.installed}
             loading={rechecking || skill.loading}
-            onRecheck={() => void refreshSkill()}
+            onRecheck={() => void refreshAll()}
             onOpenChange={(nextOpen) => {
               if (!nextOpen) {
                 snoozeForSession()

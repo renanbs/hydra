@@ -24,6 +24,8 @@ type WorkspaceBoardHeaderProps = {
   onClose: () => void
   /** The board's status CRUD, wired to the store by the drawer. */
   statusActions: WorkspaceBoardStatusActions
+  syncTaskStatusFromWorkspaceBoard: boolean
+  onSyncTaskStatusFromWorkspaceBoardChange: (value: boolean) => void
   /**
    * The sidebar filter menu, rendered as a sibling of the settings menu. The
    * drawer supplies it so the board filters through the sidebar's own writers
@@ -50,6 +52,8 @@ export default function WorkspaceBoardHeader({
   onClose,
   statusActions,
   filterMenu,
+  syncTaskStatusFromWorkspaceBoard,
+  onSyncTaskStatusFromWorkspaceBoardChange,
 }: WorkspaceBoardHeaderProps): React.JSX.Element {
   return (
     <>
@@ -106,6 +110,8 @@ export default function WorkspaceBoardHeader({
           onMoveStatus={statusActions.onMoveStatus}
           onRemoveStatus={statusActions.onRemoveStatus}
           onAddStatus={statusActions.onAddStatus}
+          syncTaskStatusFromWorkspaceBoard={syncTaskStatusFromWorkspaceBoard}
+          onSyncTaskStatusFromWorkspaceBoardChange={onSyncTaskStatusFromWorkspaceBoardChange}
         />
         <Button
           variant="ghost"

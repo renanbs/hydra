@@ -1040,12 +1040,14 @@ async fn save_worktree_metadata(
     linked_pr: Option<i64>,
     linked_linear_issue: Option<String>,
     linked_jira_issue: Option<String>,
+    execution_host_id: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
-        db.save_worktree_metadata(
+        db.save_worktree_metadata_for_host(
             &worktree_path,
+            execution_host_id.as_deref(),
             comment.as_deref(),
             linked_issue,
             linked_pr,

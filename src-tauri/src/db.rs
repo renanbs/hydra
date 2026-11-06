@@ -86,6 +86,9 @@ pub struct WorktreeMetadataRecord {
     /// Orca Jira-linked metadata (issue key or issue URL). Free text: the Jira
     /// provider projection resolves the title when a site is configured.
     pub linked_jira_issue: Option<String>,
+    /// D04a-098: owner stamp. Two hosts can hold the same absolute path;
+    /// `'local'` for rows written before the column existed.
+    pub execution_host_id: Option<String>,
     pub updated_at: i64,
 }
 
@@ -758,6 +761,7 @@ impl DatabaseManager {
                  linked_pr INTEGER,
                  linked_linear_issue TEXT,
                  linked_jira_issue TEXT,
+                 execution_host_id TEXT NOT NULL DEFAULT 'local',
                  updated_at INTEGER NOT NULL
              );
              CREATE TABLE IF NOT EXISTS workspace_sleep_state (
@@ -783,7 +787,10 @@ impl DatabaseManager {
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_issue INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_pr INTEGER", params![]);
         let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_linear_issue TEXT", params![]);
-        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN linked_jira_issue TEXT", params![]);
+        // D04a-098: host-qualified metadata. Two hosts can hold the same
+        // absolute path; without the owner stamp they share one row. Existing
+        // rows read as `'local'` via the `COALESCE` in every select below.
+        let _ = conn.execute("ALTER TABLE worktree_metadata ADD COLUMN execution_host_id TEXT NOT NULL DEFAULT 'local'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN project_path TEXT NOT NULL DEFAULT ''", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN branch TEXT NOT NULL DEFAULT 'main'", params![]);
         let _ = conn.execute("ALTER TABLE sessions ADD COLUMN agent_name TEXT NOT NULL DEFAULT 'bash'", params![]);
@@ -1275,7 +1282,7 @@ impl DatabaseManager {
     pub fn get_worktree_metadata(&self, worktree_path: &str) -> Result<Option<WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue FROM worktree_metadata WHERE worktree_path = ?1")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, COALESCE(execution_host_id, 'local') FROM worktree_metadata WHERE worktree_path = ?1")
             .map_err(|e| format!("Error preparing worktree_metadata select: {e}"))?;
         let mut rows = stmt.query(params![worktree_path]).map_err(|e| e.to_string())?;
         if let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1295,6 +1302,7 @@ impl DatabaseManager {
                 linked_pr: row.get(12).ok().flatten(),
                 linked_linear_issue: row.get(13).ok().flatten(),
                 linked_jira_issue: row.get(14).ok().flatten(),
+                execution_host_id: row.get(15).ok().flatten(),
             }))
         } else {
             Ok(None)
@@ -1304,7 +1312,7 @@ impl DatabaseManager {
     pub fn get_all_worktree_metadata(&self) -> Result<std::collections::HashMap<String, WorktreeMetadataRecord>, String> {
         let conn = self.conn.lock();
         let mut stmt = conn
-            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue FROM worktree_metadata")
+            .prepare("SELECT worktree_path, display_name, first_agent_message_rename_error, status, created_at, created_with_agent, is_pinned, is_unread, updated_at, provenance_kind, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, COALESCE(execution_host_id, 'local') FROM worktree_metadata")
             .map_err(|e| format!("Error preparing worktree_metadata select all: {e}"))?;
         let rows = stmt
             .query_map(params![], |row| {
@@ -1324,6 +1332,7 @@ impl DatabaseManager {
                     linked_pr: row.get(12).ok().flatten(),
                     linked_linear_issue: row.get(13).ok().flatten(),
                     linked_jira_issue: row.get(14).ok().flatten(),
+                    execution_host_id: row.get(15).ok().flatten(),
                 })
             })
             .map_err(|e| format!("Query error: {e}"))?;
@@ -1358,20 +1367,45 @@ impl DatabaseManager {
         linked_linear_issue: Option<&str>,
         linked_jira_issue: Option<&str>,
     ) -> Result<(), String> {
+        self.save_worktree_metadata_for_host(
+            worktree_path,
+            None,
+            comment,
+            linked_issue,
+            linked_pr,
+            linked_linear_issue,
+            linked_jira_issue,
+        )
+    }
+
+    /// D04a-098: host-qualified save. `None`/empty host reads as `'local'`,
+    /// so legacy callers keep sharing the pre-migration row.
+    pub fn save_worktree_metadata_for_host(
+        &self,
+        worktree_path: &str,
+        execution_host_id: Option<&str>,
+        comment: Option<&str>,
+        linked_issue: Option<i64>,
+        linked_pr: Option<i64>,
+        linked_linear_issue: Option<&str>,
+        linked_jira_issue: Option<&str>,
+    ) -> Result<(), String> {
         let conn = self.conn.lock();
         let now = chrono::Utc::now().timestamp_millis();
+        let host = execution_host_id.filter(|h| !h.is_empty()).unwrap_or("local");
         conn.execute(
             "INSERT INTO worktree_metadata
-                (worktree_path, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                (worktree_path, execution_host_id, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
              ON CONFLICT(worktree_path) DO UPDATE SET
+                execution_host_id = excluded.execution_host_id,
                 comment = excluded.comment,
                 linked_issue = excluded.linked_issue,
                 linked_pr = excluded.linked_pr,
                 linked_linear_issue = excluded.linked_linear_issue,
                 linked_jira_issue = excluded.linked_jira_issue,
                 updated_at = excluded.updated_at",
-            params![worktree_path, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, now],
+            params![worktree_path, host, comment, linked_issue, linked_pr, linked_linear_issue, linked_jira_issue, now],
         )
         .map_err(|e| format!("Error saving worktree metadata: {e}"))?;
         Ok(())
@@ -1704,9 +1738,10 @@ impl DatabaseManager {
                  comment TEXT,
                  linked_issue INTEGER,
                  linked_pr INTEGER,
-                 linked_linear_issue TEXT,
-                 linked_jira_issue TEXT,
-                 updated_at INTEGER NOT NULL
+                linked_linear_issue TEXT,
+                linked_jira_issue TEXT,
+                execution_host_id TEXT NOT NULL DEFAULT 'local',
+                updated_at INTEGER NOT NULL
              );
              CREATE TABLE IF NOT EXISTS workspace_sleep_state (
                  worktree_path TEXT PRIMARY KEY,

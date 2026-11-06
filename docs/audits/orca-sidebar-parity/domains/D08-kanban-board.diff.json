@@ -352,21 +352,16 @@
     "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:112"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:43",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:51-64",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:72-80",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:86-101",
-     "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:92-100",
-     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:138-162"
+     "src/reference/components/sidebar/WorkspaceKanbanSettingsMenu.tsx (verbatim Orca, pin src/reference/REVISION)",
+     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx (adapter: switch Sync board and issue status + CRUD)",
+     "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx (switch renderizado)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Switch 'Sync board and issue status' (deliberately absent: Hydra has no Linear sync engine)"
-    ],
-    "notes": "Non-modal settings dropdown, Board settings tooltip, nested popover preservation, status list and inline blur/Enter rename exist; only the task-sync switch is absent.",
-    "note": "Non-modal settings dropdown, Board settings tooltip, nested popover preservation, status list and inline blur/Enter rename exist; only the task-sync switch is absent."
+    "missing_behaviors": [],
+    "notes": "Settings dropdown with the task-sync switch wired to the live Linear sync engine; pref persists via uiPrefsBridge.",
+    "note": "Settings dropdown with the task-sync switch wired to the live Linear sync engine; pref persists via uiPrefsBridge."
    },
    "par": [
     "PAR-14"
@@ -1050,22 +1045,15 @@
     "components/sidebar/use-workspace-kanban-worktree-actions.ts:183"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
-     "src/components/sidebar/WorktreeSidebar.tsx:471-492",
-     "src/App.tsx:3517-3528"
+     "src/reference/components/sidebar/use-workspace-kanban-worktree-actions.ts (verbatim Orca, pin src/reference/REVISION)",
+     "WorkspaceBoardDrawer: move qualificado por host, pinWorktrees em lote, sortBy manual, maybeSyncTaskStatuses, recordFeatureInteraction workspace-board-actions"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId",
-     "Pin em lote do conjunto selecionado (pinWorktrees)",
-     "Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board",
-     "Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses)",
-     "Telemetria workspace-board-actions"
-    ],
-    "notes": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria.",
-    "note": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria."
+    "missing_behaviors": [],
+    "notes": "Board actions wired: host-qualified moves, batch pin, manual-sort switch, Linear sync hook, telemetry.",
+    "note": "Board actions wired: host-qualified moves, batch pin, manual-sort switch, Linear sync hook, telemetry."
    },
    "par": [
     "PAR-14"
@@ -1081,21 +1069,16 @@
     "components/sidebar/use-workspace-board-task-status-sync.ts:98"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/runtime/runtime-linear-client.ts:57",
-     "src/runtime/runtime-linear-project-client.ts:220",
-     "src/components/task-page-github-status-actions.ts:5"
+     "src/reference/components/sidebar/use-workspace-board-task-status-sync.ts (verbatim)",
+     "use-workspace-board-task-status-sync-live.ts (adapter: request + engine + toasts skipped/failed/success)",
+     "Preferencia syncTaskStatusFromWorkspaceBoard lida do store"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição",
-     "Sincroniza de forma assíncrona em background",
-     "Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados)",
-     "Toast 'Task status sync failed' em falha de mutação/erro do provedor",
-     "Detalha contadores de atualizados/ignorados/falhados"
-    ],
-    "notes": "Passo 1: use-workspace-board-task-status-sync ausente (0 hits); strings 'Task status sync skipped/failed' ausentes (0 hits). Passo 4: existe integração Linear de leitura (runtime-linear-project-client.ts:220 linearTeamStates; runtime-linear-client.ts:57 só o tipo LinearMutationResult) mas nenhuma mutação de issue para sync de board; task-page-github-status-actions.ts:5 trata mutações de GitHub da task page. Preferência existe e nunca é lida (constants.ts:289, ui-slice-hydration-actions.ts:203). Não localizado."
+    "missing_behaviors": [],
+    "notes": "Hook runs the engine end to end with runtime-owner settings and toast reporting.",
+    "note": "Hook runs the engine end to end with runtime-owner settings and toast reporting."
    },
    "par": [
     "PAR-14"
@@ -1111,22 +1094,17 @@
     "components/sidebar/workspace-board-task-status-sync.ts:241"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/runtime/runtime-linear-client.ts:202",
-     "src/runtime/runtime-linear-project-client.ts:220"
+     "src/reference/components/sidebar/workspace-board-task-status-sync.ts (verbatim)",
+     "workspace-board-task-status-sync-engine.ts (adapter: fila por worktree, owner settings, team states, match, already-in-state, local-first, agregado)",
+     "workspace-board-task-status-sync-engine.parity.test.ts (5 testes)",
+     "src/runtime/runtime-linear-issue-mutations.ts (linear.getIssue/linear.updateIssue RPC + bridge)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Fila por worktree (enqueueWorktreeSync) para evitar corridas",
-     "Resolve configurações de Linear por dono de runtime do worktree",
-     "Lê issue e workflow states do time Linear",
-     "Correspondência normalizada case-insensitive entre label do board e nome do estado",
-     "Ignora se a issue já está no estado destino",
-     "Aborta se o status local mudar antes da resposta (local-first)",
-     "Atualiza a issue e agrega resultados em lote"
-    ],
-    "notes": "Passo 1/3: syncWorkspaceBoardTaskStatuses/enqueueWorktreeSync/normalizeStateName ausentes (0 hits). Passo 4: não existe comando/mutação de estado de issue Linear no backend nem em runtime/** (grep linearUpdateIssue/updateIssueState = 0; src-tauri/src sem 'linear'). Sem board e sem mutação, o motor não existe. Não localizado."
+    "missing_behaviors": [],
+    "notes": "Sync engine live with per-worktree queue, normalized matching, and batched results.",
+    "note": "Sync engine live with per-worktree queue, normalized matching, and batched results."
    },
    "par": [
     "PAR-14"

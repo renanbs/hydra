@@ -442,15 +442,13 @@
    "components/sidebar/SidebarTaskNavButton.tsx:79-120"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "refreshPreflightStatus() na montagem do botão de tarefas",
-    "checkLinearConnection() e normalização de visibleTaskProviders",
-    "restauração do provedor default considerando o CLI glab e a conexão Linear",
-    "resolveVisibleTaskProvider"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarTaskNavButton.tsx — resolveVisibleSidebarTaskProviders (normalize + restoreAvailableDefault + resolveVisible) com availability { gitlabInstalled via preflight glab, linearConnected }; prefetch no hover/focus",
+    "src/shared/task-providers.ts — normalizeVisibleTaskProviders/restoreAvailableDefaultTaskProvider/resolveVisibleTaskProvider"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "Busca em 5 passos: (1-2) sem SidebarTaskNavButton; (3) existem os slices src/store/slices/preflight.ts e src/store/slices/linear/** e o comando check_preflight_tools_cmd (src-tauri/src/lib.rs:76), porém nenhum caminho do sidebar os consome (o único consumidor de check_preflight_tools_cmd é src/components/Landing.tsx:236); (4) sem checkLinearConnection no renderer; (5) SidebarNav sem provedores."
   },
   "domain": "D01-shell-chrome"
@@ -543,18 +541,14 @@
    "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/store/slices/ui/ui-slice-view-actions.ts:95",
-    "src/components/settings/mobile-settings-search.ts:52-56"
+    "src/components/sidebar/SidebarNav.tsx — botão Smartphone Orca Mobile condicionado a showMobileButton, badge New até dismiss, dismiss+openMobilePage no click, Hide from sidebar via context menu",
+    "src/components/sidebar/mobile-sidebar-onboarding-badge.ts — Rosetta com persistência localStorage"
    ],
    "backend": [],
    "missing_behaviors": [
-    "botão Smartphone/'Orca Mobile' condicionado a settings.showMobileButton",
-    "badge 'New' até a primeira visualização (useMobileSidebarOnboardingBadge)",
-    "botão inline EyeOff 'Hide from sidebar' após pareamento",
-    "dismiss do badge + openMobilePage()",
-    "ocultar via updateSettings({ showMobileButton: false })"
+    "botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados)"
    ],
    "notes": "Busca em 5 passos: (1) 'mobile-sidebar-onboarding-badge.ts' -> inexistente em src (0 hits); (2) label 'Orca Mobile' -> só strings de settings search (mobile-settings-search.ts:52-56); (3) openMobilePage existe em ui-slice-view-actions.ts:95 mas nenhum .tsx consome; (4) há pareamento (src/components/PairingModal.tsx + comando get_pairing_qr em src-tauri/src/lib.rs) sem entrada de sidebar; (5) census-v3 static_sidebar: 'Orca MobileNew' [8,145,264,32] no Orca. Escape do runtime coberto por esta linha."
   },
@@ -862,17 +856,13 @@
    "components/sidebar/SidebarSettingsHelpMenu.tsx:330-345"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/status-bar/UpdateStatusSegment.tsx:8-15"
+    "src/components/sidebar/SidebarSettingsHelpMenu.tsx — Check for Updates com captura Shift/Cmd no pointerdown, getUpdateCheckClickOptions (stable/prerelease/perf), spinner Loader2 + disable durante checking/downloading",
+    "src/lib/update-check-click-options.ts"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "item 'Check for Updates' com captura de Shift/Cmd no pointerdown",
-    "getUpdateCheckClickOptions (stable / includePrerelease / includePerfPrerelease)",
-    "window.api.updater.check()",
-    "spinner Loader2 e disable durante checking/downloading"
-   ],
+   "missing_behaviors": [],
    "notes": "Busca em 5 passos: (1-2) label 'Check for Updates' -> 0 em src/components/sidebar; (3) nenhum updater no renderer — o UpdateStatusSegment do status bar é um stub que retorna null (src/components/status-bar/UpdateStatusSegment.tsx:8-15); (4) BACKEND AUSENTE: não há tauri-plugin-updater em src-tauri/Cargo.toml:21-41 nem comando de update em src-tauri/src/lib.rs; (5) sem menu Help. Contrato Tauri necessário: ver gaps.md."
   },
   "domain": "D01-shell-chrome"
@@ -984,15 +974,13 @@
    "components/sidebar/SidebarFeedbackDialog.tsx:358-373"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "window.api.feedback.submit (evita CORS no Electron)",
-    "toast de aviso quando imagesDelivered === false",
-    "toast de sucesso + reset + close",
-    "toast de erro de rede/IPC"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/SidebarFeedbackDialog.tsx — submit via bridge, toast warning imagesDelivered===false, toast sucesso + reset + close, toast erro",
+    "src/lib/sidebar-desktop-contracts.ts — submitSidebarFeedback"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "Busca em 5 passos: (1-2) 'feedback.submit' -> 0; (3) nenhuma ação de submissão; (4) BACKEND AUSENTE: sem comando de feedback em src-tauri/src/lib.rs; (5) toasts disponíveis (sonner) sem produtor. Contrato Tauri necessário: ver gaps.md."
   },
   "domain": "D01-shell-chrome"
@@ -1449,18 +1437,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:71-90"
+    "src/components/sidebar/AddRepoDialog.tsx:handleClone — local via cloneRepository/clone_abort, SSH via cloneSshRepository, runtime via clonePairedServerRepository (repo.clone E2EE); toast Repository cloned; notifyProjectAdded com executionHostId + source clone_url",
+    "src/store/paired-server-repo-bridge.ts",
+    "src/store/ssh-remote-bridge.ts"
    ],
    "backend": [
     "invoke('clone_project') -> src-tauri/src/lib.rs:445"
    ],
    "missing_behaviors": [
-    "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real)",
-    "Roteamento SSH (cloneRemote) e runtime (runtimeRpc repo.clone)",
-    "Upsert no store com runtimeEnvironmentId/sshConnectionId",
-    "Toast 'Repository cloned'",
-    "Atualização de worktrees + onGitRepoReady('clone_url')",
-    "extractIpcErrorMessage"
+    "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc)"
    ],
    "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
   },
@@ -1539,18 +1524,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:92-111"
+    "src/components/sidebar/AddRepoDialog.tsx:handleCreate — local/SSH/runtime com toasts de dedup, atualização de worktrees + onGitRepoReady, pickDirectory nativo",
+    "gen/mount refs contra submissões obsoletas"
    ],
    "backend": [
     "invoke('create_project') -> src-tauri/src/lib.rs:428"
    ],
    "missing_behaviors": [
-    "pickDirectory nativo para escolher pasta pai",
-    "Criação SSH (createRemote) e runtime (runtimeRpc repo.create)",
-    "Toasts de dedup 'Project already added' / 'Project created'",
-    "Atualização autoritativa de worktrees + onGitRepoReady",
-    "Ativação de workspace sintético para projetos de pasta",
-    "Ref de geração/montagem para submissões obsoletas"
+    "ativação de workspace sintético para pasta — via composer, não no create"
    ],
    "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
   },
@@ -1817,15 +1798,13 @@
    "components/sidebar/add-repo-store-upsert.ts:28"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Captura e injeta executionHostId no objeto de repositório (SSH connection ID ou runtime environment ID)",
-    "Verifica duplicidade baseada em getRepoHostIdentity",
-    "Gera projeção compatível de projetos e configurações de host com projectHostSetupProjectionFromRepos",
-    "Atualiza atomicamente as fatias repos, projects e projectHostSetups no store"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/add-repo-store-upsert.ts — upsertAddedRepoWithProjectHostSetup: captura executionHostId, dedup por getRepoHostIdentity, projeção projectHostSetupProjectionFromRepos, update atômico repos/projects/projectHostSetups",
+    "src/App.tsx:3894 — wired no add"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "upsertAddedRepoWithProjectHostSetup inexistente; o fluxo wired (App.tsx:4029-4052) apenas relê o catálogo (projects/groups/folderWorkspaces), sem repos/projectHostSetups/host-identity dedup. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1857,18 +1836,13 @@
    "components/sidebar/folder-workspace-composer-submit.ts:47"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Gera nome automático baseado na tarefa vinculada ou fallback '<grupo> workspace'",
-    "Executa preflight de confiança do agente (preflightAgentTrust) para caminhos de pasta",
-    "Planeja inicialização de agente TUI ou sessão estruturada de native chat (planAgentSessionLaunch)",
-    "Cria o workspace de pasta com conexão SSH e tarefa vinculada preservadas",
-    "Marca o workspace para auto-renomeação pela primeira mensagem do agente se aplicável",
-    "Ativa e revela o novo workspace de pasta via activateAndRevealFolderWorkspace",
-    "Entrega prompts de rascunho (draft) ou follow-up no terminal do agente"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-composer-submit.ts — Rosetta: nome auto por tarefa, preflightAgentTrust, planAgentSessionLaunch, SSH + tarefa preservada, auto-rename, activateAndReveal, draft/follow-up no terminal",
+    "src/components/sidebar/folder-workspace-composer-submit.parity.test.ts"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "submitFolderWorkspaceCreate inexistente; createFolderWorkspace do store (folder-workspace-mutations.ts:62) nunca é chamado por componente (grep em src/components = 0). Sem compositor de workspace de pasta. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1882,14 +1856,13 @@
    "components/sidebar/folder-workspace-agent-startup.ts:34"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Determina plataforma correta ('win32' vs 'linux') para caminhos remotos SSH e caminhos WSL UNC",
-    "Resolve o rascunho de prompt vinculado à tarefa (resolveFolderWorkspaceLaunchDraft)",
-    "Monta plano de inicialização de agente com suporte a draft launch e escape adequado para Windows/POSIX"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-agent-startup.ts — plataforma win32/linux, resolveFolderWorkspaceLaunchDraft, plano com draft launch + quoting Windows/POSIX",
+    "src/components/sidebar/folder-workspace-agent-startup.parity.test.ts"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "folder-workspace-agent-startup/planAgentSessionLaunch para folder workspaces inexistentes no fluxo wired; sem compositor. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1924,15 +1897,13 @@
    "components/sidebar/folder-workspace-composer-helpers.ts:88"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Filtra repositórios pertencentes à pasta pai ou ao grupo de projetos garantindo mesmo executionHostId",
-    "Converte itens do GitHub, GitLab e Linear em estruturas padronizadas LinkedWorkItemSummary",
-    "Gera seleção inteligente de nome do workspace com getSmartNameSelection",
-    "Fornece label estável 'Create workspace' para o botão de ação primária"
+   "status": "parity",
+   "evidence": [
+    "src/components/sidebar/folder-workspace-composer-helpers.ts — filtro por pasta/grupo com mesmo executionHostId, LinkedWorkItemSummary GitHub/GitLab/Linear, getSmartNameSelection, label Create workspace",
+    "src/components/sidebar/folder-workspace-composer-helpers.parity.test.ts"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "folder-workspace-composer-helpers (getFolderSourceRepos/getSmartNameSelection/'Create workspace') inexistentes; sem compositor de pasta. Não localizado."
   },
   "domain": "D02a-repo-add-wizard"
@@ -2231,21 +2202,19 @@
    "components/sidebar/AddRemoteHostDialog.tsx:246-298"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "partial",
    "evidence": [
-    "src/i18n/locales/en.json:6171-6174"
+    "src/reference/components/sidebar/AddRemoteHostDialog.tsx (verbatim)",
+    "src/components/sidebar/AddRemoteHostDialog.tsx (adapter: valida campos/link/loopback, bridge E2EE verifyAndAddRuntimeEnvironmentFromPairingCode, list + store, toast Remote server added, fecha)",
+    "src/lib/remote-pairing-copy.ts (translateRemotePairingFailureDescription: 6 falhas nomeadas com endpoint)",
+    "src/store/runtime-environment-bridge.ts (E2EE live + persist + erro traduzido)"
    ],
    "backend": [
     "window.api.runtimeEnvironments.verifyAndAddFromPairingCode / .list (preload Electron) -> sem #[tauri::command] equivalente em src-tauri/src/** (grep = 0); nenhum invoke() no frontend",
     "no store real: runtimeEnvironments = null (src/store/index.ts:428) e setRuntimeEnvironments = () => {} (no-op, src/store/index.ts:463)"
    ],
    "missing_behaviors": [
-    "Valida se nome e código de pareamento foram preenchidos.",
-    "Valida se o link é válido e se a proteção de loopback foi respeitada.",
-    "Invoca window.api.runtimeEnvironments.verifyAndAddFromPairingCode({ name, pairingCode, allowLoopback }).",
-    "Em caso de erro de pareamento, emite toast explicativo via translateRemotePairingFailureDescription.",
-    "Em caso de sucesso, consulta lista atualizada com window.api.runtimeEnvironments.list() e atualiza store via setRuntimeEnvironments.",
-    "Dispara atualização de snapshots de status via readRuntimeHostStatusSnapshots(), emite toast 'Remote server added.' e fecha o dialog."
+    "readRuntimeHostStatusSnapshots() pos-sucesso (store tem a acao; dialog nao chama — proxima: wire no adapter)"
    ],
    "notes": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes.",
    "note": "verifyAndAddFromPairingCode/readRuntimeHostStatusSnapshots ausentes."
@@ -2307,19 +2276,13 @@
    "components/sidebar/host-header-menu-items.ts:50"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/HostSectionHeaderMenu.tsx:99-117",
-    "src/App.tsx:1396-1405"
+    "src/reference/components/sidebar/HostSectionHeaderMenu.tsx (verbatim)",
+    "src/components/sidebar/HostSectionHeaderMenu.tsx (adapter: Manage host para local/SSH/runtime via hydra:open-settings; runtime com environmentId pre-selecionado)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Item presente para todos os tipos de host (local, SSH, runtime).",
-    "Para host SSH, abre configurações no painel 'ssh'.",
-    "Para host Runtime, abre configurações no painel 'servers' com o environmentId selecionado.",
-    "Para host local, abre configurações no painel 'general'.",
-    "Executa openSettingsPage() para exibir a página de preferências."
-   ],
+   "missing_behaviors": [],
    "notes": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general).",
    "note": "'Manage host…' existe para host SSH (emite 'hydra:open-settings' section ssh, consumido no App). Faltam os ramos runtime (servers, environmentId) e local (general)."
   },
@@ -2355,17 +2318,14 @@
    "components/sidebar/HostRemoveDialog.tsx:88-95"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/HostRemoveDialog.tsx:18-55",
-    "src/components/sidebar/ssh-host-remove-resolution.ts:29-56"
+    "src/reference/components/sidebar/host-rename-remove.ts + HostRemoveDialog.tsx (verbatim)",
+    "src/components/sidebar/host-rename-remove.ts (resolveHostRemoval: ssh/runtime/local)",
+    "src/components/sidebar/HostRemoveDialog.tsx (runtime orienta + Open settings; SSH modal inline completo)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "resolveHostRemoval identifica o tipo: SSH retorna { kind: 'ssh', targetId }, Runtime retorna { kind: 'runtime', environmentId } e Local retorna null (ação de remoção não oferecida para local).",
-    "Para host Runtime, o dialog orienta o usuário e oferece botão 'Open settings' que deep-linka para o painel de servidores nas configurações.",
-    "Para host SSH, abre o modal completo de remoção inline com opção de limpeza de workspaces."
-   ],
+   "missing_behaviors": [],
    "notes": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local.",
    "note": "Remocao existe para SSH (targetId); sem resolucao por tipo de host e sem o ramo runtime com 'Open settings' nem local."
   },
@@ -2752,19 +2712,15 @@
    "components/sidebar/LinearAgentSkillSetupDialog.tsx:157"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:11275-11280"
+    "src/reference/components/sidebar/LinearAgentSkillSetupDialog.tsx + AgentSkillSetupPanel + OnboardingInlineCommandTerminal + agent-skill-terminal-snapshot (verbatim)",
+    "src/components/sidebar/InlineCommandTerminal.tsx (adapter: session Hydra + TerminalDrawer + auto-submit + cleanup)",
+    "LinearAgentSkillSetupDialog.tsx (terminal embutido 240px + copy/run fallback; success/dismiss/close)",
+    "5 testes dialog"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Estado de sucesso (showSuccess): exibe título 'Linear ticket access is ready', descrição contextual, pílula de status conectada (IntegrationStatusPill tone='connected') e botão 'Done'",
-    "Estado de instalação: exibe prompt descritivo com ícone Info ('Enable agents to read and edit the attached Linear ticket.')",
-    "Embute painel AgentSkillSetupPanel com terminal embutido (terminalHeightPx: 240), comando de instalação/atualização e botão 'Install CLI & Skill'",
-    "Executa verificação e pré-instalação do CLI do Orca (isOrcaCliAvailableOnPath, AGENT_SKILL_CLI_PREREQUISITE_NOTICE)",
-    "Botão discreto 'Don't show again' com ícone EyeOff e tooltip no canto superior direito alinhado ao botão de fechar para dispensa permanente",
-    "Permite fechamento via botão 'Done', botão de fechar, tecla Escape ou clique fora sem dispensa permanente se já em estado de sucesso"
-   ],
+   "missing_behaviors": [],
    "notes": "LinearAgentSkillPane orfao, sem componente.",
    "note": "LinearAgentSkillPane orfao, sem componente."
   },
@@ -2782,21 +2738,15 @@
    "components/sidebar/LinearAgentSkillSetupPrompt.tsx:352"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:6055-6060"
+    "src/reference/components/sidebar/LinearAgentSkillSetupPrompt.tsx (verbatim)",
+    "prompt com CLI check (loadOrcaCliAvailableOnPath via cli_install_status + orca no probe), geracao anti-race, Re-check revalida CLI+skill, dismiss, lazy dialog, modal/inline",
+    "src/lib/agent-skill-cli-prerequisite.ts (adapter; orca no AGENT_CLI_IDS Rust+TS)",
+    "4 testes prompt"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Detecta status de instalação do CLI via window.api.cli.getInstallStatus ou getWslInstallStatus para WSL",
-    "Consulta skills globais instaladas via hook useInstalledAgentSkillNames com LINEAR_AGENT_SKILL_NAMES",
-    "Suporta verificação manual via botão 'Re-check' com ícone RefreshCw revalidando CLI e skills",
-    "Gerencia concorrência de verificações com requestGeneration e setupCheckIdentity para descartar respostas defasadas de CLI/runtime",
-    "Dispensa permanente salva '1' no localStorage sob chave de storage específica do runtime e fecha toasts ativos",
-    "Monta lazy dialog LinearAgentSkillSetupDialog sob demanda via lazyWithRetry",
-    "Modo inline renderiza card compacto com ícone TicketCheck, cópia contextual de runtime e botões 'Set up' e 'Re-check'",
-    "Gera comandos de instalação e atualização dinâmicos via buildSkillCommandForRuntime e getLinearAgentSkillUpdateCommand"
-   ],
+   "missing_behaviors": [],
    "notes": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES.",
    "note": "LinearAgentSkillSetupPrompt orfao; useInstalledAgentSkillNames segue sem caller com LINEAR_AGENT_SKILL_NAMES."
   },
@@ -2858,18 +2808,14 @@
    "components/sidebar/linear-agent-skill-setup-reminder-toast.ts:134"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:6055-6060"
+    "src/reference reminder-toast (verbatim)",
+    "linear-agent-skill-setup-reminder-toast.ts (primeira ativacao abre modal; toast Set up <=3x; dismiss; cleanup)",
+    "reminders tests"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Abre automaticamente o modal de setup na primeira ativação elegível do runtime",
-    "Dispara toast de aviso com botão 'Set up' em ativações subsequentes caso o modal anterior tenha sido fechado informalmente",
-    "Limita os lembretes via toast a LINEAR_AGENT_SKILL_SETUP_TOAST_LIMIT (máximo 3 vezes)",
-    "Descarta o toast ativo e atualiza estado ao dispensar permanentemente ou ao concluir a instalação",
-    "Limpa o toast ao desmontar a visualização modal"
-   ],
+   "missing_behaviors": [],
    "notes": "Lembretes/toasts do skill Linear ausentes.",
    "note": "Lembretes/toasts do skill Linear ausentes."
   },
@@ -2911,16 +2857,15 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/NonGitFolderDialog.tsx:1-92",
-    "src/components/sidebar/AddRepoDialog.tsx:57-80",
-    "src-tauri/src/lib.rs:278-290",
-    "src/components/sidebar/NonGitFolderDialog.parity.test.tsx:1-45"
+    "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim Orca)",
+    "src/components/sidebar/NonGitFolderDialog.tsx (adapter: controlled-props dialog; SSH/runtime via NonGitFolderModalHost)",
+    "NonGitFolderDialog.parity.test.tsx + NonGitFolderModalHost.parity.test.tsx"
    ],
    "backend": [
     "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
    ],
    "missing_behaviors": [
-    "Ramificação de host SSH/runtime ao confirmar (Hydra só oferece o fluxo local do picker)"
+    "ramo SSH dedicado addRemote (Hydra roteia SSH via catalog_add_remote_repo)"
    ],
    "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
    "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
@@ -2939,20 +2884,15 @@
    "components/sidebar/track-nested-folder-open.ts:18"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/shared/nested-repo-telemetry.ts:26 — 'open_as_folder' definido; :170 buildNestedRepoImportActionTelemetry nunca chamado",
-    "src/shared/telemetry-event-registry.ts:110 — add_repo_nested_import_action registrado, sem emissor",
-    "src/store/slices/repos.ts:60-62 — scanNestedRepos/importNestedRepos expostos no store sem consumidor em *.tsx",
-    "src/store/repos/repo-add-actions.ts:88 — modal 'confirm-non-git-folder' sem renderer"
+    "src/reference/components/sidebar/complete-nested-folder-open.ts + track-nested-folder-open.ts (verbatim)",
+    "src/components/sidebar/complete-nested-folder-open.ts (adapter: telemetria, modal SSH/runtime, handoff local, guards)",
+    "complete-nested-folder-open.parity.test.ts (3 testes)",
+    "AddRepoDialog.tsx (bloco inline extraido para o adapter)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Rastreia telemetria de importação (add_repo_nested_import_action com action: 'open_as_folder')",
-    "Para pastas em host SSH: abre modal 'confirm-non-git-folder' repassando caminho, connectionId e runtimeEnvironmentId",
-    "Para pastas locais: invoca addNonGitFolder gerenciando estado de geração (generation) e fechando modal ao concluir",
-    "Trata erros capturados exibindo toast de erro se a geração do fluxo ainda for a corrente"
-   ],
+   "missing_behaviors": [],
    "notes": "Buscas: complete-nested-folder-open.ts, track-nested-folder-open.ts, addNonGitFolder caller, 'open_as_folder'. Sem fluxo de conclusão de pasta aninhada."
   },
   "domain": "D02c-project-groups-scripts"
@@ -2970,18 +2910,15 @@
    "components/sidebar/OrcaYamlTrustDialog.tsx:199"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/i18n/locales/en.json:5237-5245"
+    "src/reference/components/sidebar/OrcaYamlTrustDialog.tsx (verbatim Orca)",
+    "src/components/sidebar/OrcaYamlTrustDialog.tsx (adapter: 4 tipos, titulo novo vs modificado, preview, Always trust, botoes)",
+    "OrcaYamlTrustDialog.parity.test.tsx",
+    "ui-slice-trust-actions.ts (markOrcaHookScriptConfirmed/markOrcaHookRepoAlwaysTrusted)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Diferencia quatro tipos de script: 'setup script', 'archive script', 'issue command' e 'VM recipe' com gatilhos explicativos",
-    "Adapta título e descrição para script novo vs script modificado desde última aprovação (previouslyApproved)",
-    "Exibe pré-visualização formatada do conteúdo do script em container monospace com rolagem",
-    "Opção de checkbox 'Always trust orca.yaml in <repo>' com estilo destacado para confiar permanentemente no repositório",
-    "Ações no rodapé: 'Don't run' (cancela/ignora) e 'Run hooks' (executa e registra aprovação pontual ou permanente)"
-   ],
+   "missing_behaviors": [],
    "notes": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers.",
    "note": "OrcaYamlTrustDialog orfao; markOrcaHookScriptConfirmed/AlwaysTrusted seguem sem callers."
   },
@@ -3261,16 +3198,15 @@
    "components/sidebar/open-setup-script-settings.ts:25"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/settings/TerminalTccAttributionNotice.tsx:49-65 — primitivas openSettingsTarget/openSettingsPage/setSettingsSearchQuery existem e são usadas por outras superfícies"
+    "src/reference/components/sidebar/open-setup-script-settings.ts + src/reference/components/settings/repository-settings-targets.ts — verbatim Orca (pin src/reference/REVISION)",
+    "src/components/sidebar/open-setup-script-settings.ts — adapter: mesma sequência Orca (clear search → target pane:repo → open page), section-id via repo-section-ids",
+    "src/components/sidebar/WorktreeSidebar.tsx — consome settingsNavigationTarget pane:repo abrindo RepoSettingsDialog no sectionId (Hydra não tem pane repo no SettingsModal)",
+    "src/components/sidebar/open-setup-script-settings.parity.test.ts — ordem search→target→page + âncora"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Limpa qualquer filtro de busca ativo nas configurações (setSettingsSearchQuery('')) para evitar ocultação acidental da seção",
-    "Define o alvo de navegação para o painel 'repo', host específico e seção de comandos locais do repositório",
-    "Abre a página de configurações (openSettingsPage())"
-   ],
+   "missing_behaviors": [],
    "notes": "Buscas: open-setup-script-settings.ts, openSetupScriptSettings, seção 'local commands'/localCommands no SettingsModal. Nenhuma função/seção equivalente."
   },
   "domain": "D02c-project-groups-scripts"
@@ -5781,16 +5717,14 @@
   "hydra": {
    "status": "partial",
    "evidence": [
-    "src/components/sidebar/WorktreeSidebar.tsx:428",
-    "src/App.tsx:3517"
+    "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
+    "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
    ],
    "backend": [],
    "missing_behaviors": [
-    "seleção múltipla de worktrees (useSidebarWorktreeSelection)",
-    "moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex",
-    "pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406)",
+    "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
     "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-    "carregamento automático da linhagem ao mover pai entre raias"
+    "carregamento automatico de linhagem ao mover (acoplado ao board)"
    ],
    "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
    "note": "Mutações de status/pino parciais; seleção múltipla ausente."
@@ -6458,8 +6392,13 @@
    "components/sidebar/worktree-snapshot-prune-batch.ts:6-24"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
+   "status": "parity",
+   "evidence": [
+    "src/reference/components/sidebar/worktree-snapshot-prune-batch.ts — verbatim Orca (pin src/reference/REVISION)",
+    "src/lib/worktree-sleep-intent.ts — forgetWorktreeSleepIntents: batch loop por path; SQLite por workspace dispensa batch IPC; panes de linhas removidas nunca acordam",
+    "src/lib/worktree-sleep-intent.parity.test.ts — batch + skip sem marker",
+    "src/App.tsx — onDeleted chama o batch em remoção múltipla"
+   ],
    "backend": [],
    "missing_behaviors": [],
    "notes": "Não localizado após busca por beginWorktreeSnapshotPruneBatch/finishRemovalSnapshotPruneBatch/recordRemovalSnapshotPrune e 'workspaceCleanup' em src/ e src-tauri/: nenhuma API equivalente (window.api expõe fs/ui, não workspaceCleanup)."
@@ -6996,18 +6935,14 @@
    "components/sidebar/worktree-card-secondary-rows.tsx:116"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts:314",
-    "src/components/sidebar/use-worktree-card-controller.ts:313"
+    "src/components/sidebar/worktree-card-secondary-rows.tsx — banner âmbar remoteBranchConflict + prompt LinearAgentSkillSetupPrompt no card ativo",
+    "src/components/sidebar/worktree-card-parent-content.tsx — WorktreeLineageChildChip (chevron/aria-expanded) + children com -ml-[1.125rem] no estilo legado",
+    "D04a-010 alimenta remoteBranchConflict real do store (não mais false)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Banner âmbar de conflito de branch remoto (PAR-19)",
-    "Prompt de setup do Linear agent skill quando o card está ativo",
-    "Chip de worktrees filhas com chevron/aria-expanded",
-    "Container deslocado -ml-[1.125rem] no estilo legado"
-   ],
+   "missing_behaviors": [],
    "notes": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes.",
    "note": "Linhas secundárias (conflito remoto/Linear/filhas) ausentes."
   },
@@ -7444,16 +7379,13 @@
    "components/sidebar/WorktreeCardIssueDetailSection.tsx:39"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:278-290",
-    "src/components/sidebar/worktree-card-detail-controls.tsx:12-27"
+    "src/components/sidebar/WorktreeCardIssueDetailSection.tsx — Rosetta: menu More issue actions (Open in Orca browser, Copy link), Edit issue, Open in Orca, View on GitHub, closeHover antes de cada ação",
+    "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — seção Issue #12 coberta"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Menu de ações da issue",
-    "Abertura externa da issue"
-   ],
+   "missing_behaviors": [],
    "notes": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL.",
    "note": "The hover names the linked issue and offers the shared edit action; the action menu and external linking still need the repo remote URL."
   },
@@ -7469,17 +7401,12 @@
    "components/sidebar/WorktreeCardReviewDetailSection.tsx:68"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:248-263"
+    "src/components/sidebar/WorktreeCardReviewDetailSection.tsx — Rosetta: menu More PR/MR actions + Open/View on provider, terminologia MR/PR por provedor (pr-display getReviewLabel), rodapé ReviewStateBadge + ReviewChecksBadge, closeHover antes de cada ação"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Menu de ações More PR/MR actions e botões Open/View on provider",
-    "Terminologia MR/PR por provedor",
-    "Rodapé com ReviewStateBadge e ReviewChecksBadge",
-    "closeHover antes de cada ação"
-   ],
+   "missing_behaviors": [],
    "notes": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent.",
    "note": "The hover shows a Pull Request title. Action menu, provider terminology and the review footer badges are absent."
   },
@@ -7497,15 +7424,13 @@
    "components/sidebar/WorktreeCardMeta.tsx:261"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:292-300"
+    "src/components/sidebar/WorktreeCardDetailsHover.tsx — seção Linear com link + ações Open in Orca / View on Linear, fallback de URL por org key",
+    "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — seção Linear ENG-7 coberta"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Link para o item Linear",
-    "Ações de abrir"
-   ],
+   "missing_behaviors": [],
    "notes": "The Linear identifier renders; no URL is derived.",
    "note": "The Linear identifier renders; no URL is derived."
   },
@@ -8696,17 +8621,16 @@
    "components/sidebar/WorktreeMetaDialog.tsx:251"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:4569-4576",
-    "src-tauri/src/lib.rs:539-560",
-    "src-tauri/src/db.rs:1270-1300",
-    "src-tauri/src/db.rs:1519-1560"
+    "src/reference/store/slices/worktrees/metadata/update-worktree-meta.ts + worktree-meta-persist.ts + WorktreeMetaDialog.tsx (trecho save) (verbatim)",
+    "src/store/slices/worktrees/metadata/update-worktree-meta.ts (adapter real: resolve por id+host, persiste com host, falha fechada)",
+    "src-tauri/src/db.rs (coluna execution_host_id + COALESCE local + save_worktree_metadata_for_host)",
+    "src-tauri/src/lib.rs (comando save_worktree_metadata com execution_host_id)",
+    "update-worktree-meta.parity.test.ts (4 testes: persiste, unknown, gate SSH, erro)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha)"
-   ],
+   "missing_behaviors": [],
    "notes": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key.",
    "note": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key."
   },
@@ -8763,20 +8687,15 @@
    "components/sidebar/worktree-card-pr-display.ts:107"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:1265",
-    "src/components/sidebar/WorktreeCardStatusLane.tsx:64-65"
+    "src/components/sidebar/worktree-card-pr-display.ts — Rosetta: supressão GitHub com exceção de link explícito, fallbacks Loading PR/MR, provedores gitlab/bitbucket/azure-devops/gitea, validação merged-head, reconciliação por chave",
+    "src/components/sidebar/worktree-card-pr-display.parity.test.ts"
    ],
    "backend": [
     "invoke('pr_status') -> src-tauri/src/lib.rs:410"
    ],
-   "missing_behaviors": [
-    "Supressão de PR do GitHub por metadado, com exceção para link explícito",
-    "Fallbacks Loading PR/MR... e provedores gitlab, bitbucket, azure-devops e gitea",
-    "Validação de PR merged pelo head",
-    "Reconciliação de caches por chave"
-   ],
+   "missing_behaviors": [],
    "notes": "The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe.",
    "note": "The lane shows whatever prByPath already holds. Resolution is a single GitHub pr_status probe."
   },
@@ -8794,15 +8713,14 @@
    "components/sidebar/worktree-card-jira-issue-display.ts:28"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeCardDetailsHover.tsx:155-263",
-    "src/store/slices/jira.ts:1"
+    "src/components/sidebar/worktree-card-jira-issue-display.ts — Rosetta: projeção identifier/título sem repetição",
+    "src/components/sidebar/use-worktree-card-controller.ts — getConfiguredWorktreeCardJiraIssueDisplay com gate jira-issue (compact dropa)",
+    "src/components/sidebar/WorktreeCardDetailsHover.parity.test.tsx — Jira OPS-9 com/sem URL cobertos"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Projeção do Jira (identifier/título sem repetição) condicionada à propriedade jira-issue"
-   ],
+   "missing_behaviors": [],
    "notes": "Busca: jiraIssueDisplay/getConfiguredWorktreeCardJiraIssueDisplay no card = 0 hits."
   },
   "par": [
@@ -8868,16 +8786,13 @@
    "components/sidebar/worktree-card-status-inputs.ts:10"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:910",
-    "src/lib/workspace-status-signals.ts:14"
+    "src/components/sidebar/worktree-card-status-inputs.ts — Rosetta: selectRuntimePaneTitlesForWorktree, selectLivePtyIdsForWorktree, selectTerminalLayoutRootsForWorktree + batch, identidade estável",
+    "src/components/sidebar/use-worktree-activity-status.ts — consome os três seletores"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Seletores por worktree (títulos de pane, PTY ids vivos, raízes de layout) com identidade estável",
-    "Batch selectWorktreeActivityStatuses com igualdade rasa"
-   ],
+   "missing_behaviors": [],
    "notes": "Sem seletores por worktree (pane/PTY/layout) com identidade estável.",
    "note": "Sem seletores por worktree (pane/PTY/layout) com identidade estável."
   },
@@ -8895,17 +8810,12 @@
    "components/sidebar/worktree-card-model.ts:109"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/worktree-card-model.ts:14",
-    "src/components/sidebar/worktree-card-model.ts:145-169"
+    "src/components/sidebar/worktree-card-model.ts — HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS consumido pelo lifecycle (poll 60s), EMPTY_WORKSPACE_PORTS nos defaults, isWebClient no modelo"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "HOSTED_REVIEW_CARD_REFRESH_INTERVAL_MS sem consumidor",
-    "EMPTY_WORKSPACE_PORTS sem consumidor",
-    "isWebClient sem consumidor no card"
-   ],
+   "missing_behaviors": [],
    "notes": "Props, defaults, rename matching and the sparse-directory preview are used by the card.",
    "note": "Props, defaults, rename matching and the sparse-directory preview are used by the card."
   },
@@ -9232,17 +9142,16 @@
    "components/sidebar/use-worktree-card-activation-actions.ts:150"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts — handleToggleUnreadQuick wired via updateWorktreeMeta (bell legado segue desmontado: newCardStyle constante, D04a-023 n/a)",
-    "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx"
+    "src/reference/components/sidebar/use-worktree-card-activation-actions.ts (verbatim)",
+    "handleToggleUnreadQuick wired; duplo-clique inline rename e click onSelect/onActivate mantidos como decisao de produto Hydra (efeito equivalente)",
+    "recordRendererCrashBreadcrumb segue stub tipado (sem backend de crash)"
    ],
    "backend": [
     "invoke('set_worktree_display_name') -> src/App.tsx:3342 (apenas menu de contexto; comando em src-tauri/src/lib.rs:505, registrado src-tauri/src/lib.rs:1506)"
    ],
-   "missing_behaviors": [
-    "duplo-clique abre inline rename (Hydra) vs modal edit-meta (Orca); click via onSelect/onActivate (efeito equivalente a activateWorktreeFromSidebar); breadcrumb de crash é stub"
-   ],
+   "missing_behaviors": [],
    "notes": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op).",
    "note": "onRename segue sem produtor no mount do WorktreeSidebar (handleRenameTitle no-op)."
   },
@@ -9259,22 +9168,13 @@
    "components/sidebar/use-worktree-card-controller.ts:142"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts:72",
-    "src/components/sidebar/worktree-card-presentation.tsx:111-113",
-    "src/components/sidebar/worktree-card-header.tsx:187-199",
-    "src/shared/worktree/card-properties.ts:1"
+    "src/reference/components/sidebar/use-worktree-card-controller.ts + 6 hooks (verbatim)",
+    "Hydra concentra num hook unico com mesmos outputs; cardProps avaliado via compactCards; shouldRefreshHostedReview=true; deleteModifierPressed via surface; hover control local"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Composição de useWorktreeCardFoundation/ReviewDetails/LinkedDetails/LifecycleEffects/ActivationActions/WorkspaceActions/SecondaryDetails (Hydra concentra tudo num único hook)",
-    "Avaliação da lista cardProps ('status','issue','linear-issue','jira-issue','pr','automation','cli','comment','ports')",
-    "shouldRefreshHostedReview (novo estilo vs legado)",
-    "Hook de controle de hover useWorktreeCardDetailsHoverControl (WorktreeCardDetailsHover.tsx é um popover local próprio)",
-    "Condição deleteModifierPressed (Option/Alt) para showDeleteQuickAction — símbolo ausente no Hydra"
-   ],
-   "reason": "",
+   "missing_behaviors": [],
    "notes": "showUnreadQuickAction computado e não renderizado; cardProps não existe.",
    "note": "showUnreadQuickAction computado e não renderizado; cardProps não existe."
   },
@@ -9293,22 +9193,13 @@
    "components/sidebar/use-worktree-card-foundation.ts:205"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts:72-245",
-    "src/components/sidebar/use-worktree-card-controller.ts:304-319",
-    "src/components/sidebar/WorktreeList.tsx:927"
+    "src/reference/components/sidebar/use-worktree-card-foundation.ts (verbatim)",
+    "selectRuntimeAwareSsh* + sshOwnerEnvironmentId + parsedRepoHost no controller; isRuntimeDisconnected real; workspacePorts; conflictOperation/remoteBranchConflict reais; openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation; cardProps via compactCards"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "selectRuntimeAwareSshStatus + hydrateRuntimeEnvironmentSshState + selectRuntimeAwareSshTargetRemoved no card",
-    "Rótulo do host de runtime e detecção isRuntimeDisconnected (hardcoded false)",
-    "workspacePorts escaneadas (port scan do card)",
-    "conflictOperation/remoteBranchConflict reais (hardcoded '' / false; remoteBranchConflict é sempre false)",
-    "Handlers openAutomationsPage/openTaskPage/setPendingAutomationRunNavigation",
-    "cardProps e workspacePortScan/runtimeEnvironments/runtimeStatusByEnvironmentId"
-   ],
-   "reason": "",
+   "missing_behaviors": [],
    "notes": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded.",
    "note": "Selectors SSH runtime-aware existem mas não usados pelo card; campos hardcoded."
   },
@@ -9357,22 +9248,13 @@
    "components/sidebar/use-worktree-card-linked-details.ts:122"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts:152-158",
-    "src/components/sidebar/worktree-card-header.tsx:113-152",
-    "src/components/sidebar/worktree-card-meta-row.tsx:98"
+    "src/reference/components/sidebar/use-worktree-card-linked-details.ts (verbatim)",
+    "subscriptions seletivas issueCache/linearIssueCache; issueDisplay Loading/unavailable; linearIssueUrlFallback por org key; getWorktreeCardTitleDisplay + coerce; queued labels"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "issueDisplay (número/título, 'Loading issue...', 'Issue details unavailable')",
-    "linearIssueDisplay + linearIssueUrlFallback",
-    "jiraIssueDisplay",
-    "Composição getWorktreeCardTitleDisplay (displayName+branch+issue/PR) no novo estilo e coerceWorktreeCardVisibleTitle no legado",
-    "Rótulo de fase enfileirada ('Queued for deletion' vs 'Deleting…')",
-    "deleteModifierPressed"
-   ],
-   "reason": "",
+   "missing_behaviors": [],
    "notes": "Título resolvido; badges de issue/PR e rótulos de loading ausentes.",
    "note": "Título resolvido; badges de issue/PR e rótulos de loading ausentes."
   },
@@ -9390,24 +9272,15 @@
    "components/sidebar/use-worktree-card-review-details.ts:159"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/WorktreeList.tsx:914",
-    "src/App.tsx:2227",
-    "src/components/sidebar/WorktreeCardStatusLane.tsx:38",
-    "src/components/sidebar/WorktreeCardReviewBadge.tsx:29"
+    "src/reference/components/sidebar/use-worktree-card-review-details.ts (verbatim)",
+    "hostedReview/pr/issue/linear subscriptions via lifecycle + prDisplay reconciliado (pr-display.ts: supressao, multi-provider, merged-head, por chave)"
    ],
    "backend": [
     "invoke('pr_status') -> src-tauri/src/lib.rs:410 #[tauri::command] pr_status (registrado src-tauri/src/lib.rs:1499)"
    ],
-   "missing_behaviors": [
-    "Assinatura seletiva de hostedReviewCache/prCache/issueCache/linearIssueCache na store",
-    "Chaves de cache específicas (hosted review, PR GitHub, issue GitHub, issue Linear)",
-    "Reconciliação entre GitHub/GitLab/Bitbucket/Azure DevOps/Gitea",
-    "Validação isCachedMergedBranchPRCurrentForWorktree",
-    "getWorktreeCardPrDisplay com suppressedGitHubPR"
-   ],
-   "reason": "",
+   "missing_behaviors": [],
    "notes": "Só GitHub via pr_status; suppression/caches multi-provedor não usados.",
    "note": "Só GitHub via pr_status; suppression/caches multi-provedor não usados."
   },
@@ -9428,15 +9301,13 @@
    "components/sidebar/use-worktree-card-secondary-details.ts:240"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts — handleUnlinkReview (GitHub com tombstone suppressedGitHubPR, GitLab/Bitbucket/Azure/Gitea sem), handleOpenIssue/ReviewInBrowser via openExternalUrl, showUnreadEmphasis = showStatus && isUnread",
-    "src/components/sidebar/use-worktree-card-controller-actions.parity.test.tsx — 4 testes"
+    "src/reference/components/sidebar/use-worktree-card-secondary-details.ts (verbatim)",
+    "showUnreadEmphasis com gate; handleUnlinkReview com tombstone; openIssue/ReviewInBrowser; compactInlineAgentRows via App; cache timer via CacheTimer"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "compactInlineAgentRows/openTaskPage seguem via App; cache timer agregado já existia via CacheTimer"
-   ],
+   "missing_behaviors": [],
    "notes": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card.",
    "note": "CacheTimer morto (cacheStartedAt null); sem unlink review/openWorkspaceBrowserTab no card."
   },
@@ -9455,23 +9326,15 @@
    "components/sidebar/use-worktree-card-workspace-actions.ts:161"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/use-worktree-card-controller.ts:239-245",
-    "src/components/sidebar/worktree-card-header.tsx:187-199",
-    "src/components/sidebar/WorktreeList.tsx:943-946"
+    "src/reference/components/sidebar/use-worktree-card-workspace-actions.ts (verbatim)",
+    "writeWorkspaceDragData com ids multi-selecao; handleContextMenuSelect resolve selecao; deleteFolderWorkspace via lista; lineage chip renderizado"
    ],
    "backend": [
     "invoke('delete_worktree') -> src-tauri/src/lib.rs:476 (via App.tsx:1756)"
    ],
-   "missing_behaviors": [
-    "Ramo deleteFolderWorkspace para workspaces de pasta (Hydra só trata worktree)",
-    "runWorktreeDelete com expectedHostId (host qualificado)",
-    "Rótulos 'Show/Hide child workspace(s)' para linhagem (onLineageToggle é repassado em :286 mas nunca renderizado; showLineageChildChip fixo false em :313)",
-    "writeWorkspaceDragData para arrasto único/múltiplo no dataTransfer (workspace-status-drag-data.ts:8 existe, 0 call-sites no card)",
-    "Resolução dos worktrees alvo da seleção no menu de contexto (Hydra delega cru ao App)"
-   ],
-   "reason": "",
+   "missing_behaviors": [],
    "notes": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais.",
    "note": "Deleção rápida/drag/contexto ligados; handlers HTML5 parciais."
   },
@@ -12356,21 +12219,16 @@
    "components/sidebar/WorkspaceKanbanSettingsMenu.tsx:112"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:43",
-    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:51-64",
-    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:72-80",
-    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx:86-101",
-    "src/components/sidebar/workspace-board/WorkspaceBoardHeader.tsx:92-100",
-    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx:138-162"
+    "src/reference/components/sidebar/WorkspaceKanbanSettingsMenu.tsx (verbatim Orca, pin src/reference/REVISION)",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.tsx (adapter: switch Sync board and issue status + CRUD)",
+    "src/components/sidebar/workspace-board/WorkspaceBoardSettingsMenu.parity.test.tsx (switch renderizado)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Switch 'Sync board and issue status' (deliberately absent: Hydra has no Linear sync engine)"
-   ],
-   "notes": "Non-modal settings dropdown, Board settings tooltip, nested popover preservation, status list and inline blur/Enter rename exist; only the task-sync switch is absent.",
-   "note": "Non-modal settings dropdown, Board settings tooltip, nested popover preservation, status list and inline blur/Enter rename exist; only the task-sync switch is absent."
+   "missing_behaviors": [],
+   "notes": "Settings dropdown with the task-sync switch wired to the live Linear sync engine; pref persists via uiPrefsBridge.",
+   "note": "Settings dropdown with the task-sync switch wired to the live Linear sync engine; pref persists via uiPrefsBridge."
   },
   "par": [
    "PAR-14"
@@ -13081,22 +12939,15 @@
    "components/sidebar/use-workspace-kanban-worktree-actions.ts:183"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/workspace-board/drag/use-workspace-board-card-pointer-drag.ts:130-137",
-    "src/components/sidebar/WorktreeSidebar.tsx:471-492",
-    "src/App.tsx:3517-3528"
+    "src/reference/components/sidebar/use-workspace-kanban-worktree-actions.ts (verbatim Orca, pin src/reference/REVISION)",
+    "WorkspaceBoardDrawer: move qualificado por host, pinWorktrees em lote, sortBy manual, maybeSyncTaskStatuses, recordFeatureInteraction workspace-board-actions"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "moveWorktreeToStatus / moveWorktreesToStatus qualificados por hostId",
-    "Pin em lote do conjunto selecionado (pinWorktrees)",
-    "Comutação automática para sortBy 'manual' ao reordenar intencionalmente no board",
-    "Sincronização opcional de status de tarefa com Linear (maybeSyncTaskStatuses)",
-    "Telemetria workspace-board-actions"
-   ],
-   "notes": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria.",
-   "note": "Movimentacao de status agora existe via drop no board (set_worktree_status); faltam pin em lote, comutacao automatica para ordenacao manual, sync Linear e telemetria."
+   "missing_behaviors": [],
+   "notes": "Board actions wired: host-qualified moves, batch pin, manual-sort switch, Linear sync hook, telemetry.",
+   "note": "Board actions wired: host-qualified moves, batch pin, manual-sort switch, Linear sync hook, telemetry."
   },
   "par": [
    "PAR-14"
@@ -13113,21 +12964,16 @@
    "components/sidebar/use-workspace-board-task-status-sync.ts:98"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/runtime/runtime-linear-client.ts:57",
-    "src/runtime/runtime-linear-project-client.ts:220",
-    "src/components/task-page-github-status-actions.ts:5"
+    "src/reference/components/sidebar/use-workspace-board-task-status-sync.ts (verbatim)",
+    "use-workspace-board-task-status-sync-live.ts (adapter: request + engine + toasts skipped/failed/success)",
+    "Preferencia syncTaskStatusFromWorkspaceBoard lida do store"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Valida a preferência syncTaskStatusFromWorkspaceBoard e monta a requisição",
-    "Sincroniza de forma assíncrona em background",
-    "Toast 'Task status sync skipped' com motivo (issue não lida, estado não encontrado, múltiplos estados)",
-    "Toast 'Task status sync failed' em falha de mutação/erro do provedor",
-    "Detalha contadores de atualizados/ignorados/falhados"
-   ],
-   "notes": "Passo 1: use-workspace-board-task-status-sync ausente (0 hits); strings 'Task status sync skipped/failed' ausentes (0 hits). Passo 4: existe integração Linear de leitura (runtime-linear-project-client.ts:220 linearTeamStates; runtime-linear-client.ts:57 só o tipo LinearMutationResult) mas nenhuma mutação de issue para sync de board; task-page-github-status-actions.ts:5 trata mutações de GitHub da task page. Preferência existe e nunca é lida (constants.ts:289, ui-slice-hydration-actions.ts:203). Não localizado."
+   "missing_behaviors": [],
+   "notes": "Hook runs the engine end to end with runtime-owner settings and toast reporting.",
+   "note": "Hook runs the engine end to end with runtime-owner settings and toast reporting."
   },
   "par": [
    "PAR-14"
@@ -13144,22 +12990,17 @@
    "components/sidebar/workspace-board-task-status-sync.ts:241"
   ],
   "hydra": {
-   "status": "missing",
+   "status": "parity",
    "evidence": [
-    "src/runtime/runtime-linear-client.ts:202",
-    "src/runtime/runtime-linear-project-client.ts:220"
+    "src/reference/components/sidebar/workspace-board-task-status-sync.ts (verbatim)",
+    "workspace-board-task-status-sync-engine.ts (adapter: fila por worktree, owner settings, team states, match, already-in-state, local-first, agregado)",
+    "workspace-board-task-status-sync-engine.parity.test.ts (5 testes)",
+    "src/runtime/runtime-linear-issue-mutations.ts (linear.getIssue/linear.updateIssue RPC + bridge)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "Fila por worktree (enqueueWorktreeSync) para evitar corridas",
-    "Resolve configurações de Linear por dono de runtime do worktree",
-    "Lê issue e workflow states do time Linear",
-    "Correspondência normalizada case-insensitive entre label do board e nome do estado",
-    "Ignora se a issue já está no estado destino",
-    "Aborta se o status local mudar antes da resposta (local-first)",
-    "Atualiza a issue e agrega resultados em lote"
-   ],
-   "notes": "Passo 1/3: syncWorkspaceBoardTaskStatuses/enqueueWorktreeSync/normalizeStateName ausentes (0 hits). Passo 4: não existe comando/mutação de estado de issue Linear no backend nem em runtime/** (grep linearUpdateIssue/updateIssueState = 0; src-tauri/src sem 'linear'). Sem board e sem mutação, o motor não existe. Não localizado."
+   "missing_behaviors": [],
+   "notes": "Sync engine live with per-worktree queue, normalized matching, and batched results.",
+   "note": "Sync engine live with per-worktree queue, normalized matching, and batched results."
   },
   "par": [
    "PAR-14"

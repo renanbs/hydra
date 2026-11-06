@@ -19,6 +19,15 @@ vi.mock('../../hooks/useInstalledAgentSkills', () => ({
   useInstalledAgentSkillNames: () => skillState
 }))
 
+vi.mock('./InlineCommandTerminal', () => ({
+  InlineCommandTerminal: ({ command }: { command: string }) => (
+    <div data-testid="inline-terminal">{command}</div>
+  )
+}))
+vi.mock('../../lib/agent-skill-cli-prerequisite', () => ({
+  loadOrcaCliAvailableOnPath: vi.fn(async () => true)
+}))
+
 import { LinearAgentSkillSetupPrompt } from './LinearAgentSkillSetupPrompt'
 
 // Radix Dialog measures its content on mount; jsdom has no ResizeObserver.
@@ -40,12 +49,12 @@ describe('Linear agent skill setup prompt (Orca parity)', () => {
     skillState.loading = false
   })
 
-  it('renders only for a linked workspace with the skill missing', () => {
+  it('renders only for a linked workspace with the skill missing', async () => {
     const { rerender } = render(<LinearAgentSkillSetupPrompt linked={false} />)
     expect(screen.queryByText(/Set up Linear agent skill/)).toBeNull()
 
     rerender(<LinearAgentSkillSetupPrompt linked />)
-    expect(screen.getByText(/Set up Linear agent skill/)).toBeTruthy()
+    expect(await screen.findByText(/Set up Linear agent skill/)).toBeTruthy()
     expect(screen.getByRole('button', { name: /Copy install command/ })).toBeTruthy()
 
     skillState.installed = true
@@ -61,7 +70,7 @@ describe('Linear agent skill setup prompt (Orca parity)', () => {
 
   it('opens the setup dialog with Set up and re-checks on demand', async () => {
     const { unmount } = render(<LinearAgentSkillSetupPrompt linked />)
-    expect(screen.getByRole('button', { name: 'Set up' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Set up' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Re-check' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Set up' }))
@@ -80,9 +89,9 @@ describe('Linear agent skill setup prompt (Orca parity)', () => {
     unmount()
   })
 
-  it('dismisses permanently through localStorage', () => {
+  it('dismisses permanently through localStorage', async () => {
     const { rerender } = render(<LinearAgentSkillSetupPrompt linked />)
-    fireEvent.click(screen.getByRole('button', { name: /Dismiss Linear agent skill setup/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Dismiss Linear agent skill setup/ }))
     expect(screen.queryByText(/Set up Linear agent skill/)).toBeNull()
     expect(window.localStorage.getItem('hydra.linearTicketsSkill.setupDismissed')).toBe('1')
 

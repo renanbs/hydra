@@ -42,7 +42,7 @@ import { extractIpcErrorMessage } from "../../lib/ipc-error";
 import { importNestedCatalogRepos } from "../../lib/catalog-client";
 import { toProjectGroupImportResult } from "../../lib/orca-api-shim";
 import { PROJECTS_REFRESH_EVENT } from "../../lib/refresh-projects-awaitable";
-import { addCatalogFolderWorkspace } from "../../lib/catalog-client";
+import { completeNestedFolderOpen } from "./complete-nested-folder-open";
 import { buildNestedRepoImportActionTelemetry, createNestedRepoTelemetryAttemptId } from "../../shared/nested-repo-telemetry";
 import { track } from "../../lib/telemetry";
 import {
@@ -919,55 +919,27 @@ export function AddRepoDialog({
         })
       );
     }
+    // D02c-010 Rosetta: adapter over
+    // `src/reference/components/sidebar/complete-nested-folder-open.ts`.
     const gen = ++addGenRef.current;
-    setIsAdding(true);
-    setBusyLabel("Opening project...");
-    setError(null);
-    try {
-      // Orca `completeNestedFolderOpen`: on a remote host the root goes through
-      // the non-git confirm modal (SSH connectionId / runtime environmentId ride the
-      // modal payload); locally it becomes a folder workspace directly.
-      if (isSshHost && sshTargetId) {
-        useAppStore.getState().openModal('confirm-non-git-folder', {
-          folderPath: nestedScan.selectedPath,
-          connectionId: sshTargetId,
-          ...(displayName ? { displayName } : {})
-        })
-        if (gen === addGenRef.current) {
-          setIsAdding(false)
-          setBusyLabel(null)
-        }
-        return
-      }
-      if (isRuntimeHost && runtimeEnvironmentId) {
-        useAppStore.getState().openModal('confirm-non-git-folder', {
-          folderPath: nestedScan.selectedPath,
-          runtimeEnvironmentId,
-          ...(displayName ? { displayName } : {})
-        })
-        if (gen === addGenRef.current) {
-          setIsAdding(false)
-          setBusyLabel(null)
-        }
-        return
-      }
-      await addCatalogFolderWorkspace({
-        parentPath: nestedScan.selectedPath,
-        name: displayName ?? null
-      });
-      if (gen !== addGenRef.current) return;
-      notifyProjectAdded(nestedScan.selectedPath, "folder");
-      handleClose();
-    } catch (openError) {
-      if (gen === addGenRef.current) {
-        setError(extractIpcErrorMessage(openError, String(openError)));
-      }
-    } finally {
-      if (gen === addGenRef.current) {
-        setIsAdding(false);
-        setBusyLabel(null);
-      }
-    }
+    await completeNestedFolderOpen({
+      scan: nestedScan,
+      generation: gen,
+      currentGeneration: () => addGenRef.current,
+      attemptId,
+      hostBranch: isSshHost && sshTargetId
+        ? { kind: 'ssh', sshTargetId }
+        : isRuntimeHost && runtimeEnvironmentId
+          ? { kind: 'runtime', runtimeEnvironmentId }
+          : { kind: 'local' },
+      selectedCount: nestedSelectedPaths.size,
+      ...(displayName ? { displayName } : {}),
+      onFolderAdded: (path) => notifyProjectAdded(path, "folder"),
+      closeModal: handleClose,
+      setIsAdding,
+      setBusyLabel,
+      setError
+    });
   };
 
   const goBack = () => {

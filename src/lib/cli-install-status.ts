@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 
 /** Agent CLIs probed by `cli_install_status`, in the sidebar's display order. */
-export const AGENT_CLI_IDS = ['omp', 'claude', 'cursor-agent', 'codex'] as const
+export const AGENT_CLI_IDS = ['omp', 'claude', 'cursor-agent', 'codex', 'orca'] as const
 
 export type AgentCliId = (typeof AGENT_CLI_IDS)[number]
 

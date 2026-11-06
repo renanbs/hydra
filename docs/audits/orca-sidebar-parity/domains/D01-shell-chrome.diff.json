@@ -425,15 +425,13 @@
     "components/sidebar/SidebarTaskNavButton.tsx:79-120"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "refreshPreflightStatus() na montagem do botão de tarefas",
-     "checkLinearConnection() e normalização de visibleTaskProviders",
-     "restauração do provedor default considerando o CLI glab e a conexão Linear",
-     "resolveVisibleTaskProvider"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/SidebarTaskNavButton.tsx — resolveVisibleSidebarTaskProviders (normalize + restoreAvailableDefault + resolveVisible) com availability { gitlabInstalled via preflight glab, linearConnected }; prefetch no hover/focus",
+     "src/shared/task-providers.ts — normalizeVisibleTaskProviders/restoreAvailableDefaultTaskProvider/resolveVisibleTaskProvider"
     ],
+    "backend": [],
+    "missing_behaviors": [],
     "notes": "Busca em 5 passos: (1-2) sem SidebarTaskNavButton; (3) existem os slices src/store/slices/preflight.ts e src/store/slices/linear/** e o comando check_preflight_tools_cmd (src-tauri/src/lib.rs:76), porém nenhum caminho do sidebar os consome (o único consumidor de check_preflight_tools_cmd é src/components/Landing.tsx:236); (4) sem checkLinearConnection no renderer; (5) SidebarNav sem provedores."
    }
   },
@@ -522,18 +520,14 @@
     "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "partial",
     "evidence": [
-     "src/store/slices/ui/ui-slice-view-actions.ts:95",
-     "src/components/settings/mobile-settings-search.ts:52-56"
+     "src/components/sidebar/SidebarNav.tsx — botão Smartphone Orca Mobile condicionado a showMobileButton, badge New até dismiss, dismiss+openMobilePage no click, Hide from sidebar via context menu",
+     "src/components/sidebar/mobile-sidebar-onboarding-badge.ts — Rosetta com persistência localStorage"
     ],
     "backend": [],
     "missing_behaviors": [
-     "botão Smartphone/'Orca Mobile' condicionado a settings.showMobileButton",
-     "badge 'New' até a primeira visualização (useMobileSidebarOnboardingBadge)",
-     "botão inline EyeOff 'Hide from sidebar' após pareamento",
-     "dismiss do badge + openMobilePage()",
-     "ocultar via updateSettings({ showMobileButton: false })"
+     "botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados)"
     ],
     "notes": "Busca em 5 passos: (1) 'mobile-sidebar-onboarding-badge.ts' -> inexistente em src (0 hits); (2) label 'Orca Mobile' -> só strings de settings search (mobile-settings-search.ts:52-56); (3) openMobilePage existe em ui-slice-view-actions.ts:95 mas nenhum .tsx consome; (4) há pareamento (src/components/PairingModal.tsx + comando get_pairing_qr em src-tauri/src/lib.rs) sem entrada de sidebar; (5) census-v3 static_sidebar: 'Orca MobileNew' [8,145,264,32] no Orca. Escape do runtime coberto por esta linha."
    }
@@ -827,17 +821,13 @@
     "components/sidebar/SidebarSettingsHelpMenu.tsx:330-345"
    ],
    "hydra": {
-    "status": "missing",
+    "status": "parity",
     "evidence": [
-     "src/components/status-bar/UpdateStatusSegment.tsx:8-15"
+     "src/components/sidebar/SidebarSettingsHelpMenu.tsx — Check for Updates com captura Shift/Cmd no pointerdown, getUpdateCheckClickOptions (stable/prerelease/perf), spinner Loader2 + disable durante checking/downloading",
+     "src/lib/update-check-click-options.ts"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "item 'Check for Updates' com captura de Shift/Cmd no pointerdown",
-     "getUpdateCheckClickOptions (stable / includePrerelease / includePerfPrerelease)",
-     "window.api.updater.check()",
-     "spinner Loader2 e disable durante checking/downloading"
-    ],
+    "missing_behaviors": [],
     "notes": "Busca em 5 passos: (1-2) label 'Check for Updates' -> 0 em src/components/sidebar; (3) nenhum updater no renderer — o UpdateStatusSegment do status bar é um stub que retorna null (src/components/status-bar/UpdateStatusSegment.tsx:8-15); (4) BACKEND AUSENTE: não há tauri-plugin-updater em src-tauri/Cargo.toml:21-41 nem comando de update em src-tauri/src/lib.rs; (5) sem menu Help. Contrato Tauri necessário: ver gaps.md."
    }
   },
@@ -944,15 +934,13 @@
     "components/sidebar/SidebarFeedbackDialog.tsx:358-373"
    ],
    "hydra": {
-    "status": "missing",
-    "evidence": [],
-    "backend": [],
-    "missing_behaviors": [
-     "window.api.feedback.submit (evita CORS no Electron)",
-     "toast de aviso quando imagesDelivered === false",
-     "toast de sucesso + reset + close",
-     "toast de erro de rede/IPC"
+    "status": "parity",
+    "evidence": [
+     "src/components/sidebar/SidebarFeedbackDialog.tsx — submit via bridge, toast warning imagesDelivered===false, toast sucesso + reset + close, toast erro",
+     "src/lib/sidebar-desktop-contracts.ts — submitSidebarFeedback"
     ],
+    "backend": [],
+    "missing_behaviors": [],
     "notes": "Busca em 5 passos: (1-2) 'feedback.submit' -> 0; (3) nenhuma ação de submissão; (4) BACKEND AUSENTE: sem comando de feedback em src-tauri/src/lib.rs; (5) toasts disponíveis (sonner) sem produtor. Contrato Tauri necessário: ver gaps.md."
    }
   },
