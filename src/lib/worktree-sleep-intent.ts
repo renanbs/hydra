@@ -1,5 +1,10 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: lib/worktree-sleep-intent.ts
+// Reference: `src/reference/components/sidebar/worktree-snapshot-prune-batch.ts`
+// (verbatim Orca, pinned in `src/reference/REVISION`). D03b-046: Orca
+// coordinates its snapshot prune through a `beginRemovalSnapshotPruneBatch`
+// IPC; Hydra's durable sleep half is one SQLite row per workspace, so the
+// batch is the per-path loop below — no new backend call.
 // Why: a slept workspace keeps its panes mounted with only dead PTYs behind them.
 // Any pane connect that runs while the marker is set waits here, and the clear
 // that marks the workspace awake resumes every waiting connect. Hydra's sleep
