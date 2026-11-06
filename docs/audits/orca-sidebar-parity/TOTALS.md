@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 745 | 97.4% |
-| partial | 12 | 1.6% |
+| parity | 748 | 97.8% |
+| partial | 9 | 1.2% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -27,7 +27,7 @@
 | D07-menus-actions | 45 | 45 | 0 | 0 | 0 | 0 |
 | D08-kanban-board | 45 | 45 | 0 | 0 | 0 | 0 |
 | D09-filters-sort | 31 | 31 | 0 | 0 | 0 | 0 |
-| D10-visibility-inbox-notices | 91 | 88 | 3 | 0 | 0 | 0 |
+| D10-visibility-inbox-notices | 91 | 91 | 0 | 0 | 0 | 0 |
 | D11-lineage-grouping-model | 17 | 17 | 0 | 0 | 0 | 0 |
 | D12-markdown-inline-render | 14 | 14 | 0 | 0 | 0 | 0 |
 | D15-misc-a | 12 | 12 | 0 | 0 | 0 | 0 |

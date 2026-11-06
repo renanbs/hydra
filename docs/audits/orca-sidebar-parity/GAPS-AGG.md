@@ -4,7 +4,7 @@
 ## MISSING — 0 capabilities
 
 
-## PARTIAL — 12 capabilities
+## PARTIAL — 9 capabilities
 
 
 ### D01-shell-chrome (1)
@@ -33,9 +33,3 @@
 
 - **D04a-010** — Renderiza a linha de metadados do card com repo, host, identidade (branch/caminho/detached HEAD), badge de conflito e cache timer | falta: hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos | components/sidebar/worktree-card-meta-row.tsx:48
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra) | components/sidebar/WorktreeCardSshHostControl.tsx:86
-
-### D10-visibility-inbox-notices (3)
-
-- **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido | components/sidebar/AutoRenameFailedDialog.tsx:31
-- **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
-- **D10-057** — Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed | falta: pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos) | components/sidebar/WorktreeVisibilitySourceList.tsx:193
