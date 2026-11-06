@@ -4,8 +4,8 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 752 | 98.3% |
-| partial | 5 | 0.7% |
+| parity | 753 | 98.4% |
+| partial | 4 | 0.5% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -20,7 +20,7 @@
 | D02c-project-groups-scripts | 26 | 25 | 1 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
 | D03b-sidebar-list-orchestration | 50 | 48 | 2 | 0 | 0 | 0 |
-| D04a-worktree-card-surface | 111 | 109 | 1 | 0 | 1 | 0 |
+| D04a-worktree-card-surface | 111 | 110 | 0 | 0 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 23 | 0 | 0 | 0 | 0 |
 | D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
 | D06-drag-order-keyboard | 35 | 35 | 0 | 0 | 0 | 0 |

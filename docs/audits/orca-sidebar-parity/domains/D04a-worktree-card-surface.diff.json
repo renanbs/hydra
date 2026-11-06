@@ -285,15 +285,16 @@
     "components/sidebar/WorktreeCardSshHostControl.tsx:130"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeCardSshHostControl.tsx — fluxo connect: local via window.api.ssh + timeout UI + mirror setSshConnectionState; toast de falha + resync (listTargets antes de listRemovedTargetLabels)",
-     "src/ssh/ssh-connect-ui-timeout.ts — Rosetta com SSH_RECONNECT_UI_TIMEOUT_MS 180s"
+     "src/reference/runtime/runtime-environment-ssh-state.ts (verbatim)",
+     "src/runtime/runtime-environment-ssh-target.ts: connect via ssh.connect RPC + bucket, resync via listTargetSummaries",
+     "WorktreeCardSshHostControl roteia runtime-owned pelo adapter",
+     "slice runtime-environment-ssh composta no store (AppState + literal); @ts-nocheck removido",
+     "runtime-environment-ssh-target.parity.test.ts 3/3 + store 110/110"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra)"
-    ],
+    "missing_behaviors": [],
     "notes": "Sem fluxo de conexão SSH no renderer/card.",
     "note": "Sem fluxo de conexão SSH no renderer/card."
    }
