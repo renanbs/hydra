@@ -1497,14 +1497,12 @@ export function WorktreeList({
       filterRepoIds: displayOptions.filterProjectIds ?? [],
     };
 
-    // Mixed-host labels: one repo visible on more than one host needs the card
-    // chip the same way its notice rows do (Orca `getMixedWorktreeHostContextLabels`).
-    const hostContextLabelByIdentity = new Map<string, string>();
-    for (const rows of Object.values(worktreesByRepo)) {
-      const labels = getMixedWorktreeHostContextLabels(rows, repoMap, hostLabelById, focusedHostId);
-      if (!labels) continue;
-      for (const [identity, label] of labels) hostContextLabelByIdentity.set(identity, label);
-    }
+    // Mixed-host labels (Orca `build-rows.ts:111`): computed over the FULL
+    // visible set, not per repo — a single-host-scoped user still sees which
+    // host each card belongs to whenever the install is mixed.
+    const hostContextLabelByIdentity =
+      getMixedWorktreeHostContextLabels(visibleWorktrees, repoMap, hostLabelById, focusedHostId) ??
+      new Map<string, string>();
 
     // Why the raw scan: a repo whose only worktree is hidden by a menu filter is
     // not an empty repo, so it must not keep a header alive over the Clear Filters
