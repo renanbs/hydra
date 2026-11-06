@@ -349,19 +349,16 @@
     "components/sidebar/WorktreeList.tsx:298-316"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx:261",
-     "src/App.tsx:1612"
+     "Menu projeto: Project Settings... (abre Settings; Hydra sem pane repo = adapter)",
+     "Menu projeto: Remove Project from Hydra via ConfirmRemoveFolderDialog (antes removia direto)",
+     "Composer: folderProjectGroupParentPath (primeira folder workspace do grupo; Orca projectGroup.parentPath)"
     ],
     "backend": [
      "invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181"
     ],
-    "missing_behaviors": [
-     "handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings)",
-     "confirmação 'confirm-remove-folder': App.tsx:1612 remove direto",
-     "handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500)"
-    ],
+    "missing_behaviors": [],
     "notes": "Abertura de diálogos parcial.",
     "note": "Abertura de diálogos parcial."
    }
