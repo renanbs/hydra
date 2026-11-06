@@ -2328,7 +2328,7 @@ export function WorktreeList({
             isMultiSelected={isMultiSelected}
             hostContextLabel={hostContextLabelByIdentity.get(identity)}
             isRuntimeDisconnected={isRuntimeExecutionHostDisconnected(
-              storeRuntimeStatusByEnvironmentId as ReadonlyMap<string, never>,
+              storeRuntimeStatusByEnvironmentId,
               hostIdByRepoId.get(proj.id)
             )}
             compactCards={compactCards}
