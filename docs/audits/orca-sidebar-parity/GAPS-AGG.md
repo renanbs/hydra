@@ -4,12 +4,8 @@
 ## MISSING — 0 capabilities
 
 
-## PARTIAL — 9 capabilities
+## PARTIAL — 8 capabilities
 
-
-### D01-shell-chrome (1)
-
-- **D01-024** — Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação | falta: botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados) | components/sidebar/SidebarNav.tsx:2
 
 ### D02a-repo-add-wizard (2)
 

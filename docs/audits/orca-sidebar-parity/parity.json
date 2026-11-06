@@ -541,15 +541,17 @@
    "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarNav.tsx — botão Smartphone Orca Mobile condicionado a showMobileButton, badge New até dismiss, dismiss+openMobilePage no click, Hide from sidebar via context menu",
-    "src/components/sidebar/mobile-sidebar-onboarding-badge.ts — Rosetta com persistência localStorage"
+    "src/reference/components/sidebar/mobile-sidebar-onboarding-badge.ts + src/reference/components/mobile/paired-mobile-devices.ts (verbatim)",
+    "src/components/mobile/paired-mobile-devices.ts (adapter: request unico, loaded/error, superseded)",
+    "src/components/sidebar/mobile-sidebar-onboarding-badge.ts (adapter: badge + hasPairedDevice live)",
+    "src/components/sidebar/SidebarNav.tsx (EyeOff inline com hasPairedDevice)",
+    "src-tauri (mobile_list_devices; vazio = sem pareamento)",
+    "paired-mobile-devices.parity.test.ts (3) + badge/nav atualizados"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados)"
-   ],
+   "missing_behaviors": [],
    "notes": "Busca em 5 passos: (1) 'mobile-sidebar-onboarding-badge.ts' -> inexistente em src (0 hits); (2) label 'Orca Mobile' -> só strings de settings search (mobile-settings-search.ts:52-56); (3) openMobilePage existe em ui-slice-view-actions.ts:95 mas nenhum .tsx consome; (4) há pareamento (src/components/PairingModal.tsx + comando get_pairing_qr em src-tauri/src/lib.rs) sem entrada de sidebar; (5) census-v3 static_sidebar: 'Orca MobileNew' [8,145,264,32] no Orca. Escape do runtime coberto por esta linha."
   },
   "domain": "D01-shell-chrome"
