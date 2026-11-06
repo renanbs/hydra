@@ -307,16 +307,14 @@
    "hydra": {
     "status": "partial",
     "evidence": [
-     "src/components/sidebar/WorktreeSidebar.tsx:428",
-     "src/App.tsx:3517"
+     "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
+     "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
     ],
     "backend": [],
     "missing_behaviors": [
-     "seleção múltipla de worktrees (useSidebarWorktreeSelection)",
-     "moveWorktreeToStatus/moveWorktreesToStatus/moveWorktreesToStatusAtIndex",
-     "pinWorktree/pinWorktrees em lote (Hydra só pin/unread por item: App.tsx:3135,3406)",
+     "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
      "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-     "carregamento automático da linhagem ao mover pai entre raias"
+     "carregamento automatico de linhagem ao mover (acoplado ao board)"
     ],
     "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
     "note": "Mutações de status/pino parciais; seleção múltipla ausente."
