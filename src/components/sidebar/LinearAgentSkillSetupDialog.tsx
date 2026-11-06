@@ -3,13 +3,14 @@
 //
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/LinearAgentSkillSetupDialog.tsx
-//
-// Hydra reduction: Orca embeds `AgentSkillSetupPanel` (live PTY terminal +
-// recheck-on-exit). Hydra has no inline setup terminal, so the command runs the
-// same way every other skill install does here — copy to clipboard, run in the
-// user's own terminal — and the dialog re-checks on demand. The states the
-// audit locks (install / success / dismiss / close paths) are all preserved.
+// Reference: `src/reference/components/sidebar/LinearAgentSkillSetupDialog.tsx`
+// + `src/reference/components/settings/AgentSkillSetupPanel.tsx`
+// (verbatim Orca, pinned in `src/reference/REVISION`). D02c-003: the setup
+// command runs in an embedded terminal (`InlineCommandTerminal`, the Hydra
+// adapter over Orca's `AgentSkillSetupPanel` + `OnboardingInlineCommandTerminal`)
+// with the copy/run path kept as fallback.
 import { useState } from 'react'
+ import { InlineCommandTerminal } from './InlineCommandTerminal'
 import { CheckCircle2, Copy, EyeOff, Info, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -171,6 +172,19 @@ export function LinearAgentSkillSetupDialog({
           </div>
         ) : (
           <div className="space-y-3">
+            <InlineCommandTerminal
+              command={activeCommand}
+              title={translate(
+                'auto.components.sidebar.LinearAgentSkillSetupDialog.terminalTitle',
+                'Install Linear skill'
+              )}
+              ariaLabel={translate(
+                'auto.components.sidebar.LinearAgentSkillSetupDialog.terminalLabel',
+                'Terminal running the Linear skill install command'
+              )}
+              terminalHeightPx={240}
+              onCommandFinished={() => void onRecheck?.()}
+            />
             <div className="flex items-start gap-2 rounded-md border border-border/70 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
               <Info className="mt-0.5 size-4 shrink-0" />
               <p className="leading-snug">
@@ -213,15 +227,8 @@ export function LinearAgentSkillSetupDialog({
                 ) : null}
               </div>
             </div>
-            <p className="text-[11px] leading-snug text-muted-foreground">
-              {translate(
-                'auto.components.sidebar.LinearAgentSkillSetupDialog.prerequisiteNotice',
-                'Before opening setup, Hydra may check that the Orca CLI command is on PATH.'
-              )}
-            </p>
           </div>
         )}
-
         <div className="flex justify-end gap-2 pt-1">
           {showSuccess ? (
             <Button type="button" onClick={() => onDone?.()}>
