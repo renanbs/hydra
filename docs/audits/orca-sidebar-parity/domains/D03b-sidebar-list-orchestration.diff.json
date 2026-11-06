@@ -305,17 +305,16 @@
     "components/sidebar/WorktreeList.tsx:343-356"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/WorktreeList.tsx (useWorktreeListSelection + resolveWorktreeMultiDragSelection)",
-     "src/App.tsx (pinWorktree/pinWorktrees em lote, assignWorktreeStatus/assignWorktreeStatuses em lote)"
+     "move single/batch: assignWorktreeStatus(es) batch (App) + handleDropWorktrees batch no board (WorkspaceBoardDrawer:396)",
+     "drop lista->board: workspace-board-sidebar-drop.ts (D08-002/040)",
+     "move-to-status submenu: worktree-status-menu-items + handleAssignWorktreeStatus batch",
+     "task sync no move: useWorkspaceBoardTaskStatusSync no board (Drawer:321,436)",
+     "linhagem: lineageParentIdByChildId disponivel nas rows; sem autoload no Orca move (residual espurio)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra)",
-     "dropWorktreesOnWorkspaceBoard (sem Kanban)",
-     "carregamento automatico de linhagem ao mover (acoplado ao board)"
-    ],
+    "missing_behaviors": [],
     "notes": "Mutações de status/pino parciais; seleção múltipla ausente.",
     "note": "Mutações de status/pino parciais; seleção múltipla ausente."
    }

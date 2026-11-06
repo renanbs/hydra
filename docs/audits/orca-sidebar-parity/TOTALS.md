@@ -4,8 +4,7 @@
 
 | status | linhas | % |
 |---|---|---|
-| parity | 756 | 98.8% |
-| partial | 1 | 0.1% |
+| parity | 757 | 99.0% |
 | not-applicable | 8 | 1.0% |
 
 **Total com veredito:** 765 de 765 capabilities inventariadas.
@@ -19,7 +18,7 @@
 | D02b-hosts-ssh-remote | 30 | 30 | 0 | 0 | 0 | 0 |
 | D02c-project-groups-scripts | 26 | 26 | 0 | 0 | 0 | 0 |
 | D03a-worktree-list-module | 104 | 104 | 0 | 0 | 0 | 0 |
-| D03b-sidebar-list-orchestration | 50 | 49 | 1 | 0 | 0 | 0 |
+| D03b-sidebar-list-orchestration | 50 | 50 | 0 | 0 | 0 | 0 |
 | D04a-worktree-card-surface | 111 | 110 | 0 | 0 | 1 | 0 |
 | D04b-worktree-card-controllers | 23 | 23 | 0 | 0 | 0 | 0 |
 | D05-agents-rows | 23 | 23 | 0 | 0 | 0 | 0 |
