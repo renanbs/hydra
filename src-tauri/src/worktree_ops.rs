@@ -2256,6 +2256,153 @@ pub fn clone_git_repository_cancellable(
     parent_dir: &str,
     clone_id: Option<&str>,
 ) -> Result<String, String> {
+    clone_git_repository_cancellable_with_progress(url, parent_dir, clone_id, None)
+}
+
+/// D02a-014 Rosetta (Orca `onCloneProgress`): `git clone --progress` writes
+/// `Receiving objects: NN%` carriage-return lines on stderr. The optional
+/// callback receives the latest percent; the caller decides the transport
+/// (`clone:progress` emit in `clone_project`).
+/// Parse `Receiving objects: NN%` / `Resolving deltas: NN%` carriage-return
+/// updates out of `git clone --progress` stderr.
+fn parse_clone_percent(chunk: &[u8], current: u8) -> u8 {
+    let text = String::from_utf8_lossy(chunk);
+    // Scan for the last `NN%` in the chunk; git rewrites one line with \r.
+    let mut best = current;
+    let bytes = text.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' && i > 0 {
+            let mut j = i - 1;
+            while j > 0 && bytes[j - 1].is_ascii_digit() {
+                j -= 1;
+            }
+            if bytes[j].is_ascii_digit() {
+                if let Ok(value) = text[j..i].parse::<u8>() {
+                    // Cap at 99 until exit: 100% arrives with the done line.
+                    if value > best && value < 100 {
+                        best = value;
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+    best
+}
+
+/// Clone-local wait loop mirroring `run_bounded`'s contract (cancel → kill,
+/// capped output, success flag), plus stderr progress parsing. Kept separate
+/// from the shared runner so no other call site changes behavior.
+fn run_clone_with_progress(
+    mut child: std::process::Child,
+    cap: usize,
+    cancel: Option<&std::sync::atomic::AtomicBool>,
+    on_progress: Option<&dyn Fn(u8)>,
+) -> Result<crate::proc_runner::CommandOutput, RunFailure> {
+    use std::io::Read;
+    // Progress side-channel: the reader thread parses percents and sends only
+    // increases; the wait loop below drains and invokes the (non-Send) callback.
+    let (progress_tx, progress_rx) = std::sync::mpsc::channel::<u8>();
+    let mut stderr_reader = child.stderr.take();
+    let reader_handle = std::thread::spawn(move || {
+        let mut out = Vec::new();
+        let mut best: u8 = 0;
+        if let Some(stream) = stderr_reader.as_mut() {
+            let mut chunk = [0u8; 4096];
+            loop {
+                match stream.read(&mut chunk) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        if out.len() < cap {
+                            out.extend_from_slice(&chunk[..n.min(cap - out.len())]);
+                        } else {
+                            // Drain without growing: keep the pipe flowing.
+                            let mut drain = [0u8; 4096];
+                            while stream.read(&mut drain).map(|d| d).unwrap_or(0) > 0 {}
+                            break;
+                        }
+                        let next = parse_clone_percent(&chunk[..n], best);
+                        if next > best {
+                            best = next;
+                            let _ = progress_tx.send(best);
+                        }
+                    }
+                }
+            }
+        }
+        out
+    });
+    let stdout_reader = child.stdout.take().map(|mut stream| {
+        std::thread::spawn(move || {
+            use std::io::Read;
+            let mut out = Vec::new();
+            let mut chunk = [0u8; 4096];
+            loop {
+                match stream.read(&mut chunk) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        if out.len() < cap {
+                            out.extend_from_slice(&chunk[..n.min(cap - out.len())]);
+                        }
+                    }
+                }
+            }
+            String::from_utf8_lossy(&out).into_owned()
+        })
+    });
+    let mut last_reported: u8 = 0;
+    loop {
+        // Drain progress before checking exit so the final percent lands.
+        while let Ok(percent) = progress_rx.try_recv() {
+            if percent > last_reported {
+                last_reported = percent;
+                if let Some(report) = on_progress {
+                    report(percent);
+                }
+            }
+        }
+        if let Some(flag) = cancel {
+            if flag.load(std::sync::atomic::Ordering::Relaxed) {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(RunFailure::Cancelled);
+            }
+        }
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                while let Ok(percent) = progress_rx.try_recv() {
+                    if percent > last_reported {
+                        last_reported = percent;
+                        if let Some(report) = on_progress {
+                            report(percent);
+                        }
+                    }
+                }
+                let stderr_bytes = reader_handle.join().unwrap_or_default();
+                let stdout_text = stdout_reader.map(|h| h.join().unwrap_or_default()).unwrap_or_default();
+                let stderr_text = String::from_utf8_lossy(&stderr_bytes).into_owned();
+                return Ok(crate::proc_runner::CommandOutput {
+                    success: status.success(),
+                    status_code: status.code(),
+                    stdout: stdout_text,
+                    stderr: stderr_text,
+                });
+            }
+            Ok(None) => std::thread::sleep(std::time::Duration::from_millis(25)),
+            Err(error) => {
+                let _ = child.kill();
+                return Err(RunFailure::Io(format!("Failed to wait for child process: {error}")));
+            }
+        }
+    }
+}
+pub fn clone_git_repository_cancellable_with_progress(
+    url: &str,
+    parent_dir: &str,
+    clone_id: Option<&str>,
+    on_progress: Option<&dyn Fn(u8)>,
+) -> Result<String, String> {
     let parent = PathBuf::from(parent_dir);
     if !parent.exists() {
         std::fs::create_dir_all(&parent)
@@ -2284,7 +2431,7 @@ pub fn clone_git_repository_cancellable(
     };
 
     let child = Command::new("git")
-        .args(["clone", "--", url])
+        .args(["clone", "--progress", "--", url])
         .current_dir(&parent)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -2292,7 +2439,7 @@ pub fn clone_git_repository_cancellable(
         .spawn()
         .map_err(|e| format!("Failed to run git clone: {e}"))?;
 
-    let output = run_bounded(child, None, OUTPUT_CAP_BYTES, Some(cancel.as_ref())).map_err(
+    let output = run_clone_with_progress(child, OUTPUT_CAP_BYTES, Some(cancel.as_ref()), on_progress).map_err(
         |failure| match failure {
             RunFailure::Cancelled => "Clone cancelled".to_string(),
             other => other.message(),
