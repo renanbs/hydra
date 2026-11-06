@@ -2855,18 +2855,17 @@
    "components/sidebar/NonGitFolderDialog.tsx:154"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim Orca)",
-    "src/components/sidebar/NonGitFolderDialog.tsx (adapter: controlled-props dialog; SSH/runtime via NonGitFolderModalHost)",
-    "NonGitFolderDialog.parity.test.tsx + NonGitFolderModalHost.parity.test.tsx"
+    "src/reference/components/sidebar/NonGitFolderDialog.tsx (verbatim)",
+    "addNonGitFolder: ramo SSH dedicado via catalog_add_remote_repo kind folder + upsert + fetchWorktrees ssh: + ativacao (Orca addRemote)",
+    "NonGitFolderModalHost ja passa connectionId; AddRepoPathOptions.connectionId",
+    "nongit-ssh-branch.parity.test.ts 1/1"
    ],
    "backend": [
     "invoke('catalog_add_folder') -> src/components/sidebar/AddRepoDialog.tsx:60 -> src-tauri/src/lib.rs:277"
    ],
-   "missing_behaviors": [
-    "ramo SSH dedicado addRemote (Hydra roteia SSH via catalog_add_remote_repo)"
-   ],
+   "missing_behaviors": [],
    "notes": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder.",
    "note": "Local folders are probed with is_git_repository and confirmed with the Git-features caveat, path and host label before catalog_add_folder."
   },
