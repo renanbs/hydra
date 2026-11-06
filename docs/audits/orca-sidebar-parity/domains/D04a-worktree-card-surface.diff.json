@@ -2038,17 +2038,16 @@
     "components/sidebar/WorktreeMetaDialog.tsx:251"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/App.tsx:4569-4576",
-     "src-tauri/src/lib.rs:539-560",
-     "src-tauri/src/db.rs:1270-1300",
-     "src-tauri/src/db.rs:1519-1560"
+     "src/reference/store/slices/worktrees/metadata/update-worktree-meta.ts + worktree-meta-persist.ts + WorktreeMetaDialog.tsx (trecho save) (verbatim)",
+     "src/store/slices/worktrees/metadata/update-worktree-meta.ts (adapter real: resolve por id+host, persiste com host, falha fechada)",
+     "src-tauri/src/db.rs (coluna execution_host_id + COALESCE local + save_worktree_metadata_for_host)",
+     "src-tauri/src/lib.rs (comando save_worktree_metadata com execution_host_id)",
+     "update-worktree-meta.parity.test.ts (4 testes: persiste, unknown, gate SSH, erro)"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "Qualificação do save pelo host (worktree_metadata é keyed por path; dois hosts com o mesmo path compartilham a linha)"
-    ],
+    "missing_behaviors": [],
     "notes": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key.",
     "note": "Payload is validated in the dialog and persisted atomically; the table still lacks a host-qualified key."
    }
