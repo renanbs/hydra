@@ -4,7 +4,7 @@
 ## MISSING — 0 capabilities
 
 
-## PARTIAL — 6 capabilities
+## PARTIAL — 5 capabilities
 
 
 ### D02b-hosts-ssh-remote (1)
@@ -20,7 +20,6 @@
 - **D03b-015** — Gerenciamento de seleção múltipla e mutações de status/pino/ordem de worktrees na lista | falta: moveWorktreeToStatus/moveWorktreesToStatus* (board kanban — sem Kanban no Hydra); dropWorktreesOnWorkspaceBoard (sem Kanban); carregamento automatico de linhagem ao mover (acoplado ao board) | components/sidebar/WorktreeList.tsx:178-187
 - **D03b-017** — Abertura de caixas de diálogo modais e configurações a partir de ações de repositório e grupos no sidebar | falta: handleOpenRepoSettings (página de settings do repo): Hydra abre o modal global de Settings (App.tsx:3661 onOpenSettings); confirmação 'confirm-remove-folder': App.tsx:1612 remove direto; handleCreateFolderWorkspace com parentPath (o '+' do grupo usa a primeira folder workspace do grupo: WorktreeList.tsx:481-500) | backend: invoke('catalog_set_worktree_visibility') -> src/components/sidebar/WorktreeSidebar.tsx:181 | components/sidebar/WorktreeList.tsx:195-235
 
-### D04a-worktree-card-surface (2)
+### D04a-worktree-card-surface (1)
 
-- **D04a-010** — Renderiza a linha de metadados do card com repo, host, identidade (branch/caminho/detached HEAD), badge de conflito e cache timer | falta: hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos | components/sidebar/worktree-card-meta-row.tsx:48
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra) | components/sidebar/WorktreeCardSshHostControl.tsx:86

@@ -214,15 +214,14 @@
     "components/sidebar/worktree-card-meta-row.tsx:100"
    ],
    "hydra": {
-    "status": "partial",
+    "status": "parity",
     "evidence": [
-     "src/components/sidebar/use-worktree-card-controller.ts — conflictOperation real do store (gitConflictOperationByWorktree), remoteBranchConflict derivado, showLineageChildChip = count>0 && toggle (era hardcoded)",
-     "src/components/sidebar/worktree-card-meta-row.tsx — ahead/behind chips, detached âmbar com tooltip lateral, host badge (já existiam; controller agora alimenta)"
+     "Orca build-rows.ts:111: labels sobre o conjunto global",
+     "WorktreeList: getMixedWorktreeHostContextLabels(visibleWorktrees) global",
+     "mixed-host-labels.parity.test.ts: mixed rotula todos, single-host undefined"
     ],
     "backend": [],
-    "missing_behaviors": [
-     "hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos"
-    ],
+    "missing_behaviors": [],
     "notes": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not.",
     "note": "The prompt-cache countdown is live. The host chip, conflict badge, ahead/behind chips and the amber detached-HEAD warning are not."
    },
