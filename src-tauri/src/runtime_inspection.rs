@@ -48,7 +48,9 @@ const CLI_VERSION_TIMEOUT: Duration = Duration::from_secs(3);
 const GH_VIEWER_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Agent CLIs the sidebar offers as launch targets. Order is the card's order.
-pub const AGENT_CLI_IDS: &[&str] = &["omp", "claude", "cursor-agent", "codex"];
+/// `orca` rides the same probe: the Linear skill setup checks it on PATH
+/// (Rosetta D02c-004) the same way the launcher cards check theirs.
+pub const AGENT_CLI_IDS: &[&str] = &["omp", "claude", "cursor-agent", "codex", "orca"];
 
 // ─── Hooks ───────────────────────────────────────────────────────────
 
