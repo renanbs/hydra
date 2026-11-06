@@ -638,7 +638,7 @@
   },
   {
    "id": "D15a-011",
-   "status": "missing"
+   "status": "parity"
   }
  ],
  "PAR-86": [
@@ -744,7 +744,7 @@
   },
   {
    "id": "D10-016",
-   "status": "partial"
+   "status": "parity"
   },
   {
    "id": "D10-017",

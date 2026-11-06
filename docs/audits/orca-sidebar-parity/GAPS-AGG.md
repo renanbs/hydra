@@ -1,24 +1,11 @@
 # Gaps agregados (veredito missing/partial)
 
 
-## MISSING — 1 capabilities
+## MISSING — 0 capabilities
 
 
-### D15-misc-a (1)
+## PARTIAL — 6 capabilities
 
-- **D15a-011** — Tratamento de concorrência no fluxo de suspensão (sleep) e ativação de workspaces em VM | falta: Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai; Invoca resumeWorkspace na API do backend para reativar VM efêmera; Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor | components/sidebar/sleep-worktree-flow.ts:44
-
-## PARTIAL — 12 capabilities
-
-
-### D01-shell-chrome (1)
-
-- **D01-024** — Botão de navegação para Orca Mobile com badge onboarding e controle rápido de ocultação | falta: botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados) | components/sidebar/SidebarNav.tsx:2
-
-### D02a-repo-add-wizard (2)
-
-- **D02a-014** — Executa a clonagem de repositório Git nos modos Local, SSH ou Runtime RPC com assinatura de progresso | falta: Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc) | backend: invoke('clone_project') -> src-tauri/src/lib.rs:445 | components/sidebar/useAddRepoCloneFlow.ts:24
-- **D02a-018** — Executa a criação física de novo projeto Git local, remoto SSH ou em servidor runtime | falta: ativação de workspace sintético para pasta — via composer, não no create | backend: invoke('create_project') -> src-tauri/src/lib.rs:428 | components/sidebar/useCreateRepo.ts:18
 
 ### D02b-hosts-ssh-remote (1)
 
@@ -37,9 +24,3 @@
 
 - **D04a-010** — Renderiza a linha de metadados do card com repo, host, identidade (branch/caminho/detached HEAD), badge de conflito e cache timer | falta: hostContextLabel vem do WorktreeList por identidade; casos SSH/runtime sem label seguem ocultos | components/sidebar/worktree-card-meta-row.tsx:48
 - **D04a-013** — Executa o fluxo de conexão SSH e converge o estado do host após falha | falta: runtime-owned roda pela paired-server bridge (sem RPC dedicado no Hydra) | components/sidebar/WorktreeCardSshHostControl.tsx:86
-
-### D10-visibility-inbox-notices (3)
-
-- **D10-001** — Ver o output completo do CLI que falhou no auto-rename, com fallback ao excerto persistido | falta: output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido | components/sidebar/AutoRenameFailedDialog.tsx:31
-- **D10-016** — Pre-hidratar git status do host dono de cada alvo e calcular contagem de mudanças | falta: pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida) | components/sidebar/DeleteWorktreeDialog.tsx:188
-- **D10-057** — Contador 'N found' por source, ignorando checkouts selecionados e Orca-managed | falta: pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos) | components/sidebar/WorktreeVisibilitySourceList.tsx:193

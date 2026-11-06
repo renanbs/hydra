@@ -14,7 +14,7 @@ import { AddRepoCreateStep } from "./AddRepoCreateStep";
 import { AddRepoNestedImportStep } from "./AddRepoNestedImportStep";
 import { AddProjectFromFolderDialog } from "./AddProjectFromFolderDialog";
 import { RemoteFileBrowser } from "./RemoteFileBrowser";
-import { abortClone, cloneRepository, createCloneId } from "../../lib/clone-client";
+import { abortClone, cloneRepository, createCloneId, onCloneProgress } from "../../lib/clone-client";
 import { addPairedServerCatalogRepo, addRemoteCatalogRepo } from "../../lib/catalog-client";
 import { cloneSshRepository, createSshProject } from "../../store/ssh-remote-bridge";
 import {
@@ -206,6 +206,7 @@ export function AddRepoDialog({
   const [cloneDest, setCloneDest] = useState(getDefaultCloneParent(workspaceDir));
   const [cloneError, setCloneError] = useState<string | null>(null);
   const [isCloning, setIsCloning] = useState(false);
+  const [cloneProgress, setCloneProgress] = useState<{ phase: string; percent: number } | null>(null);
 
   const [createName, setCreateName] = useState("");
   const [createParent, setCreateParent] = useState(workspaceDir);
@@ -284,10 +285,22 @@ export function AddRepoDialog({
     onResetHostScopedState: resetHostScopedState
   });
 
-  // Clone progress: Orca subscribes to `window.api.repos.onCloneProgress`; Hydra's
-  // `clone_project` command streams nothing yet, so the dialog passes no progress
-  // and the step shows its indeterminate bar instead of a fabricated percentage.
-  const cloneProgress = null as { phase: string; percent: number } | null;
+  // D02a-014 Rosetta (Orca `window.api.repos.onCloneProgress`): subscribe while
+  // a local clone runs; `clone_project` emits `clone:progress` per clone id.
+  useEffect(() => {
+    if (!isCloning || !cloneIdRef.current) {
+      return;
+    }
+    const cloneId = cloneIdRef.current;
+    let unlisten: (() => void) | undefined;
+    setCloneProgress(null);
+    void onCloneProgress(cloneId, setCloneProgress).then((stop) => {
+      unlisten = stop;
+    });
+    return () => {
+      unlisten?.();
+    };
+  }, [isCloning]);
 
   useEffect(() => {
     if (!isOpenNow) return;

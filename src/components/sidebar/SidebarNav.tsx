@@ -1,12 +1,15 @@
 // Ported from Orca (https://github.com/stablyai/orca) — Copyright (c) 2026 Lovecast Inc. (MIT)
 // Source: components/sidebar/SidebarNav.tsx
-import { BookOpen, CalendarClock, Files, Search, Smartphone } from 'lucide-react'
+import React from 'react'
+ import { BookOpen, CalendarClock, EyeOff, Files, Search, Smartphone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
 import { ShortcutKeyCombo } from '../ShortcutKeyCombo'
+import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { HydraSettings } from '@/shared/settings-types'
 import type { HydraProject, WorktreeSession } from './types'
 import { AgentDashboardSidebarEntry } from './AgentDashboardSidebarEntry'
@@ -78,6 +81,9 @@ export function SidebarNav({
   const artifactsActive = activeView === 'artifacts'
   const skillsActive = activeView === 'skills'
   const mobileOnboardingBadge = useMobileSidebarOnboardingBadge(showMobileButton)
+  const hideMobileButton = React.useCallback(() => {
+    onUpdateSettings?.({ showMobileButton: false })
+  }, [onUpdateSettings])
 
   return (
     <div
@@ -244,6 +250,38 @@ export function SidebarNav({
                   </span>
                 ) : null}
               </button>
+              {mobileOnboardingBadge.hasPairedDevice ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      className={cn(
+                        'mr-1 text-worktree-sidebar-foreground/55 hover:bg-worktree-sidebar-foreground/10 hover:text-worktree-sidebar-foreground',
+                        mobileActive &&
+                          'text-worktree-sidebar-accent-foreground/70 hover:text-worktree-sidebar-accent-foreground'
+                      )}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        hideMobileButton()
+                      }}
+                      aria-label={translate(
+                        'auto.components.sidebar.SidebarNav.d599269755',
+                        'Hide from sidebar'
+                      )}
+                    >
+                      <EyeOff className="size-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={4}>
+                    {translate(
+                      'auto.components.sidebar.SidebarNav.d599269755',
+                      'Hide from sidebar'
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
             </div>
           </ContextMenuTrigger>
           <HideSidebarMenu onHide={() => onUpdateSettings?.({ showMobileButton: false })} />

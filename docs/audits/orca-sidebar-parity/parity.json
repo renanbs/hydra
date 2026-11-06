@@ -541,15 +541,17 @@
    "components/sidebar/mobile-sidebar-onboarding-badge.ts:1-55"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/SidebarNav.tsx — botão Smartphone Orca Mobile condicionado a showMobileButton, badge New até dismiss, dismiss+openMobilePage no click, Hide from sidebar via context menu",
-    "src/components/sidebar/mobile-sidebar-onboarding-badge.ts — Rosetta com persistência localStorage"
+    "src/reference/components/sidebar/mobile-sidebar-onboarding-badge.ts + src/reference/components/mobile/paired-mobile-devices.ts (verbatim)",
+    "src/components/mobile/paired-mobile-devices.ts (adapter: request unico, loaded/error, superseded)",
+    "src/components/sidebar/mobile-sidebar-onboarding-badge.ts (adapter: badge + hasPairedDevice live)",
+    "src/components/sidebar/SidebarNav.tsx (EyeOff inline com hasPairedDevice)",
+    "src-tauri (mobile_list_devices; vazio = sem pareamento)",
+    "paired-mobile-devices.parity.test.ts (3) + badge/nav atualizados"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "botão inline EyeOff após pareamento (hasPairedDevice sempre false: sem comando que liste devices pareados)"
-   ],
+   "missing_behaviors": [],
    "notes": "Busca em 5 passos: (1) 'mobile-sidebar-onboarding-badge.ts' -> inexistente em src (0 hits); (2) label 'Orca Mobile' -> só strings de settings search (mobile-settings-search.ts:52-56); (3) openMobilePage existe em ui-slice-view-actions.ts:95 mas nenhum .tsx consome; (4) há pareamento (src/components/PairingModal.tsx + comando get_pairing_qr em src-tauri/src/lib.rs) sem entrada de sidebar; (5) census-v3 static_sidebar: 'Orca MobileNew' [8,145,264,32] no Orca. Escape do runtime coberto por esta linha."
   },
   "domain": "D01-shell-chrome"
@@ -1435,18 +1437,18 @@
    "components/sidebar/useAddRepoCloneFlow.ts:153"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:handleClone — local via cloneRepository/clone_abort, SSH via cloneSshRepository, runtime via clonePairedServerRepository (repo.clone E2EE); toast Repository cloned; notifyProjectAdded com executionHostId + source clone_url",
-    "src/store/paired-server-repo-bridge.ts",
-    "src/store/ssh-remote-bridge.ts"
+    "src/reference/components/sidebar/useAddRepoCloneFlow.ts (verbatim)",
+    "Rust: git clone --progress + parse NN% + emit clone:progress por clone id",
+    "src/lib/clone-client.ts onCloneProgress (adapter da assinatura onCloneProgress)",
+    "AddRepoDialog: subscription durante isCloning; step mostra barra determinada",
+    "SSH/runtime via bridges proprias (cloneSshRepository/createSshProject, paired-server) + catalog + onGitRepoReady clone_url"
    ],
    "backend": [
     "invoke('clone_project') -> src-tauri/src/lib.rs:445"
    ],
-   "missing_behaviors": [
-    "Assinatura de window.api.repos.onCloneProgress (progresso em tempo real: clone_project não faz streaming); roteamento SSH/runtime via bridges próprias (não cloneRemote/runtimeRpc)"
-   ],
+   "missing_behaviors": [],
    "notes": "Clone local existe: invoke('clone_project', {url,parentDir}) (77-79), erro via String(err) (88). Sem progresso/runtime/SSH/store."
   },
   "domain": "D02a-repo-add-wizard"
@@ -1522,17 +1524,17 @@
    "components/sidebar/useCreateRepo.ts:124"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/components/sidebar/AddRepoDialog.tsx:handleCreate — local/SSH/runtime com toasts de dedup, atualização de worktrees + onGitRepoReady, pickDirectory nativo",
-    "gen/mount refs contra submissões obsoletas"
+    "src/reference/components/sidebar/useCreateRepo.ts (verbatim)",
+    "AddRepoDialog handleCreate: local/SSH/runtime, dedup Project already added, toast Project created, notifyProjectAdded (onGitRepoReady + default-checkout)",
+    "App handleProjectAdded: kind folder ativa workspace sintetico; git segue handoff",
+    "pickDirectory nativo via plugin-dialog; remotos digitam path no host"
    ],
    "backend": [
     "invoke('create_project') -> src-tauri/src/lib.rs:428"
    ],
-   "missing_behaviors": [
-    "ativação de workspace sintético para pasta — via composer, não no create"
-   ],
+   "missing_behaviors": [],
    "notes": "Criação local existe: invoke('create_project', {name,parentDir,initGit:true}) (98-102) + retorno onProjectAdded. Backend rastreado. Sem dedup/worktrees/ssh/runtime."
   },
   "domain": "D02a-repo-add-wizard"
@@ -13712,16 +13714,14 @@
    "components/sidebar/AutoRenameFailedDialog.tsx:147"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src-tauri/src/lib.rs:596-624",
-    "src/components/sidebar/AutoRenameFailedDialog.tsx:20-70",
-    "src/components/sidebar/AutoRenameFailedDialog.parity.test.tsx:20-56"
+    "src/reference/components/sidebar/AutoRenameFailedDialog.tsx (verbatim)",
+    "AutoRenameFailedDialog.tsx (adapter: full output via get_branch_rename_failure_output + fallback excerto; copy)",
+    "AutoRenameFailedDialog.parity.test.tsx"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "output de CLI propriamente dito: o auto-rename do Hydra é determinístico (slug do prompt), então não existe stdout/stderr capturado; o comando devolve o excerto persistido"
-   ],
+   "missing_behaviors": [],
    "notes": "The fetch-and-fallback contract exists and is tested; the data source is the persisted excerpt because Hydra never runs a naming CLI.",
    "note": "The fetch-and-fallback contract exists and is tested; the data source is the persisted excerpt because Hydra never runs a naming CLI."
   },
@@ -14086,15 +14086,14 @@
    "components/sidebar/DeleteWorktreeDialog.tsx:378"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/App.tsx:2175-2210",
-    "src/components/sidebar/worktree-delete-dispatch.ts:10-16"
+    "src/reference/components/sidebar/DeleteWorktreeDialog.tsx + use-delete-worktree-status-hydration.ts (verbatim)",
+    "use-delete-worktree-status-hydration.ts (adapter: pre-hidrata local, remoto=null unknown; ordem dependencia)",
+    "App.tsx (contadores no dialog)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "pré-hidratação de git status no host remoto (só o dono local é sondado; alvos SSH/runtime ficam com contagem desconhecida)"
-   ],
+   "missing_behaviors": [],
    "note": "Local targets hydrate with a staleness guard; remote targets deliberately report unknown instead of a local count.",
    "notes": "Local targets hydrate with a staleness guard; remote targets deliberately report unknown instead of a local count."
   },
@@ -15001,16 +15000,14 @@
    "components/sidebar/WorktreeVisibilitySourceList.tsx:250"
   ],
   "hydra": {
-   "status": "partial",
+   "status": "parity",
    "evidence": [
-    "src/lib/worktree-visibility-sources.ts:406-435",
-    "src/components/sidebar/WorktreeVisibilityDialog.tsx:404-414",
-    "src/lib/worktree-visibility-sources.parity.test.ts:22-44"
+    "src/reference/components/sidebar/WorktreeVisibilitySourceList.tsx (verbatim)",
+    "countWorktreesByVisibilitySource (pula selectedCheckout + orca-managed)",
+    "WorktreeVisibilityDialog.tsx (N found por source)"
    ],
    "backend": [],
-   "missing_behaviors": [
-    "pular checkouts selecionados e ownership orca-managed (as linhas de recuperação do Hydra não carregam esses campos)"
-   ],
+   "missing_behaviors": [],
    "note": "A base configurada do built-in agora conta como 'other'; o skip por ownership depende de dados que o scan não expõe.",
    "notes": "A base configurada do built-in agora conta como 'other'; o skip por ownership depende de dados que o scan não expõe."
   },
@@ -16731,14 +16728,15 @@
    "components/sidebar/sleep-worktree-activation-race.test.ts:81"
   ],
   "hydra": {
-   "status": "missing",
-   "evidence": [],
-   "backend": [],
-   "missing_behaviors": [
-    "Fecha navegadores e terminais ao suspender worktrees sem deixar timers ou chamadas atrasadas de ativação do pai",
-    "Invoca resumeWorkspace na API do backend para reativar VM efêmera",
-    "Mantém o worktree selecionado na UI caso a inicialização da VM falhe e exibe toast com a mensagem de erro do provedor"
+   "status": "parity",
+   "evidence": [
+    "src/reference/lib/sidebar-worktree-activation.ts + src/reference/components/sidebar/sleep-worktree-activation-race.test.ts (verbatim)",
+    "src/lib/sidebar-worktree-activation.ts (adapter: resumeEphemeralVmOnActivation puro + wakeEphemeralVmForSleptWorktree; wake apos ativacao, falha mantem selecionado + toast)",
+    "src/components/sidebar/sleep-worktree-flow.ts (adapter: teardown browsers->terminais->VM, guards, batch)",
+    "src/lib/sidebar-worktree-activation-race.parity.test.ts (3 testes: sem ativacao atrasada, resume failure, toast)"
    ],
+   "backend": [],
+   "missing_behaviors": [],
    "notes": "Não localizado após busca em 5 passos: (1) homônimos sleep-worktree-flow/sidebar-worktree-activation inexistentes em src/**; (2) 'resumeWorkspace'/'slept'/'shutdownWorktreeBrowsers'/'shutdownWorktreeTerminals' → 0 hits em produção (só fixtures: src/hooks/ipc-events-*.ts mencionam onSleepWorktree como stub); (3) nenhum store/hook executa sleep/resume de worktree — há apenas sleepingAgentSessionsByPaneKey (src/store/index.ts:123) e o filtro showSleepingWorkspaces (visible-worktrees.ts:168), que escondem linhas inertes, não suspendem/reativam VM; (4) backend ausente: index/hydra_tauri_commands.json lista 110 comandos e nenhum de sleep/resume/vm/ephemeral; 'ephemeralVm' no TS é só campo/seleção de receita do composer (src/hooks/composer-state/*, src/components/settings/ephemeral-vms-search.ts); (5) sem equivalente."
   },
   "par": [

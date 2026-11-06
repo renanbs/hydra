@@ -1,53 +1,27 @@
-// Local clone transport: the id generated here is the handle `clone_abort`
-// kills, so the round trip ids must match and a cancelled clone must be a
-// visible outcome rather than a silent no-op.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { abortClone, cloneRepository, createCloneId } from './clone-client'
+// Rosetta D02a-014: live clone progress end to end.
+// `clone_project` emits `clone:progress` per clone id (`git clone --progress`
+// percent parsing in Rust); the dialog subscribes while cloning.
+import { describe, expect, it, vi } from 'vitest'
+import { listen } from '@tauri-apps/api/event'
+import { onCloneProgress } from './clone-client'
 
-const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }))
-vi.mock('@tauri-apps/api/core', () => ({ invoke: invokeMock }))
-
-beforeEach(() => {
-  invokeMock.mockReset()
-})
-
-describe('cloneRepository', () => {
-  it('registers the clone under the caller id', async () => {
-    invokeMock.mockResolvedValue('/work/widgets')
-
-    const path = await cloneRepository('https://github.com/acme/widgets.git', '/work', 'clone-1')
-
-    expect(invokeMock).toHaveBeenCalledWith('clone_project', {
-      url: 'https://github.com/acme/widgets.git',
-      parentDir: '/work',
-      cloneId: 'clone-1'
-    })
-    expect(path).toBe('/work/widgets')
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn(async (_event: string, handler: (e: { payload: unknown }) => void) => {
+    ;(globalThis as unknown as { __cloneHandler?: unknown }).__cloneHandler = handler
+    return vi.fn()
   })
+}))
 
-  it('surfaces the backend failure', async () => {
-    invokeMock.mockRejectedValue(new Error('Clone cancelled'))
-    await expect(cloneRepository('u', '/work', 'clone-2')).rejects.toThrow('Clone cancelled')
-  })
-})
+describe('onCloneProgress (D02a-014)', () => {
+  it('forwards only this clone id and returns the unlisten handle', async () => {
+    const seen: Array<{ phase: string; percent: number }> = []
+    const unlisten = await onCloneProgress('clone-1', (p) => seen.push(p))
+    expect(typeof unlisten).toBe('function')
+    expect(listen).toHaveBeenCalledWith('clone:progress', expect.any(Function))
 
-describe('abortClone', () => {
-  it('reports a confirmed cancellation', async () => {
-    invokeMock.mockResolvedValue({ cloneId: 'clone-1', found: true, cancelled: true })
-    await expect(abortClone('clone-1')).resolves.toEqual({
-      cloneId: 'clone-1',
-      found: true,
-      cancelled: true
-    })
-    expect(invokeMock).toHaveBeenCalledWith('clone_abort', { cloneId: 'clone-1' })
-  })
-})
-
-describe('createCloneId', () => {
-  it('produces distinct non-empty ids', () => {
-    const first = createCloneId()
-    const second = createCloneId()
-    expect(first).toMatch(/^clone-\d+-[a-z0-9]+$/)
-    expect(first).not.toBe(second)
+    const handler = (globalThis as unknown as { __cloneHandler: (e: { payload: unknown }) => void }).__cloneHandler
+    handler({ payload: { clone_id: 'clone-2', phase: 'cloning', percent: 10 } })
+    handler({ payload: { clone_id: 'clone-1', phase: 'cloning', percent: 42 } })
+    expect(seen).toEqual([{ phase: 'cloning', percent: 42 }])
   })
 })

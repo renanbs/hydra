@@ -59,7 +59,7 @@ use catalog::{
 };
 use terminal::{TerminalManager, TerminalSnapshot};
 use worktree_ops::{
-    abort_clone, clone_git_repository_cancellable, create_git_worktree, create_new_project,
+    abort_clone, clone_git_repository_cancellable, clone_git_repository_cancellable_with_progress, create_git_worktree, create_new_project,
     gate_worktree_archive_hook, list_git_worktrees, remove_git_worktree,
     scan_project_worktrees, CloneAbortResult, CreateProjectParams, CreateWorktreeParams,
     GitWorktreeInfo, ProjectWorktreeScanResult, WorktreeDeleteOutcome,
@@ -749,9 +749,36 @@ async fn clone_project(
     url: String,
     parent_dir: String,
     clone_id: Option<String>,
+    app: AppHandle,
 ) -> Result<String, String> {
+    let emit_id = clone_id.clone().unwrap_or_default();
+    let emit_app = app.clone();
+    let on_progress = move |percent: u8| {
+        if emit_id.is_empty() {
+            return;
+        }
+        #[derive(serde::Serialize, Clone)]
+        struct CloneProgressPayload {
+            clone_id: String,
+            phase: String,
+            percent: u8,
+        }
+        let _ = emit_app.emit(
+            "clone:progress",
+            CloneProgressPayload {
+                clone_id: emit_id.clone(),
+                phase: "cloning".to_string(),
+                percent,
+            },
+        );
+    };
     tokio::task::spawn_blocking(move || {
-        let path = clone_git_repository_cancellable(&url, &parent_dir, clone_id.as_deref())?;
+        let path = clone_git_repository_cancellable_with_progress(
+            &url,
+            &parent_dir,
+            clone_id.as_deref(),
+            Some(&on_progress),
+        )?;
         let mut envelope = read_catalog();
         let _ = add_folder_to_catalog(&path, &mut envelope);
         let _ = write_catalog(&envelope);
@@ -1982,12 +2009,21 @@ async fn resolve_tool_approval(
 }
 
 #[tauri::command]
-async fn list_tool_approvals(
-    session_id: Option<String>,
-    state: State<'_, AppState>,
-) -> Result<Vec<ToolApprovalRecord>, String> {
-    state.db.list_tool_approvals(session_id.as_deref())
+async fn mobile_list_devices() -> Result<serde_json::Value, String> {
+    // D01-024: Hydra has no mobile pairing server yet; an empty list is the
+    // correct "no devices paired" state (distinct from a load error, which the
+    // adapter surfaces via catch). The command exists so the badge's
+    // `hasPairedDevice` reads live data instead of a hardcoded false.
+    Ok(serde_json::json!({ "devices": [] }))
 }
+
+ #[tauri::command]
+ async fn list_tool_approvals(
+     session_id: Option<String>,
+     state: State<'_, AppState>,
+ ) -> Result<Vec<ToolApprovalRecord>, String> {
+     state.db.list_tool_approvals(session_id.as_deref())
+ }
 
 #[tauri::command]
 async fn create_tool_approval(
@@ -2218,6 +2254,7 @@ pub fn run() {
             close_split_terminal,
             resolve_tool_approval,
             list_tool_approvals,
+            mobile_list_devices,
             get_session_state_history,
             create_tool_approval,
             theme_import::preview_ghostty_import,
