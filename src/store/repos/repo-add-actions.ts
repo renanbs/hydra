@@ -12,8 +12,12 @@ import { translate } from '@/i18n/i18n'
 import {
   getRepoExecutionHostId,
   LOCAL_EXECUTION_HOST_ID,
-  toRuntimeExecutionHostId
+  toRuntimeExecutionHostId,
+  toSshExecutionHostId
 } from '../../shared/execution-host'
+import { addRemoteCatalogRepo } from '../../lib/catalog-client'
+import { catalogRepoToRepo } from '../../lib/catalog-store-projection'
+import { upsertAddedRepoWithProjectHostSetup } from '../../components/sidebar/add-repo-store-upsert'
 import type { RepoSlice } from './repo-state'
 import { ERROR_TOAST_DURATION } from './repo-state'
 import {
@@ -166,6 +170,62 @@ export function createRepoAddActions(
 
     addNonGitFolder: async (path, options) => {
       try {
+        // D02c-009 Rosetta (Orca `NonGitFolderDialog.addRemote`): SSH folders
+        // take the dedicated remote branch — `catalog_add_remote_repo` with
+        // kind folder — instead of the local/runtime `addRepoPath` route.
+        const sshConnectionId = options?.connectionId?.trim() || null
+        if (sshConnectionId) {
+          const displayName = options?.displayName?.trim() || undefined
+          const hadProjectBeforeAdd = get().repos.length > 0
+          const envelope = await addRemoteCatalogRepo({
+            path,
+            connectionId: sshConnectionId,
+            executionHostId: toSshExecutionHostId(sshConnectionId),
+            kind: 'folder',
+            ...(displayName ? { displayName } : {})
+          })
+          const row = envelope.repos.find(
+            (candidate) => candidate.path === path && candidate.connectionId === sshConnectionId
+          )
+          if (!row) {
+            throw new Error('Remote folder was not registered in the catalog')
+          }
+          const { repo } = upsertAddedRepoWithProjectHostSetup(catalogRepoToRepo(row), {
+            sshConnectionId
+          })
+          await markOnboardingProjectAdded('addedFolder')
+          const executionHostId = toSshExecutionHostId(sshConnectionId)
+          await get().fetchWorktrees(repo.id, { executionHostId })
+          const folderWorktree = get().worktreesByRepo[repo.id]?.find(
+            (worktree: unknown) =>
+              typeof worktree === 'object' &&
+              worktree !== null &&
+              'hostId' in worktree &&
+              (worktree as { hostId: unknown }).hostId === executionHostId
+          )
+          if (folderWorktree) {
+            const onboarding = await window.api.onboarding.get().catch(() => null)
+            const {
+              resolveDismissedOnboardingFolderAgentLaunch,
+              revealOnboardingFolderWithAgentLaunch
+            } = await import('@/lib/onboarding-folder-agent-launch')
+            const launch = resolveDismissedOnboardingFolderAgentLaunch({
+              store: get(),
+              onboarding,
+              hasExistingProject: hadProjectBeforeAdd,
+              executionHostId,
+              nativeChatTranscriptIsLocalReadable: isNativeChatTranscriptLocalReadable(
+                repo.connectionId
+              )
+            })
+            await revealOnboardingFolderWithAgentLaunch({
+              worktreeId: (folderWorktree as { id: string }).id,
+              executionHostId,
+              launch
+            })
+          }
+          return repo
+        }
         const hadProjectBeforeAdd = get().repos.length > 0
         const repo = await get().addRepoPath(path, 'folder', options)
         if (!repo) {

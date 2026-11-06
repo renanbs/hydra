@@ -134,6 +134,8 @@ export type FolderWorkspacePathStatusRouteOptions = { runtimeEnvironmentId?: str
 
 export type AddRepoPathOptions = {
   runtimeEnvironmentId?: string | null
+  /** SSH target id: routes folder adds through the dedicated remote branch. */
+  connectionId?: string | null
   /** Overrides the host's basename naming for the new project. */
   displayName?: string
 }
