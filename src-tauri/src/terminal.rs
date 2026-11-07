@@ -17,6 +17,10 @@ pub struct TerminalSession {
     /// Working directory the PTY was spawned in, when the caller supplied one.
     /// Used by workspace forget to close sessions that have not been persisted.
     pub cwd: Option<String>,
+    /// SSH connection id when this PTY wraps `ssh -t` instead of a local
+    /// shell. The child is the local ssh client; resize propagates with
+    /// `stty` over the same channel (rail d).
+    pub remote_connection_id: Option<String>,
     /// Handle of the spawned process, kept so `close_session` can signal it and
     /// reap it. Without the wait, the process becomes a zombie when it exits.
     pub child: Box<dyn Child + Send + Sync>,
@@ -76,6 +80,78 @@ impl TerminalManager {
         self.start_session_inner(session_id, executable, args, cwd, None)
     }
 
+    /// Single-quote escaping for one remote path segment inside `cd … && exec`.
+    fn shell_quote_remote(value: &str) -> String {
+        format!("'{}'", value.replace('\'', "'\\''"))
+    }
+
+    /// master (`ssh -S <socket> -t -t <dest> <shell>`). The local PTY, shadow
+    /// buffer, Herdr push and close/resize paths are unchanged — only the
+    /// spawn differs. Requires a live master: `ssh_connect_target` first.
+    /// `cwd` is a *remote* path here (passed to the remote shell via `cd`).
+    pub fn start_session_remote(
+        &self,
+        session_id: &str,
+        connection_id: &str,
+        shell: &str,
+        remote_cwd: Option<String>,
+        app: AppHandle,
+    ) -> Result<(), String> {
+        self.start_session_remote_inner(session_id, connection_id, shell, remote_cwd, Some(app))
+    }
+
+    fn start_session_remote_inner(
+        &self,
+        session_id: &str,
+        connection_id: &str,
+        shell: &str,
+        remote_cwd: Option<String>,
+        app: Option<AppHandle>,
+    ) -> Result<(), String> {
+        let persisted = self.db.get_ssh_state()?;
+        let target = persisted
+            .ssh_targets
+            .into_iter()
+            .find(|target| target.id == connection_id)
+            .ok_or_else(|| format!("SSH target not found: {connection_id}"))?;
+        let socket = persisted
+            .ssh_connection_records
+            .into_iter()
+            .find(|record| record.connection_id == connection_id)
+            .and_then(|record| record.master_socket)
+            .map(std::path::PathBuf::from)
+            .filter(|path| path.exists())
+            .ok_or_else(|| {
+                format!("SSH target {connection_id} has no live master: connect first")
+            })?;
+        let mut ssh_args = crate::ssh_hosts::build_ssh_base_args(&target);
+        ssh_args.retain(|arg| arg != "-T");
+        ssh_args.push("-S".to_string());
+        ssh_args.push(socket.to_string_lossy().to_string());
+        // Forced pty on the far end even when stdin is not a tty here; the
+        // second -t keeps it when the master multiplexes without one.
+        ssh_args.push("-t".to_string());
+        ssh_args.push("-t".to_string());
+        ssh_args.push(crate::ssh_hosts::build_ssh_destination(&target));
+        let remote_shell = if shell.trim().is_empty() {
+            "$SHELL".to_string()
+        } else {
+            shell.to_string()
+        };
+        let remote_command = match remote_cwd {
+            Some(dir) if !dir.trim().is_empty() => format!("cd {} && exec {}", Self::shell_quote_remote(&dir), remote_shell),
+            _ => format!("exec {}", remote_shell),
+        };
+        ssh_args.push(remote_command);
+        let mut cmd = CommandBuilder::new("ssh");
+        for arg in ssh_args {
+            cmd.arg(arg);
+        }
+        // Local cwd is irrelevant (the shell runs remotely); keep the process
+        // spawn rooted at the daemon cwd so a missing local dir never blocks.
+        self.spawn_with_builder(session_id, "ssh", cmd, None, app, Some(connection_id.to_string()))
+    }
+
     fn start_session_inner(
         &self,
         session_id: &str,
@@ -83,6 +159,22 @@ impl TerminalManager {
         args: Vec<String>,
         cwd: Option<String>,
         app: Option<AppHandle>,
+    ) -> Result<(), String> {
+        let mut cmd = CommandBuilder::new(executable);
+        for arg in args {
+            cmd.arg(arg);
+        }
+        self.spawn_with_builder(session_id, executable, cmd, cwd, app, None)
+    }
+
+    fn spawn_with_builder(
+        &self,
+        session_id: &str,
+        executable: &str,
+        mut cmd: CommandBuilder,
+        cwd: Option<String>,
+        app: Option<AppHandle>,
+        remote_connection_id: Option<String>,
     ) -> Result<(), String> {
         let mut guard = self.sessions.lock();
         if guard.contains_key(session_id) {
@@ -99,10 +191,6 @@ impl TerminalManager {
             })
             .map_err(|e| format!("Failed to open PTY: {e}"))?;
 
-        let mut cmd = CommandBuilder::new(executable);
-        for arg in args {
-            cmd.arg(arg);
-        }
         // xterm.js paints 24-bit SGR. The parent is often an agent shell
         // (TERM=dumb, NO_COLOR, CI). Claude Code returns color depth 1 as soon
         // as CI is set, before it reads COLORTERM, so the logo stays gray.
@@ -257,6 +345,7 @@ impl TerminalManager {
                 agent_id: executable.to_string(),
                 output,
                 cwd: cwd.clone(),
+                remote_connection_id: remote_connection_id.clone(),
                 child,
                 reader_thread: Some(reader_thread),
             },
@@ -395,6 +484,14 @@ impl TerminalManager {
                 pixel_height: 0,
             })
             .map_err(|e| format!("Failed to resize PTY: {e}"))?;
+            // Rail (d): the remote end has its own pty (`ssh -t`); mirror the
+            // size there so full-screen apps reflow. Best effort: a stale
+            // master fails the write, never the local resize.
+            if sess.remote_connection_id.is_some() {
+                let mut w = sess.writer.lock();
+                let _ = w.write_all(format!("\nstty rows {rows} cols {cols}\n").as_bytes());
+                let _ = w.flush();
+            }
             Ok(())
         } else {
             Err(format!("No active terminal session for ID '{session_id}'"))
@@ -738,5 +835,16 @@ mod tests {
 
         manager.close_session("cwd-hit");
         manager.close_session("cwd-miss");
+    }
+
+    /// Rail (d): a remote PTY without a live master refuses instead of
+    /// spawning a hanging ssh. No target in this in-memory DB at all.
+    #[test]
+    fn remote_session_without_master_refuses_to_spawn() {
+        let manager = TerminalManager::new(Arc::new(crate::db::DatabaseManager::new_in_memory().expect("in-memory db")));
+        let err = manager
+            .start_session_remote_inner("test-remote-1", "ghost-target", "/bin/sh", None, None)
+            .expect_err("must refuse without target/master");
+        assert!(err.contains("SSH target not found"), "unexpected: {err}");
     }
 }

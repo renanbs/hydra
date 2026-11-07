@@ -1452,6 +1452,23 @@ async fn start_agent_terminal(
     state.terminal.start_session(&session_id, &executable, args, cwd, app)
 }
 
+/// Rail (d): opens a PTY whose child dials a persistent SSH master.
+/// Requires `ssh_connect_target` first; the master socket must be live.
+#[tauri::command]
+async fn start_remote_terminal(
+    session_id: String,
+    connection_id: String,
+    shell: Option<String>,
+    cwd: Option<String>,
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let shell = shell.unwrap_or_else(|| "$SHELL".to_string());
+    state
+        .terminal
+        .start_session_remote(&session_id, &connection_id, &shell, cwd, app)
+}
+
 #[tauri::command]
 async fn resize_terminal(
     session_id: String,
@@ -2231,6 +2248,7 @@ pub fn run() {
             save_session_record,
             delete_session_record,
             start_agent_terminal,
+            start_remote_terminal,
             send_terminal_input,
             get_terminal_snapshot,
             check_agent_state,
