@@ -4614,15 +4614,20 @@ export default function App() {
   // the terminal emits (zsh, vim, agent frames).
   const handleTabTitleChange = useCallback((sessionId: string, title: string) => {
     const currentWorkspacePath = activeWorktreePath || activeProject?.path;
+    // Updaters must stay pure: the store mirror is computed from the same
+    // pass after `setTabs` commits, never inside the updater (React may run it
+    // during render → `Cannot update a component while rendering`).
+    let mirroredTabId: string | null = null;
     setTabs((prev) =>
       prev.map((t) => {
         if (t.customTitle || t.sessionId !== sessionId) return t;
-        if (currentWorkspacePath) {
-          useAppStore.getState().updateTab(currentWorkspacePath, t.id, { title });
-        }
+        mirroredTabId = t.id;
         return { ...t, title };
       })
     );
+    if (currentWorkspacePath && mirroredTabId) {
+      useAppStore.getState().updateTab(currentWorkspacePath, mirroredTabId, { title });
+    }
   }, [activeWorktreePath, activeProject]);
 
   const jumpToVisibleWorktreeByIndexRef = useRef<(index: number) => void>(() => {});
