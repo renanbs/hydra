@@ -13,6 +13,7 @@ export function sshConnectVerb(status: SshConnectionStatus | null | undefined): 
       return translate('auto.ssh.sshConnectVerb.retry', 'Retry')
     case null:
     case undefined:
+    case 'host-key-verification':
     case 'connected':
     case 'connecting':
     case 'deploying-relay':

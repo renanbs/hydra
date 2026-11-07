@@ -285,6 +285,22 @@ pub fn build_ssh_exec_args(target: &SshTarget, remote_command: &str) -> Vec<Stri
     args
 }
 
+/// `ssh -S <socket> …`: reuses the persistent master opened by
+/// `ssh_connect_target` instead of re-authenticating per call. Same options
+/// and destination; only the multiplex socket is added.
+pub fn build_ssh_mux_args(
+    target: &SshTarget,
+    socket: &std::path::Path,
+    remote_command: &str,
+) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.push("-S".to_string());
+    args.push(socket.to_string_lossy().to_string());
+    args.push(build_ssh_destination(target));
+    args.push(remote_command.to_string());
+    args
+}
+
 /// Rejects values that could break the `sh -c` argument boundary or be read as
 /// an option by the remote tool. `~` and `~/<child>` are allowed: the scripts
 /// expand them against the remote `$HOME`.
@@ -459,6 +475,47 @@ impl RemoteCommandRunner for SystemRemoteCommandRunner {
         timeout: Duration,
     ) -> Result<CommandOutput, RunFailure> {
         let args = build_ssh_exec_args(target, remote_command);
+        let child = Command::new("ssh")
+            .args(args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|error| RunFailure::Io(format!("Failed to spawn ssh: {error}")))?;
+        run_bounded(child, Some(timeout), OUTPUT_CAP_BYTES, None)
+    }
+}
+
+/// Dial-aware runner: when a live master socket exists for the target, execs
+/// ride it (`-S`, no re-auth); otherwise falls back to a direct dial with the
+/// same semantics as `SystemRemoteCommandRunner`. The socket is resolved by
+/// the caller from the connection record — a stale path (dead master) falls
+/// back the same way, so a crashed master degrades instead of failing.
+pub struct MultiplexedRemoteCommandRunner {
+    socket: Option<std::path::PathBuf>,
+}
+
+impl MultiplexedRemoteCommandRunner {
+    pub fn new(socket: Option<std::path::PathBuf>) -> Self {
+        Self { socket }
+    }
+
+    fn live_socket(&self) -> Option<&std::path::Path> {
+        self.socket.as_deref().filter(|path| path.exists())
+    }
+}
+
+impl RemoteCommandRunner for MultiplexedRemoteCommandRunner {
+    fn run(
+        &self,
+        target: &SshTarget,
+        remote_command: &str,
+        timeout: Duration,
+    ) -> Result<CommandOutput, RunFailure> {
+        let args = match self.live_socket() {
+            Some(socket) => build_ssh_mux_args(target, socket, remote_command),
+            None => build_ssh_exec_args(target, remote_command),
+        };
         let child = Command::new("ssh")
             .args(args)
             .stdin(Stdio::null())
@@ -659,6 +716,24 @@ fn load_target(
         .ok_or_else(|| format!("SSH target not found: {connection_id}"))
 }
 
+/// Live master socket for one target, if `ssh_connect_target` dialed and the
+/// socket still exists. Callers pass it to `MultiplexedRemoteCommandRunner`
+/// so execs ride the persistent connection; a stale path resolves to `None`
+/// and the runner dials directly.
+fn load_mux_socket(
+    db: &crate::db::DatabaseManager,
+    connection_id: &str,
+) -> Option<std::path::PathBuf> {
+    let record = db
+        .get_ssh_state()
+        .ok()?
+        .ssh_connection_records
+        .into_iter()
+        .find(|record| record.connection_id == connection_id)?;
+    let socket = std::path::PathBuf::from(record.master_socket?);
+    socket.exists().then_some(socket)
+}
+
 /// Lists one directory level on an SSH host. `~` resolves to the remote home.
 #[tauri::command]
 pub async fn ssh_browse_dir(
@@ -669,7 +744,8 @@ pub async fn ssh_browse_dir(
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
         let target = load_target(&db, &connection_id)?;
-        browse_remote_dir_with_runner(&SystemRemoteCommandRunner, &target, &path)
+        let runner = MultiplexedRemoteCommandRunner::new(load_mux_socket(&db, &connection_id));
+        browse_remote_dir_with_runner(&runner, &target, &path)
     })
     .await
     .map_err(|error| error.to_string())?
@@ -687,8 +763,9 @@ pub async fn ssh_remote_clone(
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
         let target = load_target(&db, &connection_id)?;
+        let runner = MultiplexedRemoteCommandRunner::new(load_mux_socket(&db, &connection_id));
         clone_remote_repository_with_runner(
-            &SystemRemoteCommandRunner,
+            &runner,
             &target,
             &url,
             &destination,
@@ -711,8 +788,9 @@ pub async fn ssh_remote_create_project(
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
         let target = load_target(&db, &connection_id)?;
+        let runner = MultiplexedRemoteCommandRunner::new(load_mux_socket(&db, &connection_id));
         create_remote_project_with_runner(
-            &SystemRemoteCommandRunner,
+            &runner,
             &target,
             &path,
             name.as_deref(),
@@ -733,7 +811,8 @@ pub async fn ssh_remote_probe_git(
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
         let target = load_target(&db, &connection_id)?;
-        probe_remote_git_with_runner(&SystemRemoteCommandRunner, &target, &path)
+        let runner = MultiplexedRemoteCommandRunner::new(load_mux_socket(&db, &connection_id));
+        probe_remote_git_with_runner(&runner, &target, &path)
     })
     .await
     .map_err(|error| error.to_string())?
@@ -751,8 +830,9 @@ pub async fn ssh_remote_delete_worktree(
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
         let target = load_target(&db, &connection_id)?;
+        let runner = MultiplexedRemoteCommandRunner::new(load_mux_socket(&db, &connection_id));
         delete_remote_worktree_with_runner(
-            &SystemRemoteCommandRunner,
+            &runner,
             &target,
             &repo_path,
             &worktree_path,
@@ -809,6 +889,18 @@ mod tests {
             }
             responses.remove(0)
         }
+    }
+
+    #[test]
+    fn mux_args_reuse_master_without_reauth() {
+        let target = target();
+        let socket = std::path::Path::new("/tmp/hydra-ssh-master-ssh-1.sock");
+        let args = build_ssh_mux_args(&target, socket, "true");
+        assert!(args.contains(&"-S".to_string()));
+        assert!(args.contains(&socket.to_string_lossy().to_string()));
+        assert!(!args.iter().any(|arg| arg == "-M" || arg == "-fN"));
+        assert_eq!(args[args.len() - 1], "true");
+        assert_eq!(args[args.len() - 2], "deploy@box.example.com");
     }
 
     fn target() -> SshTarget {

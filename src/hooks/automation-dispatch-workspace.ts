@@ -1,5 +1,5 @@
 // @ts-nocheck — Orca port buffer; typecheck when this subsystem is wired.
-import { launchWorktreeBackgroundTerminals } from '@/lib/launch-worktree-background-terminals'
+import { connectSshTarget, needsSshPassphrasePrompt } from '@/lib/ssh-dial-client'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { createBrowserUuid } from '@/lib/browser-uuid'
@@ -115,9 +115,10 @@ export async function prepareAutomationDispatchWorkspace(args: {
       ? (folderWorkspaceConnectionId ?? null)
       : (repo.connectionId ?? null)
   if (sshTargetId) {
-    const needsPrompt = await window.api.ssh.needsPassphrasePrompt({
-      targetId: sshTargetId
-    })
+    // Rail (b): the preload bridge never existed under Tauri — the dial
+    // client invokes the commands directly. Passphrase-gated targets skip
+    // instead of hanging automation on an interactive prompt.
+    const needsPrompt = await needsSshPassphrasePrompt(sshTargetId).catch(() => false)
     if (needsPrompt) {
       await markDispatchResult({
         runId: run.id,
@@ -131,23 +132,20 @@ export async function prepareAutomationDispatchWorkspace(args: {
       })
       return null
     }
-    const sshState = await window.api.ssh.getState({ targetId: sshTargetId })
-    if (sshState?.status !== 'connected') {
-      try {
-        const connected = await window.api.ssh.connect({ targetId: sshTargetId })
-        if (connected?.status !== 'connected') {
-          throw new Error('SSH target is unavailable.')
-        }
-      } catch (error) {
-        await markDispatchResult({
-          runId: run.id,
-          status: 'skipped_unavailable',
-          workspaceId: context.workspaceId,
-          workspaceDisplayName: context.workspaceDisplayName,
-          error: error instanceof Error ? error.message : String(error)
-        })
-        return null
+    try {
+      const connected = await connectSshTarget(sshTargetId)
+      if (connected?.status !== 'connected') {
+        throw new Error('SSH target is unavailable.')
       }
+    } catch (error) {
+      await markDispatchResult({
+        runId: run.id,
+        status: 'skipped_unavailable',
+        workspaceId: context.workspaceId,
+        workspaceDisplayName: context.workspaceDisplayName,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return null
     }
   }
 

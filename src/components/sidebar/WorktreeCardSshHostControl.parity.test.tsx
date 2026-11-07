@@ -8,9 +8,15 @@ import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useAppStore } from '../../store'
 import { resetSshConnectInFlightForTests } from '../../ssh/ssh-connect-in-flight'
+import { invoke } from '@tauri-apps/api/core'
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn()
+}))
 
 beforeEach(() => {
   resetSshConnectInFlightForTests()
+  vi.mocked(invoke).mockReset()
 })
 
 describe('WorktreeCardSshHostControl (D04a-012/D04a-013)', () => {
@@ -82,10 +88,9 @@ describe('WorktreeCardSshHostControl (D04a-012/D04a-013)', () => {
   })
 
   it('guards double-click and stops propagation to the card', async () => {
-    const connect = vi.fn(async () => ({ status: 'connected' as const }))
-    const win = window as unknown as { api: { ssh: Record<string, unknown> } }
-    const prevApi = win.api
-    win.api = { ssh: { connect, listTargets: async () => [], listRemovedTargetLabels: async () => ({}) } }
+    const { invoke } = await import('@tauri-apps/api/core')
+    const mockedInvoke = vi.mocked(invoke)
+    mockedInvoke.mockResolvedValueOnce({ connectionId: 'ssh:1', status: 'connected', latencyMs: 1, error: null })
     useAppStore.setState({
       sshConnectionStates: new Map(),
       setSshConnectionState: vi.fn(),
@@ -93,40 +98,37 @@ describe('WorktreeCardSshHostControl (D04a-012/D04a-013)', () => {
       setRemovedSshTargetLabels: vi.fn()
     } as never)
     const onPointerDown = vi.fn()
-    try {
-      render(
-        <TooltipProvider>
-          <WorktreeCardSshHostControl
-            targetId="ssh:1"
-            targetLabel="dev"
-            status="disconnected"
-            targetRemoved={false}
-            sshOwnerEnvironmentId={null}
-            iconOnly={false}
-            onPointerDown={onPointerDown}
-          />
-        </TooltipProvider>
-      )
-      const button = screen.getByRole('button', { name: /connect to ssh host/i })
-      fireEvent.pointerDown(button)
-      expect(onPointerDown).toHaveBeenCalledTimes(1)
-      fireEvent.click(button)
-      fireEvent.click(button)
-      await waitFor(() => expect(connect).toHaveBeenCalledTimes(1))
-    } finally {
-      win.api = prevApi
-    }
+    render(
+      <TooltipProvider>
+        <WorktreeCardSshHostControl
+          targetId="ssh:1"
+          targetLabel="dev"
+          status="disconnected"
+          targetRemoved={false}
+          sshOwnerEnvironmentId={null}
+          iconOnly={false}
+          onPointerDown={onPointerDown}
+        />
+      </TooltipProvider>
+    )
+    const button = screen.getByRole('button', { name: /connect to ssh host/i })
+    fireEvent.pointerDown(button)
+    expect(onPointerDown).toHaveBeenCalledTimes(1)
+    fireEvent.click(button)
+    fireEvent.click(button)
+    await waitFor(() => expect(mockedInvoke).toHaveBeenCalledWith('ssh_connect_target', { connectionId: 'ssh:1' }))
   })
 
   it('resyncs targets before removed labels on failure', async () => {
+    // Rail: local dial via invoke; the resync path still reads the (legacy)
+    // preload bridge when present.
     const order: string[] = []
+    const { invoke } = await import('@tauri-apps/api/core')
+    vi.mocked(invoke).mockRejectedValueOnce(new Error('dial failed'))
     const win = window as unknown as { api: { ssh: Record<string, unknown> } }
     const prevApi = win.api
     win.api = {
       ssh: {
-        connect: async () => {
-          throw new Error('dial failed')
-        },
         listTargets: async () => {
           order.push('targets')
           return []

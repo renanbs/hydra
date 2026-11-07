@@ -34,6 +34,7 @@ import {
   connectRuntimeEnvironmentSshTarget,
   resyncRuntimeEnvironmentSshTargets
 } from '@/runtime/runtime-environment-ssh-target'
+import { acceptSshHostKey, connectSshTarget, toSshConnectionState } from '@/lib/ssh-dial-client'
 import type { SshConnectionStatus } from '../../shared/ssh-types'
 
 export type WorktreeCardSshHostControlProps = {
@@ -111,14 +112,10 @@ export function WorktreeCardSshHostControl({
           connectRuntimeEnvironmentSshTarget(sshOwnerEnvironmentId, targetId)
         )
       } else {
-        // Why: track the connect request, not this bounded wait — the backend is still
-        // dialing after the UI timeout fires, so releasing here would let the next click
-        // raise a second credential prompt.
+        // Rail (a): the local dial is real — `ssh_connect_target` opens a
+        // persistent master via the Tauri command, no preload bridge involved.
         const rawState = await withUiConnectTimeout(
-          trackSshConnect(
-            targetId,
-            (window as unknown as { api?: { ssh?: { connect?: (args: { targetId: string }) => Promise<{ status: SshConnectionStatus } | null> } } }).api?.ssh?.connect?.({ targetId }) ?? Promise.resolve(null)
-          ),
+          trackSshConnect(targetId, connectSshTarget(targetId).then((result) => toSshConnectionState(result, undefined))),
           SSH_RECONNECT_UI_TIMEOUT_MS
         )
         if (rawState) {
@@ -206,12 +203,64 @@ export function WorktreeCardSshHostControl({
 
   const connecting = inFlight || isConnectingSshStatus(status)
   const canConnect = canConnectSshStatus(status)
-  if (!connecting && !canConnect) {
+  if (!connecting && !canConnect && status !== 'host-key-verification') {
     // Defensive: every remaining member is either connecting or recoverable, but never
     // render a dead button if the union grows.
     return null
   }
-
+  // Rail (e): host-key verification is not a retry — ssh refuses until the
+  // key is trusted. Offer accept (ssh-keyscan → known_hosts), then dial.
+  const needsHostKeyAccept = status === 'host-key-verification'
+  if (needsHostKeyAccept && !connecting) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            className={cn(PILL_BASE, PILL_FAILED, iconOnly && 'w-4 justify-center !px-0 has-[>svg]:!px-0')}
+            aria-label={translate(
+              'auto.components.sidebar.WorktreeCardSshHostControl.acceptHostKeyName',
+              'Accept host key for {{value0}}',
+              { value0: targetLabel }
+            )}
+            data-ssh-target-label={targetLabel}
+            onPointerDown={onPointerDown}
+            onClick={(event) => {
+              event.stopPropagation()
+              event.preventDefault()
+              void (async () => {
+                try {
+                  await trackSshConnect(targetId, acceptSshHostKey(targetId))
+                  await handleConnect()
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : String(err)
+                  )
+                }
+              })()
+            }}
+          >
+            {!iconOnly && (
+              <span className="text-left">
+                {translate(
+                  'auto.components.sidebar.WorktreeCardSshHostControl.acceptHostKey',
+                  'Accept host key'
+                )}
+              </span>
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          {translate(
+            'auto.components.sidebar.WorktreeCardSshHostControl.acceptHostKeyTooltip',
+            '{{value0}} · host key not trusted — accept to connect',
+            { value0: targetLabel }
+          )}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
   const failed = status === 'error' || status === 'reconnection-failed' || status === 'auth-failed'
   const label = connecting ? sshConnectingLabel() : sshConnectVerb(status)
   const accessibleName = connecting

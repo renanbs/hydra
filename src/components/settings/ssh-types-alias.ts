@@ -168,6 +168,7 @@ export type SshConnectionStatus =
   | 'disconnected'
   | 'connecting'
   | 'auth-failed'
+  | 'host-key-verification'
   | 'deploying-relay'
   | 'connected'
   | 'reconnecting'

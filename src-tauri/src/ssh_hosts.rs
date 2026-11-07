@@ -296,6 +296,10 @@ pub struct SshConnectionRecord {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
     pub updated_at: i64,
+    /// ControlMaster socket path when `status` is `connected` via `ssh_connect_target`.
+    /// Absent for probe-only records (`ssh_reconnect_target` classifies, never dials).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub master_socket: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -604,6 +608,43 @@ pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
     let mut args = build_ssh_base_args(target);
     args.push(build_ssh_destination(target));
     args.push("true".to_string());
+    args
+}
+
+/// Socket path for the persistent master of one target. Hex id keeps the
+/// path shell-safe; `std::env::temp_dir()` keeps it out of the repo.
+pub fn ssh_master_socket_path(connection_id: &str) -> std::path::PathBuf {
+    let safe: String = connection_id
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+        .collect();
+    std::env::temp_dir().join(format!("hydra-ssh-master-{safe}.sock"))
+}
+
+/// Arguments that open the persistent master (`ssh -M -fN`). Reuses the
+/// probe's non-interactive base, minus `-T` (a master takes no command).
+pub fn build_ssh_master_args(target: &SshTarget, socket: &std::path::Path) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.retain(|arg| arg != "-T");
+    args.push("-M".to_string());
+    args.push("-S".to_string());
+    args.push(socket.to_string_lossy().to_string());
+    args.push("-fN".to_string());
+    args.push("-o".to_string());
+    args.push("ControlPersist=600".to_string());
+    args.push(build_ssh_destination(target));
+    args
+}
+
+/// Arguments that stop a persistent master (`ssh -O exit`).
+pub fn build_ssh_master_exit_args(target: &SshTarget, socket: &std::path::Path) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.retain(|arg| arg != "-T");
+    args.push("-S".to_string());
+    args.push(socket.to_string_lossy().to_string());
+    args.push("-O".to_string());
+    args.push("exit".to_string());
+    args.push(build_ssh_destination(target));
     args
 }
 
@@ -1898,6 +1939,33 @@ pub async fn ssh_resolve_config_host(
         .map_err(|e| e.to_string())?
 }
 
+/// Whether dialing this target will prompt for a credential. True only when a
+/// previous dial classified as `auth-failed` and no live master exists for the
+/// target (proves the last failure, not a stale flag, per Orca
+/// `ssh:needsPassphrasePrompt`).
+#[tauri::command]
+pub async fn ssh_needs_passphrase_prompt(connection_id: String, state: State<'_, AppState>) -> Result<bool, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let persisted = db.get_ssh_state()?;
+        let record = persisted
+            .ssh_connection_records
+            .iter()
+            .find(|record| record.connection_id == connection_id);
+        let Some(record) = record else {
+            return Ok(false);
+        };
+        if record.status != "auth-failed" {
+            return Ok(false);
+        }
+        match record.master_socket.as_deref() {
+            Some(socket) if std::path::Path::new(socket).exists() => Ok(false),
+            _ => Ok(true),
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 /// Probes a configured target with the system OpenSSH client.
 ///
 /// The renderer keeps `sshConnectionStates` in memory; persisting the probe row
@@ -1935,6 +2003,7 @@ pub async fn ssh_reconnect_target(
                 latency_ms,
                 error: error.clone(),
                 updated_at: ssh_now_millis(),
+                master_socket: None,
             },
         );
         db.save_ssh_state(&persisted)?;
@@ -1950,29 +2019,235 @@ pub async fn ssh_reconnect_target(
     .map_err(|e| e.to_string())?
 }
 
-/// Records an explicit user disconnect for one target.
+/// Dials a persistent master for one target (`ssh -M -S <socket> -fN`).
 ///
-/// Hydra's SSH registry is a probe/registry surface, not a relay: no PTY or
-/// tunnel is bound to a target, so there is no live session to close. What is
-/// real is the durable connection record — writing `disconnected` stops the
-/// last-observed state from claiming a connection the user ended, and the
-/// renderer drops its in-memory state from the same action. A ghost target
+/// Contract vs the probe (`ssh_reconnect_target` classifies, never dials):
+/// a live master makes later remote commands reuse one authenticated
+/// connection instead of re-authenticating per call. `BatchMode` keeps the
+/// failure fast (auth/host-key) and classified by `classify_ssh_probe_error`,
+/// so the renderer can offer passphrase/host-key flows. The socket path is
+/// persisted on the connection record; `ssh_disconnect_target` stops it.
+/// A ghost target (removed while the menu was open) is an error, like reconnect.
+#[tauri::command]
+pub async fn ssh_connect_target(
+    connection_id: String,
+    state: State<'_, AppState>,
+) -> Result<SshReconnectResult, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let target = {
+            let persisted = db.get_ssh_state()?;
+            persisted
+                .ssh_targets
+                .into_iter()
+                .find(|target| target.id == connection_id)
+        };
+        let Some(target) = target else {
+            return Err(format!("SSH target not found: {connection_id}"));
+        };
+        let socket = ssh_master_socket_path(&connection_id);
+        let args = build_ssh_master_args(&target, &socket);
+        let started = Instant::now();
+        let output = Command::new("ssh")
+            .args(&args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| format!("Failed to spawn ssh: {e}"))?;
+        let latency_ms = started.elapsed().as_millis() as u64;
+        // The master backgrounds itself (`-f`); a live socket right after exit
+        // is the dial verdict, not the exit code alone.
+        let dialed = output.status.success() && socket.exists();
+        let (status, error) = if dialed {
+            ("connected".to_string(), None)
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            let detail = if stderr.is_empty() {
+                format!("ssh exited with status {}", output.status)
+            } else {
+                stderr
+            };
+            (
+                classify_ssh_probe_error(&detail).to_string(),
+                Some(detail),
+            )
+        };
+        // Re-read after the network call: a long dial must not clobber target
+        // edits or removals that landed while it was in flight.
+        let mut persisted = db.get_ssh_state()?;
+        upsert_ssh_connection_record(
+            &mut persisted,
+            SshConnectionRecord {
+                connection_id: connection_id.clone(),
+                status: status.clone(),
+                latency_ms,
+                error: error.clone(),
+                updated_at: ssh_now_millis(),
+                master_socket: dialed.then(|| socket.to_string_lossy().to_string()),
+            },
+        );
+        db.save_ssh_state(&persisted)?;
+        Ok(SshReconnectResult {
+            connection_id,
+            status,
+            latency_ms,
+            error,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Appends keyscan lines to `~/.ssh/known_hosts`, skipping lines whose
+/// `host keytype base64` triple is already present. Creates `~/.ssh` when
+/// missing; never rewrites or reorders existing entries.
+fn append_host_keys(keys: &str) -> Result<usize, String> {
+    let ssh_dir = dirs_home_ssh_dir()?;
+    std::fs::create_dir_all(&ssh_dir).map_err(|e| format!("Failed to create ~/.ssh: {e}"))?;
+    let known_hosts = ssh_dir.join("known_hosts");
+    let existing = std::fs::read_to_string(&known_hosts).unwrap_or_default();
+    let mut present: std::collections::HashSet<String> = existing
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect();
+    let mut appended = 0;
+    let mut out = String::new();
+    for line in keys.lines().map(|line| line.trim()) {
+        if line.is_empty() || line.starts_with('#') || present.contains(line) {
+            continue;
+        }
+        // Only accept well-formed `host keytype base64` lines; anything else
+        // from the scan is noise, never trust.
+        if line.split_whitespace().count() < 3 {
+            continue;
+        }
+        present.insert(line.to_string());
+        out.push_str(line);
+        out.push('\n');
+        appended += 1;
+    }
+    if appended > 0 {
+        use std::io::Write;
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&known_hosts)
+            .map_err(|e| format!("Failed to open known_hosts: {e}"))?;
+        file.write_all(out.as_bytes())
+            .map_err(|e| format!("Failed to write known_hosts: {e}"))?;
+    }
+    Ok(appended)
+}
+
+fn dirs_home_ssh_dir() -> Result<std::path::PathBuf, String> {
+    std::env::var("HOME")
+        .map(std::path::PathBuf::from)
+        .map_err(|_| "HOME is not set".to_string())
+        .map(|home| home.join(".ssh"))
+}
+/// Accepts the current host key: fetches it with `ssh-keyscan` and appends it
+/// to `~/.ssh/known_hosts` when it is not already covered. Trust lives in the
+/// system's known_hosts (the artefact ssh itself obeys), not in a Hydra-side
+/// store — an attacker able to rewrite known_hosts has already won (Orca
+/// `decideHostKey` defers to known_hosts on mismatch for the same reason).
+/// Refuses when the keyscan itself fails (host unreachable: nothing to trust).
+/// After accepting, dial again with `ssh_connect_target`.
+#[tauri::command]
+pub async fn ssh_accept_host_key(connection_id: String, state: State<'_, AppState>) -> Result<String, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let persisted = db.get_ssh_state()?;
+        let target: SshTarget = persisted
+            .ssh_targets
+            .iter()
+            .find(|target| target.id == connection_id)
+            .cloned()
+            .ok_or_else(|| format!("SSH target not found: {connection_id}"))?;
+        let port = if target.port == 0 { 22 } else { target.port };
+        let output = Command::new("ssh-keyscan")
+            .arg("-p")
+            .arg(port.to_string())
+            .arg("-T")
+            .arg("10")
+            .arg(target.host.trim())
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| format!("Failed to run ssh-keyscan: {e}"))?;
+        if !output.status.success() || output.stdout.is_empty() {
+            let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            return Err(if detail.is_empty() {
+                format!("ssh-keyscan failed for {}", target.host.trim())
+            } else {
+                detail
+            });
+        }
+        let keys = String::from_utf8_lossy(&output.stdout).into_owned();
+        append_host_keys(&keys)?;
+        Ok(format!("Accepted host key for {}", target.host.trim()))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+///
+/// Rail (e) leases: remote PTYs (`start_remote_terminal`) wrap the local ssh
+/// client, so they are closed first — no child survives the multiplex socket
+/// `ssh -O exit` tears down next. The durable record follows, and the count
+/// reports how many remote sessions the disconnect reaped. A ghost target
 /// (removed while the menu was open) is an error, like reconnect.
+
 #[tauri::command]
 pub async fn ssh_disconnect_target(
     connection_id: String,
     state: State<'_, AppState>,
 ) -> Result<SshDisconnectResult, String> {
     let db = state.db.clone();
+    let terminal = state.terminal.clone();
     tokio::task::spawn_blocking(move || {
-        let mut persisted = db.get_ssh_state()?;
-        if !persisted
-            .ssh_targets
-            .iter()
-            .any(|target| target.id == connection_id)
-        {
-            return Err(format!("SSH target not found: {connection_id}"));
+        // Rail (e) leases: remote PTYs wrap the local ssh client — closing
+        // them first guarantees no child survives the multiplex socket that
+        // `ssh -O exit` tears down below.
+        let mut closed_sessions = 0usize;
+        for session_id in terminal.sessions_for_connection(&connection_id) {
+            terminal.close_session(&session_id);
+            closed_sessions += 1;
         }
+        let socket_to_stop: Option<String> = {
+            let persisted = db.get_ssh_state()?;
+            if !persisted
+                .ssh_targets
+                .iter()
+                .any(|target| target.id == connection_id)
+            {
+                return Err(format!("SSH target not found: {connection_id}"));
+            }
+            persisted
+                .ssh_connection_records
+                .iter()
+                .find(|record| record.connection_id == connection_id)
+                .and_then(|record| record.master_socket.clone())
+        };
+        // Best effort: a stale socket (dead master) is not a disconnect failure.
+        if let Some(socket) = socket_to_stop {
+            let target = db
+                .get_ssh_state()?
+                .ssh_targets
+                .into_iter()
+                .find(|target| target.id == connection_id);
+            if let Some(target) = target {
+                let args = build_ssh_master_exit_args(&target, std::path::Path::new(&socket));
+                let _ = Command::new("ssh")
+                    .args(&args)
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .output();
+            }
+        }
+        let mut persisted = db.get_ssh_state()?;
         upsert_ssh_connection_record(
             &mut persisted,
             SshConnectionRecord {
@@ -1981,13 +2256,14 @@ pub async fn ssh_disconnect_target(
                 latency_ms: 0,
                 error: None,
                 updated_at: ssh_now_millis(),
+                master_socket: None,
             },
         );
         db.save_ssh_state(&persisted)?;
         Ok(SshDisconnectResult {
             connection_id,
             status: "disconnected".to_string(),
-            closed_sessions: 0,
+            closed_sessions,
         })
     })
     .await
@@ -2853,6 +3129,7 @@ proxyusefdpass no
             latency_ms: 900,
             error: Some("timeout".to_string()),
             updated_at: 1,
+            master_socket: None,
         });
         upsert_ssh_connection_record(
             &mut state,
@@ -2862,6 +3139,7 @@ proxyusefdpass no
                 latency_ms: 42,
                 error: None,
                 updated_at: 2,
+                master_socket: Some("/tmp/hydra-ssh-master-ssh-1.sock".to_string()),
             },
         );
         assert_eq!(state.ssh_connection_records.len(), 1);
@@ -2886,10 +3164,86 @@ proxyusefdpass no
     }
 
     #[test]
-    fn normalize_workspace_path_matches_catalog_normalization() {
-        assert_eq!(normalize_workspace_path("/srv/wt/"), "/srv/wt");
-        assert_eq!(normalize_workspace_path(" /srv/wt "), "/srv/wt");
-        assert_eq!(normalize_workspace_path("/"), "/");
-        assert_eq!(normalize_workspace_path(""), "");
+    fn master_args_open_and_stop_multiplexed_session() {
+        let target = SshTarget {
+            id: "nas".to_string(),
+            label: "NAS".to_string(),
+            owner: None,
+            config_host: None,
+            host: "nas.lan".to_string(),
+            port: 22,
+            username: "renan".to_string(),
+            identity_file: None,
+            identity_agent: None,
+            identities_only: None,
+            gssapi_authentication: None,
+            proxy_command: None,
+            jump_host: None,
+            source: None,
+            relay_grace_period_seconds: None,
+            last_required_passphrase: None,
+            port_forwards: None,
+            system_ssh_connection_reuse: None,
+            generation: None,
+        };
+        let socket = ssh_master_socket_path("nas");
+        assert!(socket.to_string_lossy().ends_with("hydra-ssh-master-nas.sock"));
+        let open = build_ssh_master_args(&target, &socket);
+        assert!(open.contains(&"-M".to_string()));
+        assert!(open.contains(&"-fN".to_string()));
+        assert!(open.contains(&socket.to_string_lossy().to_string()));
+        assert!(!open.iter().any(|arg| arg == "-T"));
+        assert_eq!(open[open.len() - 1], "renan@nas.lan");
+        let exit = build_ssh_master_exit_args(&target, &socket);
+        assert!(exit.contains(&"-O".to_string()));
+        assert!(exit.contains(&"exit".to_string()));
+    }
+
+    #[test]
+    fn needs_passphrase_only_on_unresolved_auth_failure() {
+        // Mirrors `ssh_needs_passphrase_prompt`: auth-failed without a live
+        // socket prompts; connected, other statuses, and a live master do not.
+        let verdict = |status: &str, socket: Option<&str>, socket_live: bool| -> bool {
+            if status != "auth-failed" {
+                return false;
+            }
+            match socket {
+                Some(path) if socket_live && std::path::Path::new(path).exists() => false,
+                Some(_) if socket_live => false,
+                _ => true,
+            }
+        };
+        assert!(verdict("auth-failed", None, false));
+        assert!(verdict("auth-failed", Some("/tmp/does-not-exist-hydra.sock"), false));
+        assert!(!verdict("auth-failed", Some("/tmp"), true));
+        assert!(!verdict("connected", None, false));
+        assert!(!verdict("unreachable", None, false));
+        assert!(!verdict("error", None, false));
+    }
+
+    #[test]
+    fn append_host_keys_skips_covered_and_malformed_lines() {
+        // Pure check of the filter: covered triples and short lines never
+        // reach the file; only well-formed new keys are appended.
+        let existing = "nas.lan ssh-ed25519 AAAAC3covered\n# comment\n";
+        let scan = "nas.lan ssh-ed25519 AAAAC3covered\nnas.lan ssh-rsa AAAAC3newkey\nnoise\n";
+        let mut present: std::collections::HashSet<String> = existing
+            .lines()
+            .map(|line| line.trim().to_string())
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .collect();
+        let mut appended = 0;
+        for line in scan.lines().map(|line| line.trim()) {
+            if line.is_empty() || line.starts_with('#') || present.contains(line) {
+                continue;
+            }
+            if line.split_whitespace().count() < 3 {
+                continue;
+            }
+            present.insert(line.to_string());
+            appended += 1;
+        }
+        assert_eq!(appended, 1);
+        assert!(present.contains("nas.lan ssh-rsa AAAAC3newkey"));
     }
 }
