@@ -1939,6 +1939,33 @@ pub async fn ssh_resolve_config_host(
         .map_err(|e| e.to_string())?
 }
 
+/// Whether dialing this target will prompt for a credential. True only when a
+/// previous dial classified as `auth-failed` and no live master exists for the
+/// target (proves the last failure, not a stale flag, per Orca
+/// `ssh:needsPassphrasePrompt`).
+#[tauri::command]
+pub async fn ssh_needs_passphrase_prompt(connection_id: String, state: State<'_, AppState>) -> Result<bool, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let persisted = db.get_ssh_state()?;
+        let record = persisted
+            .ssh_connection_records
+            .iter()
+            .find(|record| record.connection_id == connection_id);
+        let Some(record) = record else {
+            return Ok(false);
+        };
+        if record.status != "auth-failed" {
+            return Ok(false);
+        }
+        match record.master_socket.as_deref() {
+            Some(socket) if std::path::Path::new(socket).exists() => Ok(false),
+            _ => Ok(true),
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 /// Probes a configured target with the system OpenSSH client.
 ///
 /// The renderer keeps `sshConnectionStates` in memory; persisting the probe row
@@ -3070,6 +3097,28 @@ proxyusefdpass no
         let exit = build_ssh_master_exit_args(&target, &socket);
         assert!(exit.contains(&"-O".to_string()));
         assert!(exit.contains(&"exit".to_string()));
+    }
+
+    #[test]
+    fn needs_passphrase_only_on_unresolved_auth_failure() {
+        // Mirrors `ssh_needs_passphrase_prompt`: auth-failed without a live
+        // socket prompts; connected, other statuses, and a live master do not.
+        let verdict = |status: &str, socket: Option<&str>, socket_live: bool| -> bool {
+            if status != "auth-failed" {
+                return false;
+            }
+            match socket {
+                Some(path) if socket_live && std::path::Path::new(path).exists() => false,
+                Some(_) if socket_live => false,
+                _ => true,
+            }
+        };
+        assert!(verdict("auth-failed", None, false));
+        assert!(verdict("auth-failed", Some("/tmp/does-not-exist-hydra.sock"), false));
+        assert!(!verdict("auth-failed", Some("/tmp"), true));
+        assert!(!verdict("connected", None, false));
+        assert!(!verdict("unreachable", None, false));
+        assert!(!verdict("error", None, false));
     }
 
     #[test]

@@ -13,9 +13,8 @@ export type SshConnectResult = {
   error?: string | null
 }
 
-const CONNECT_TIMEOUT_FALLBACK_MS = 60_000
-
 /** Dials a persistent master for one target; resolves the classified status. */
+
 export function connectSshTarget(targetId: string): Promise<SshConnectResult> {
   return invoke<SshConnectResult>('ssh_connect_target', { connectionId: targetId })
 }
@@ -25,8 +24,13 @@ export function reconnectSshTarget(targetId: string): Promise<SshConnectResult> 
   return invoke<SshConnectResult>('ssh_reconnect_target', { connectionId: targetId })
 }
 
-export { CONNECT_TIMEOUT_FALLBACK_MS }
-
+/**
+ * Rail (b): true only when a previous dial classified as `auth-failed` and no
+ * live master exists — so automation skips instead of hanging on a prompt.
+ */
+export function needsSshPassphrasePrompt(targetId: string): Promise<boolean> {
+  return invoke<boolean>('ssh_needs_passphrase_prompt', { connectionId: targetId })
+}
 /** Narrows the command's string status to the renderer's connection state shape. */
 export function toSshConnectionState(
   result: SshConnectResult | null,
