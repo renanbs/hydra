@@ -296,6 +296,10 @@ pub struct SshConnectionRecord {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
     pub updated_at: i64,
+    /// ControlMaster socket path when `status` is `connected` via `ssh_connect_target`.
+    /// Absent for probe-only records (`ssh_reconnect_target` classifies, never dials).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub master_socket: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -604,6 +608,43 @@ pub fn build_ssh_probe_args(target: &SshTarget) -> Vec<String> {
     let mut args = build_ssh_base_args(target);
     args.push(build_ssh_destination(target));
     args.push("true".to_string());
+    args
+}
+
+/// Socket path for the persistent master of one target. Hex id keeps the
+/// path shell-safe; `std::env::temp_dir()` keeps it out of the repo.
+pub fn ssh_master_socket_path(connection_id: &str) -> std::path::PathBuf {
+    let safe: String = connection_id
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+        .collect();
+    std::env::temp_dir().join(format!("hydra-ssh-master-{safe}.sock"))
+}
+
+/// Arguments that open the persistent master (`ssh -M -fN`). Reuses the
+/// probe's non-interactive base, minus `-T` (a master takes no command).
+pub fn build_ssh_master_args(target: &SshTarget, socket: &std::path::Path) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.retain(|arg| arg != "-T");
+    args.push("-M".to_string());
+    args.push("-S".to_string());
+    args.push(socket.to_string_lossy().to_string());
+    args.push("-fN".to_string());
+    args.push("-o".to_string());
+    args.push("ControlPersist=600".to_string());
+    args.push(build_ssh_destination(target));
+    args
+}
+
+/// Arguments that stop a persistent master (`ssh -O exit`).
+pub fn build_ssh_master_exit_args(target: &SshTarget, socket: &std::path::Path) -> Vec<String> {
+    let mut args = build_ssh_base_args(target);
+    args.retain(|arg| arg != "-T");
+    args.push("-S".to_string());
+    args.push(socket.to_string_lossy().to_string());
+    args.push("-O".to_string());
+    args.push("exit".to_string());
+    args.push(build_ssh_destination(target));
     args
 }
 
@@ -1935,10 +1976,91 @@ pub async fn ssh_reconnect_target(
                 latency_ms,
                 error: error.clone(),
                 updated_at: ssh_now_millis(),
+                master_socket: None,
             },
         );
         db.save_ssh_state(&persisted)?;
 
+        Ok(SshReconnectResult {
+            connection_id,
+            status,
+            latency_ms,
+            error,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Dials a persistent master for one target (`ssh -M -S <socket> -fN`).
+///
+/// Contract vs the probe (`ssh_reconnect_target` classifies, never dials):
+/// a live master makes later remote commands reuse one authenticated
+/// connection instead of re-authenticating per call. `BatchMode` keeps the
+/// failure fast (auth/host-key) and classified by `classify_ssh_probe_error`,
+/// so the renderer can offer passphrase/host-key flows. The socket path is
+/// persisted on the connection record; `ssh_disconnect_target` stops it.
+/// A ghost target (removed while the menu was open) is an error, like reconnect.
+#[tauri::command]
+pub async fn ssh_connect_target(
+    connection_id: String,
+    state: State<'_, AppState>,
+) -> Result<SshReconnectResult, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let target = {
+            let persisted = db.get_ssh_state()?;
+            persisted
+                .ssh_targets
+                .into_iter()
+                .find(|target| target.id == connection_id)
+        };
+        let Some(target) = target else {
+            return Err(format!("SSH target not found: {connection_id}"));
+        };
+        let socket = ssh_master_socket_path(&connection_id);
+        let args = build_ssh_master_args(&target, &socket);
+        let started = Instant::now();
+        let output = Command::new("ssh")
+            .args(&args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| format!("Failed to spawn ssh: {e}"))?;
+        let latency_ms = started.elapsed().as_millis() as u64;
+        // The master backgrounds itself (`-f`); a live socket right after exit
+        // is the dial verdict, not the exit code alone.
+        let dialed = output.status.success() && socket.exists();
+        let (status, error) = if dialed {
+            ("connected".to_string(), None)
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            let detail = if stderr.is_empty() {
+                format!("ssh exited with status {}", output.status)
+            } else {
+                stderr
+            };
+            (
+                classify_ssh_probe_error(&detail).to_string(),
+                Some(detail),
+            )
+        };
+        // Re-read after the network call: a long dial must not clobber target
+        // edits or removals that landed while it was in flight.
+        let mut persisted = db.get_ssh_state()?;
+        upsert_ssh_connection_record(
+            &mut persisted,
+            SshConnectionRecord {
+                connection_id: connection_id.clone(),
+                status: status.clone(),
+                latency_ms,
+                error: error.clone(),
+                updated_at: ssh_now_millis(),
+                master_socket: dialed.then(|| socket.to_string_lossy().to_string()),
+            },
+        );
+        db.save_ssh_state(&persisted)?;
         Ok(SshReconnectResult {
             connection_id,
             status,
@@ -1958,6 +2080,7 @@ pub async fn ssh_reconnect_target(
 /// last-observed state from claiming a connection the user ended, and the
 /// renderer drops its in-memory state from the same action. A ghost target
 /// (removed while the menu was open) is an error, like reconnect.
+
 #[tauri::command]
 pub async fn ssh_disconnect_target(
     connection_id: String,
@@ -1965,14 +2088,39 @@ pub async fn ssh_disconnect_target(
 ) -> Result<SshDisconnectResult, String> {
     let db = state.db.clone();
     tokio::task::spawn_blocking(move || {
-        let mut persisted = db.get_ssh_state()?;
-        if !persisted
-            .ssh_targets
-            .iter()
-            .any(|target| target.id == connection_id)
-        {
-            return Err(format!("SSH target not found: {connection_id}"));
+        let socket_to_stop: Option<String> = {
+            let persisted = db.get_ssh_state()?;
+            if !persisted
+                .ssh_targets
+                .iter()
+                .any(|target| target.id == connection_id)
+            {
+                return Err(format!("SSH target not found: {connection_id}"));
+            }
+            persisted
+                .ssh_connection_records
+                .iter()
+                .find(|record| record.connection_id == connection_id)
+                .and_then(|record| record.master_socket.clone())
+        };
+        // Best effort: a stale socket (dead master) is not a disconnect failure.
+        if let Some(socket) = socket_to_stop {
+            let target = db
+                .get_ssh_state()?
+                .ssh_targets
+                .into_iter()
+                .find(|target| target.id == connection_id);
+            if let Some(target) = target {
+                let args = build_ssh_master_exit_args(&target, std::path::Path::new(&socket));
+                let _ = Command::new("ssh")
+                    .args(&args)
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .output();
+            }
         }
+        let mut persisted = db.get_ssh_state()?;
         upsert_ssh_connection_record(
             &mut persisted,
             SshConnectionRecord {
@@ -1981,6 +2129,7 @@ pub async fn ssh_disconnect_target(
                 latency_ms: 0,
                 error: None,
                 updated_at: ssh_now_millis(),
+                master_socket: None,
             },
         );
         db.save_ssh_state(&persisted)?;
@@ -2853,6 +3002,7 @@ proxyusefdpass no
             latency_ms: 900,
             error: Some("timeout".to_string()),
             updated_at: 1,
+            master_socket: None,
         });
         upsert_ssh_connection_record(
             &mut state,
@@ -2862,6 +3012,7 @@ proxyusefdpass no
                 latency_ms: 42,
                 error: None,
                 updated_at: 2,
+                master_socket: Some("/tmp/hydra-ssh-master-ssh-1.sock".to_string()),
             },
         );
         assert_eq!(state.ssh_connection_records.len(), 1);
@@ -2883,6 +3034,42 @@ proxyusefdpass no
         // A different host keeps its own record for the same path.
         upsert_forgotten_ssh_workspace(&mut state, "ssh-2", "/srv/wt", 30);
         assert_eq!(state.forgotten_ssh_workspaces.len(), 2);
+    }
+
+    #[test]
+    fn master_args_open_and_stop_multiplexed_session() {
+        let target = SshTarget {
+            id: "nas".to_string(),
+            label: "NAS".to_string(),
+            owner: None,
+            config_host: None,
+            host: "nas.lan".to_string(),
+            port: 22,
+            username: "renan".to_string(),
+            identity_file: None,
+            identity_agent: None,
+            identities_only: None,
+            gssapi_authentication: None,
+            proxy_command: None,
+            jump_host: None,
+            source: None,
+            relay_grace_period_seconds: None,
+            last_required_passphrase: None,
+            port_forwards: None,
+            system_ssh_connection_reuse: None,
+            generation: None,
+        };
+        let socket = ssh_master_socket_path("nas");
+        assert!(socket.to_string_lossy().ends_with("hydra-ssh-master-nas.sock"));
+        let open = build_ssh_master_args(&target, &socket);
+        assert!(open.contains(&"-M".to_string()));
+        assert!(open.contains(&"-fN".to_string()));
+        assert!(open.contains(&socket.to_string_lossy().to_string()));
+        assert!(!open.iter().any(|arg| arg == "-T"));
+        assert_eq!(open[open.len() - 1], "renan@nas.lan");
+        let exit = build_ssh_master_exit_args(&target, &socket);
+        assert!(exit.contains(&"-O".to_string()));
+        assert!(exit.contains(&"exit".to_string()));
     }
 
     #[test]

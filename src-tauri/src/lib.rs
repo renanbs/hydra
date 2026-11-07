@@ -2282,6 +2282,7 @@ pub fn run() {
             ssh_hosts::ssh_list_config_hosts,
             ssh_hosts::ssh_resolve_config_host,
             ssh_hosts::ssh_reconnect_target,
+            ssh_hosts::ssh_connect_target,
             ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,
             runtime_envs::runtime_verify_and_add_from_pairing_code,

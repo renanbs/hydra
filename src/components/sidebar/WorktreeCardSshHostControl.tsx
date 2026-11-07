@@ -34,6 +34,7 @@ import {
   connectRuntimeEnvironmentSshTarget,
   resyncRuntimeEnvironmentSshTargets
 } from '@/runtime/runtime-environment-ssh-target'
+import { connectSshTarget, toSshConnectionState } from '@/lib/ssh-dial-client'
 import type { SshConnectionStatus } from '../../shared/ssh-types'
 
 export type WorktreeCardSshHostControlProps = {
@@ -111,14 +112,10 @@ export function WorktreeCardSshHostControl({
           connectRuntimeEnvironmentSshTarget(sshOwnerEnvironmentId, targetId)
         )
       } else {
-        // Why: track the connect request, not this bounded wait — the backend is still
-        // dialing after the UI timeout fires, so releasing here would let the next click
-        // raise a second credential prompt.
+        // Rail (a): the local dial is real — `ssh_connect_target` opens a
+        // persistent master via the Tauri command, no preload bridge involved.
         const rawState = await withUiConnectTimeout(
-          trackSshConnect(
-            targetId,
-            (window as unknown as { api?: { ssh?: { connect?: (args: { targetId: string }) => Promise<{ status: SshConnectionStatus } | null> } } }).api?.ssh?.connect?.({ targetId }) ?? Promise.resolve(null)
-          ),
+          trackSshConnect(targetId, connectSshTarget(targetId).then((result) => toSshConnectionState(result, undefined))),
           SSH_RECONNECT_UI_TIMEOUT_MS
         )
         if (rawState) {
