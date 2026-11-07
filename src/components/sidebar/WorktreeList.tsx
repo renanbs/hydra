@@ -893,6 +893,16 @@ export function WorktreeList({
   className = "",
 }: WorktreeListProps): React.JSX.Element {
   const query = filter.trim().toLowerCase();
+  // Hoisted (was inline in JSX): hooks can't live in JSX — a conditional
+  // render above changed the hook count between renders (`Rendered more hooks`).
+  const scanFailureEntries = useMemo(
+    () =>
+      Object.entries(scanFailuresByProject).map(([repoPath, message]) => ({
+        repoPath,
+        message,
+      })),
+    [scanFailuresByProject]
+  );
   // Why a memo: the snapshot below and the painted-card liveness reads must share
   // one set identity, and an inline `new Set()` re-keys them every render.
   const livePaths = useMemo(
@@ -3087,14 +3097,7 @@ export function WorktreeList({
       resolveDraggedWorktreeIds={resolveDraggedWorktreeIds}
     >
       <RepoScanUnavailableIndicator
-        failures={useMemo(
-          () =>
-            Object.entries(scanFailuresByProject).map(([repoPath, message]) => ({
-              repoPath,
-              message,
-            })),
-          [scanFailuresByProject]
-        )}
+        failures={scanFailureEntries}
         onRetry={() => window.dispatchEvent(new CustomEvent("hydra:refresh-projects"))}
       />
       <VirtualizedWorktreeViewport

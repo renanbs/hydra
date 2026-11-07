@@ -23,6 +23,6 @@ describe('cli install status (D02c-003/D02c-004)', () => {
   })
 
   it('keeps the probe order the backend defines', () => {
-    expect(AGENT_CLI_IDS).toEqual(['omp', 'claude', 'cursor-agent', 'codex'])
+    expect(AGENT_CLI_IDS).toEqual(['omp', 'claude', 'cursor-agent', 'codex', 'orca'])
   })
 })
