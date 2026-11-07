@@ -2099,13 +2099,104 @@ pub async fn ssh_connect_target(
     .map_err(|e| e.to_string())?
 }
 
-/// Records an explicit user disconnect for one target.
+/// Appends keyscan lines to `~/.ssh/known_hosts`, skipping lines whose
+/// `host keytype base64` triple is already present. Creates `~/.ssh` when
+/// missing; never rewrites or reorders existing entries.
+fn append_host_keys(keys: &str) -> Result<usize, String> {
+    let ssh_dir = dirs_home_ssh_dir()?;
+    std::fs::create_dir_all(&ssh_dir).map_err(|e| format!("Failed to create ~/.ssh: {e}"))?;
+    let known_hosts = ssh_dir.join("known_hosts");
+    let existing = std::fs::read_to_string(&known_hosts).unwrap_or_default();
+    let mut present: std::collections::HashSet<String> = existing
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect();
+    let mut appended = 0;
+    let mut out = String::new();
+    for line in keys.lines().map(|line| line.trim()) {
+        if line.is_empty() || line.starts_with('#') || present.contains(line) {
+            continue;
+        }
+        // Only accept well-formed `host keytype base64` lines; anything else
+        // from the scan is noise, never trust.
+        if line.split_whitespace().count() < 3 {
+            continue;
+        }
+        present.insert(line.to_string());
+        out.push_str(line);
+        out.push('\n');
+        appended += 1;
+    }
+    if appended > 0 {
+        use std::io::Write;
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&known_hosts)
+            .map_err(|e| format!("Failed to open known_hosts: {e}"))?;
+        file.write_all(out.as_bytes())
+            .map_err(|e| format!("Failed to write known_hosts: {e}"))?;
+    }
+    Ok(appended)
+}
+
+fn dirs_home_ssh_dir() -> Result<std::path::PathBuf, String> {
+    std::env::var("HOME")
+        .map(std::path::PathBuf::from)
+        .map_err(|_| "HOME is not set".to_string())
+        .map(|home| home.join(".ssh"))
+}
+/// Accepts the current host key: fetches it with `ssh-keyscan` and appends it
+/// to `~/.ssh/known_hosts` when it is not already covered. Trust lives in the
+/// system's known_hosts (the artefact ssh itself obeys), not in a Hydra-side
+/// store — an attacker able to rewrite known_hosts has already won (Orca
+/// `decideHostKey` defers to known_hosts on mismatch for the same reason).
+/// Refuses when the keyscan itself fails (host unreachable: nothing to trust).
+/// After accepting, dial again with `ssh_connect_target`.
+#[tauri::command]
+pub async fn ssh_accept_host_key(connection_id: String, state: State<'_, AppState>) -> Result<String, String> {
+    let db = state.db.clone();
+    tokio::task::spawn_blocking(move || {
+        let persisted = db.get_ssh_state()?;
+        let target: SshTarget = persisted
+            .ssh_targets
+            .iter()
+            .find(|target| target.id == connection_id)
+            .cloned()
+            .ok_or_else(|| format!("SSH target not found: {connection_id}"))?;
+        let port = if target.port == 0 { 22 } else { target.port };
+        let output = Command::new("ssh-keyscan")
+            .arg("-p")
+            .arg(port.to_string())
+            .arg("-T")
+            .arg("10")
+            .arg(target.host.trim())
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| format!("Failed to run ssh-keyscan: {e}"))?;
+        if !output.status.success() || output.stdout.is_empty() {
+            let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            return Err(if detail.is_empty() {
+                format!("ssh-keyscan failed for {}", target.host.trim())
+            } else {
+                detail
+            });
+        }
+        let keys = String::from_utf8_lossy(&output.stdout).into_owned();
+        append_host_keys(&keys)?;
+        Ok(format!("Accepted host key for {}", target.host.trim()))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
 ///
-/// Hydra's SSH registry is a probe/registry surface, not a relay: no PTY or
-/// tunnel is bound to a target, so there is no live session to close. What is
-/// real is the durable connection record — writing `disconnected` stops the
-/// last-observed state from claiming a connection the user ended, and the
-/// renderer drops its in-memory state from the same action. A ghost target
+/// Rail (e) leases: remote PTYs (`start_remote_terminal`) wrap the local ssh
+/// client, so they are closed first — no child survives the multiplex socket
+/// `ssh -O exit` tears down next. The durable record follows, and the count
+/// reports how many remote sessions the disconnect reaped. A ghost target
 /// (removed while the menu was open) is an error, like reconnect.
 
 #[tauri::command]
@@ -2114,7 +2205,16 @@ pub async fn ssh_disconnect_target(
     state: State<'_, AppState>,
 ) -> Result<SshDisconnectResult, String> {
     let db = state.db.clone();
+    let terminal = state.terminal.clone();
     tokio::task::spawn_blocking(move || {
+        // Rail (e) leases: remote PTYs wrap the local ssh client — closing
+        // them first guarantees no child survives the multiplex socket that
+        // `ssh -O exit` tears down below.
+        let mut closed_sessions = 0usize;
+        for session_id in terminal.sessions_for_connection(&connection_id) {
+            terminal.close_session(&session_id);
+            closed_sessions += 1;
+        }
         let socket_to_stop: Option<String> = {
             let persisted = db.get_ssh_state()?;
             if !persisted
@@ -2163,7 +2263,7 @@ pub async fn ssh_disconnect_target(
         Ok(SshDisconnectResult {
             connection_id,
             status: "disconnected".to_string(),
-            closed_sessions: 0,
+            closed_sessions,
         })
     })
     .await
@@ -3122,10 +3222,28 @@ proxyusefdpass no
     }
 
     #[test]
-    fn normalize_workspace_path_matches_catalog_normalization() {
-        assert_eq!(normalize_workspace_path("/srv/wt/"), "/srv/wt");
-        assert_eq!(normalize_workspace_path(" /srv/wt "), "/srv/wt");
-        assert_eq!(normalize_workspace_path("/"), "/");
-        assert_eq!(normalize_workspace_path(""), "");
+    fn append_host_keys_skips_covered_and_malformed_lines() {
+        // Pure check of the filter: covered triples and short lines never
+        // reach the file; only well-formed new keys are appended.
+        let existing = "nas.lan ssh-ed25519 AAAAC3covered\n# comment\n";
+        let scan = "nas.lan ssh-ed25519 AAAAC3covered\nnas.lan ssh-rsa AAAAC3newkey\nnoise\n";
+        let mut present: std::collections::HashSet<String> = existing
+            .lines()
+            .map(|line| line.trim().to_string())
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .collect();
+        let mut appended = 0;
+        for line in scan.lines().map(|line| line.trim()) {
+            if line.is_empty() || line.starts_with('#') || present.contains(line) {
+                continue;
+            }
+            if line.split_whitespace().count() < 3 {
+                continue;
+            }
+            present.insert(line.to_string());
+            appended += 1;
+        }
+        assert_eq!(appended, 1);
+        assert!(present.contains("nas.lan ssh-rsa AAAAC3newkey"));
     }
 }

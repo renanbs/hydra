@@ -510,6 +510,18 @@ impl TerminalManager {
         self.sessions.lock().keys().cloned().collect()
     }
 
+    /// Session ids whose PTY wraps the local ssh client for one target.
+    /// Rail (e): `ssh_disconnect_target` closes these before stopping the
+    /// master, so no local ssh child survives its multiplex socket.
+    pub fn sessions_for_connection(&self, connection_id: &str) -> Vec<String> {
+        self.sessions
+            .lock()
+            .iter()
+            .filter(|(_, sess)| sess.remote_connection_id.as_deref() == Some(connection_id))
+            .map(|(id, _)| id.clone())
+            .collect()
+    }
+
     pub fn poll_output(&self, session_id: &str, offset: usize) -> Result<(String, usize), String> {
         let guard = self.sessions.lock();
         if let Some(sess) = guard.get(session_id) {

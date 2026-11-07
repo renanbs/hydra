@@ -2301,6 +2301,7 @@ pub fn run() {
             ssh_hosts::ssh_resolve_config_host,
             ssh_hosts::ssh_reconnect_target,
             ssh_hosts::ssh_needs_passphrase_prompt,
+            ssh_hosts::ssh_accept_host_key,
             ssh_hosts::ssh_connect_target,
             ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,

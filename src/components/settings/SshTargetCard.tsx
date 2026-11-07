@@ -35,6 +35,7 @@ export const STATUS_LABELS: Record<SshConnectionStatus, string> = {
   disconnected: 'Disconnected',
   connecting: 'Connecting\u2026',
   'auth-failed': 'Auth failed',
+  'host-key-verification': 'Host key unverified',
   'deploying-relay': 'Deploying relay\u2026',
   connected: 'Connected',
   reconnecting: 'Reconnecting\u2026',
@@ -53,6 +54,7 @@ export function statusColor(status: SshConnectionStatus): string {
     case 'reconnecting':
       return 'bg-yellow-500'
     case 'auth-failed':
+    case 'host-key-verification':
     case 'reconnection-failed':
     case 'error':
       return 'bg-red-500'

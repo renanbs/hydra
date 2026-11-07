@@ -25,6 +25,14 @@ export function reconnectSshTarget(targetId: string): Promise<SshConnectResult> 
 }
 
 /**
+ * Rail (e): fetches the host key with ssh-keyscan and appends it to
+ * ~/.ssh/known_hosts when not already covered. After accepting, dial again.
+ */
+export function acceptSshHostKey(targetId: string): Promise<string> {
+  return invoke<string>('ssh_accept_host_key', { connectionId: targetId })
+}
+
+/**
  * Rail (b): true only when a previous dial classified as `auth-failed` and no
  * live master exists — so automation skips instead of hanging on a prompt.
  */
