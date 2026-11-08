@@ -86,6 +86,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
   const [availableAgents, setAvailableAgents] = useState<{ id: string; label: string }[]>([]);
   const [availableShells, setAvailableShells] = useState<{ id: string; label: string; path: string }[]>([]);
   const [systemShell, setSystemShell] = useState<{ id: string; label: string; path: string } | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<{ current_version: string; available_version: string | null; update_available: boolean; feed_configured: boolean } | null>(null);
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [worktreeRootDraft, setWorktreeRootDraft] = useState("");
@@ -144,6 +145,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
       invoke<{ id: string; label: string }[]>("list_available_agents").then((a) => { if (Array.isArray(a)) setAvailableAgents(a.map((x: any) => ({ id: x.id ?? x.name ?? x, label: x.label ?? x.name ?? x}))); }).catch(()=>{});
       invoke<{ id: string; label: string; path: string }[]>("list_available_shells").then((s)=>{ if(Array.isArray(s)) setAvailableShells(s.map((x:any)=>({id:x.id, label:x.label, path:x.path}))); }).catch(()=>{});
       invoke<string>("get_app_version").then(setAppVersion).catch(()=>{});
+      invoke<{ current_version: string; available_version: string | null; update_available: boolean; feed_configured: boolean } | null>("updater_get_status").then((s) => { if (s) setUpdateStatus(s); }).catch(()=>{});
       invoke<{ id: string; label: string; path: string }>("get_default_system_shell").then(setSystemShell).catch(()=>{});
     }
   }, [isOpen]);
@@ -1160,7 +1162,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
             </div>
           </div>
           <div className="border-t px-8 py-3 flex items-center justify-between bg-muted/30">
-            <span className="text-[11px] font-mono text-muted-foreground">{appVersion ? `Hydra v${appVersion} · ` : ""}SQLite WAL · ~/.config/hydra/ · oled→dark migrated</span>
+            <span className="text-[11px] font-mono text-muted-foreground">{appVersion ? `Hydra v${appVersion} · ` : ""}{updateStatus?.update_available ? `update ${updateStatus.available_version} available · ` : ""}{updateStatus && !updateStatus.feed_configured ? "no update feed · " : ""}SQLite WAL · ~/.config/hydra/ · oled→dark migrated</span>
             <div className="flex items-center gap-2">
               {savedFeedback && <span className="flex items-center gap-1 text-emerald-600 text-[12px]"><Check className="size-3.5" /> Saved</span>}
               <button onClick={handleSave} className="px-4 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-medium">Save Changes</button>
