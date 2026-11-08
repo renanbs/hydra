@@ -27,6 +27,7 @@ pub mod runtime_inspection;
 pub mod runtime_envs;
 pub mod ssh_hosts;
 pub mod ssh_remote;
+pub mod updater;
 pub mod proc_runner;
 
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -2314,6 +2315,12 @@ pub fn run() {
             ssh_remote::ssh_remote_create_project,
             ssh_remote::ssh_remote_probe_git,
             ssh_remote::ssh_remote_delete_worktree,
+            updater::updater_get_status,
+            updater::updater_get_version,
+            updater::updater_check,
+            updater::updater_dismiss_nudge,
+            updater::updater_dismiss_available_update,
+            updater::updater_list_builds,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");
