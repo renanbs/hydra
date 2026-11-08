@@ -1221,6 +1221,34 @@ impl DatabaseManager {
             Ok(None)
         }
     }
+    pub fn get_updater_state(&self) -> Result<crate::updater::PersistedUpdaterState, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT json FROM updater_state WHERE key = 'default'")
+            .map_err(|e| format!("Error querying updater state: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json_str: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json_str).map_err(|e| format!("Error deserializing updater state: {e}"))
+        } else {
+            Ok(crate::updater::PersistedUpdaterState::default())
+        }
+    }
+    pub fn save_updater_state(&self, state: &crate::updater::PersistedUpdaterState) -> Result<(), String> {
+        let json_str = serde_json::to_string(state).map_err(|e| format!("Error serializing updater state: {e}"))?;
+        let conn = self.conn.lock();
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS updater_state (key TEXT PRIMARY KEY, json TEXT NOT NULL)",
+            params![],
+        )
+        .map_err(|e| format!("Error creating updater table: {e}"))?;
+        conn.execute(
+            "INSERT OR REPLACE INTO updater_state (key, json) VALUES ('default', ?1)",
+            params![json_str],
+        )
+        .map_err(|e| format!("Error saving updater state: {e}"))?;
+        Ok(())
+    }
     pub fn save_ssh_state(&self, state: &crate::ssh_hosts::PersistedSshState) -> Result<(), String> {
         let json_str = serde_json::to_string(state)
             .map_err(|e| format!("Error serializing ssh state: {e}"))?;
