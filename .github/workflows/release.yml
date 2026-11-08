@@ -13,12 +13,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Debian/Ubuntu (.deb)
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             bundle: deb
+          # Fedora/RHEL (.rpm)
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             bundle: rpm
+          # Arch/Garuda/Manjaro: AppImage universal (sem AUR por agora)
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundle: appimage
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
