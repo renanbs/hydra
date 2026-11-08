@@ -2324,6 +2324,8 @@ pub fn run() {
             updater::updater_list_builds,
             updater::updater_download,
             updater::updater_quit_and_install,
+            updater::updater_get_linux_instructions,
+            updater::updater_show_linux_package,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

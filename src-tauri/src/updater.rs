@@ -296,6 +296,54 @@ pub async fn updater_quit_and_install(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct LinuxPackageInstructions {
+    pub package_type: String,
+    pub install_command: String,
+    pub package_url: Option<String>,
+}
+
+/// Detecta gerenciador (apt/dnf/pacman) via /etc/os-release.
+fn detect_linux_pm() -> Option<(&'static str, &'static str)> {
+    let txt = std::fs::read_to_string("/etc/os-release").ok()?;
+    let id = txt.lines().find_map(|l| l.strip_prefix("ID="))?.trim_matches('"').to_string();
+    let like = txt.lines().find_map(|l| l.strip_prefix("ID_LIKE=")).unwrap_or("").to_string();
+    let probe = format!("{id} {like}");
+    if probe.contains("arch") { Some(("pacman", "pacman -U")) }
+    else if probe.contains("fedora") || probe.contains("rhel") || probe.contains("centos") { Some(("rpm", "dnf install")) }
+    else if probe.contains("debian") || probe.contains("ubuntu") { Some(("deb", "apt install")) }
+    else { None }
+}
+
+/// `updater:getLinuxPackageInstallInstructions` — comando de instalação do pacote.
+#[tauri::command]
+pub async fn updater_get_linux_instructions() -> Result<LinuxPackageInstructions, String> {
+    let repo = std::env::var("HYDRA_UPDATE_REPO").unwrap_or_else(|_| "renanbs/hydra".into());
+    let version = installed_version();
+    match detect_linux_pm() {
+        Some((pkg, cmd)) => {
+            let ext = if pkg == "rpm" { "rpm" } else if pkg == "pacman" { "pkg.tar.zst" } else { "deb" };
+            Ok(LinuxPackageInstructions {
+                package_type: pkg.into(),
+                install_command: format!("sudo {cmd} ./hydra_{version}_amd64.{ext}"),
+                package_url: Some(format!("https://github.com/{repo}/releases/tag/v{version}")),
+            })
+        }
+        None => Err("no supported package manager found (apt/dnf/pacman)".into()),
+    }
+}
+
+/// `updater:showLinuxPackage` — abre a página do release no navegador.
+#[tauri::command]
+pub async fn updater_show_linux_package() -> Result<String, String> {
+    let repo = std::env::var("HYDRA_UPDATE_REPO").unwrap_or_else(|_| "renanbs/hydra".into());
+    let url = format!("https://github.com/{repo}/releases/latest");
+    crate::preflight::open_external_url(&url)?;
+    Ok(url)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
