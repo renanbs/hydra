@@ -6,11 +6,11 @@
 
 **Autonomous Development Environment for Parallel AI Agent Fleets**
 
-[![Repository](https://img.shields.io/badge/GitHub-renanbs%2Fhydra-181717?logo=github)](https://github.com/renanbs/hydra)
+[![Release](https://img.shields.io/github/v/release/renanbs/hydra?logo=github)](https://github.com/renanbs/hydra/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/renanbs/hydra/release.yml?logo=githubactions&logoColor=white)](https://github.com/renanbs/hydra/actions/workflows/release.yml)
 [![Tauri v2](https://img.shields.io/badge/Tauri-v2-blue?logo=tauri&logoColor=white)](https://tauri.app/)
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)](https://react.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![SQLite WAL](https://img.shields.io/badge/Storage-SQLite_WAL-003B57?logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![Wayland Ready](https://img.shields.io/badge/Platform-Linux_Wayland-success)](#)
 
@@ -18,142 +18,86 @@
 
 ---
 
-## ⚡ Overview
+![Hydra ADE — fleet sidebar, workbench and agent feed](./docs/shots/01-hero.png)
 
-**Hydra ADE** is a high-performance Autonomous Development Environment purpose-built for orchestrating fleets of parallel AI coding agents.
+> Screenshot real (Chromium 1248, 1600×900, `vite` preview). Sem mockups: é o app a arrancar sem projeto.
 
-It combines the dense, keyboard-driven user experience of **Orca IDE** (shadcn/ui New York style, worktree fleet sidebar, virtualized file explorer, command palette, Monaco diffs) with the crash-proof, headless virtual terminal architecture of **Herdr** (Rust PTY daemon, in-memory `vt100` shadow buffers, and SQLite WAL persistence).
+## ⚡ O que é
 
----
+O **Hydra ADE** orquestra frotas de agentes de código em paralelo, cada um isolado no seu git worktree e branch. Junta a UX densa do **Orca IDE** (sidebar de frota, workbench multi-tab, command palette) com um núcleo Rust à prova de crash (PTY `portable-pty`, shadow buffer `vt100` em memória, persistência SQLite WAL): fechar o frontend nunca mata compilações ou agentes.
 
-## 🏛️ System Architecture
+**Estado da paridade Orca → Hydra:** núcleo (terminal, git, worktrees, settings, SSH, updater) portado e verificado (699 capacidades mapeadas na base interna).
 
-```
-Hydra Host
-├── Rust Core Daemon (Tauri v2 + Tokio)
-│   ├── PTY Manager (`portable-pty`) ── Async OS process spawning
-│   ├── Headless Terminal Buffer (`vt100`) ── In-memory screen authority (<200 KB RAM)
-│   ├── Herdr State Engine ── Real-time state classification (WORKING / BLOCKED / IDLE)
-│   ├── Log Folding Pipeline (`fold_terminal_output`) ── Cuts LLM prompt tokens up to 90%
-│   ├── Git Worktree Engine ── Safe branch isolation & worktree lifecycle management
-│   ├── Power Management (`keepawake`) ── Prevents system sleep during active agent tasks
-│   ├── Session Storage ── Atomic SQLite WAL at `~/.config/hydra/hydra_sessions.sqlite3`
-│   └── Window Chrome ── Wayland native dragging & geometry restoration
-│
-└── Frontend (React 19 + TypeScript + Tailwind CSS v4)
-    ├── Custom Titlebar ── Frameless window controls (Orca 46x36px hit targets)
-    ├── Left Sidebar ── Fleet & Worktree Manager (parallel git branches & agent status)
-    ├── Center Workbench ── Multi-tab interactive surface (`@xterm/xterm` + Monaco Diff)
-    └── Right Sidebar ── Virtualized File Explorer, Ripgrep search, Source Control & Open In Apps
-```
+## 🎬 Demo (60s)
 
----
+> Vídeo ainda não gravado. Roteiro: `docs/demo-script.md`. Slot: `docs/demo.mp4` (+ thumbnail `docs/demo-thumb.png`).
 
-## ✨ Key Features
+## 🚀 Instalação
 
-### 🤖 Parallel Fleet & Git Worktree Orchestration
-- Run multiple coding agents concurrently, each isolated in its own git worktree and branch.
-- Instant workspace switching without dirty working-directory conflicts or context contamination.
-- Real-time agent status badges (`WORKING`, `BLOCKED`, `IDLE`).
+### Via release (recomendado)
 
-### 🦀 Headless PTY & Shadow Virtual Terminal Buffer
-- Decoupled background daemon: long-running compilations, test suites, or agent scripts live in the Rust backend.
-- Closing or reloading the frontend never terminates active tasks.
-- Output parses into an in-memory `vt100` buffer with zero visual UI lockup, even during massive log dumps.
+1. Baixa o `.deb`/`.rpm` em [Releases](https://github.com/renanbs/hydra/releases) e instala (`sudo apt install ./hydra_X.Y.Z_amd64.deb`).
+2. Abre o Hydra → **Add Project** → **Create workspace** (`Ctrl+N`).
+3. O updater embutido detecta a próxima versão sozinho (rodapé do Settings mostra `update X available`).
 
-### 🧠 Token-Saving Log Folding
-- Raw build and test traces consume massive token budgets when fed to LLMs.
-- Hydra's `fold_terminal_output` engine intelligently retains crucial header information and error tails while collapsing repetitive outputs, reducing context token overhead by up to 90%.
-
-### 🎨 Orca-Grade Visual & Interaction Fidelity
-- **Frameless Window Chrome**: Native Wayland window dragging (`start_dragging()`) with precision controls.
-- **Monaco Diff Viewer**: Side-by-side and inline visual code review for agent-proposed edits.
-- **High-Performance Terminal**: Powered by `@xterm/xterm` with Nerd Font support and curated dark/light themes.
-- **Command Palette (`cmdk`)**: Quick navigation, action dispatching, and workspace switching.
-
-### 📂 Integrated Source Control & File Explorer
-- Virtualized file tree capable of handling large monorepos with minimal memory overhead.
-- Native ripgrep file search and inline git change tracking.
-- Contextual *"Open In"* integration for external editors (VS Code, Cursor, Zed, Sublime).
-
-### ☕ Process Reliability & Keep-Awake
-- Native power management keeps the host awake while long-running agent tasks or test suites are executing.
-
-### 💾 Crash-Proof Persistence
-- Full session state, workspace histories, and window geometry persisted atomically via `rusqlite` in WAL mode.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technologies |
-|---|---|
-| **Native Core** | Rust 2021, Tauri v2, Tokio, `portable-pty`, `vt100`, `rusqlite`, `keepawake`, `notify` |
-| **Frontend UI** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons |
-| **Workbench & Editors** | `@xterm/xterm`, `@monaco-editor/react`, `cmdk` |
-| **Persistence** | SQLite with WAL mode (`~/.config/hydra/hydra_sessions.sqlite3`) |
-| **Target Platform** | Linux (Wayland & X11), macOS, Windows |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-Ensure you have the following installed on your system:
-- **Node.js** (v20+ recommended) & **pnpm**
-- **Rust & Cargo** (stable toolchain)
-- **Tauri v2 System Dependencies** (Linux):
-  ```bash
-  # Debian/Ubuntu
-  sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-
-  # Arch Linux
-  sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget openssl appmenu-gtk-module libappindicator-gtk3 librsvg
-  ```
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone git@github.com:renanbs/hydra.git
-   cd hydra
-   ```
-
-2. **Install frontend dependencies:**
-   ```bash
-   pnpm install
-   ```
-
-### Development
-
-Run the full development stack (Vite frontend + Tauri Rust daemon):
+### A partir do fonte
 
 ```bash
-pnpm tauri dev
+git clone git@github.com:renanbs/hydra.git
+cd hydra
+git checkout develop        # integração estável; main = versões
+pnpm install
+pnpm tauri dev              # Vite + daemon Rust
+pnpm tauri build            # bundle otimizado
 ```
 
-### Production Build
+Pré-requisitos Linux: Node 20+ · pnpm · Rust stable · `libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev` (Debian/Ubuntu).
 
-Compile an optimized, stripped release binary and application bundle:
+## ✨ Funcionalidades (verificadas, não marketing)
+
+| Área | O que existe hoje |
+|---|---|
+| Frota & worktrees | sidebar de frota, create/remove/rename, sort, `save_sidebar_pref`, detecção de PR (`pr_status`), nomes aposentados |
+| Terminal | `start/resize/input/kill`, sessões persistidas, snapshot `vt100`, `send_terminal_input` |
+| Git | stage/unstage/discard/commit/amend/pull/push/stash/diff/history/branch, `check_git_ignored` |
+| Ficheiros | listar/ler/pesquisar/criar/renomear/apagar, clone com abort, `is_git_repository` |
+| SSH | targets CRUD, `~/.ssh/config` import, probe, reconnect, host-key accept, leases, **port-forward registry** |
+| Agentes | detecção (`list_available_agents`), estado decay, sync keys, keep-awake, tool approvals |
+| Updater | status/check/dismiss/nudge/list builds/download/install + instruções `.deb/.rpm` (F16 10/10) |
+| Settings | persistência SQLite, ghostty/warp preview, fontes, runtime envs, pairing QR |
+
+Rails em construção: gh completo, Linear API, automations IPC, onboarding IPC, browser webview, plugins/marketplace.
+
+## ⌨️ Atalhos
+
+| Atalho | Ação |
+|---|---|
+| `Ctrl+P` | Command palette |
+| `Ctrl+T` | Novo terminal |
+| `Ctrl+N` | Create workspace |
+| `Ctrl+Shift+↑/↓` | Mover workspace |
+
+## 🧭 Desenvolvimento (gitflow)
+
+- `main` — versões (tags `v*` disparam o [workflow de release](./.github/workflows/release.yml): deb+rpm assinados).
+- `develop` — integração estável, sem versão.
+- `feature/*`, `release/*`, `hotfix/*` — trabalho; auditorias em `hydra/*` sem merge até aprovação.
 
 ```bash
-pnpm tauri build
+pnpm exec tsc --noEmit                                  # tipos
+cargo test --manifest-path src-tauri/Cargo.toml         # Rust
+pnpm exec vitest run                                    # frontend (1954 tests)
 ```
 
----
+## 🔧 Troubleshooting
 
-## ⌨️ Shortcuts & Ergonomics
-
-| Shortcut / Action | Description |
+| Sintoma | Causa provável |
 |---|---|
-| `Ctrl+P` / `Cmd+P` | Open Command Palette |
-| `Ctrl+\`` / `Cmd+\`` | Toggle Terminal Workbench tab |
-| `Alt+Drag` / Header Drag | Move window (native Wayland protocol) |
-| `New Worktree (+)` | Spawn new isolated agent branch |
+| `__TAURI_INTERNALS__` em testes | normal fora do bundle Tauri; 30 collect errors pré-existentes, 0 falhas |
+| Janela sem decoração no Wayland | intencional (`decorations: false` + `start_dragging()`) |
+| `no update feed` no Settings | `HYDRA_UPDATE_REPO` unset em dev; em release aponta para `renanbs/hydra` |
+| Firewall/portal no SSH | usa o OpenSSH do sistema; `ssh -G` resolve o alias antes do dial |
 
----
-
-## 📄 License
+## 📄 Licença
 
 MIT © [Renan Biegelmeyer](https://github.com/renanbs)

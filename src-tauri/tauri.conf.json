@@ -36,5 +36,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": ["https://github.com/renanbs/hydra/releases/download/{{target}}/{{current_version}}"],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDNjczOEJGNTE5NTkxM0IKUldRN2taVlJ2emhuWFBOcHppU3ZMM2QzQ1lPQ29NWWdGNmhxbEN0dVdyTHNUUm5KNGNmSmF3UTYK"
+    }
   }
 }
