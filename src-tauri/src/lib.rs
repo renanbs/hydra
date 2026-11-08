@@ -2077,6 +2077,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(state)
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
@@ -2321,6 +2322,8 @@ pub fn run() {
             updater::updater_dismiss_nudge,
             updater::updater_dismiss_available_update,
             updater::updater_list_builds,
+            updater::updater_download,
+            updater::updater_quit_and_install,
         ])
         .run(tauri::generate_context!())
         .expect("error while running hydra tauri application");

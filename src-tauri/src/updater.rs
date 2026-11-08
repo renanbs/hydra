@@ -271,6 +271,31 @@ pub async fn updater_list_builds(
     Ok(builds)
 }
 
+
+/// `updater:download` — baixa via tauri-plugin-updater quando ativo.
+/// Sem feed/plugin: erro explícito (era partial, agora tenta de verdade).
+#[tauri::command]
+pub async fn updater_download(app: AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|e| format!("updater inactive (dev build?): {e}"))?;
+    let update = updater.check().await.map_err(|e| format!("check failed: {e}"))?;
+    let Some(update) = update else { return Ok(None) };
+    let version = update.version.clone();
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|e| format!("download/install failed: {e}"))?;
+    Ok(Some(version))
+}
+
+/// `updater:quitAndInstall` — relança para aplicar update já baixado.
+/// O plugin aplica no download_and_install; aqui garante o relaunch.
+#[tauri::command]
+pub async fn updater_quit_and_install(app: AppHandle) -> Result<(), String> {
+    app.request_restart();
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
