@@ -26,7 +26,7 @@
 
 O **Hydra ADE** orquestra frotas de agentes de código em paralelo, cada um isolado no seu git worktree e branch. Junta a UX densa do **Orca IDE** (sidebar de frota, workbench multi-tab, command palette) com um núcleo Rust à prova de crash (PTY `portable-pty`, shadow buffer `vt100` em memória, persistência SQLite WAL): fechar o frontend nunca mata compilações ou agentes.
 
-**Estado da paridade Orca → Hydra:** núcleo (terminal, git, worktrees, settings, SSH, updater) portado e verificado — ver [auditoria completa](./docs/audits/orca-full-parity/REPORT.md) (699 capacidades mapeadas) e a [base no Obsidian](../src/vault/20-Projetos/Hydra/Relatório%20Final%20-%20Auditoria%20Full%20Orca%20x%20Hydra%20(699%20Canais).md).
+**Estado da paridade Orca → Hydra:** núcleo (terminal, git, worktrees, settings, SSH, updater) portado e verificado (699 capacidades mapeadas na base interna).
 
 ## 🎬 Demo (60s)
 
@@ -66,7 +66,7 @@ Pré-requisitos Linux: Node 20+ · pnpm · Rust stable · `libwebkit2gtk-4.1-dev
 | Updater | status/check/dismiss/nudge/list builds/download/install + instruções `.deb/.rpm` (F16 10/10) |
 | Settings | persistência SQLite, ghostty/warp preview, fontes, runtime envs, pairing QR |
 
-Rails em construção (backlog executável no [TASKS.md](./docs/audits/orca-full-parity/TASKS.md)): gh completo, Linear API, automations IPC, onboarding IPC, browser webview, plugins/marketplace.
+Rails em construção: gh completo, Linear API, automations IPC, onboarding IPC, browser webview, plugins/marketplace.
 
 ## ⌨️ Atalhos
 
