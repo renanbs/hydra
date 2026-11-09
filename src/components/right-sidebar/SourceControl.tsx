@@ -23,6 +23,8 @@ import {
   ArrowUpFromLine,
   ArrowDownToLine,
   ExternalLink,
+  Sparkles,
+  Square,
 } from "lucide-react";
 import { CustomContextMenu, type ContextMenuItem } from "../CustomContextMenu";
 import { PromptDialog } from "../PromptDialog";
@@ -30,7 +32,6 @@ import { getWorktreeOpenInEntries, openWorktreePath } from "./WorktreeOpenInMenu
 import { OpenInApplicationIcon } from "../../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../../shared/settings-types";
 import { DEFAULT_OPEN_IN_APPLICATIONS } from "../../shared/settings-types";
-
 interface DetailedFileStatus {
   path: string;
   index_status: string;
@@ -96,6 +97,8 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [commitMsg, setCommitMsg] = useState("");
   const [amend, setAmend] = useState(false);
   const [committing, setCommitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generationId, setGenerationId] = useState<number | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["staged", "changes", "untracked", "conflicts", "history", "commits", "stash", "notes"]));
   const [viewMode, setViewMode] = useState<"list" | "tree">("list");
   const [error, setError] = useState<string | null>(null);
@@ -270,6 +273,25 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!repoPath || paths.length===0) return;
     if (!confirm(`Discard ${paths.length} ${label} file(s)? This cannot be undone.`)) return;
     try { await invoke("git_bulk_discard_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleGenerateCommit = async () => {
+    if (!repoPath || generating) return;
+    setGenerating(true);
+    setError(null);
+    try {
+      const agents = await invoke<Array<{ id: string; executable: string; is_installed: boolean }>>("list_available_agents").catch(() => []);
+      const preferred = ["claude", "codex", "opencode", "gemini", "omp", "aider"];
+      const agent = preferred.find((id) => agents.some((a) => a.id === id && a.is_installed)) ?? "claude";
+      const res = await invoke<{ generation_id: number; text: string }>("ai_generate_commit_message", { repoPath, agentId: agent });
+      setGenerationId(res.generation_id);
+      setCommitMsg(res.text);
+    } catch(e:any){ setError(String(e)); } finally { setGenerating(false); }
+  };
+  const handleCancelGenerate = async () => {
+    if (generationId === null) return;
+    try { await invoke("ai_cancel_generation", { generationId }); } catch {}
+    setGenerationId(null);
+    setGenerating(false);
   };
   const openRemoteCommit = async (sha: string) => {
     if (!repoPath) return;
@@ -454,14 +476,26 @@ await openExternalUrl(url);
 
       {/* Commit area + draft/amend (Orca commit-drafts.ts) */}
       <div className="shrink-0 border-b border-border p-2.5 bg-card space-y-2">
-        <textarea
-          value={commitMsg}
-          onChange={e => setCommitMsg(e.target.value)}
-          placeholder="Message (Ctrl+Enter to commit)"
-          rows={3}
-          className="w-full bg-background border border-border rounded-md px-2.5 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"
-          onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleCommit(); } }}
-        />
+        <div className="relative">
+          <textarea
+            value={commitMsg}
+            onChange={e => setCommitMsg(e.target.value)}
+            placeholder="Message (Ctrl+Enter to commit)"
+            rows={3}
+            className="w-full bg-background border border-border rounded-md px-2.5 py-2 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"
+            onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); handleCommit(); } }}
+          />
+          {generating ? (
+            <button type="button" onClick={() => void handleCancelGenerate()} title="Stop generating" aria-label="Stop generating commit message" className="group absolute right-1.5 top-1.5 inline-flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+              <RefreshCw className="size-3.5 animate-spin group-hover:hidden" />
+              <Square className="hidden size-3.5 fill-current group-hover:block" />
+            </button>
+          ) : (
+            <button type="button" onClick={() => void handleGenerateCommit()} disabled={staged.length === 0} title="Generate commit message with AI" aria-label="Generate commit message with AI" className="absolute right-1.5 top-1.5 inline-flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40">
+              <Sparkles className="size-3.5" />
+            </button>
+          )}
+        </div>
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-1.5 text-[10px] text-neutral-400 cursor-pointer">
             <input type="checkbox" checked={amend} onChange={e=>setAmend(e.target.checked)} className="accent-emerald-500" />
