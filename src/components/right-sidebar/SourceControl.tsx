@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import React from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { openExternalUrl } from "@/lib/sidebar-desktop-contracts";
 import {
   GitBranch,
   RefreshCw,
@@ -234,8 +235,32 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!confirm(`Discard ${paths.length} ${label} file(s)? This cannot be undone.`)) return;
     try { await invoke("git_bulk_discard_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
   };
-  const handlePush = async () => {
+  const openRemoteCommit = async (sha: string) => {
     if (!repoPath) return;
+    try {
+      const url = await invoke<string | null>("git_remote_commit_url_cmd", { repoPath, sha });
+      if (!url) { setError("No hosted remote (GitHub/GitLab/Bitbucket) for this repo"); return; }
+await openExternalUrl(url);
+    } catch(e:any){ setError(String(e)); }
+  };
+  const handleFastForward = async () => {
+    if (!repoPath) return;
+    const ref = baseRef.trim() || status?.upstream || "origin/main";
+    try { await invoke("git_fast_forward_cmd", { repoPath, targetRef: ref }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleRebaseFromBase = async () => {
+    if (!repoPath) return;
+    const ref = baseRef.trim() || status?.upstream || "origin/main";
+    if (!confirm(`Rebase current branch onto ${ref}?`)) return;
+    try { await invoke("git_rebase_from_base_cmd", { repoPath, base: ref }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleSyncFork = async () => {
+    if (!repoPath) return;
+    const branch = baseRef.trim() || "main";
+    if (!confirm(`Sync fork from upstream/${branch}? (fetch + fast-forward merge)`)) return;
+    try { await invoke("git_sync_fork_cmd", { repoPath, upstreamRemote: "upstream", branch }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handlePush = async () => {
     setPushing(true);
     try { await invoke("git_push_cmd", { repoPath }); fetchStatus(); } catch(e:any){ setError(String(e)); } finally{ setPushing(false); }
   };
@@ -515,6 +540,11 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               <GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Commits ahead of {baseRef || status?.upstream || "base"}</span>
               <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-emerald-500/15 text-emerald-400">{branchCommits.length || (status?.ahead ?? 0)}</span>
+              <span className="ml-auto flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <span onClick={() => void handleFastForward()} title={`Fast-forward to ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">FF</span>
+                <span onClick={() => void handleRebaseFromBase()} title={`Rebase onto ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Rebase</span>
+                <span onClick={() => void handleSyncFork()} title="Sync fork from upstream remote" className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Sync fork</span>
+              </span>
             </button>
             {expandedGroups.has("commits") && (
               <div className="max-h-[180px] overflow-y-auto border-t border-border">
@@ -602,11 +632,14 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
                 <div className="px-3 py-3 text-[11px] text-neutral-500 text-center">{historyLoading ? "Loading via Rust git log…" : "No commits"}</div>
               ) : (
                 history.map(c => (
-                  <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
+                  <div key={c.hash} className="group flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
                     <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
                     <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
                     <span className="text-[10px] text-neutral-500">{c.author}</span>
                     <span className="text-[10px] font-mono text-neutral-600">{c.date}</span>
+                    <button onClick={() => void openRemoteCommit(c.hash)} title="Open commit in browser" className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition">
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
                   </div>
                 ))
               )}

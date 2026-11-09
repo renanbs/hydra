@@ -30,6 +30,7 @@ pub mod ssh_credential;
 pub mod ssh_portforward;
 pub mod ssh_remote;
 pub mod ssh_remote_workspace;
+pub mod git_remote;
 pub mod updater;
 pub mod proc_runner;
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -44,6 +45,10 @@ use git_status::{
     git_pull, git_push, git_stage_all, git_stage_file, git_stage_paths, git_stash_list,
     git_stash_pop, git_stash_push, git_unstage_all, git_unstage_file, git_unstage_paths,
     DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
+};
+use git_remote::{
+    git_commit_compare, git_fast_forward, git_rebase_from_base, git_remote_commit_url,
+    git_remote_file_url, git_sync_fork, git_upstream_status,
 };
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
@@ -338,6 +343,34 @@ async fn git_find_huge_folders_cmd(repoPath: String) -> Result<Vec<String>, Stri
 #[tauri::command]
 async fn git_append_gitignore_cmd(repoPath: String, folderName: String) -> Result<bool, String> {
     tokio::task::spawn_blocking(move || git_append_gitignore(&repoPath, &folderName)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_upstream_status_cmd(repoPath: String) -> Result<git_remote::GitUpstreamStatus, String> {
+    tokio::task::spawn_blocking(move || git_upstream_status(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_commit_compare_cmd(repoPath: String, left: String, right: String) -> Result<git_remote::GitUpstreamStatus, String> {
+    tokio::task::spawn_blocking(move || git_commit_compare(&repoPath, &left, &right)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_fast_forward_cmd(repoPath: String, targetRef: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_fast_forward(&repoPath, &targetRef)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_rebase_from_base_cmd(repoPath: String, base: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_rebase_from_base(&repoPath, &base)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_sync_fork_cmd(repoPath: String, upstreamRemote: String, branch: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_sync_fork(&repoPath, &upstreamRemote, &branch)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_remote_commit_url_cmd(repoPath: String, sha: String) -> Result<Option<String>, String> {
+    tokio::task::spawn_blocking(move || git_remote_commit_url(&repoPath, &sha)).await.map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn git_remote_file_url_cmd(repoPath: String, relativePath: String, line: u32) -> Result<Option<String>, String> {
+    tokio::task::spawn_blocking(move || git_remote_file_url(&repoPath, &relativePath, line)).await.map_err(|e| e.to_string())
 }
 #[tauri::command]
 async fn get_submodule_paths_cmd(repoPath: String) -> Result<Vec<String>, String> {
@@ -2216,6 +2249,13 @@ pub fn run() {
             git_bulk_discard_cmd,
             git_find_huge_folders_cmd,
             git_append_gitignore_cmd,
+            git_upstream_status_cmd,
+            git_commit_compare_cmd,
+            git_fast_forward_cmd,
+            git_rebase_from_base_cmd,
+            git_sync_fork_cmd,
+            git_remote_commit_url_cmd,
+            git_remote_file_url_cmd,
             get_submodule_paths_cmd,
             git_stash_list_cmd,
             git_stash_push_cmd,
