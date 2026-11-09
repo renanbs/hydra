@@ -3188,6 +3188,7 @@ branch refs/heads/feat/auth\n";
             new_branch: true,
             created_with_agent: Some("claude".to_string()),
             provenance_kind: Some("created-by-automation".to_string()),
+            parent_worktree_path: None,
         })
         .expect("create_git_worktree succeeds");
         assert!(Path::new(&path).exists(), "worktree must exist on disk");
