@@ -208,6 +208,7 @@ import { prepareActiveWorktreeFocusAfterDelete } from "./components/sidebar/acti
 import { resolveSshWorkspaceForget, type SshWorkspaceForgetResolution } from "./components/sidebar/ssh-workspace-forget-resolution";
 import { ConfirmRemoveFolderDialog } from "./components/sidebar/ConfirmRemoveFolderDialog";
 import { ForgetSshWorkspaceDialog } from "./components/sidebar/ForgetSshWorkspaceDialog";
+import { SshPassphraseDialog } from "./components/settings/SshPassphraseDialog";
 import { getWorkspaceDeleteLineage } from "./components/sidebar/workspace-delete-lineage";
 import { runWorktreeDeletesInParallel, type ParallelDeleteTarget } from "./components/sidebar/worktree-delete-parallel";
 import { SIDEBAR_REVEAL_REQUEST_EVENT } from "./components/sidebar/use-worktree-reveal-body-redirect";
@@ -7425,6 +7426,8 @@ export default function App() {
         initialSection={settingsSectionRequested ?? undefined}
         initialSectionId={settingsTargetSectionId ?? undefined}
       />
+      {/* SSH credential prompt (F07-023): preemptive modal above all surfaces. */}
+      <SshPassphraseDialog />
     </div>
     {/* Orca parity: sonner is the project's toast surface; without a mounted
         Toaster every `toast()` call (delete stale-list notice included) renders

@@ -123,7 +123,10 @@ export function installAppLifetimeIpcEvents(
   registerBrowserRequestIpcBridge(unsubs, isRuntimeEnvironmentActive)
   registerTabLifecycleIpcBridge(unsubs)
   registerRateLimitIpcBridge(unsubs)
-  registerDirectSshStateIpcBridge(unsubs, directSshRuntime)
+  // Why: the SSH event bridge (credential + port-forward emits) is live; the
+  // full direct-SSH state machine (authority/reconnect/wake routing) still
+  // takes `directSshRuntime` in a later fatia.
+  registerDirectSshStateIpcBridge(unsubs)
   registerRemoteWorkspaceIpcBridge(unsubs, directSshRuntime)
   registerZoomIpcBridge(unsubs)
   const agentStatusBridge = registerAgentStatusIpcBridge(unsubs)

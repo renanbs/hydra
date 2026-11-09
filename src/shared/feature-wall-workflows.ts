@@ -44,7 +44,7 @@ export const FEATURE_WALL_WORKFLOWS: readonly FeatureWallWorkflow[] = [
   {
     id: 'agents-orchestration',
     title: 'Agents',
-    meta: 'Agents · Usage · Orca CLI',
+    meta: 'Agents · Usage · Hydra CLI',
     lede: 'Run several agents at once, track their progress, and let automation drive Orca when it helps.',
     primaryTileId: 'tile-04',
     relatedTileIds: ['tile-11', 'tile-09'],

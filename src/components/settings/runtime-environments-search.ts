@@ -11,7 +11,7 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
     ),
     description: translate(
       'auto.components.settings.runtime.environments.search.4575341c77',
-      'Add a saved remote Orca server, generate a pairing URL, or adjust the advanced default runtime.'
+      'Add a saved remote Hydra server, generate a pairing URL, or adjust the advanced default runtime.'
     ),
     keywords: [
       ...translateSearchKeyword(
@@ -70,7 +70,7 @@ export const getWebRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
     ),
     description: translate(
       'auto.components.settings.runtime.environments.search.baec27aa8f',
-      'Connect this browser to a saved Orca server.'
+      'Connect this browser to a saved Hydra server.'
     ),
     keywords: [
       ...translateSearchKeyword(

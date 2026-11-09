@@ -224,6 +224,55 @@ pub fn git_discard_file(repo_path: &str, file: &str) -> Result<(), String> {
     }
     Err(String::from_utf8_lossy(&out2.stderr).to_string())
 }
+/// Discard a batch of paths. Mirrors Orca `bulkDiscardChanges`: each path
+/// goes through the single-file discard (tracked restore, untracked delete).
+pub fn git_bulk_discard(repo_path: &str, paths: &[String]) -> Result<(), String> {
+    for p in paths {
+        git_discard_file(repo_path, p)?;
+    }
+    Ok(())
+}
+/// Well-known huge folders (Orca `KNOWN_HUGE_FOLDER_NAMES`): dependency/build
+/// dirs whose presence explodes the status listing. Offered for .gitignore.
+pub const KNOWN_HUGE_FOLDER_NAMES: &[&str] =
+    &["node_modules", ".next", "dist", "build", "target", "vendor"];
+/// Folders among the known-huge set that exist and are NOT git-ignored.
+/// Mirrors Orca `findKnownHugeFolderPathsToIgnore`.
+pub fn git_find_huge_folders_to_ignore(repo_path: &str) -> Result<Vec<String>, String> {
+    let existing: Vec<String> = KNOWN_HUGE_FOLDER_NAMES
+        .iter()
+        .filter(|n| std::path::Path::new(repo_path).join(n).is_dir())
+        .map(|n| n.to_string())
+        .collect();
+    if existing.is_empty() {
+        return Ok(vec![]);
+    }
+    let ignored = check_git_ignored(repo_path, &existing).unwrap_or_default();
+    let ignored_set: std::collections::HashSet<&str> = ignored.iter().map(|s| s.as_str()).collect();
+    Ok(existing.into_iter().filter(|n| !ignored_set.contains(n.as_str())).collect())
+}
+/// Append a folder pattern to `.gitignore` (allowlisted, exact-line dedup).
+/// Mirrors Orca `appendFolderToGitignore`. Returns true on write.
+pub fn git_append_gitignore(repo_path: &str, folder_name: &str) -> Result<bool, String> {
+    let safe = folder_name.trim();
+    if !KNOWN_HUGE_FOLDER_NAMES.contains(&safe) || safe.contains(['/', '\\', '\r', '\n']) {
+        return Err(format!("Refusing to add unrecognized folder to .gitignore: {folder_name}"));
+    }
+    let line = format!("{safe}/");
+    let path = std::path::Path::new(repo_path).join(".gitignore");
+    let existing = std::fs::read_to_string(&path).unwrap_or_default();
+    let already = existing.lines().map(|l| l.trim()).any(|l| l == safe || l == line);
+    if already {
+        return Ok(false);
+    }
+    use std::io::Write;
+    let mut f = std::fs::OpenOptions::new().create(true).append(true).open(&path).map_err(|e| e.to_string())?;
+    if !existing.is_empty() && !existing.ends_with('\n') {
+        writeln!(f, "").map_err(|e| e.to_string())?;
+    }
+    writeln!(f, "{line}").map_err(|e| e.to_string())?;
+    Ok(true)
+}
 pub fn git_commit(repo_path: &str, message: &str) -> Result<String, String> {
     let out = Command::new("git").args(["-C", repo_path, "commit", "-m", message]).output().map_err(|e| e.to_string())?;
     if out.status.success() {
@@ -398,6 +447,47 @@ pub fn git_unstage_paths(repo_path: &str, paths: &[String]) -> Result<(), String
     let out2 = Command::new("git").args(&args2).output().map_err(|e| e.to_string())?;
     if out2.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out2.stderr).to_string()) }
 }
+/// Conflict-operation state for a worktree. Mirrors Orca
+/// `main/git/source-control/git-conflict-operation.ts`: detect rebase from
+/// `rebase-merge/` or `rebase-apply/` dirs, not `REBASE_HEAD` (lingers → stale badge).
+pub fn git_conflict_operation(repo_path: &str) -> String {
+    // Resolve the git dir (worktrees keep it in `.git` file or `commondir`).
+    let git_dir_out = Command::new("git")
+        .args(["-C", repo_path, "rev-parse", "--git-dir"])
+        .output();
+    let git_dir = match git_dir_out {
+        Ok(out) if out.status.success() => {
+            let raw = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            let p = std::path::Path::new(&raw);
+            if p.is_absolute() {
+                p.to_path_buf()
+            } else {
+                std::path::Path::new(repo_path).join(raw)
+            }
+        }
+        _ => return "unknown".to_string(),
+    };
+    // Any failure to reach a path reads as absent, never as a throw.
+    let exists = |name: &str| git_dir.join(name).exists();
+    if exists("MERGE_HEAD") {
+        return "merge".to_string();
+    }
+    if exists("rebase-merge") || exists("rebase-apply") {
+        return "rebase".to_string();
+    }
+    if exists("CHERRY_PICK_HEAD") {
+        return "cherry-pick".to_string();
+    }
+    "unknown".to_string()
+}
+pub fn git_abort_merge(repo_path: &str) -> Result<(), String> {
+    let out = Command::new("git").args(["-C", repo_path, "merge", "--abort"]).output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).to_string()) }
+}
+pub fn git_abort_rebase(repo_path: &str) -> Result<(), String> {
+    let out = Command::new("git").args(["-C", repo_path, "rebase", "--abort"]).output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).to_string()) }
+}
 pub fn get_submodule_paths(repo_path: &str) -> Vec<String> {
     let gitmodules = std::path::Path::new(repo_path).join(".gitmodules");
     if !gitmodules.exists() { return vec![]; }
@@ -466,5 +556,88 @@ mod tests {
         let status = get_git_status().expect("git status");
         assert!(!status.branch.is_empty());
         assert!(!status.head_commit.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod conflict_op_tests {
+    use super::*;
+    use std::process::Command;
+
+    fn init_repo(path: &std::path::Path) {
+        Command::new("git").args(["init", "-q"]).current_dir(path).output().unwrap();
+        Command::new("git").args(["config", "user.email", "t@t"]).current_dir(path).output().unwrap();
+        Command::new("git").args(["config", "user.name", "t"]).current_dir(path).output().unwrap();
+        std::fs::write(path.join("f.txt"), "a").unwrap();
+        Command::new("git").args(["add", "."]).current_dir(path).output().unwrap();
+        Command::new("git").args(["commit", "-qm", "init"]).current_dir(path).output().unwrap();
+    }
+
+    #[test]
+    fn unknown_on_clean_repo() {
+        let dir = std::env::temp_dir().join(format!("hydra-gitop-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        init_repo(&dir);
+        assert_eq!(git_conflict_operation(dir.to_str().unwrap()), "unknown");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detects_merge_head() {
+        let dir = std::env::temp_dir().join(format!("hydra-gitop-m-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        init_repo(&dir);
+        // Fake a merge in progress via MERGE_HEAD file.
+        let git_dir = String::from_utf8_lossy(
+            &Command::new("git").args(["-C", dir.to_str().unwrap(), "rev-parse", "--git-dir"]).output().unwrap().stdout,
+        ).trim().to_string();
+        std::fs::write(dir.join(&git_dir).join("MERGE_HEAD"), "deadbeef").unwrap();
+        assert_eq!(git_conflict_operation(dir.to_str().unwrap()), "merge");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod extras_tests {
+    use super::*;
+
+    #[test]
+    fn bulk_discard_empty_is_ok() {
+        let dir = std::env::temp_dir();
+        assert!(git_bulk_discard(dir.to_str().unwrap(), &[]).is_ok());
+    }
+
+    #[test]
+    fn append_gitignore_rejects_unknown() {
+        let dir = std::env::temp_dir();
+        assert!(git_append_gitignore(dir.to_str().unwrap(), "../../evil").is_err());
+        assert!(git_append_gitignore(dir.to_str().unwrap(), "custom-folder").is_err());
+    }
+
+    #[test]
+    fn append_gitignore_roundtrip() {
+        let dir = std::env::temp_dir().join(format!("hydra-gi-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let repo = dir.to_str().unwrap();
+        assert_eq!(git_append_gitignore(repo, "target").unwrap(), true);
+        assert_eq!(git_append_gitignore(repo, "target").unwrap(), false);
+        // "target/" with separator is rejected by the allowlist (Orca parity).
+        assert!(git_append_gitignore(repo, "target/").is_err());
+        let content = std::fs::read_to_string(dir.join(".gitignore")).unwrap();
+        assert!(content.contains("target/"));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn huge_folders_empty_without_dirs() {
+        let dir = std::env::temp_dir().join(format!("hydra-hf-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let found = git_find_huge_folders_to_ignore(dir.to_str().unwrap()).unwrap();
+        assert!(found.is_empty());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

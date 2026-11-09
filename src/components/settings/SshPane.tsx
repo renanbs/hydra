@@ -7,6 +7,7 @@
 // here — the SshTargetCard renders none of it when those props are absent — and the
 // `~/.ssh/config` bulk import stays the Add-host picker's `Add all` path.
 import { useCallback, useEffect, useState } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import type { SshTarget } from '../../shared/ssh-types'
@@ -64,6 +65,24 @@ export function SshPane(): React.JSX.Element {
     setForm(getEditingTargetForSshTarget(target))
   }
 
+  const handleResetRelay = async (targetId: string): Promise<void> => {
+    try {
+      await invoke('ssh_reset_relay', { targetId })
+      if (mountedRef.current) {
+        toast.success(translate('auto.components.settings.SshPane.db2e48975e', 'Remote relay reset'))
+      }
+      await loadTargets()
+    } catch (err) {
+      if (mountedRef.current) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate('auto.components.settings.SshPane.2c4ee7332b', 'Failed to reset remote relay')
+        )
+      }
+    }
+  }
+
   const handleSave = async (): Promise<void> => {
     if (editingId === null || saving) {
       return
@@ -116,7 +135,7 @@ export function SshPane(): React.JSX.Element {
           <p className="text-xs text-muted-foreground">
             {translate(
               'auto.components.settings.SshPane.a7d28dff81',
-              'Add a remote host to connect to it in Orca.'
+              'Add a remote host to connect to it in Hydra.'
             )}
           </p>
         </div>
@@ -138,6 +157,7 @@ export function SshPane(): React.JSX.Element {
               target={target}
               onEdit={handleEdit}
               onRemove={(id) => setRemoving({ id, label: target.label })}
+              onResetRelay={(id) => void handleResetRelay(id)}
             />
           ))}
         </div>

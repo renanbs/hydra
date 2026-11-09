@@ -284,6 +284,10 @@ pub struct PersistedSshState {
     /// Persisted so a later reconnect does not silently resurrect the row.
     #[serde(default)]
     pub forgotten_ssh_workspaces: Vec<SshForgottenWorkspace>,
+    /// Stable per-install remote-workspace client id (F07-001). Minted once,
+    /// unlike Orca's per-process UUID — keeps echo-filtering correct across relaunch.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remote_workspace_client_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]

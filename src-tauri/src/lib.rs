@@ -26,20 +26,29 @@ pub mod hooks;
 pub mod runtime_inspection;
 pub mod runtime_envs;
 pub mod ssh_hosts;
+pub mod ssh_credential;
+pub mod ssh_portforward;
 pub mod ssh_remote;
+pub mod ssh_remote_workspace;
+pub mod git_remote;
 pub mod updater;
 pub mod proc_runner;
-
 use agent_discovery::{probe_available_agents, AvailableAgent};
 use agent_state::{fold_terminal_output, AgentState};
 use db::{AgentStateHistoryRecord, ChatMessage, DatabaseManager, DbSessionRecord, HydraSettings, ToolApprovalRecord, UiLayoutState, WorkbenchState};
 use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_path, search_files_content, DirectoryListing, FileContent, read_file_text, SearchResult};
 use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
-    get_git_status, get_git_status_for_path, get_submodule_live_status, git_commit, git_commit_amend,
-    git_diff, git_discard_file, git_pull, git_push, git_stash_list, git_stash_pop, git_stash_push,
-    git_stage_all, git_stage_file, git_stage_paths, git_unstage_all, git_unstage_file,
-    git_unstage_paths, DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
+    get_git_status, get_git_status_for_path, get_submodule_live_status, git_abort_merge,
+    git_abort_rebase, git_append_gitignore, git_bulk_discard, git_commit, git_commit_amend,
+    git_conflict_operation, git_diff, git_discard_file, git_find_huge_folders_to_ignore,
+    git_pull, git_push, git_stage_all, git_stage_file, git_stage_paths, git_stash_list,
+    git_stash_pop, git_stash_push, git_unstage_all, git_unstage_file, git_unstage_paths,
+    DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
+};
+use git_remote::{
+    git_commit_compare, git_fast_forward, git_rebase_from_base, git_remote_commit_url,
+    git_remote_file_url, git_sync_fork, git_upstream_status,
 };
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
@@ -310,6 +319,58 @@ async fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(),
 #[tauri::command]
 async fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
     tokio::task::spawn_blocking(move || git_unstage_paths(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_conflict_operation_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_conflict_operation(&repoPath)).await.map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn git_abort_merge_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_abort_merge(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_abort_rebase_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_abort_rebase(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_bulk_discard_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_bulk_discard(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_find_huge_folders_cmd(repoPath: String) -> Result<Vec<String>, String> {
+    tokio::task::spawn_blocking(move || git_find_huge_folders_to_ignore(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_append_gitignore_cmd(repoPath: String, folderName: String) -> Result<bool, String> {
+    tokio::task::spawn_blocking(move || git_append_gitignore(&repoPath, &folderName)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_upstream_status_cmd(repoPath: String) -> Result<git_remote::GitUpstreamStatus, String> {
+    tokio::task::spawn_blocking(move || git_upstream_status(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_commit_compare_cmd(repoPath: String, left: String, right: String) -> Result<git_remote::GitUpstreamStatus, String> {
+    tokio::task::spawn_blocking(move || git_commit_compare(&repoPath, &left, &right)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_fast_forward_cmd(repoPath: String, targetRef: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_fast_forward(&repoPath, &targetRef)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_rebase_from_base_cmd(repoPath: String, base: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_rebase_from_base(&repoPath, &base)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_sync_fork_cmd(repoPath: String, upstreamRemote: String, branch: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_sync_fork(&repoPath, &upstreamRemote, &branch)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_remote_commit_url_cmd(repoPath: String, sha: String) -> Result<Option<String>, String> {
+    tokio::task::spawn_blocking(move || git_remote_commit_url(&repoPath, &sha)).await.map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn git_remote_file_url_cmd(repoPath: String, relativePath: String, line: u32) -> Result<Option<String>, String> {
+    tokio::task::spawn_blocking(move || git_remote_file_url(&repoPath, &relativePath, line)).await.map_err(|e| e.to_string())
 }
 #[tauri::command]
 async fn get_submodule_paths_cmd(repoPath: String) -> Result<Vec<String>, String> {
@@ -2182,6 +2243,19 @@ pub fn run() {
             git_pull_cmd,
             git_stage_paths_cmd,
             git_unstage_paths_cmd,
+            git_conflict_operation_cmd,
+            git_abort_merge_cmd,
+            git_abort_rebase_cmd,
+            git_bulk_discard_cmd,
+            git_find_huge_folders_cmd,
+            git_append_gitignore_cmd,
+            git_upstream_status_cmd,
+            git_commit_compare_cmd,
+            git_fast_forward_cmd,
+            git_rebase_from_base_cmd,
+            git_sync_fork_cmd,
+            git_remote_commit_url_cmd,
+            git_remote_file_url_cmd,
             get_submodule_paths_cmd,
             git_stash_list_cmd,
             git_stash_push_cmd,
@@ -2307,6 +2381,17 @@ pub fn run() {
             ssh_hosts::ssh_connect_target,
             ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,
+            ssh_portforward::ssh_add_port_forward,
+            ssh_portforward::ssh_update_port_forward,
+            ssh_portforward::ssh_remove_port_forward,
+            ssh_portforward::ssh_list_port_forwards,
+            ssh_portforward::ssh_restore_port_forwards,
+            ssh_portforward::ssh_reset_relay,
+            ssh_credential::ssh_submit_credential,
+            ssh_remote_workspace::remote_workspace_client_id,
+            ssh_remote_workspace::remote_workspace_list_enabled_connected_targets,
+            ssh_remote_workspace::remote_workspace_list_connected_clients,
+            ssh_remote_workspace::remote_workspace_set_for_connected_targets,
             runtime_envs::runtime_verify_and_add_from_pairing_code,
             runtime_envs::runtime_list_environments,
             runtime_envs::runtime_environment_offer,

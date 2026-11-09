@@ -74,7 +74,7 @@ export const FEATURE_WALL_SETUP_STEPS: readonly FeatureWallSetupStep[] = [
     name: 'Start work in multiple repos',
     subtitle: 'Start work in multiple repos',
     description:
-      'Bring your key repos into Orca so you can start agent work without hunting for folders.'
+      'Bring your key repos into Hydra so you can start agent work without hunting for folders.'
   }
 ] as const
 

@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
+import React from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { openExternalUrl } from "@/lib/sidebar-desktop-contracts";
 import {
   GitBranch,
   RefreshCw,
@@ -105,6 +107,8 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [submodules, setSubmodules] = useState<string[]>([]);
   const [pushing, setPushing] = useState(false);
   const [pulling, setPulling] = useState(false);
+  const [conflictOp, setConflictOp] = useState<string>("unknown");
+  const [aborting, setAborting] = useState(false);
   const [stashList, setStashList] = useState<GitCommitEntry[]>([]);
   const [stashLoading, setStashLoading] = useState(false);
   const [stashPromptOpen, setStashPromptOpen] = useState(false);
@@ -120,6 +124,10 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     try {
       const res = await invoke<DetailedGitStatus>("get_detailed_git_status_cmd", { repoPath });
       setStatus(res);
+      try {
+        const op = await invoke<string>("git_conflict_operation_cmd", { repoPath });
+        setConflictOp(op);
+      } catch { setConflictOp("unknown"); }
       try {
         const [unstaged, stagedStats] = await Promise.all([
           invoke<DiffNumStat[]>("get_diff_numstat_cmd", { repoPath, staged: false }),
@@ -222,8 +230,37 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!repoPath || paths.length===0) return;
     try { await invoke("git_unstage_paths_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
   };
-  const handlePush = async () => {
+  const handleBulkDiscard = async (paths: string[], label: string) => {
+    if (!repoPath || paths.length===0) return;
+    if (!confirm(`Discard ${paths.length} ${label} file(s)? This cannot be undone.`)) return;
+    try { await invoke("git_bulk_discard_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
+  };
+  const openRemoteCommit = async (sha: string) => {
     if (!repoPath) return;
+    try {
+      const url = await invoke<string | null>("git_remote_commit_url_cmd", { repoPath, sha });
+      if (!url) { setError("No hosted remote (GitHub/GitLab/Bitbucket) for this repo"); return; }
+await openExternalUrl(url);
+    } catch(e:any){ setError(String(e)); }
+  };
+  const handleFastForward = async () => {
+    if (!repoPath) return;
+    const ref = baseRef.trim() || status?.upstream || "origin/main";
+    try { await invoke("git_fast_forward_cmd", { repoPath, targetRef: ref }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleRebaseFromBase = async () => {
+    if (!repoPath) return;
+    const ref = baseRef.trim() || status?.upstream || "origin/main";
+    if (!confirm(`Rebase current branch onto ${ref}?`)) return;
+    try { await invoke("git_rebase_from_base_cmd", { repoPath, base: ref }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleSyncFork = async () => {
+    if (!repoPath) return;
+    const branch = baseRef.trim() || "main";
+    if (!confirm(`Sync fork from upstream/${branch}? (fetch + fast-forward merge)`)) return;
+    try { await invoke("git_sync_fork_cmd", { repoPath, upstreamRemote: "upstream", branch }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handlePush = async () => {
     setPushing(true);
     try { await invoke("git_push_cmd", { repoPath }); fetchStatus(); } catch(e:any){ setError(String(e)); } finally{ setPushing(false); }
   };
@@ -231,6 +268,14 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!repoPath) return;
     setPulling(true);
     try { await invoke("git_pull_cmd", { repoPath }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); } finally{ setPulling(false); }
+  };
+  const handleAbortOp = async () => {
+    if (!repoPath || conflictOp === "unknown") return;
+    setAborting(true);
+    try {
+      await invoke(conflictOp === "rebase" ? "git_abort_rebase_cmd" : "git_abort_merge_cmd", { repoPath });
+      fetchStatus(); fetchHistory();
+    } catch(e:any){ setError(String(e)); } finally{ setAborting(false); }
   };
   const handleCommit = async () => {
     const msg = commitMsg.trim();
@@ -352,14 +397,22 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
             <span className={`px-1.5 py-0.5 rounded text-[10px] ${status.is_clean ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"}`}>
               {status.is_clean ? "clean" : `${status.files.length} changed`}
             </span>
+            {conflictOp !== "unknown" && (
+              <span className="flex items-center gap-1">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${conflictOp === "rebase" ? "bg-violet-500/15 text-violet-400" : conflictOp === "merge" ? "bg-red-500/15 text-red-400" : "bg-amber-500/15 text-amber-400"}`}>
+                  {conflictOp === "rebase" ? "Rebasing" : conflictOp === "merge" ? "Merging" : "Cherry-picking"}
+                </span>
+                <button onClick={handleAbortOp} disabled={aborting} title={`Abort ${conflictOp}`} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 transition-colors disabled:opacity-50">
+                  {aborting ? "Aborting…" : "Abort"}
+                </button>
+              </span>
+            )}
             {submodules.length>0 && <span className="text-[10px] text-[#dcb67a]">{submodules.length} submodules</span>}
             {error && <span className="text-red-400 truncate">{error}</span>}
           </div>
         )}
         {tooMany && (
-          <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-            Too many changes ({status?.files.length}) — showing first 300. Commit or stash to improve performance (Orca TooManyChangesBanner).
-          </div>
+          <HugeFolderBanner repoPath={repoPath} onChanged={fetchStatus} />
         )}
       </div>
 
@@ -390,7 +443,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
           </button>
         </div>
         {staged.length === 0 && hasAny && !amend && (
-          <p className="text-[10px] text-amber-400/80">Stage files with “+” before committing — Orca staged-first flow</p>
+          <p className="text-[10px] text-amber-400/80">Stage files with “+” before committing — Hydra staged-first flow</p>
         )}
       </div>
 
@@ -433,7 +486,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               count={unstaged.length}
               expanded={expandedGroups.has("changes")}
               onToggle={() => toggleGroup("changes")}
-              actions={unstaged.length>0 ? <button onClick={()=>handleStagePaths(unstaged.map(f=>f.path))} className="text-[10px] px-1 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Stage All</button> : undefined}
+              actions={unstaged.length>0 ? <span className="flex items-center gap-1"><button onClick={()=>handleStagePaths(unstaged.map(f=>f.path))} className="text-[10px] px-1 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Stage All</button><button onClick={()=>void handleBulkDiscard(unstaged.map(f=>f.path), "changed")} className="text-[10px] text-neutral-400 hover:text-red-400 px-1">Discard All</button></span> : undefined}
             >
               {viewMode==="tree"
                 ? groupByDir(unstaged).map(([dir, files])=> (
@@ -487,6 +540,11 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               <GitCommit className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Commits ahead of {baseRef || status?.upstream || "base"}</span>
               <span className="ml-1 px-1 py-0 rounded text-[10px] font-mono bg-emerald-500/15 text-emerald-400">{branchCommits.length || (status?.ahead ?? 0)}</span>
+              <span className="ml-auto flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <span onClick={() => void handleFastForward()} title={`Fast-forward to ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">FF</span>
+                <span onClick={() => void handleRebaseFromBase()} title={`Rebase onto ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Rebase</span>
+                <span onClick={() => void handleSyncFork()} title="Sync fork from upstream remote" className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Sync fork</span>
+              </span>
             </button>
             {expandedGroups.has("commits") && (
               <div className="max-h-[180px] overflow-y-auto border-t border-border">
@@ -546,7 +604,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
                 <input value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} placeholder="note" className="flex-1 bg-background border border-border rounded px-1.5 py-1 text-[10px] text-foreground" />
                 <button onClick={handleAddNote} className="text-[10px] px-2 py-1 rounded bg-emerald-600 text-white">Add</button>
               </div>
-              {Object.keys(notes).length===0 ? <div className="text-[11px] text-neutral-500 text-center py-2">No notes — local shelf (Orca diff-comments)</div> :
+              {Object.keys(notes).length===0 ? <div className="text-[11px] text-neutral-500 text-center py-2">No notes — local shelf</div> :
                 Object.entries(notes).map(([p, t]) => (
                   <div key={p} className="flex items-center gap-2 px-1 py-1 hover:bg-accent rounded transition-colors">
                     <span className="text-[10px] font-mono text-[#dcb67a] truncate flex-1" title={p}>{p}</span>
@@ -574,11 +632,14 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
                 <div className="px-3 py-3 text-[11px] text-neutral-500 text-center">{historyLoading ? "Loading via Rust git log…" : "No commits"}</div>
               ) : (
                 history.map(c => (
-                  <div key={c.hash} className="flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
+                  <div key={c.hash} className="group flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
                     <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
                     <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
                     <span className="text-[10px] text-neutral-500">{c.author}</span>
                     <span className="text-[10px] font-mono text-neutral-600">{c.date}</span>
+                    <button onClick={() => void openRemoteCommit(c.hash)} title="Open commit in browser" className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition">
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
                   </div>
                 ))
               )}
@@ -617,6 +678,54 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   );
 }
 
+
+// Why: the overwhelmingly common cause of a status listing big enough to hit
+// the entry limit is a dependency/build folder that should have been ignored
+// (Orca `huge-folder-ignore.ts`). Offer to ignore by name instead of hand-edit.
+function HugeFolderBanner({ repoPath, onChanged }: { repoPath: string | null; onChanged: () => void }) {
+  const [candidates, setCandidates] = useState<string[] | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  useEffect(() => {
+    if (!repoPath) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const list = await invoke<string[]>("git_find_huge_folders_cmd", { repoPath });
+        if (!cancelled) setCandidates(list);
+      } catch { if (!cancelled) setCandidates([]); }
+    })();
+    return () => { cancelled = true; };
+  }, [repoPath]);
+  if (!candidates || candidates.length === 0) {
+    return (
+      <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
+        Too many changes — showing first 300. Commit or stash to improve performance.
+      </div>
+    );
+  }
+  const ignore = async (folder: string) => {
+    if (!repoPath) return;
+    setBusy(folder);
+    try {
+      await invoke("git_append_gitignore_cmd", { repoPath, folderName: folder });
+      setCandidates((prev) => (prev ?? []).filter((c) => c !== folder));
+      onChanged();
+    } catch {}
+    setBusy(null);
+  };
+  return (
+    <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 space-y-1">
+      <div>Too many changes — showing first 300. These folders look ignorable:</div>
+      <div className="flex flex-wrap gap-1">
+        {candidates.map((c) => (
+          <button key={c} onClick={() => void ignore(c)} disabled={busy !== null} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 transition-colors disabled:opacity-50">
+            {busy === c ? "Ignoring…" : `Ignore ${c}/`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 function Section({ title, count, expanded, onToggle, children, actions, tone }: { title: string; count: number; expanded: boolean; onToggle: () => void; children: React.ReactNode; tone?: "error"; actions?: React.ReactNode; id: string }) {
   return (
     <div className="border-b border-[#1a1c1e] last:border-0">

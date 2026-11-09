@@ -250,7 +250,7 @@ export function SetupScriptPromptCard(): React.JSX.Element | null {
         if (actionPrefix === 'save_detected_setup') {
           showSavedInProjectSettingsToast({
             onOpenSettings: () => openLocalCommandSettings(importedRepoId, importedHostId),
-            description: 'Runs when Orca creates a new worktree.'
+            description: 'Runs when Hydra creates a new worktree.'
           })
           return
         }

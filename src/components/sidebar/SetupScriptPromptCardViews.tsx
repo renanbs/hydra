@@ -130,7 +130,7 @@ export function SetupScriptPromptBody({
     )
   }
   if (isPackageManagerSuggestion) {
-    return <>Save the detected command to run it whenever Orca creates a worktree.</>
+    return <>Save the detected command to run it whenever Hydra creates a worktree.</>
   }
   if (candidateSource) {
     return (
@@ -140,7 +140,7 @@ export function SetupScriptPromptBody({
       </>
     )
   }
-  return <>Add a setup command to run when Orca creates new worktrees.</>
+  return <>Add a setup command to run when Hydra creates new worktrees.</>
 }
 
 export type InspectionErrorActionsProps = {

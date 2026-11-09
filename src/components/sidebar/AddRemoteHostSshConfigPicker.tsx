@@ -245,7 +245,7 @@ export function AddRemoteHostSshConfigPicker({
             : newHostCount > 0
               ? translate(
                   'auto.components.sidebar.AddRemoteHostDialog.sshConfigPickerAddAll',
-                  'Add all {{value0}} to Orca',
+                  'Add all {{value0}} to Hydra',
                   { value0: newHostCount }
                 )
               : // Why: the remainder can be already-in-Orca or merely tombstoned, so the
@@ -257,7 +257,7 @@ export function AddRemoteHostSshConfigPicker({
                   )
                 : translate(
                     'auto.components.sidebar.AddRemoteHostDialog.sshConfigPickerAddAllEmpty',
-                    'Add all to Orca'
+                    'Add all to Hydra'
                   )}
         </Button>
         <Button
