@@ -29,6 +29,8 @@ import { createDiffCommentsSlice, type DiffCommentsSlice } from './slices/diffCo
 import { createGitHubSlice, type GitHubSlice } from './slices/github'
 import { hydrateUiPrefsBridge } from './ui-prefs-bridge'
 import { createSshSlice, type SshSlice } from './slices/ssh'
+import { createWorkspaceSpaceSlice, type WorkspaceSpaceSlice } from './slices/workspace-space'
+import { createWorktreeGitStatusSlice, type WorktreeGitStatusSlice } from './slices/worktree-git-status'
 import { createRuntimeStatusSlice, type RuntimeStatusSlice } from './slices/runtime-status'
 import { createRuntimeEnvironmentSshSlice, type RuntimeEnvironmentSshSlice } from './slices/runtime-environment-ssh'
 import type { WorktreeSlice as WorktreeSliceMembers } from './slices/worktree-helpers'
@@ -57,7 +59,7 @@ export const EMPTY_TABS: TabItem[] = [];
  * `any`/placeholder literals. The live store literal spreads it, so the slice is the single
  * source for every ssh* key.
  */
-export interface AppState extends SshSlice, RuntimeEnvironmentSshSlice, RuntimeStatusSlice, DiffCommentsSlice, GitHubSlice {
+export interface AppState extends SshSlice, WorkspaceSpaceSlice, WorktreeGitStatusSlice, RuntimeEnvironmentSshSlice, RuntimeStatusSlice, DiffCommentsSlice, GitHubSlice {
   /**
    * Renderer-only background worktree creates (D03b-021/022). The values are supplied by
    * `createWorktreeSlice` at runtime; they are declared here because the live store shape
@@ -453,9 +455,10 @@ export const useAppStore = create<AppState>()(
     // The SSH slice is composed directly: its shape is real (see `SshSlice`), so the
     // live literal must not re-declare any key it provides.
     ...createSshSlice(set, get, store),
+    ...createWorkspaceSpaceSlice(set, get, store),
+    ...createWorktreeGitStatusSlice(set, get, store),
     ...createRuntimeStatusSlice(set, get, store),
     ...createRuntimeEnvironmentSshSlice(set, get, store),
-    tabsByWorktree: {},
     activeTabIdByWorktree: {},
     mruTabIds: [],
     repos: [],

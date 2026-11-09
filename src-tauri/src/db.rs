@@ -841,6 +841,29 @@ impl DatabaseManager {
         Ok(())
     }
 
+    pub fn save_workspace_space_cache(&self, json: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('workspace_space_cache', ?1)",
+            params![json],
+        )
+        .map_err(|e| format!("Error saving space cache: {e}"))?;
+        Ok(())
+    }
+
+    pub fn load_workspace_space_cache(&self) -> Result<Option<String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'workspace_space_cache'")
+            .map_err(|e| format!("Error querying space cache: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            Ok(Some(row.get(0).map_err(|e| e.to_string())?))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub fn get_workbench_state(&self) -> Result<WorkbenchState, String> {
         let conn = self.conn.lock();
         let mut stmt = conn

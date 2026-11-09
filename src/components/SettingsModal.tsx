@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import {
-  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Trash2, Info, ChevronDown, RotateCcw, Server
+  X, Search, ArrowLeft, AppWindow, TerminalSquare, Bot, Sliders, TextCursorInput, Keyboard, Shield, FolderGit2, Check, Trash2, Info, ChevronDown, RotateCcw, Server, HardDrive
 } from "lucide-react";
 import { getOpenInAppPresets, isOpenInAppPresetAdded, OpenInApplicationIcon } from "../lib/open-in-app-catalog";
 import type { OpenInApplication } from "../shared/settings-types";
@@ -17,7 +17,7 @@ import { KEEP_LOCAL_MAIN_UP_TO_DATE_SECTION_ID } from "./sidebar/local-base-ref-
 import { AppearancePane } from "./settings/AppearancePane";
 import { SshPane } from "./settings/SshPane";
 import { RuntimeServersPane } from "./settings/RuntimeServersPane";
-
+import { WorkspaceSpacePage } from "./settings/WorkspaceSpacePage";
 export type { HydraSettings };
 
 // Hydra form controls (Orca SettingsFormControls faithful)
@@ -70,7 +70,7 @@ interface SettingsModalProps {
   initialSectionId?: string;
 }
 
-export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh" | "servers";
+export type HydraNavId = "appearance" | "agents" | "input" | "shortcuts" | "security" | "git" | "general" | "terminal" | "ssh" | "servers" | "storage";
 
 export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialSection, initialSectionId }: SettingsModalProps) {
   const [activeId, setActiveId] = useState<HydraNavId>("general");
@@ -281,6 +281,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
     { id: "workspace", title: "Workspace", items: [
       { id: "git", label: "Workspace & Git", icon: FolderGit2 },
       { id: "terminal", label: "Terminal", icon: TerminalSquare },
+      { id: "storage", label: "Storage", icon: HardDrive, badge: "Beta" },
     ]},
     { id: "remote", title: "Remote", items: [
       { id: "ssh", label: "SSH Hosts", icon: Server },
@@ -357,8 +358,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
               {activeId==="security" && <><Shield className="size-4 text-red-500" /> Security & Gate</>}
               {activeId==="git" && <><FolderGit2 className="size-4" /> Workspace & Git</>}
               {activeId==="terminal" && <><TerminalSquare className="size-4 text-emerald-500" /> Terminal</>}
-              {activeId==="ssh" && <><Server className="size-4 text-emerald-500" /> SSH Hosts</>}
-              {activeId==="servers" && <><Server className="size-4 text-emerald-500" /> Paired Servers</>}
+              {activeId==="storage" && <><HardDrive className="size-4 text-amber-500" /> Storage</>}
             </h2>
             <button onClick={onClose} className="rounded-md p-1.5 hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
           </div>
@@ -1140,6 +1140,9 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                     </div>
                   </div>
                 </div>
+              )}
+              {activeId==="storage" && (
+                <WorkspaceSpacePage />
               )}
               {activeId==="ssh" && (
                 <div className="space-y-6">

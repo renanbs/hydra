@@ -31,6 +31,7 @@ pub mod ssh_portforward;
 pub mod ssh_remote;
 pub mod ssh_remote_workspace;
 pub mod git_remote;
+pub mod workspace_space;
 pub mod updater;
 pub mod proc_runner;
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -2256,7 +2257,9 @@ pub fn run() {
             git_sync_fork_cmd,
             git_remote_commit_url_cmd,
             git_remote_file_url_cmd,
-            get_submodule_paths_cmd,
+            workspace_space::workspace_space_analyze,
+            workspace_space::workspace_space_cancel,
+            workspace_space::workspace_space_get_cached_analysis,
             git_stash_list_cmd,
             git_stash_push_cmd,
             git_stash_pop_cmd,
