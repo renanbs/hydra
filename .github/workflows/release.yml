@@ -21,7 +21,7 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             bundle: rpm
-          # Arch/Garuda/Manjaro: AppImage universal (sem AUR por agora)
+          # Arch/Garuda/Manjaro: AppImage universal (+ hydra-ade no AUR via job aur-stable)
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             bundle: appimage
@@ -56,3 +56,46 @@ jobs:
           releaseDraft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'nightly') }}
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundle }}
+
+  aur-stable:
+    name: AUR hydra-ade (stable tarball)
+    needs: build
+    runs-on: ubuntu-22.04
+    if: ${{ !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'nightly') }}
+    steps:
+      - name: Clone hydra-ade (AUR source of truth)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          path: repo
+          ref: ${{ github.ref_name }}
+      - name: Setup SSH for AUR push
+        run: |
+          mkdir -p ~/.ssh
+          echo \"${{ secrets.AUR_SSH_PRIVATE_KEY }}\" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          cat >> ~/.ssh/config <<'EOF'
+          Host aur.archlinux.org
+            IdentityFile ~/.ssh/aur
+            StrictHostKeyChecking yes
+          EOF
+          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
+      - name: Bump pkgver + sha256 + SRCINFO, push
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VER=\"${TAG#v}\"
+          TARBALL_URL=\"https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz\"
+          SHA=$(curl -sL \"$TARBALL_URL\" | sha256sum | cut -d' ' -f1)
+          rm -rf aur && git clone ssh://aur@aur.archlinux.org/hydra-ade.git aur
+          cp repo/packaging/aur/PKGBUILD.stable aur/PKGBUILD
+          cp repo/packaging/hydra.desktop aur/hydra.desktop
+          sed -i \"s/^pkgver=.*/pkgver=${VER}/; s/^pkgrel=.*/pkgrel=1/; s|^sha256sums=.*|sha256sums=('${SHA}')|\" aur/PKGBUILD
+          docker run --rm -v \"$PWD/aur:/pkg\" -w /pkg archlinux:base-devel \
+            bash -c \"useradd -m builder && pacman -Sy --noconfirm pacman-contrib && su builder -c 'makepkg --printsrcinfo' > .SRCINFO\"
+          cd aur
+          git add PKGBUILD .SRCINFO hydra.desktop
+          git -c user.name=\"hydra-release\" -c user.email=\"hydra-release@users.noreply.github.com\" \
+            commit -m \"${TAG}: bump estável\" || echo \"nada a atualizar\"
+          git push origin master

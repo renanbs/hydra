@@ -12,3 +12,5 @@ git add PKGBUILD .SRCINFO && git commit -m "vX.Y.Z" && git push
 ```
 
 Manter `PKGBUILD.stable` sincronizado com o AUR após cada release.
+
+> A partir de v0.2.3: o job `aur-stable` do CI atualiza o AUR sozinho a cada tag (precisa do secret `AUR_SSH_PRIVATE_KEY`). Espelho aqui só para revisão.
