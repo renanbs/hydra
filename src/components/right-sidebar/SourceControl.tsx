@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import React from "react";
 import { invoke } from "@tauri-apps/api/core";
@@ -118,17 +118,24 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [newNoteText, setNewNoteText] = useState("");
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 
+  // F05-011 (Orca git:cancelStatus): no Tauri invoke to abort — the equivalent
+  // is generation fencing: a newer fetch invalidates this one's writes.
+  const fetchStatusGenerationRef = useRef(0);
   const fetchStatus = useCallback(async () => {
     if (!repoPath) return;
+    const generation = ++fetchStatusGenerationRef.current;
+    const alive = (): boolean => generation === fetchStatusGenerationRef.current;
     setLoading(true);
     setError(null);
     try {
       const res = await invoke<DetailedGitStatus>("get_detailed_git_status_cmd", { repoPath });
+      if (!alive()) return;
       setStatus(res);
       try {
         const op = await invoke<string>("git_conflict_operation_cmd", { repoPath });
+        if (!alive()) return;
         setConflictOp(op);
-      } catch { setConflictOp("unknown"); }
+      } catch { if (alive()) setConflictOp("unknown"); }
       try {
         const [unstaged, stagedStats] = await Promise.all([
           invoke<DiffNumStat[]>("get_diff_numstat_cmd", { repoPath, staged: false }),
@@ -137,16 +144,18 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         const m = new Map<string, DiffNumStat>();
         for (const s of unstaged) m.set(s.path, s);
         for (const s of stagedStats) if (!m.has(s.path)) m.set(s.path, s);
+        if (!alive()) return;
         setNumStats(m);
       } catch {}
       try {
         const subs = await invoke<string[]>("get_submodule_paths_cmd", { repoPath });
+        if (!alive()) return;
         setSubmodules(subs);
       } catch {}
     } catch (e: any) {
-      setError(String(e));
+      if (alive()) setError(String(e));
     } finally {
-      setLoading(false);
+      if (alive()) setLoading(false);
     }
   }, [repoPath]);
 
