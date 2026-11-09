@@ -26,6 +26,21 @@ import { buildWorktreeComparator, sortWorktreesSmart } from './smart-sort'
 import { getWorktreeIdsWithLiveAgent, isInactiveWorkspace } from '@/lib/worktree-activity-state'
 import { useAppStore } from '@/store'
 import { getAllWorktreesFromState, getRepoMapFromState } from '@/store/selectors'
+import { edgesToWorktreeLineage } from './worktree-lineage-projection'
+import type { AppState } from '@/store'
+
+/** Single-host edge map (child path -> parent path) to the rich records the
+ *  grouping/validation pipeline consumes. Instance ids collapse to the
+ *  worktree id: paths are stable identities with no cross-host recreates. */
+function edgesToWorktreeLineageFromState(state: AppState): Record<string, import('../../shared/worktree/lineage-types').WorktreeLineage> {
+  const byPath = new Map<string, { id: string }>()
+  for (const list of Object.values(state.worktreesByRepo)) {
+    for (const w of list as Array<{ id: string; path: string }>) {
+      byPath.set(w.path, { id: w.id })
+    }
+  }
+  return edgesToWorktreeLineage(state.worktreeLineageById as Record<string, string>, byPath)
+}
 import {
   ALL_EXECUTION_HOSTS_SCOPE,
   getSettingsFocusedExecutionHostId,
@@ -86,7 +101,7 @@ export type VisibleWorktreeOptions = {
   workspaceHostScope: ExecutionHostScope
   visibleWorkspaceHostIds?: readonly ExecutionHostId[] | null
   defaultHostId: ExecutionHostId
-  worktreeLineageById: Record<string, WorktreeLineage>
+  worktreeLineageById: Record<string, import('../../shared/worktree/lineage-types').WorktreeLineage>
   injectLineageAncestors?: boolean
   forcedVisibleWorktreeIds?: readonly string[]
 }
@@ -325,7 +340,7 @@ export function buildVisibleWorktreeOptionsFromState(
     workspaceHostScope: state.workspaceHostScope,
     visibleWorkspaceHostIds: state.visibleWorkspaceHostIds,
     defaultHostId: getSettingsFocusedExecutionHostId(state.settings),
-    worktreeLineageById: state.worktreeLineageById,
+    worktreeLineageById: edgesToWorktreeLineageFromState(state),
     forcedVisibleWorktreeIds: agentSendTargetWorktreeId ? [agentSendTargetWorktreeId] : undefined
   }
 }

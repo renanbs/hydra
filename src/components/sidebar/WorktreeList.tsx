@@ -85,6 +85,7 @@ import {
   createLineageToggleHandlerCache,
 } from "./worktree-lineage-toggle-handler-cache";
 import { renderWorktreeLineageDescendants } from "./worktree-list/rows/item-row";
+import { edgesToWorktreeLineage } from "./worktree-lineage-projection";
 import { getLineageChildrenInlineStyle } from "./worktree-list/rows/indentation";
 import type { LineageGroupRow, RenderRow } from "./worktree-list/listing/render-row";
 import { buildRenderableRows } from "./worktree-list/listing/renderable-rows";
@@ -1346,15 +1347,16 @@ export function WorktreeList({
     // project it into the rich records the row pipeline validates, so a nest drag
     // and the context menu paint the same tree. Built over the whole candidate
     // universe: the visible pipeline below re-adds an ancestor its filters hid.
-    const projectedLineageById: Record<string, WorktreeLineage> = {
-      ...storeWorktreeLineageById,
-    }
     const candidateWorktreeByPath = new Map<string, Worktree>()
     for (const list of Object.values(projectedByRepo)) {
       for (const worktree of list) {
         candidateWorktreeByPath.set(worktree.path, worktree)
       }
     }
+    const projectedLineageById: Record<string, WorktreeLineage> = edgesToWorktreeLineage(
+      storeWorktreeLineageById,
+      candidateWorktreeByPath
+    )
     for (const [childPath, parentPath] of Object.entries(lineageByPath ?? {})) {
       const child = candidateWorktreeByPath.get(childPath)
       const parent = candidateWorktreeByPath.get(parentPath)
@@ -2728,7 +2730,7 @@ export function WorktreeList({
       const folderPrDisplay = getFolderWorkspaceCardPrDisplay({
         folderWorkspaceId: row.folderWorkspace.id,
         workspaceLineageByChildKey: rowModel.workspaceLineageByChildKey,
-        worktreeLineageById: storeWorktreeLineageById,
+        worktreeLineageById: edgesToWorktreeLineage(storeWorktreeLineageById, rowModel.worktreeById),
         worktreeById: rowModel.worktreeById,
         prByPath,
       });

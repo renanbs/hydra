@@ -51,6 +51,8 @@ interface NewWorkspaceComposerProps {
   onOpenAddRepoDialog?: () => void;
   onOpenSettings?: () => void;
   onClose: () => void;
+  /** Active worktree path at open time — lineage parent when same-repo (Orca parentWorkspace). */
+  activeWorktreePath?: string | null;
   /** D04b-003: the toast's settings toggle; the create path honors it before
    *  branching so the new workspace is based on current history. */
   refreshLocalBaseRefOnWorktreeCreate?: boolean;
@@ -91,6 +93,7 @@ export function NewWorkspaceComposer({
   initialLinkedWorkItem = null,
   onCreateFolderWorkspace,
   onFolderWorkspaceCreated,
+  activeWorktreePath,
 }: NewWorkspaceComposerProps) {
   const [name, setName] = useState("");
   const [customBranch, setCustomBranch] = useState("");
@@ -289,13 +292,23 @@ export function NewWorkspaceComposer({
         })
       : Promise.resolve();
     baseRefresh
-      .then(() =>
-        invoke<string>("create_worktree", {
+      .then(() => {
+        // Lineage capture (Orca parentWorkspace/manual-action): the active
+        // worktree is the parent when it lives in the same repo; never self,
+        // never cross-repo (boundary enforced here, backend double-checks).
+        const parent =
+          activeWorktreePath &&
+          activeWorktreePath !== proj.path &&
+          activeWorktreePath.startsWith(proj.path + "/")
+            ? activeWorktreePath
+            : null;
+        return invoke<string>("create_worktree", {
           repoPath: proj.path,
           branchName: branchToUse,
           newBranch: true,
-        })
-      )
+          ...(parent ? { parentWorktreePath: parent } : {}),
+        });
+      })
       .then(async (createdPath) => {
         // D08-030: create from a lane's `+` seeds the status here, so the new worktree is
         // born in that lane. The write is the app's single status writer; a failed write

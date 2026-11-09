@@ -145,3 +145,37 @@ export function getWorktreeLineageAncestors(
   }
   return ancestors
 }
+
+/**
+ * Hydra edge adapter: the store keeps child-path -> parent-path edges
+ * (single-host; path is the stable identity). Project them into the
+ * Orca `WorktreeLineage` shape the grouping/validation pipeline consumes:
+ * instanceIds collapse to the worktree id (no cross-host recreates to
+ * disambiguate), origin manual, explicit manual-action capture.
+ * Cycle validation downstream still applies — a path cycle is dropped
+ * the same way an id cycle would be.
+ */
+export function edgesToWorktreeLineage(
+  edges: Readonly<Record<string, string>>,
+  worktreeByPath: ReadonlyMap<string, { id: string }>
+): Record<string, import('../../shared/worktree/lineage-types').WorktreeLineage> {
+  const out: Record<string, import('../../shared/worktree/lineage-types').WorktreeLineage> = {}
+  const byPath = worktreeByPath
+  for (const [childPath, parentPath] of Object.entries(edges)) {
+    const child = byPath.get(childPath)
+    const parent = byPath.get(parentPath)
+    if (!child || !parent || child.id === parent.id) {
+      continue
+    }
+    out[child.id] = {
+      worktreeId: child.id,
+      worktreeInstanceId: child.id,
+      parentWorktreeId: parent.id,
+      parentWorktreeInstanceId: parent.id,
+      origin: 'manual',
+      capture: { source: 'manual-action', confidence: 'explicit' },
+      createdAt: 0
+    }
+  }
+  return out
+}

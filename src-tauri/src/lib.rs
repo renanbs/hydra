@@ -881,6 +881,7 @@ async fn create_worktree(
     new_branch: bool,
     created_with_agent: Option<String>,
     provenance_kind: Option<String>,
+    parent_worktree_path: Option<String>,
 ) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
         create_git_worktree(CreateWorktreeParams {
@@ -889,6 +890,7 @@ async fn create_worktree(
             new_branch,
             created_with_agent,
             provenance_kind,
+            parent_worktree_path,
         })
     })
     .await

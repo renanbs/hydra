@@ -62,8 +62,12 @@ pub struct CreateWorktreeParams {
     /// persisted to `worktree_metadata.provenance_kind`. `None` records none.
     #[serde(default)]
     pub provenance_kind: Option<String>,
+    /// Parent worktree path for lineage (the worktree the user created from).
+    /// Persisted to `worktree_lineage` when present. Mirrors Orca capture
+    /// (active-workspace / manual-action source).
+    #[serde(default)]
+    pub parent_worktree_path: Option<String>,
 }
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CreateProjectParams {
     pub name: String,
@@ -1265,6 +1269,16 @@ pub fn create_git_worktree(params: CreateWorktreeParams) -> Result<String, Strin
             params.created_with_agent.as_deref(),
             params.provenance_kind.as_deref(),
         );
+        // Lineage capture (Orca active-workspace / manual-action source): the
+        // frontend passes the worktree the user created from; persist the edge.
+        if let Some(parent) = params.parent_worktree_path.as_deref() {
+            if !parent.trim().is_empty() && parent != path {
+                let db = crate::db::DatabaseManager::new();
+                if let Ok(db) = db {
+                    let _ = db.set_worktree_lineage(&path, parent);
+                }
+            }
+        }
         Ok(path)
     } else {
         Err(String::from_utf8_lossy(&out.stderr).to_string())
@@ -3231,6 +3245,7 @@ branch refs/heads/feat/auth\n";
             new_branch: true,
             created_with_agent: None,
             provenance_kind: None,
+            parent_worktree_path: None,
         })
         .expect("create_git_worktree succeeds");
 

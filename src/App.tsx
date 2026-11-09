@@ -1585,6 +1585,12 @@ export default function App() {
     // uma leitura bem-sucedida. Sem polling — uma leitura no boot.
     hydrateSshTargets().catch(console.error);
 
+    // D11 lineage: hydrate path->parent edges once so the sidebar nests
+    // children under parents from first paint (flat when empty).
+    invoke<Record<string, string>>("get_worktree_lineage")
+      .then((edges) => useAppStore.setState({ worktreeLineageById: edges }))
+      .catch(console.error);
+
     // Fatia Shell/store-owned (ui.state): leitura única no boot. As cinco chaves do
     // blob `ui.sidebar` (posse do App) ficam de fora — ver `hydrateSliceUiPreferences`.
     hydrateUiStatePreferences().catch((error) => {
@@ -7010,6 +7016,7 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onClose={closeNewWorkspaceComposer}
         onCreated={handleCreatedWorkspace}
+        activeWorktreePath={activeWorktreePathRef.current}
         folderProjectGroupId={
           activeProject ? projectGroupMap[activeProject.id] ?? null : null
         }

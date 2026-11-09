@@ -198,7 +198,10 @@ export interface AppState extends SshSlice, WorkspaceSpaceSlice, WorktreeGitStat
   tabBarOrderByWorktree: Record<string, any>
   terminalLayoutsByTabId: Record<string, any>
   unifiedTabsByWorktree: Record<string, any>
-  worktreeLineageById: Record<string, any>
+  /** Lineage edges (child path -> parent path). Hydrated from SQLite via
+   *  `useWorktreeLineage` (App-owned); the store keeps the last snapshot for
+   *  list consumers. Empty = flat list. */
+  worktreeLineageById: Record<string, string>
   // ─── Orca Compat: Boolean Flags ───
   alwaysShowDefaultBranchWorkspace: boolean
   detectedBrowsersLoaded: boolean
