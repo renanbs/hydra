@@ -203,6 +203,8 @@ export type GitHubPrStartPoint = {
   branchNameOverride?: string
   /** Fork PRs: false when "Allow edits from maintainers" is off; a push to the fork may be rejected. */
   maintainerCanModify?: boolean
+  /** True when the PR/MR head lives on another repository (fork). */
+  isCrossRepository?: boolean
 }
 
 export type WorktreeOwnership = 'orca-managed' | 'external' | 'unknown-legacy' | 'agent-scratch'

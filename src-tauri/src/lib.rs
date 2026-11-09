@@ -34,6 +34,7 @@ pub mod git_remote;
 pub mod workspace_space;
 pub mod workspace_cleanup;
 pub mod ai_commit;
+pub mod worktree_review_base;
 pub mod updater;
 pub mod proc_runner;
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -2289,6 +2290,8 @@ pub fn run() {
             ai_commit::ai_generate_commit_message,
             ai_commit::ai_generate_pr_fields,
             ai_commit::ai_cancel_generation,
+            worktree_review_base::worktrees_resolve_pr_base,
+            worktree_review_base::worktrees_resolve_mr_base,
             git_stash_push_cmd,
             git_stash_pop_cmd,
             git_commit_amend_cmd,
