@@ -321,7 +321,7 @@ function SshHostRemoveDialog({
       )
     : translate(
         'auto.components.sidebar.HostRemoveDialog.alsoForgetLocal',
-        'Also remove these {{value0}} from Orca',
+        'Also remove these {{value0}} from Hydra',
         { value0: workspaceCountLabel }
       )
 

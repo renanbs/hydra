@@ -24,7 +24,7 @@ export function showRuntimeDisconnectedToast(
       )
     : translate(
         'auto.store.slices.runtime.status.runtimeHostUnreachable',
-        "Can't reach Orca server"
+        "Can't reach Hydra server"
       )
   activeRuntimeDisconnectedToasts.set(toastId, activation)
   const clearActiveToast = (): void => {

@@ -114,7 +114,7 @@ export const CONTEXTUAL_TOURS = [
       },
       {
         title: 'Stay logged in',
-        body: 'Bring your existing logins into Orca to stay signed in immediately.',
+        body: 'Bring your existing logins into Hydra to stay signed in immediately.',
         // Prefer the always-visible Import button; fall back to the overflow-menu
         // item only once the user has dismissed the import hint.
         targetSelector:

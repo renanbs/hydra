@@ -110,7 +110,7 @@ export function RuntimeServersPane(): React.JSX.Element {
           <p className="text-xs text-muted-foreground">
             {translate(
               'auto.components.settings.RuntimeServersPane.description',
-              'Orca runtimes paired from another computer. Saved on this machine; remove one when it is retired.'
+              'Hydra runtimes paired from another computer. Saved on this machine; remove one when it is retired.'
             )}
           </p>
         </div>

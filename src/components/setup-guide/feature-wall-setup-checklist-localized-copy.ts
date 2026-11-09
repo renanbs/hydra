@@ -54,7 +54,7 @@ const getLocalizedFeatureWallSetupChecklistCopyById = createLocalizedCatalog(
     'agent-capabilities': {
       name: translate(
         'auto.components.feature.wall.feature.wall.setup.checklist.localized.copy.fee5557b02',
-        'Enable Orca CLI'
+        'Enable Hydra CLI'
       ),
       description: translate(
         'auto.components.feature.wall.feature.wall.setup.checklist.localized.copy.7bcb4097fa',
@@ -88,7 +88,7 @@ const getLocalizedFeatureWallSetupChecklistCopyById = createLocalizedCatalog(
       ),
       description: translate(
         'auto.components.feature.wall.feature.wall.setup.checklist.localized.copy.42525ba8a4',
-        'Bring your key repos into Orca so you can start agent work without hunting for folders.'
+        'Bring your key repos into Hydra so you can start agent work without hunting for folders.'
       )
     }
   })

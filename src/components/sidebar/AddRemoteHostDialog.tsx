@@ -164,7 +164,7 @@ export function AddRemoteHostDialog({
         toast.error(
           translate(
             'auto.components.sidebar.AddRemoteHostDialog.sshAlreadyExists',
-            'That SSH host is already in Orca.'
+            'That SSH host is already in Hydra.'
           )
         )
         return
@@ -371,7 +371,7 @@ export function AddRemoteHostDialog({
       toast.success(
         translate(
           'auto.components.sidebar.AddRemoteHostDialog.sshImportSynced',
-          'Added {{value0}} host{{value1}} to Orca.',
+          'Added {{value0}} host{{value1}} to Hydra.',
           { value0: result.targets.length, value1: result.targets.length > 1 ? 's' : '' }
         )
       )

@@ -116,7 +116,7 @@ export function SshPane(): React.JSX.Element {
           <p className="text-xs text-muted-foreground">
             {translate(
               'auto.components.settings.SshPane.a7d28dff81',
-              'Add a remote host to connect to it in Orca.'
+              'Add a remote host to connect to it in Hydra.'
             )}
           </p>
         </div>

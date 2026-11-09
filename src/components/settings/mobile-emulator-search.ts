@@ -138,7 +138,7 @@ export const getMobileEmulatorSearchEntries = createLocalizedCatalog(() => [
     ),
     description: translate(
       'auto.components.settings.mobile.emulator.search.2e0b45b2ba',
-      'Use Orca CLI commands to list, attach, tap, and type into a mobile emulator.'
+      'Use Hydra CLI commands to list, attach, tap, and type into a mobile emulator.'
     ),
     keywords: [
       ...translateSearchKeyword(

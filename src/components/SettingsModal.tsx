@@ -697,7 +697,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                     <Info className="size-4 text-amber-600 mt-0.5" />
                     <div className="space-y-1">
                       <div className="text-[13px] font-medium">Moved to Terminal</div>
-                      <div className="text-[12px] text-muted-foreground">Middle-click Paste now lives in <span className="font-medium text-foreground">Workspace → Terminal → Interaction</span> for coherence (Orca: Interface → Input merged). Use search or navigate there.</div>
+                      <div className="text-[12px] text-muted-foreground">Middle-click Paste now lives in <span className="font-medium text-foreground">Workspace → Terminal → Interaction</span>. Use search or navigate there.</div>
                       <button onClick={()=>setActiveId("terminal")} className="text-[12px] text-emerald-600 hover:underline">Go to Terminal →</button>
                     </div>
                   </div>
@@ -751,7 +751,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                 <div className="space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-[20px] font-semibold tracking-tight">Workspace & Git</h3>
-                    <p className="text-[13px] text-muted-foreground">Git defaults, nesting, and Open In apps. Workspace Directory and Sources live in Setup → General (Orca: Settings → General).</p>
+                    <p className="text-[13px] text-muted-foreground">Git defaults, nesting, and Open In apps. Workspace Directory and Sources live in Setup → General.</p>
                   </div>
 
                   <div className="rounded-xl border bg-card p-6 space-y-4">
@@ -933,12 +933,12 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                 <div className="space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-[20px] font-semibold tracking-tight">Terminal</h3>
-                    <p className="text-[13px] text-muted-foreground">Typography, themes, renderer and behavior — unified from Appearance (Orca: Workflows → Terminal).</p>
+                    <p className="text-[13px] text-muted-foreground">Typography, themes, renderer and behavior — unified from Appearance.</p>
                   </div>
 
-                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Typography moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful.</div>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Typography moved to <span className="font-medium text-foreground">Appearance → Terminal</span>.</div>
 
-                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Terminal themes moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful. Use Appearance to change themes.</div>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Terminal themes moved to <span className="font-medium text-foreground">Appearance → Terminal</span>. Use Appearance to change themes.</div>
 
                   {/* Default Shell */}
                   <section className="rounded-xl border bg-card p-4 space-y-3">
@@ -960,7 +960,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                     </div>
                   </section>
 
-                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Cursor, Panes and Window moved to <span className="font-medium text-foreground">Appearance → Terminal</span> — Orca faithful (advancedContent inside theme preview).</div>
+                  <div className="rounded-lg border bg-muted/30 p-3 text-[12px] text-muted-foreground">Cursor, Panes and Window moved to <span className="font-medium text-foreground">Appearance → Terminal</span>.</div>
 
                   {/* Rendering — GPU + Contrast + Inline Images */}
                   <div className="rounded-xl border bg-card overflow-hidden">
@@ -1154,7 +1154,7 @@ export function SettingsModal({ isOpen, onClose, onSaved, onLiveChange, initialS
                 <div className="space-y-6">
                   <div className="space-y-1">
                     <h3 className="text-[20px] font-semibold tracking-tight">Paired Servers</h3>
-                    <p className="text-[13px] text-muted-foreground">Orca runtimes paired from another computer.</p>
+                    <p className="text-[13px] text-muted-foreground">Hydra runtimes paired from another computer.</p>
                   </div>
                   <RuntimeServersPane />
                 </div>

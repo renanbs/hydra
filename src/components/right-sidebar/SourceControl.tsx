@@ -390,7 +390,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
           </button>
         </div>
         {staged.length === 0 && hasAny && !amend && (
-          <p className="text-[10px] text-amber-400/80">Stage files with “+” before committing — Orca staged-first flow</p>
+          <p className="text-[10px] text-amber-400/80">Stage files with “+” before committing — Hydra staged-first flow</p>
         )}
       </div>
 
@@ -546,7 +546,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
                 <input value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} placeholder="note" className="flex-1 bg-background border border-border rounded px-1.5 py-1 text-[10px] text-foreground" />
                 <button onClick={handleAddNote} className="text-[10px] px-2 py-1 rounded bg-emerald-600 text-white">Add</button>
               </div>
-              {Object.keys(notes).length===0 ? <div className="text-[11px] text-neutral-500 text-center py-2">No notes — local shelf (Orca diff-comments)</div> :
+              {Object.keys(notes).length===0 ? <div className="text-[11px] text-neutral-500 text-center py-2">No notes — local shelf</div> :
                 Object.entries(notes).map(([p, t]) => (
                   <div key={p} className="flex items-center gap-2 px-1 py-1 hover:bg-accent rounded transition-colors">
                     <span className="text-[10px] font-mono text-[#dcb67a] truncate flex-1" title={p}>{p}</span>

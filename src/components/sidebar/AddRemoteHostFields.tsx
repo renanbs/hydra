@@ -193,7 +193,7 @@ export function RemoteServerFields({
         <Label htmlFor="add-server-name">
           {translate(
             'auto.components.settings.RuntimeHostAccessForm.name',
-            'Name in Orca'
+            'Name in Hydra'
           )}
         </Label>
         <Input

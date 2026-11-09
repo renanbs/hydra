@@ -12,7 +12,7 @@ export const AGENT_SKILL_CLI_PREREQUISITE_NOTICE =
 
 export const CLI_PREREQUISITE_REGISTRATION_TOAST = 'Orca needs to register its CLI on PATH.'
 export const CLI_PREREQUISITE_REGISTRATION_TOAST_DESCRIPTION =
-  'Approve the system prompt so skill setup can use the Orca CLI command.'
+  'Approve the system prompt so skill setup can use the Hydra CLI command.'
 
 export function isOrcaCliAvailableOnPath(status: CliInstallStatus | null | undefined): boolean {
   return status?.state === 'installed' && status.pathConfigured === true
