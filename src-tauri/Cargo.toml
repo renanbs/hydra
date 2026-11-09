@@ -49,6 +49,8 @@ sha2 = "0.10"
 hex = "0.4"
 form_urlencoded = "1"
 tauri-plugin-updater = "2.14.1"
+uuid = { version = "1", features = ["v4"] }
+hostname = "0.4"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

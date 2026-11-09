@@ -29,6 +29,7 @@ pub mod ssh_hosts;
 pub mod ssh_credential;
 pub mod ssh_portforward;
 pub mod ssh_remote;
+pub mod ssh_remote_workspace;
 pub mod updater;
 pub mod proc_runner;
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -2315,6 +2316,10 @@ pub fn run() {
             ssh_portforward::ssh_restore_port_forwards,
             ssh_portforward::ssh_reset_relay,
             ssh_credential::ssh_submit_credential,
+            ssh_remote_workspace::remote_workspace_client_id,
+            ssh_remote_workspace::remote_workspace_list_enabled_connected_targets,
+            ssh_remote_workspace::remote_workspace_list_connected_clients,
+            ssh_remote_workspace::remote_workspace_set_for_connected_targets,
             runtime_envs::runtime_verify_and_add_from_pairing_code,
             runtime_envs::runtime_list_environments,
             runtime_envs::runtime_environment_offer,
