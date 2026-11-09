@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import React from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { openExternalUrl } from "@/lib/sidebar-desktop-contracts";
+import { toast } from "sonner";
 import {
   GitBranch,
   RefreshCw,
@@ -23,6 +24,7 @@ import {
   ArrowUpFromLine,
   ArrowDownToLine,
   ExternalLink,
+  CloudDownload,
   Sparkles,
   Square,
 } from "lucide-react";
@@ -98,6 +100,8 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [amend, setAmend] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [expandedCommit, setExpandedCommit] = useState<string | null>(null);
+  const [commitDiffs, setCommitDiffs] = useState<Record<string, string>>({});
   const [generationId, setGenerationId] = useState<number | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["staged", "changes", "untracked", "conflicts", "history", "commits", "stash", "notes"]));
   const [viewMode, setViewMode] = useState<"list" | "tree">("list");
@@ -109,6 +113,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [branchCommits, setBranchCommits] = useState<GitCommitEntry[]>([]);
   const [branchCommitsLoading, setBranchCommitsLoading] = useState(false);
   const [submodules, setSubmodules] = useState<string[]>([]);
+  const [submoduleDirty, setSubmoduleDirty] = useState<Set<string>>(new Set());
   const [pushing, setPushing] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [conflictOp, setConflictOp] = useState<string>("unknown");
@@ -154,6 +159,11 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
         const subs = await invoke<string[]>("get_submodule_paths_cmd", { repoPath });
         if (!alive()) return;
         setSubmodules(subs);
+      } catch {}
+      try {
+        const states = await invoke<Array<{ path: string; clean: boolean }>>("git_submodule_status_cmd", { repoPath });
+        if (!alive()) return;
+        setSubmoduleDirty(new Set(states.filter((x) => !x.clean).map((x) => x.path)));
       } catch {}
     } catch (e: any) {
       if (alive()) setError(String(e));
@@ -293,6 +303,27 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     setGenerationId(null);
     setGenerating(false);
   };
+  const openRemoteFile = async (filePath: string, line = 0) => {
+    if (!repoPath) return;
+    try {
+      const url = await invoke<string | null>("git_remote_file_url_cmd", { repoPath, relativePath: filePath, line });
+      if (!url) { setError("No hosted remote (GitHub/GitLab/Bitbucket) for this repo"); return; }
+      await openExternalUrl(url);
+    } catch(e:any){ setError(String(e)); }
+  };
+  const toggleCommitDiff = async (sha: string) => {
+    if (expandedCommit === sha) { setExpandedCommit(null); return; }
+    setExpandedCommit(sha);
+    if (commitDiffs[sha] !== undefined || !repoPath) return;
+    try {
+      const diff = await invoke<string>("git_show_commit_cmd", { repoPath, sha });
+      setCommitDiffs((m) => ({ ...m, [sha]: diff.slice(0, 20000) }));
+    } catch(e:any){ setCommitDiffs((m) => ({ ...m, [sha]: `Error: ${String(e)}` })); }
+  };
+  const handleFetchAll = async () => {
+    if (!repoPath) return;
+    try { await invoke("git_fetch_all_cmd", { repoPath }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
   const openRemoteCommit = async (sha: string) => {
     if (!repoPath) return;
     try {
@@ -311,6 +342,20 @@ await openExternalUrl(url);
     const ref = baseRef.trim() || status?.upstream || "origin/main";
     if (!confirm(`Rebase current branch onto ${ref}?`)) return;
     try { await invoke("git_rebase_from_base_cmd", { repoPath, base: ref }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); }
+  };
+  const handleGeneratePrFields = async () => {
+    if (!repoPath || generating) return;
+    setGenerating(true);
+    setError(null);
+    try {
+      const agents = await invoke<Array<{ id: string; executable: string; is_installed: boolean }>>("list_available_agents").catch(() => []);
+      const preferred = ["claude", "codex", "opencode", "gemini", "omp", "aider"];
+      const agent = preferred.find((id) => agents.some((a) => a.id === id && a.is_installed)) ?? "claude";
+      const res = await invoke<{ generation_id: number; text: string }>("ai_generate_pr_fields", { repoPath, agentId: agent });
+      setGenerationId(res.generation_id);
+      await navigator.clipboard?.writeText(res.text).catch(() => {});
+      toast.success("PR fields generated — copied to clipboard");
+    } catch(e:any){ setError(String(e)); } finally { setGenerating(false); }
   };
   const handleSyncFork = async () => {
     if (!repoPath) return;
@@ -432,7 +477,9 @@ await openExternalUrl(url);
             <button onClick={handlePush} disabled={pushing} title="Push" className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-white disabled:opacity-50">
               <ArrowUpFromLine className={`w-3.5 h-3.5 ${pushing ? "animate-spin" : ""}`} />
             </button>
-            <div className="w-px h-4 bg-border mx-1" />
+            <button onClick={() => void handleFetchAll()} title="Fetch all remotes (prune)" className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-white disabled:opacity-50">
+              <CloudDownload className="w-3.5 h-3.5" />
+            </button>
             <div className="flex rounded border border-border overflow-hidden text-[10px]">
               <button onClick={() => setViewMode("list")} title="List view" className={`p-1 ${viewMode==="list" ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}><List className="w-3 h-3" /></button>
               <button onClick={() => setViewMode("tree")} title="Tree view" className={`p-1 ${viewMode==="tree" ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}><FolderTree className="w-3 h-3" /></button>
@@ -465,7 +512,7 @@ await openExternalUrl(url);
                 </button>
               </span>
             )}
-            {submodules.length>0 && <span className="text-[10px] text-[#dcb67a]">{submodules.length} submodules</span>}
+            {submodules.length>0 && <span className="text-[10px] text-[#dcb67a]">{submodules.length} submodules{submoduleDirty.size > 0 ? ` (${submoduleDirty.size} dirty)` : ""}</span>}
             {error && <span className="text-red-400 truncate">{error}</span>}
           </div>
         )}
@@ -543,10 +590,10 @@ await openExternalUrl(url);
                 ? groupByDir(staged).map(([dir, files]) => (
                     <div key={dir}>
                       <div className="px-6 py-1 text-[10px] font-mono text-muted-foreground bg-muted/40 border-y border-border/50">{dir}/</div>
-                      {files.map(f => <FileRow key={`staged-${f.path}`} f={f} staged numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onUnstage={() => handleUnstage(f)} onOpenDiff={() => onOpenDiff?.(f.path, true)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
+                      {files.map(f => <FileRow key={`staged-${f.path}`} f={f} staged numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onUnstage={() => handleUnstage(f)} onOpenDiff={() => onOpenDiff?.(f.path, true)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)}
                     </div>
                   ))
-                : staged.map(f => <FileRow key={`staged-${f.path}`} f={f} staged numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onUnstage={() => handleUnstage(f)} onOpenDiff={() => onOpenDiff?.(f.path, true)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)
+                : staged.map(f => <FileRow key={`staged-${f.path}`} f={f} staged numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onUnstage={() => handleUnstage(f)} onOpenDiff={() => onOpenDiff?.(f.path, true)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)
               }
             </Section>
 
@@ -562,10 +609,10 @@ await openExternalUrl(url);
                 ? groupByDir(unstaged).map(([dir, files])=> (
                     <div key={dir}>
                       <div className="px-6 py-1 text-[10px] font-mono text-muted-foreground bg-muted/40 border-y border-border/50">{dir}/</div>
-                      {files.map(f => <FileRow key={`changes-${f.path}`} f={f} numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
+                      {files.map(f => <FileRow key={`changes-${f.path}`} f={f} numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)}
                     </div>
                   ))
-                : unstaged.map(f => <FileRow key={`changes-${f.path}`} f={f} numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)
+                : unstaged.map(f => <FileRow key={`changes-${f.path}`} f={f} numStat={numStats.get(f.path)} isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)
               }
               {unstaged.length === 0 && <div className="px-8 py-2 text-[11px] text-neutral-600">No unstaged changes</div>}
             </Section>
@@ -578,13 +625,13 @@ await openExternalUrl(url);
               onToggle={() => toggleGroup("untracked")}
               actions={untracked.length>0 ? <button onClick={()=>handleStagePaths(untracked.map(f=>f.path))} className="text-[10px] px-1 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Stage All</button> : undefined}
             >
-              {untracked.map(f => <FileRow key={`untracked-${f.path}`} f={f} isUntracked isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
+              {untracked.map(f => <FileRow key={`untracked-${f.path}`} f={f} isUntracked isSubmodule={submodules.includes(f.path)} onStage={() => handleStage(f)} onDiscard={() => handleDiscard(f)} onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)}
               {untracked.length === 0 && <div className="px-8 py-2 text-[11px] text-neutral-600">No untracked files</div>}
             </Section>
 
             {conflicted.length > 0 && (
               <Section id="conflicts" title="Conflicts" count={conflicted.length} expanded={expandedGroups.has("conflicts")} onToggle={() => toggleGroup("conflicts")} tone="error">
-                {conflicted.map(f => <FileRow key={`conflict-${f.path}`} f={f} conflict onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} />)}
+                {conflicted.map(f => <FileRow key={`conflict-${f.path}`} f={f} conflict onOpenDiff={() => onOpenDiff?.(f.path, false)} onContextMenu={e => handleFileContextMenu(e, f.path)} onOpenRemoteFile={() => void openRemoteFile(f.path)} />)}
               </Section>
             )}
             {/* Submodule placeholder (Orca submodule-placeholder-row) */}
@@ -614,6 +661,7 @@ await openExternalUrl(url);
                 <span onClick={() => void handleFastForward()} title={`Fast-forward to ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">FF</span>
                 <span onClick={() => void handleRebaseFromBase()} title={`Rebase onto ${baseRef || status?.upstream || "base"}`} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Rebase</span>
                 <span onClick={() => void handleSyncFork()} title="Sync fork from upstream remote" className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">Sync fork</span>
+                <span onClick={() => void handleGeneratePrFields()} title="Generate PR title+body with AI (copies to clipboard)" className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300">PR fields</span>
               </span>
             </button>
             {expandedGroups.has("commits") && (
@@ -702,14 +750,28 @@ await openExternalUrl(url);
                 <div className="px-3 py-3 text-[11px] text-neutral-500 text-center">{historyLoading ? "Loading via Rust git log…" : "No commits"}</div>
               ) : (
                 history.map(c => (
-                  <div key={c.hash} className="group flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
-                    <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
-                    <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
-                    <span className="text-[10px] text-neutral-500">{c.author}</span>
-                    <span className="text-[10px] font-mono text-neutral-600">{c.date}</span>
-                    <button onClick={() => void openRemoteCommit(c.hash)} title="Open commit in browser" className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition">
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
+                  <div key={c.hash}>
+                    <div className="group flex items-center gap-2 px-2 py-1 hover:bg-[#1a1c1e] border-b border-[#1a1c1e]/50 last:border-0">
+                      <button onClick={() => void toggleCommitDiff(c.hash)} title={expandedCommit === c.hash ? "Hide diff" : "Show diff"} className="p-0.5 rounded hover:bg-neutral-700 text-neutral-500 hover:text-white transition shrink-0">
+                        {expandedCommit === c.hash ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                      </button>
+                      <span className="text-[10px] font-mono text-amber-400">{c.short_hash}</span>
+                      <span className="flex-1 truncate text-[11px] text-neutral-300" title={c.message}>{c.message}</span>
+                      <span className="text-[10px] text-neutral-500">{c.author}</span>
+                      <span className="text-[10px] font-mono text-neutral-600">{c.date}</span>
+                      <button onClick={() => void openRemoteCommit(c.hash)} title="Open commit in browser" className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition">
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                    {expandedCommit === c.hash && (
+                      <div className="px-2 py-1 border-b border-[#1a1c1e]/50 bg-black/20">
+                        {commitDiffs[c.hash] === undefined ? (
+                          <div className="text-[10px] text-neutral-500 py-1">Loading diff…</div>
+                        ) : (
+                          <pre className="text-[10px] font-mono text-neutral-300 whitespace-pre-wrap break-all max-h-[200px] overflow-y-auto">{commitDiffs[c.hash] || "(empty commit)"}</pre>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -812,7 +874,7 @@ function Section({ title, count, expanded, onToggle, children, actions, tone }: 
   );
 }
 
-function FileRow({ f, staged, isUntracked, conflict, numStat, isSubmodule, onStage, onUnstage, onDiscard, onOpenDiff, onContextMenu }: { f: DetailedFileStatus; staged?: boolean; isUntracked?: boolean; conflict?: boolean; numStat?: DiffNumStat; isSubmodule?: boolean; onStage?: () => void; onUnstage?: () => void; onDiscard?: () => void; onOpenDiff?: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
+function FileRow({ f, staged, isUntracked, conflict, numStat, isSubmodule, onStage, onUnstage, onDiscard, onOpenDiff, onContextMenu, onOpenRemoteFile }: { f: DetailedFileStatus; staged?: boolean; isUntracked?: boolean; conflict?: boolean; numStat?: DiffNumStat; isSubmodule?: boolean; onStage?: () => void; onUnstage?: () => void; onDiscard?: () => void; onOpenDiff?: () => void; onContextMenu?: (e: React.MouseEvent) => void; onOpenRemoteFile?: () => void }) {
   return (
     <div onContextMenu={onContextMenu} className="group flex items-center gap-1.5 pl-6 pr-1 py-[3px] hover:bg-[#1e2023] cursor-pointer text-[11px] leading-[16px]">
       {isSubmodule ? <FolderTree className="w-3 h-3 text-[#dcb67a] shrink-0" /> : <FileIcon className="w-3 h-3 text-neutral-500 shrink-0" />}
@@ -843,6 +905,9 @@ function FileRow({ f, staged, isUntracked, conflict, numStat, isSubmodule, onSta
             <RotateCcw className="w-3 h-3" />
           </button>
         )}
+        <button onClick={e => { e.stopPropagation(); onOpenRemoteFile?.(); }} title="Open file on remote host" className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition">
+          <ExternalLink className="w-3 h-3" />
+        </button>
         {conflict && <AlertTriangle className="w-3 h-3 text-red-400" />}
       </span>
     </div>

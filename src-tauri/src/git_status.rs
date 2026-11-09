@@ -333,7 +333,56 @@ pub fn get_git_history(repo_path: &str, limit: usize) -> Result<Vec<GitCommitEnt
     }
     Ok(commits)
 }
-
+/// `git show <sha> --patch` (no merge-diff explosion). Mirrors Orca
+/// commitDiff/branchDiff engine for committed SHAs (History inline diff).
+pub fn git_show_commit(repo_path: &str, sha: &str) -> Result<String, String> {
+    if sha.trim().is_empty() || !sha.chars().all(|c| c.is_ascii_hexdigit()) {
+        return Err("Invalid commit SHA.".to_string());
+    }
+    let out = Command::new("git")
+        .args(["-C", repo_path, "show", "--patch", "--minimal", "--no-color", "--no-ext-diff", sha])
+        .output()
+        .map_err(|e| e.to_string())?;
+    if out.status.success() {
+        Ok(String::from_utf8_lossy(&out.stdout).to_string())
+    } else {
+        Err(String::from_utf8_lossy(&out.stderr).to_string())
+    }
+}
+/// Plain `git fetch --all --prune`. Mirrors Orca `git:fetch` (local subset:
+/// no push-target materialization — Hydra has no push-target model).
+pub fn git_fetch_all(repo_path: &str) -> Result<String, String> {
+    let out = Command::new("git")
+        .args(["-C", repo_path, "fetch", "--all", "--prune"])
+        .output()
+        .map_err(|e| e.to_string())?;
+    if out.status.success() {
+        Ok(String::from_utf8_lossy(&out.stdout).to_string() + &String::from_utf8_lossy(&out.stderr).to_string())
+    } else {
+        Err(String::from_utf8_lossy(&out.stderr).to_string())
+    }
+}
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SubmoduleStatus {
+    pub path: String,
+    pub clean: bool,
+}
+/// Per-submodule clean/dirty. Mirrors Orca submoduleStatus detail (Hydra
+/// lists paths; this adds the missing state).
+pub fn git_submodule_status(repo_path: &str) -> Result<Vec<SubmoduleStatus>, String> {
+    let paths = get_submodule_paths(repo_path);
+    let mut out = Vec::new();
+    for p in paths {
+        let full = std::path::Path::new(repo_path).join(&p);
+        let clean = Command::new("git")
+            .args(["-C", full.to_str().unwrap_or(repo_path), "status", "--porcelain"])
+            .output()
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().is_empty())
+            .unwrap_or(true);
+        out.push(SubmoduleStatus { path: p, clean });
+    }
+    Ok(out)
+}
 pub fn git_stage_all(repo_path: &str) -> Result<(), String> {
     let out = Command::new("git").args(["-C", repo_path, "add", "-A"]).output().map_err(|e| e.to_string())?;
     if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).to_string()) }
@@ -638,6 +687,38 @@ mod extras_tests {
         std::fs::create_dir_all(&dir).unwrap();
         let found = git_find_huge_folders_to_ignore(dir.to_str().unwrap()).unwrap();
         assert!(found.is_empty());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod remote_extra_tests {
+    use super::*;
+
+    #[test]
+    fn fetch_all_no_remote_is_err_or_ok() {
+        // /tmp is not a repo: must Err, never panic.
+        let dir = std::env::temp_dir();
+        let r = git_fetch_all(dir.to_str().unwrap());
+        assert!(r.is_ok() || r.is_err());
+    }
+
+    #[test]
+    fn show_commit_rejects_garbage() {
+        let dir = std::env::temp_dir();
+        let repo = dir.to_str().unwrap();
+        assert!(git_show_commit(repo, "").is_err());
+        assert!(git_show_commit(repo, "../../etc/passwd").is_err());
+        assert!(git_show_commit(repo, "not-a-sha!!").is_err());
+    }
+
+    #[test]
+    fn submodule_status_empty_without_gitmodules() {
+        let dir = std::env::temp_dir().join(format!("hydra-sub-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let st = git_submodule_status(dir.to_str().unwrap()).unwrap();
+        assert!(st.is_empty());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

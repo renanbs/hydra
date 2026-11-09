@@ -44,9 +44,9 @@ use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
     get_git_status, get_git_status_for_path, get_submodule_live_status, git_abort_merge,
     git_abort_rebase, git_append_gitignore, git_bulk_discard, git_commit, git_commit_amend,
-    git_conflict_operation, git_diff, git_discard_file, git_find_huge_folders_to_ignore,
-    git_pull, git_push, git_stage_all, git_stage_file, git_stage_paths, git_stash_list,
-    git_stash_pop, git_stash_push, git_unstage_all, git_unstage_file, git_unstage_paths,
+    git_conflict_operation, git_diff, git_discard_file, git_fetch_all, git_find_huge_folders_to_ignore,
+    git_pull, git_push, git_show_commit, git_stage_all, git_stage_file, git_stage_paths, git_stash_list,
+    git_stash_pop, git_stash_push, git_submodule_status, git_unstage_all, git_unstage_file, git_unstage_paths,
     DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
 };
 use git_remote::{
@@ -322,6 +322,18 @@ async fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(),
 #[tauri::command]
 async fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
     tokio::task::spawn_blocking(move || git_unstage_paths(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_show_commit_cmd(repoPath: String, sha: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_show_commit(&repoPath, &sha)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_fetch_all_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_fetch_all(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_submodule_status_cmd(repoPath: String) -> Result<Vec<git_status::SubmoduleStatus>, String> {
+    tokio::task::spawn_blocking(move || git_submodule_status(&repoPath)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
 async fn git_conflict_operation_cmd(repoPath: String) -> Result<String, String> {
@@ -2246,7 +2258,9 @@ pub fn run() {
             git_pull_cmd,
             git_stage_paths_cmd,
             git_unstage_paths_cmd,
-            git_conflict_operation_cmd,
+            git_show_commit_cmd,
+            git_fetch_all_cmd,
+            git_submodule_status_cmd,
             git_abort_merge_cmd,
             git_abort_rebase_cmd,
             git_bulk_discard_cmd,
