@@ -32,6 +32,7 @@ pub mod ssh_remote;
 pub mod ssh_remote_workspace;
 pub mod git_remote;
 pub mod workspace_space;
+pub mod workspace_cleanup;
 pub mod updater;
 pub mod proc_runner;
 use agent_discovery::{probe_available_agents, AvailableAgent};
@@ -2260,6 +2261,14 @@ pub fn run() {
             workspace_space::workspace_space_analyze,
             workspace_space::workspace_space_cancel,
             workspace_space::workspace_space_get_cached_analysis,
+            workspace_cleanup::workspace_cleanup_get_cached_scan,
+            workspace_cleanup::workspace_cleanup_save_cached_scan,
+            workspace_cleanup::workspace_cleanup_dismiss,
+            workspace_cleanup::workspace_cleanup_clear_dismissals,
+            workspace_cleanup::workspace_cleanup_list_dismissals,
+            workspace_cleanup::workspace_cleanup_begin_removal_snapshot_prune_batch,
+            workspace_cleanup::workspace_cleanup_record_removal_snapshot_prune,
+            workspace_cleanup::workspace_cleanup_finish_removal_snapshot_prune_batch,
             git_stash_list_cmd,
             git_stash_push_cmd,
             git_stash_pop_cmd,

@@ -861,6 +861,54 @@ impl DatabaseManager {
             Ok(Some(row.get(0).map_err(|e| e.to_string())?))
         } else {
             Ok(None)
+    }
+    }
+
+    pub fn save_workspace_cleanup_cache(&self, json: &str) -> Result<(), String> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('workspace_cleanup_cache', ?1)",
+            params![json],
+        )
+        .map_err(|e| format!("Error saving cleanup cache: {e}"))?;
+        Ok(())
+    }
+
+    pub fn load_workspace_cleanup_cache(&self) -> Result<Option<String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'workspace_cleanup_cache'")
+            .map_err(|e| format!("Error querying cleanup cache: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            Ok(Some(row.get(0).map_err(|e| e.to_string())?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn save_workspace_cleanup_dismissals(&self, ids: &[String]) -> Result<(), String> {
+        let conn = self.conn.lock();
+        let json = serde_json::to_string(ids).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('workspace_cleanup_dismissals', ?1)",
+            params![json],
+        )
+        .map_err(|e| format!("Error saving cleanup dismissals: {e}"))?;
+        Ok(())
+    }
+
+    pub fn load_workspace_cleanup_dismissals(&self) -> Result<Vec<String>, String> {
+        let conn = self.conn.lock();
+        let mut stmt = conn
+            .prepare("SELECT value FROM settings WHERE key = 'workspace_cleanup_dismissals'")
+            .map_err(|e| format!("Error querying cleanup dismissals: {e}"))?;
+        let mut rows = stmt.query(params![]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let json: String = row.get(0).map_err(|e| e.to_string())?;
+            serde_json::from_str(&json).map_err(|e| e.to_string())
+        } else {
+            Ok(vec![])
         }
     }
 
