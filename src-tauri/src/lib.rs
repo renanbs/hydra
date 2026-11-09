@@ -26,6 +26,7 @@ pub mod hooks;
 pub mod runtime_inspection;
 pub mod runtime_envs;
 pub mod ssh_hosts;
+pub mod ssh_portforward;
 pub mod ssh_remote;
 pub mod updater;
 pub mod proc_runner;
@@ -2307,6 +2308,12 @@ pub fn run() {
             ssh_hosts::ssh_connect_target,
             ssh_hosts::ssh_disconnect_target,
             ssh_hosts::ssh_forget_workspace,
+            ssh_portforward::ssh_add_port_forward,
+            ssh_portforward::ssh_update_port_forward,
+            ssh_portforward::ssh_remove_port_forward,
+            ssh_portforward::ssh_list_port_forwards,
+            ssh_portforward::ssh_restore_port_forwards,
+            ssh_portforward::ssh_reset_relay,
             runtime_envs::runtime_verify_and_add_from_pairing_code,
             runtime_envs::runtime_list_environments,
             runtime_envs::runtime_environment_offer,

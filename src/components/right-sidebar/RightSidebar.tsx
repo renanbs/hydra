@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { Files, GitBranch, Bot } from "lucide-react";
+import { Files, GitBranch, Bot, Plug } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { FileExplorer } from "./FileExplorer";
 import { SourceControl } from "./SourceControl";
 import { AgentFeed } from "./AgentFeed";
+import { SshPortsPanel } from "./ssh-ports-panel";
 import { ToolCard } from "./ToolCard";
 import { PromptBar } from "./PromptBar";
 import type { OpenInApplication } from "../../shared/settings-types";
 
-type TabId = "explorer" | "source-control" | "agent";
+type TabId = "explorer" | "source-control" | "agent" | "ports";
 
 type Props = {
   rootPath: string | null;
@@ -124,9 +125,17 @@ export function RightSidebar({ rootPath, isGit, openInApps, onOpenFile, onOpenDi
           <GitBranch size={16} />
           {activeTab === "source-control" && <div className="absolute bottom-0 left-[25%] right-[25%] h-[2px] bg-foreground rounded-t" />}
         </button>
+        <button
+          onClick={() => setActiveTab("ports")}
+          title="Ports (SSH forwards)"
+          className={`relative flex h-[36px] w-9 items-center justify-center transition-colors ${activeTab === "ports" ? "text-foreground" : "text-muted-foreground/60 hover:text-muted-foreground"}`}
+        >
+          <Plug size={16} />
+          {activeTab === "ports" && <div className="absolute bottom-0 left-[25%] right-[25%] h-[2px] bg-foreground rounded-t" />}
+        </button>
         <div className="flex-1" />
         <span className="text-[10px] text-muted-foreground font-mono pr-2">
-          {activeTab === "agent" ? (pending.length > 0 ? `AGENT · ${pending.length} pending` : "AGENT") : activeTab === "explorer" ? "EXPLORER" : "SOURCE CONTROL"}
+          {activeTab === "agent" ? (pending.length > 0 ? `AGENT · ${pending.length} pending` : "AGENT") : activeTab === "explorer" ? "EXPLORER" : activeTab === "source-control" ? "SOURCE CONTROL" : "PORTS"}
         </span>
       </div>
 
@@ -223,6 +232,7 @@ export function RightSidebar({ rootPath, isGit, openInApps, onOpenFile, onOpenDi
             </div>
           )
         )}
+        {activeTab === "ports" && <SshPortsPanel />}
       </div>
     </div>
   );
