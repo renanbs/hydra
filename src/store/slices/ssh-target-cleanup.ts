@@ -153,7 +153,7 @@ function clearSshTargetTabPtyState(
 > & { changed: boolean } {
   // Same auto-stub reason as `collectSshTargetTerminalTabIds`: annotate the tab map so
   // `Object.entries` yields `TerminalTab[]` instead of `unknown`.
-  const tabsByWorktree: Record<string, TerminalTab[]> = state.tabsByWorktree
+  const tabsByWorktree: Record<string, TerminalTab[]> = state.tabsByWorktree ?? {}
   let nextTabsByWorktree = tabsByWorktree
   const nextPtyIdsByTabId = { ...state.ptyIdsByTabId }
   const nextLastKnownRelayPtyIdByTabId = { ...state.lastKnownRelayPtyIdByTabId }

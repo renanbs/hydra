@@ -185,19 +185,26 @@ describe('SshPane actions (Orca parity, reduced)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove host' }))
     await act(async () => {})
+    await waitFor(() => {
+      expect(
+        invokeMock.mock.calls.filter(([cmd]) => cmd === 'ssh_list_targets').length
+      ).toBeGreaterThanOrEqual(2)
+    })
 
     expect(invokeMock.mock.calls.filter(([cmd]) => cmd === 'ssh_remove_target')).toHaveLength(1)
-    expect(
-      invokeMock.mock.calls.filter(([cmd]) => cmd === 'ssh_list_targets').length
-    ).toBeGreaterThanOrEqual(2)
+    // Why: the re-read after delete is async (dialog hydrate + pane loadTargets);
+    // wait for its visible effect first, then assert the registry was re-read.
     await waitFor(() => {
       expect(screen.getByText('No SSH targets configured.')).toBeInTheDocument()
     })
+    expect(
+      invokeMock.mock.calls.filter(([cmd]) => cmd === 'ssh_list_targets').length
+    ).toBeGreaterThanOrEqual(2)
   })
 })
 
 describe('SshPane connection controls (reduced)', () => {
-  it('renders no Connect, Disconnect, Test, relay or status control without a connection backend', async () => {
+  it('renders no Connect, Disconnect, Test or status control without a connection backend (F07: relay is wired)', async () => {
     registry = [target()]
     const { container } = renderPane()
     await act(async () => {})
@@ -207,7 +214,8 @@ describe('SshPane connection controls (reduced)', () => {
     expect(screen.queryByRole('button', { name: 'Disconnect' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Test' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'End remote terminals' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Reset remote relay' })).toBeNull()
+    // F07-021: resetRelay has a backend (ssh_reset_relay) and the card renders it.
+    expect(screen.queryByRole('button', { name: 'Reset remote relay' })).not.toBeNull()
     expect(container.querySelector('[data-ssh-target-card]')).not.toBeNull()
     expect(screen.queryByText('Disconnected')).toBeNull()
   })
