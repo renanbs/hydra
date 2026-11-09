@@ -38,7 +38,8 @@ use db::{AgentStateHistoryRecord, ChatMessage, DatabaseManager, DbSessionRecord,
 use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_path, search_files_content, DirectoryListing, FileContent, read_file_text, SearchResult};
 use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
-    get_git_status, get_git_status_for_path, get_submodule_live_status, git_commit, git_commit_amend,
+    get_git_status, get_git_status_for_path, get_submodule_live_status, git_abort_merge,
+    git_abort_rebase, git_commit, git_commit_amend, git_conflict_operation,
     git_diff, git_discard_file, git_pull, git_push, git_stash_list, git_stash_pop, git_stash_push,
     git_stage_all, git_stage_file, git_stage_paths, git_unstage_all, git_unstage_file,
     git_unstage_paths, DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
@@ -312,6 +313,18 @@ async fn git_stage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(),
 #[tauri::command]
 async fn git_unstage_paths_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
     tokio::task::spawn_blocking(move || git_unstage_paths(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_conflict_operation_cmd(repoPath: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || git_conflict_operation(&repoPath)).await.map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn git_abort_merge_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_abort_merge(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_abort_rebase_cmd(repoPath: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_abort_rebase(&repoPath)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
 async fn get_submodule_paths_cmd(repoPath: String) -> Result<Vec<String>, String> {
@@ -2184,6 +2197,9 @@ pub fn run() {
             git_pull_cmd,
             git_stage_paths_cmd,
             git_unstage_paths_cmd,
+            git_conflict_operation_cmd,
+            git_abort_merge_cmd,
+            git_abort_rebase_cmd,
             get_submodule_paths_cmd,
             git_stash_list_cmd,
             git_stash_push_cmd,

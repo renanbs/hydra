@@ -105,6 +105,8 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   const [submodules, setSubmodules] = useState<string[]>([]);
   const [pushing, setPushing] = useState(false);
   const [pulling, setPulling] = useState(false);
+  const [conflictOp, setConflictOp] = useState<string>("unknown");
+  const [aborting, setAborting] = useState(false);
   const [stashList, setStashList] = useState<GitCommitEntry[]>([]);
   const [stashLoading, setStashLoading] = useState(false);
   const [stashPromptOpen, setStashPromptOpen] = useState(false);
@@ -120,6 +122,10 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     try {
       const res = await invoke<DetailedGitStatus>("get_detailed_git_status_cmd", { repoPath });
       setStatus(res);
+      try {
+        const op = await invoke<string>("git_conflict_operation_cmd", { repoPath });
+        setConflictOp(op);
+      } catch { setConflictOp("unknown"); }
       try {
         const [unstaged, stagedStats] = await Promise.all([
           invoke<DiffNumStat[]>("get_diff_numstat_cmd", { repoPath, staged: false }),
@@ -231,6 +237,14 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!repoPath) return;
     setPulling(true);
     try { await invoke("git_pull_cmd", { repoPath }); fetchStatus(); fetchHistory(); } catch(e:any){ setError(String(e)); } finally{ setPulling(false); }
+  };
+  const handleAbortOp = async () => {
+    if (!repoPath || conflictOp === "unknown") return;
+    setAborting(true);
+    try {
+      await invoke(conflictOp === "rebase" ? "git_abort_rebase_cmd" : "git_abort_merge_cmd", { repoPath });
+      fetchStatus(); fetchHistory();
+    } catch(e:any){ setError(String(e)); } finally{ setAborting(false); }
   };
   const handleCommit = async () => {
     const msg = commitMsg.trim();
@@ -352,6 +366,16 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
             <span className={`px-1.5 py-0.5 rounded text-[10px] ${status.is_clean ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"}`}>
               {status.is_clean ? "clean" : `${status.files.length} changed`}
             </span>
+            {conflictOp !== "unknown" && (
+              <span className="flex items-center gap-1">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${conflictOp === "rebase" ? "bg-violet-500/15 text-violet-400" : conflictOp === "merge" ? "bg-red-500/15 text-red-400" : "bg-amber-500/15 text-amber-400"}`}>
+                  {conflictOp === "rebase" ? "Rebasing" : conflictOp === "merge" ? "Merging" : "Cherry-picking"}
+                </span>
+                <button onClick={handleAbortOp} disabled={aborting} title={`Abort ${conflictOp}`} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 transition-colors disabled:opacity-50">
+                  {aborting ? "Aborting…" : "Abort"}
+                </button>
+              </span>
+            )}
             {submodules.length>0 && <span className="text-[10px] text-[#dcb67a]">{submodules.length} submodules</span>}
             {error && <span className="text-red-400 truncate">{error}</span>}
           </div>

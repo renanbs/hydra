@@ -398,6 +398,47 @@ pub fn git_unstage_paths(repo_path: &str, paths: &[String]) -> Result<(), String
     let out2 = Command::new("git").args(&args2).output().map_err(|e| e.to_string())?;
     if out2.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out2.stderr).to_string()) }
 }
+/// Conflict-operation state for a worktree. Mirrors Orca
+/// `main/git/source-control/git-conflict-operation.ts`: detect rebase from
+/// `rebase-merge/` or `rebase-apply/` dirs, not `REBASE_HEAD` (lingers → stale badge).
+pub fn git_conflict_operation(repo_path: &str) -> String {
+    // Resolve the git dir (worktrees keep it in `.git` file or `commondir`).
+    let git_dir_out = Command::new("git")
+        .args(["-C", repo_path, "rev-parse", "--git-dir"])
+        .output();
+    let git_dir = match git_dir_out {
+        Ok(out) if out.status.success() => {
+            let raw = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            let p = std::path::Path::new(&raw);
+            if p.is_absolute() {
+                p.to_path_buf()
+            } else {
+                std::path::Path::new(repo_path).join(raw)
+            }
+        }
+        _ => return "unknown".to_string(),
+    };
+    // Any failure to reach a path reads as absent, never as a throw.
+    let exists = |name: &str| git_dir.join(name).exists();
+    if exists("MERGE_HEAD") {
+        return "merge".to_string();
+    }
+    if exists("rebase-merge") || exists("rebase-apply") {
+        return "rebase".to_string();
+    }
+    if exists("CHERRY_PICK_HEAD") {
+        return "cherry-pick".to_string();
+    }
+    "unknown".to_string()
+}
+pub fn git_abort_merge(repo_path: &str) -> Result<(), String> {
+    let out = Command::new("git").args(["-C", repo_path, "merge", "--abort"]).output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).to_string()) }
+}
+pub fn git_abort_rebase(repo_path: &str) -> Result<(), String> {
+    let out = Command::new("git").args(["-C", repo_path, "rebase", "--abort"]).output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).to_string()) }
+}
 pub fn get_submodule_paths(repo_path: &str) -> Vec<String> {
     let gitmodules = std::path::Path::new(repo_path).join(".gitmodules");
     if !gitmodules.exists() { return vec![]; }
@@ -466,5 +507,45 @@ mod tests {
         let status = get_git_status().expect("git status");
         assert!(!status.branch.is_empty());
         assert!(!status.head_commit.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod conflict_op_tests {
+    use super::*;
+    use std::process::Command;
+
+    fn init_repo(path: &std::path::Path) {
+        Command::new("git").args(["init", "-q"]).current_dir(path).output().unwrap();
+        Command::new("git").args(["config", "user.email", "t@t"]).current_dir(path).output().unwrap();
+        Command::new("git").args(["config", "user.name", "t"]).current_dir(path).output().unwrap();
+        std::fs::write(path.join("f.txt"), "a").unwrap();
+        Command::new("git").args(["add", "."]).current_dir(path).output().unwrap();
+        Command::new("git").args(["commit", "-qm", "init"]).current_dir(path).output().unwrap();
+    }
+
+    #[test]
+    fn unknown_on_clean_repo() {
+        let dir = std::env::temp_dir().join(format!("hydra-gitop-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        init_repo(&dir);
+        assert_eq!(git_conflict_operation(dir.to_str().unwrap()), "unknown");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detects_merge_head() {
+        let dir = std::env::temp_dir().join(format!("hydra-gitop-m-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        init_repo(&dir);
+        // Fake a merge in progress via MERGE_HEAD file.
+        let git_dir = String::from_utf8_lossy(
+            &Command::new("git").args(["-C", dir.to_str().unwrap(), "rev-parse", "--git-dir"]).output().unwrap().stdout,
+        ).trim().to_string();
+        std::fs::write(dir.join(&git_dir).join("MERGE_HEAD"), "deadbeef").unwrap();
+        assert_eq!(git_conflict_operation(dir.to_str().unwrap()), "merge");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
