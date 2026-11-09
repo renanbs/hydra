@@ -2258,6 +2258,7 @@ pub fn run() {
             git_sync_fork_cmd,
             git_remote_commit_url_cmd,
             git_remote_file_url_cmd,
+            git_remote::git_set_status_upstream_ref_watch,
             workspace_space::workspace_space_analyze,
             workspace_space::workspace_space_cancel,
             workspace_space::workspace_space_get_cached_analysis,

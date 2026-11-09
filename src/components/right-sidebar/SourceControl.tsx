@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { listen } from "@tauri-apps/api/event";
 import React from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { openExternalUrl } from "@/lib/sidebar-desktop-contracts";
@@ -171,7 +172,33 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   }, [repoPath, baseRef, status?.upstream]);
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  // F05-031 (Orca setStatusUpstreamRefWatch): register the upstream watch so
+  // the poller emits git:upstream-changed on drift; refetch status on it.
+  useEffect(() => {
+    if (!repoPath) return;
+    let cancelled = false;
+    let unlisten: (() => void) | null = null;
+    void (async () => {
+      try {
+        if (cancelled) return;
+        unlisten = await listen<{ repoPath: string }>("git:upstream-changed", (event) => {
+          if (event.payload.repoPath === repoPath) {
+            fetchStatus();
+            fetchHistory();
+          }
+        });
+        if (cancelled) {
+          unlisten();
+          return;
+        }
+        await invoke("git_set_status_upstream_ref_watch", { repoPath }).catch(() => {});
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, [repoPath, fetchStatus, fetchHistory]);
   useEffect(() => {
     if (status?.ahead && status.ahead > 0) fetchBranchCommits();
     else setBranchCommits([]);

@@ -8,7 +8,14 @@
 //! branches (`connectionId`) are not ported: Hydra git commands run on local
 //! paths (worktrees), never through a relay provider.
 
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::process::Command;
+use std::time::Duration;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::LazyLock;
+use parking_lot::Mutex;
+use tauri::{AppHandle, Emitter};
 
 /// Upstream status. Mirrors Orca `GitUpstreamStatus` (subset without
 /// push-target variants — Hydra has no push-target model).
@@ -222,6 +229,69 @@ fn default_branch(repo_path: &str) -> Option<String> {
         .filter(|s| !s.is_empty() && s != "HEAD")
 }
 
+/// Upstream ref watch registry (F05-031). Mirrors Orca
+/// `setWorktreeGitStatusRefWatch` (watch .git/refs + revalidate on change):
+/// same observable effect via the house mechanism — a 15s poller per watched
+/// worktree compares `rev-parse @{u}` and emits `git:upstream-changed` on
+/// drift so the renderer refetches status. No FS watcher: the codebase polls
+/// (FileExplorer 4s), it doesn't `notify`.
+static UPSTREAM_WATCHES: LazyLock<Mutex<HashMap<String, String>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+struct UpstreamChangedPayload {
+    repo_path: String,
+    upstream_name: Option<String>,
+}
+
+fn ensure_upstream_poller(app: AppHandle) {
+    static STARTED: AtomicBool = AtomicBool::new(false);
+    if STARTED.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(Duration::from_secs(15));
+            let watches: Vec<(String, String)> = UPSTREAM_WATCHES
+                .lock()
+                .iter()
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
+            for (repo_path, last_seen) in watches {
+                let current = upstream_name(&repo_path).unwrap_or_default();
+                if current != last_seen {
+                    UPSTREAM_WATCHES
+                        .lock()
+                        .insert(repo_path.clone(), current.clone());
+                    let _ = app.emit(
+                        "git:upstream-changed",
+                        UpstreamChangedPayload {
+                            repo_path,
+                            upstream_name: if current.is_empty() { None } else { Some(current) },
+                        },
+                    );
+                }
+            }
+        }
+    });
+}
+
+/// `git:setStatusUpstreamRefWatch` — register (or refresh) the upstream watch
+/// for a worktree path. Returns the currently observed upstream, if any.
+#[tauri::command]
+pub async fn git_set_status_upstream_ref_watch(
+    repo_path: String,
+    app: AppHandle,
+) -> Result<Option<String>, String> {
+    let current = upstream_name(&repo_path);
+    UPSTREAM_WATCHES
+        .lock()
+        .insert(repo_path, current.clone().unwrap_or_default());
+    ensure_upstream_poller(app);
+    Ok(current)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,5 +331,21 @@ mod tests {
             _ => format!("https://{host}/{path}/commit/abc"),
         };
         assert_eq!(url, "https://github.com/o/r/commit/abc");
+    }
+}
+
+#[cfg(test)]
+mod watch_tests {
+    use super::*;
+
+    #[test]
+    fn upstream_name_none_without_repo() {
+        let dir = std::env::temp_dir().join(format!("hydra-nowatch-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let repo = dir.to_str().unwrap();
+        // Not a git repo: rev-parse fails -> None.
+        assert!(upstream_name(repo).is_none());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
