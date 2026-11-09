@@ -224,6 +224,55 @@ pub fn git_discard_file(repo_path: &str, file: &str) -> Result<(), String> {
     }
     Err(String::from_utf8_lossy(&out2.stderr).to_string())
 }
+/// Discard a batch of paths. Mirrors Orca `bulkDiscardChanges`: each path
+/// goes through the single-file discard (tracked restore, untracked delete).
+pub fn git_bulk_discard(repo_path: &str, paths: &[String]) -> Result<(), String> {
+    for p in paths {
+        git_discard_file(repo_path, p)?;
+    }
+    Ok(())
+}
+/// Well-known huge folders (Orca `KNOWN_HUGE_FOLDER_NAMES`): dependency/build
+/// dirs whose presence explodes the status listing. Offered for .gitignore.
+pub const KNOWN_HUGE_FOLDER_NAMES: &[&str] =
+    &["node_modules", ".next", "dist", "build", "target", "vendor"];
+/// Folders among the known-huge set that exist and are NOT git-ignored.
+/// Mirrors Orca `findKnownHugeFolderPathsToIgnore`.
+pub fn git_find_huge_folders_to_ignore(repo_path: &str) -> Result<Vec<String>, String> {
+    let existing: Vec<String> = KNOWN_HUGE_FOLDER_NAMES
+        .iter()
+        .filter(|n| std::path::Path::new(repo_path).join(n).is_dir())
+        .map(|n| n.to_string())
+        .collect();
+    if existing.is_empty() {
+        return Ok(vec![]);
+    }
+    let ignored = check_git_ignored(repo_path, &existing).unwrap_or_default();
+    let ignored_set: std::collections::HashSet<&str> = ignored.iter().map(|s| s.as_str()).collect();
+    Ok(existing.into_iter().filter(|n| !ignored_set.contains(n.as_str())).collect())
+}
+/// Append a folder pattern to `.gitignore` (allowlisted, exact-line dedup).
+/// Mirrors Orca `appendFolderToGitignore`. Returns true on write.
+pub fn git_append_gitignore(repo_path: &str, folder_name: &str) -> Result<bool, String> {
+    let safe = folder_name.trim();
+    if !KNOWN_HUGE_FOLDER_NAMES.contains(&safe) || safe.contains(['/', '\\', '\r', '\n']) {
+        return Err(format!("Refusing to add unrecognized folder to .gitignore: {folder_name}"));
+    }
+    let line = format!("{safe}/");
+    let path = std::path::Path::new(repo_path).join(".gitignore");
+    let existing = std::fs::read_to_string(&path).unwrap_or_default();
+    let already = existing.lines().map(|l| l.trim()).any(|l| l == safe || l == line);
+    if already {
+        return Ok(false);
+    }
+    use std::io::Write;
+    let mut f = std::fs::OpenOptions::new().create(true).append(true).open(&path).map_err(|e| e.to_string())?;
+    if !existing.is_empty() && !existing.ends_with('\n') {
+        writeln!(f, "").map_err(|e| e.to_string())?;
+    }
+    writeln!(f, "{line}").map_err(|e| e.to_string())?;
+    Ok(true)
+}
 pub fn git_commit(repo_path: &str, message: &str) -> Result<String, String> {
     let out = Command::new("git").args(["-C", repo_path, "commit", "-m", message]).output().map_err(|e| e.to_string())?;
     if out.status.success() {
@@ -546,6 +595,49 @@ mod conflict_op_tests {
         ).trim().to_string();
         std::fs::write(dir.join(&git_dir).join("MERGE_HEAD"), "deadbeef").unwrap();
         assert_eq!(git_conflict_operation(dir.to_str().unwrap()), "merge");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod extras_tests {
+    use super::*;
+
+    #[test]
+    fn bulk_discard_empty_is_ok() {
+        let dir = std::env::temp_dir();
+        assert!(git_bulk_discard(dir.to_str().unwrap(), &[]).is_ok());
+    }
+
+    #[test]
+    fn append_gitignore_rejects_unknown() {
+        let dir = std::env::temp_dir();
+        assert!(git_append_gitignore(dir.to_str().unwrap(), "../../evil").is_err());
+        assert!(git_append_gitignore(dir.to_str().unwrap(), "custom-folder").is_err());
+    }
+
+    #[test]
+    fn append_gitignore_roundtrip() {
+        let dir = std::env::temp_dir().join(format!("hydra-gi-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let repo = dir.to_str().unwrap();
+        assert_eq!(git_append_gitignore(repo, "target").unwrap(), true);
+        assert_eq!(git_append_gitignore(repo, "target").unwrap(), false);
+        // "target/" with separator is rejected by the allowlist (Orca parity).
+        assert!(git_append_gitignore(repo, "target/").is_err());
+        let content = std::fs::read_to_string(dir.join(".gitignore")).unwrap();
+        assert!(content.contains("target/"));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn huge_folders_empty_without_dirs() {
+        let dir = std::env::temp_dir().join(format!("hydra-hf-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let found = git_find_huge_folders_to_ignore(dir.to_str().unwrap()).unwrap();
+        assert!(found.is_empty());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

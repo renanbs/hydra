@@ -39,10 +39,11 @@ use fs_ops::{create_file, create_folder, delete_path, list_directory, rename_pat
 use git_status::{
     check_git_ignored, get_branch_commits, get_detailed_git_status, get_diff_numstat, get_git_history,
     get_git_status, get_git_status_for_path, get_submodule_live_status, git_abort_merge,
-    git_abort_rebase, git_commit, git_commit_amend, git_conflict_operation,
-    git_diff, git_discard_file, git_pull, git_push, git_stash_list, git_stash_pop, git_stash_push,
-    git_stage_all, git_stage_file, git_stage_paths, git_unstage_all, git_unstage_file,
-    git_unstage_paths, DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
+    git_abort_rebase, git_append_gitignore, git_bulk_discard, git_commit, git_commit_amend,
+    git_conflict_operation, git_diff, git_discard_file, git_find_huge_folders_to_ignore,
+    git_pull, git_push, git_stage_all, git_stage_file, git_stage_paths, git_stash_list,
+    git_stash_pop, git_stash_push, git_unstage_all, git_unstage_file, git_unstage_paths,
+    DetailedGitStatus, DiffNumStat, GitCommitEntry, GitRepoStatus,
 };
 use keep_awake::{KeepAwakeManager, KeepAwakeStatus};
 use pairing::{PairingManager, PairingPayload};
@@ -325,6 +326,18 @@ async fn git_abort_merge_cmd(repoPath: String) -> Result<(), String> {
 #[tauri::command]
 async fn git_abort_rebase_cmd(repoPath: String) -> Result<(), String> {
     tokio::task::spawn_blocking(move || git_abort_rebase(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_bulk_discard_cmd(repoPath: String, paths: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || git_bulk_discard(&repoPath, &paths)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_find_huge_folders_cmd(repoPath: String) -> Result<Vec<String>, String> {
+    tokio::task::spawn_blocking(move || git_find_huge_folders_to_ignore(&repoPath)).await.map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn git_append_gitignore_cmd(repoPath: String, folderName: String) -> Result<bool, String> {
+    tokio::task::spawn_blocking(move || git_append_gitignore(&repoPath, &folderName)).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
 async fn get_submodule_paths_cmd(repoPath: String) -> Result<Vec<String>, String> {
@@ -2200,6 +2213,9 @@ pub fn run() {
             git_conflict_operation_cmd,
             git_abort_merge_cmd,
             git_abort_rebase_cmd,
+            git_bulk_discard_cmd,
+            git_find_huge_folders_cmd,
+            git_append_gitignore_cmd,
             get_submodule_paths_cmd,
             git_stash_list_cmd,
             git_stash_push_cmd,

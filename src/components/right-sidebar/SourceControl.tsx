@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import React from "react";
 import { invoke } from "@tauri-apps/api/core";
 import {
   GitBranch,
@@ -228,6 +229,11 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
     if (!repoPath || paths.length===0) return;
     try { await invoke("git_unstage_paths_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
   };
+  const handleBulkDiscard = async (paths: string[], label: string) => {
+    if (!repoPath || paths.length===0) return;
+    if (!confirm(`Discard ${paths.length} ${label} file(s)? This cannot be undone.`)) return;
+    try { await invoke("git_bulk_discard_cmd", { repoPath, paths }); fetchStatus(); } catch(e:any){ setError(String(e)); }
+  };
   const handlePush = async () => {
     if (!repoPath) return;
     setPushing(true);
@@ -381,9 +387,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
           </div>
         )}
         {tooMany && (
-          <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-            Too many changes ({status?.files.length}) — showing first 300. Commit or stash to improve performance (Orca TooManyChangesBanner).
-          </div>
+          <HugeFolderBanner repoPath={repoPath} onChanged={fetchStatus} />
         )}
       </div>
 
@@ -457,7 +461,7 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
               count={unstaged.length}
               expanded={expandedGroups.has("changes")}
               onToggle={() => toggleGroup("changes")}
-              actions={unstaged.length>0 ? <button onClick={()=>handleStagePaths(unstaged.map(f=>f.path))} className="text-[10px] px-1 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Stage All</button> : undefined}
+              actions={unstaged.length>0 ? <span className="flex items-center gap-1"><button onClick={()=>handleStagePaths(unstaged.map(f=>f.path))} className="text-[10px] px-1 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white">Stage All</button><button onClick={()=>void handleBulkDiscard(unstaged.map(f=>f.path), "changed")} className="text-[10px] text-neutral-400 hover:text-red-400 px-1">Discard All</button></span> : undefined}
             >
               {viewMode==="tree"
                 ? groupByDir(unstaged).map(([dir, files])=> (
@@ -641,6 +645,54 @@ export function SourceControl({ repoPath, openInApps, onOpenDiff, onOpenSettings
   );
 }
 
+
+// Why: the overwhelmingly common cause of a status listing big enough to hit
+// the entry limit is a dependency/build folder that should have been ignored
+// (Orca `huge-folder-ignore.ts`). Offer to ignore by name instead of hand-edit.
+function HugeFolderBanner({ repoPath, onChanged }: { repoPath: string | null; onChanged: () => void }) {
+  const [candidates, setCandidates] = useState<string[] | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  useEffect(() => {
+    if (!repoPath) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const list = await invoke<string[]>("git_find_huge_folders_cmd", { repoPath });
+        if (!cancelled) setCandidates(list);
+      } catch { if (!cancelled) setCandidates([]); }
+    })();
+    return () => { cancelled = true; };
+  }, [repoPath]);
+  if (!candidates || candidates.length === 0) {
+    return (
+      <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
+        Too many changes — showing first 300. Commit or stash to improve performance.
+      </div>
+    );
+  }
+  const ignore = async (folder: string) => {
+    if (!repoPath) return;
+    setBusy(folder);
+    try {
+      await invoke("git_append_gitignore_cmd", { repoPath, folderName: folder });
+      setCandidates((prev) => (prev ?? []).filter((c) => c !== folder));
+      onChanged();
+    } catch {}
+    setBusy(null);
+  };
+  return (
+    <div className="mx-2 mb-2 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 space-y-1">
+      <div>Too many changes — showing first 300. These folders look ignorable:</div>
+      <div className="flex flex-wrap gap-1">
+        {candidates.map((c) => (
+          <button key={c} onClick={() => void ignore(c)} disabled={busy !== null} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 transition-colors disabled:opacity-50">
+            {busy === c ? "Ignoring…" : `Ignore ${c}/`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 function Section({ title, count, expanded, onToggle, children, actions, tone }: { title: string; count: number; expanded: boolean; onToggle: () => void; children: React.ReactNode; tone?: "error"; actions?: React.ReactNode; id: string }) {
   return (
     <div className="border-b border-[#1a1c1e] last:border-0">
