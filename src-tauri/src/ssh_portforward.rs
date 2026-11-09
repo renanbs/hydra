@@ -84,6 +84,7 @@ pub fn build_ssh_forward_cancel_args(
     args.push(socket.to_string_lossy().to_string());
     args.push("-O".to_string());
     args.push("cancel".to_string());
+    args.push("-L".to_string());
     args.push(format!("127.0.0.1:{local_port}:{remote_host}:{remote_port}"));
     args.push(build_ssh_destination(target));
     args
@@ -421,4 +422,60 @@ pub async fn ssh_reset_relay(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_target() -> crate::ssh_hosts::SshTarget {
+        crate::ssh_hosts::SshTarget {
+            id: "t1".to_string(),
+            label: "nas".to_string(),
+            owner: None,
+            config_host: None,
+            host: "nas.lan".to_string(),
+            port: 22,
+            username: "renan".to_string(),
+            identity_file: None,
+            identity_agent: None,
+            identities_only: None,
+            gssapi_authentication: None,
+            proxy_command: None,
+            jump_host: None,
+            source: None,
+            relay_grace_period_seconds: None,
+            last_required_passphrase: None,
+            port_forwards: None,
+            system_ssh_connection_reuse: None,
+            generation: None,
+        }
+    }
+
+    #[test]
+    fn forward_add_uses_control_path_and_local_bind() {
+        let target = test_target();
+        let socket = std::path::Path::new("/tmp/sock");
+        let args = build_ssh_forward_add_args(&target, socket, 3000, "localhost", 3000);
+        let joined = args.join(" ");
+        assert!(joined.contains("-O forward"), "{joined}");
+        assert!(joined.contains("127.0.0.1:3000:localhost:3000"), "{joined}");
+        assert!(joined.contains("/tmp/sock"), "{joined}");
+        assert!(!args.iter().any(|a| a == "-T"), "{joined}");
+    }
+
+    #[test]
+    fn forward_cancel_mirrors_add_spec() {
+        let target = test_target();
+        let socket = std::path::Path::new("/tmp/sock");
+        let add = build_ssh_forward_add_args(&target, socket, 3000, "db", 5432);
+        let cancel = build_ssh_forward_cancel_args(&target, socket, 3000, "db", 5432);
+        let spec = |args: &[String]| {
+            args.iter()
+                .position(|a| a == "-L")
+                .map(|i| args[i + 1].clone())
+        };
+        assert_eq!(spec(&add), spec(&cancel));
+        assert!(cancel.join(" ").contains("-O cancel"));
+    }
 }
